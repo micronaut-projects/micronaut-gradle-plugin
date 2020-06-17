@@ -6,9 +6,14 @@ import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.dsl.DependencyHandler;
 import org.gradle.api.plugins.ExtensionContainer;
+import org.gradle.api.plugins.GroovyPlugin;
 import org.gradle.api.plugins.PluginContainer;
+import org.gradle.api.tasks.TaskContainer;
+import org.gradle.api.tasks.compile.GroovyCompile;
+import org.gradle.api.tasks.compile.GroovyForkOptions;
 import org.gradle.api.tasks.compile.JavaCompile;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -21,35 +26,20 @@ public class MicronautLibraryPlugin implements Plugin<Project> {
     @Override
     public void apply(Project project) {
         final PluginContainer plugins = project.getPlugins();
+
         plugins.apply(getBasePluginName());
         plugins.apply(AptEclipsePlugin.class);
         ExtensionContainer extensions = project.getExtensions();
         extensions.create("micronaut", MicronautExtension.class);
 
-        project.getTasks().withType(JavaCompile.class, javaCompile -> {
-            final List<String> compilerArgs = javaCompile.getOptions().getCompilerArgs();
-            final MicronautExtension micronautExtension = project.getExtensions().getByType(MicronautExtension.class);
-            final MicronautExtension.AnnotationProcessingConfig processingConfig = micronautExtension.getProcessingConfig();
-            final boolean isIncremental = processingConfig.isIncremental().getOrElse(true);
-            final String group = processingConfig.getGroup().getOrElse(project.getGroup().toString());
-            final String module = processingConfig.getModule().getOrElse(project.getName());
-            if (isIncremental) {
-                final List<String> annotations = processingConfig.getAnnotations().getOrElse(Collections.emptyList());
-                compilerArgs.add("-Amicronaut.processing.incremental=true");
-                if (!annotations.isEmpty()) {
-                    compilerArgs.add("-Amicronaut.processing.annotations=" + String.join(",", annotations));
-                } else {
-                    if (group.length() > 0) {
-                        compilerArgs.add("-Amicronaut.processing.annotations=" + group + ".*");
-                    }
-                }
-            }
+        final TaskContainer tasks = project.getTasks();
 
-            compilerArgs.add("-Amicronaut.processing.group=" + group);
-            compilerArgs.add("-Amicronaut.processing.module=" + module);
-        });
+        configureJava(project, tasks);
+
+        configureGroovy(tasks);
 
         project.afterEvaluate(p -> {
+
             final DependencyHandler dependencyHandler = p.getDependencies();
             final MicronautExtension micronautExtension = p.getExtensions().getByType(MicronautExtension.class);
 
@@ -76,15 +66,79 @@ public class MicronautLibraryPlugin implements Plugin<Project> {
                     isLibrary ? API_CONFIGURATION_NAME : IMPLEMENTATION_CONFIGURATION_NAME,
                     "io.micronaut:micronaut-inject"
             );
+
+            boolean hasGroovy = plugins.findPlugin(GroovyPlugin.class) != null;
+            if (hasGroovy) {
+                for (String configuration : getGroovyAstTransformConfigurations()) {
+                    dependencyHandler.add(
+                            configuration,
+                            "io.micronaut:micronaut-inject-groovy"
+                    );
+                }
+            }
+        });
+    }
+
+    private void configureJava(Project project, TaskContainer tasks) {
+        tasks.withType(JavaCompile.class, javaCompile -> {
+            final List<String> compilerArgs = javaCompile.getOptions().getCompilerArgs();
+            final MicronautExtension micronautExtension = project.getExtensions().getByType(MicronautExtension.class);
+            final MicronautExtension.AnnotationProcessingConfig processingConfig = micronautExtension.getProcessingConfig();
+            final boolean isIncremental = processingConfig.isIncremental().getOrElse(true);
+            final String group = processingConfig.getGroup().getOrElse(project.getGroup().toString());
+            final String module = processingConfig.getModule().getOrElse(project.getName());
+            if (isIncremental) {
+                final List<String> annotations = processingConfig.getAnnotations().getOrElse(Collections.emptyList());
+                compilerArgs.add("-Amicronaut.processing.incremental=true");
+                if (!annotations.isEmpty()) {
+                    compilerArgs.add("-Amicronaut.processing.annotations=" + String.join(",", annotations));
+                } else {
+                    if (group.length() > 0) {
+                        compilerArgs.add("-Amicronaut.processing.annotations=" + group + ".*");
+                    }
+                }
+            }
+
+            compilerArgs.add("-Amicronaut.processing.group=" + group);
+            compilerArgs.add("-Amicronaut.processing.module=" + module);
+        });
+    }
+
+    private void configureGroovy(TaskContainer tasks) {
+        tasks.withType(GroovyCompile.class, groovyCompile -> {
+            final GroovyForkOptions forkOptions = groovyCompile.getGroovyOptions().getForkOptions();
+            List<String> jvmArgs = forkOptions.getJvmArgs();
+            if (jvmArgs != null) {
+                jvmArgs.add("-Dgroovy.parameters=true");
+            } else {
+                jvmArgs = new ArrayList<>();
+                jvmArgs.add("-Dgroovy.parameters=true");
+                forkOptions.setJvmArgs(jvmArgs);
+            }
         });
     }
 
     private List<String> getJavaAnnotationProcessorConfigurations() {
-        return Arrays.asList(ANNOTATION_PROCESSOR_CONFIGURATION_NAME, TEST_ANNOTATION_PROCESSOR_CONFIGURATION_NAME);
+        return Arrays.asList(
+                ANNOTATION_PROCESSOR_CONFIGURATION_NAME,
+                TEST_ANNOTATION_PROCESSOR_CONFIGURATION_NAME
+        );
+    }
+
+    private List<String> getGroovyAstTransformConfigurations() {
+        return Arrays.asList(
+                COMPILE_ONLY_CONFIGURATION_NAME,
+                TEST_COMPILE_ONLY_CONFIGURATION_NAME
+        );
     }
 
     private List<String> getBomConfigurations() {
-        return Arrays.asList(ANNOTATION_PROCESSOR_CONFIGURATION_NAME, TEST_ANNOTATION_PROCESSOR_CONFIGURATION_NAME, IMPLEMENTATION_CONFIGURATION_NAME);
+        return Arrays.asList(
+                ANNOTATION_PROCESSOR_CONFIGURATION_NAME,
+                TEST_ANNOTATION_PROCESSOR_CONFIGURATION_NAME,
+                isLibrary ? API_CONFIGURATION_NAME : IMPLEMENTATION_CONFIGURATION_NAME,
+                COMPILE_ONLY_CONFIGURATION_NAME
+        );
     }
 
     private String getMicronautVersion(Project p, MicronautExtension micronautExtension) {
