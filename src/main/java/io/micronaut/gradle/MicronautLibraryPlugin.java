@@ -88,7 +88,7 @@ public class MicronautLibraryPlugin implements Plugin<Project> {
     }
 
     private String getMicronautVersion(Project p, MicronautExtension micronautExtension) {
-        String v = micronautExtension.getMicronautVersion().getOrNull();
+        String v = micronautExtension.getVersion().getOrNull();
         if (v == null) {
             final Object o = p.getProperties().get("micronautVersion");
             if (o != null) {
