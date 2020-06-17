@@ -25,7 +25,7 @@ group = "io.micronaut.gradle"
 gradlePlugin {
   plugins {
     libraryPlugin {
-      id = 'io.micronaut.micronaut-library'
+      id = 'io.micronaut.library'
       implementationClass = 'io.micronaut.gradle.MicronautLibraryPlugin'
     }
   }
@@ -34,7 +34,7 @@ gradlePlugin {
 gradlePlugin {
   plugins {
     applicationPlugin {
-      id = 'io.micronaut.micronaut-application'
+      id = 'io.micronaut.application'
       implementationClass = 'io.micronaut.gradle.MicronautApplicationPlugin'
     }
   }

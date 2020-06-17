@@ -23,7 +23,7 @@ class MicronautLibraryPluginSpec extends Specification {
         settingsFile << "rootProject.name = 'hello-world'"
         buildFile << """
             plugins {
-                id "io.micronaut.micronaut-library"
+                id "io.micronaut.library"
             }
             
             micronaut {
@@ -67,7 +67,7 @@ class Foo {}
         settingsFile << "rootProject.name = 'hello-world'"
         buildFile << """
             plugins {
-                id "io.micronaut.micronaut-library"
+                id "io.micronaut.library"
                 id "groovy"
             }
             
@@ -114,7 +114,7 @@ class Foo {}
             plugins {
                 id "org.jetbrains.kotlin.jvm" version "1.3.72"
                 id "org.jetbrains.kotlin.kapt" version "1.3.72"
-                id "io.micronaut.micronaut-library"
+                id "io.micronaut.library"
             }
             
             micronaut {
