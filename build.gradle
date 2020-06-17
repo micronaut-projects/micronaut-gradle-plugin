@@ -1,0 +1,62 @@
+// First, apply the publishing plugin
+plugins {
+  id "com.gradle.plugin-publish" version "0.12.0"
+  id "java-gradle-plugin"
+  // Apply other plugins here, e.g. the kotlin plugin for a plugin written in Kotlin
+  // or the groovy plugin if the plugin uses Groovy
+}
+
+// If your plugin has any external java dependencies, Gradle will attempt to
+// download them from JCenter for anyone using the plugins DSL
+// so you should probably use JCenter for dependency resolution in your own
+// project.
+repositories {
+  jcenter()
+}
+
+// Unless overridden in the pluginBundle config DSL, the project version will
+// be used as your plugin version when publishing
+version = "1.0.0-SNAPSHOT"
+group = "io.micronaut.gradle"
+
+// Use java-gradle-plugin to generate plugin descriptors and specify plugin ids
+gradlePlugin {
+  plugins {
+    libraryPlugin {
+      id = 'io.micronaut.micronaut-library'
+      implementationClass = 'io.micronaut.gradle.MicronautLibraryPlugin'
+    }
+  }
+}
+
+gradlePlugin {
+  plugins {
+    applicationPlugin {
+      id = 'io.micronaut.micronaut-application'
+      implementationClass = 'io.micronaut.gradle.MicronautApplicationPlugin'
+    }
+  }
+}
+
+dependencies {
+
+  testImplementation('org.junit.jupiter:junit-jupiter:5.6.2')
+}
+
+test {
+  useJUnitPlatform()
+}
+// The configuration example below shows the minimum required properties
+// configured to publish your plugin to the plugin portal
+pluginBundle {
+  website = 'https://micronaut.io/'
+  vcsUrl = 'https://github.com/micronaut-projects/micronaut-gradle-plugins'
+  description = 'Gradles plugins for Micronaut Framework'
+  tags = ['micronaut']
+
+  plugins {
+    libraryPlugin {
+      displayName = 'Micronaut Library Plugin'
+    }
+  }
+}
