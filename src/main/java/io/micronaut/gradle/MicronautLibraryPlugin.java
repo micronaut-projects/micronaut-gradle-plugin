@@ -4,6 +4,7 @@ import com.diffplug.gradle.eclipse.apt.AptEclipsePlugin;
 import org.gradle.api.InvalidUserCodeException;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
+import org.gradle.api.artifacts.Dependency;
 import org.gradle.api.artifacts.dsl.DependencyHandler;
 import org.gradle.api.plugins.ExtensionContainer;
 import org.gradle.api.plugins.GroovyPlugin;
@@ -20,6 +21,12 @@ import java.util.List;
 
 import static org.gradle.api.plugins.JavaPlugin.*;
 
+/**
+ * A plugin for creating a Micronaut library. Applies the java-library plugin by default.
+ *
+ * @author graemerocher
+ * @since 1.0.0
+ */
 public class MicronautLibraryPlugin implements Plugin<Project> {
     private boolean isLibrary = false;
 
@@ -38,20 +45,22 @@ public class MicronautLibraryPlugin implements Plugin<Project> {
 
         configureGroovy(tasks);
 
+        if (MicronautKotlinSupport.isKotlinSupportPresent()) {
+            MicronautKotlinSupport.configureKotlin(project);
+        }
+
         project.afterEvaluate(p -> {
 
             final DependencyHandler dependencyHandler = p.getDependencies();
             final MicronautExtension micronautExtension = p.getExtensions().getByType(MicronautExtension.class);
 
             String micronautVersion = getMicronautVersion(p, micronautExtension);
-            if (micronautVersion == null || micronautVersion.length() == 0) {
-                throw new InvalidUserCodeException("Micronaut version not set. Use micronaut { micronautVersion '..'} to set the version");
-            }
 
+            final Dependency platform = dependencyHandler.platform("io.micronaut:micronaut-bom:" + micronautVersion);
             for (String configuration : getBomConfigurations()) {
                 dependencyHandler.add(
                         configuration,
-                        dependencyHandler.platform("io.micronaut:micronaut-bom:" + micronautVersion)
+                        platform
                 );
             }
 
@@ -141,7 +150,12 @@ public class MicronautLibraryPlugin implements Plugin<Project> {
         );
     }
 
-    private String getMicronautVersion(Project p, MicronautExtension micronautExtension) {
+    protected String getBasePluginName() {
+        this.isLibrary = true;
+        return "java-library";
+    }
+
+    static String getMicronautVersion(Project p, MicronautExtension micronautExtension) {
         String v = micronautExtension.getVersion().getOrNull();
         if (v == null) {
             final Object o = p.getProperties().get("micronautVersion");
@@ -149,11 +163,9 @@ public class MicronautLibraryPlugin implements Plugin<Project> {
                 v = o.toString();
             }
         }
+        if (v == null || v.length() == 0) {
+            throw new InvalidUserCodeException("Micronaut version not set. Use micronaut { version '..'} or 'micronautVersion' in gradle.properties to set the version");
+        }
         return v;
-    }
-
-    protected String getBasePluginName() {
-        this.isLibrary = true;
-        return "java-library";
     }
 }
