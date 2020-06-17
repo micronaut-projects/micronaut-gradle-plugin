@@ -52,8 +52,13 @@ public class MicronautKotlinSupport {
      */
     public static void configureKotlin(Project project) {
         final PluginContainer plugins = project.getPlugins();
+        boolean hasKotlin = plugins.findPlugin("org.jetbrains.kotlin.kapt") != null;
+        if (!hasKotlin) {
+            return;
+        }
+        
         plugins.apply("org.jetbrains.kotlin.plugin.allopen");
-        final Plugin<?> kaptPlugin = plugins.apply("org.jetbrains.kotlin.kapt");
+        plugins.apply("org.jetbrains.kotlin.kapt");
 
         // configure all open
         final AllOpenExtension allOpen = project.getExtensions()
