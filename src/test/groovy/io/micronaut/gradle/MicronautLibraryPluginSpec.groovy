@@ -27,7 +27,7 @@ class MicronautLibraryPluginSpec extends Specification {
             }
             
             micronaut {
-                micronautVersion = "2.0.0.RC1"
+                version "2.0.0.RC1"
             }
             
             repositories {

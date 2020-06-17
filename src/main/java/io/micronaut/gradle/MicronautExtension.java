@@ -16,12 +16,12 @@ import javax.inject.Inject;
 public class MicronautExtension {
 
     private final Processing processing;
-    private final Property<String> micronautVersion;
+    private final Property<String> version;
 
     @Inject
     public MicronautExtension(ObjectFactory objectFactory) {
         this.processing = new Processing(objectFactory);
-        this.micronautVersion = objectFactory.property(String.class);
+        this.version = objectFactory.property(String.class);
     }
 
     /**
@@ -29,16 +29,16 @@ public class MicronautExtension {
      * @param version The micronaut version
      * @return This extension
      */
-    public MicronautExtension micronautVersion(String version) {
-        micronautVersion.set(version);
+    public MicronautExtension version(String version) {
+        this.version.set(version);
         return this;
     }
 
     /**
      * @return The micronaut version.
      */
-    public Property<String> getMicronautVersion() {
-        return micronautVersion;
+    public Property<String> getVersion() {
+        return version;
     }
 
     /**
