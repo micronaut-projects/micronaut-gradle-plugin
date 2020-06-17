@@ -105,4 +105,48 @@ class Foo {}
                 'build/classes/groovy/main/example/$FooDefinition.class'
         ).exists()
     }
+
+
+    def "test apply defaults for micronaut-library and kotlin"() {
+        given:
+        settingsFile << "rootProject.name = 'hello-world'"
+        buildFile << """
+            plugins {
+                id "org.jetbrains.kotlin.jvm" version "1.3.72"
+                id "org.jetbrains.kotlin.kapt" version "1.3.72"
+                id "io.micronaut.micronaut-library"
+            }
+            
+            micronaut {
+                version "2.0.0.RC1"
+            }
+            
+            repositories {
+                jcenter()
+                mavenCentral()
+            }
+            
+        """
+        testProjectDir.newFolder("src", "main", "kotlin", "example")
+        def javaFile = testProjectDir.newFile("src/main/kotlin/example/Foo.kt")
+        javaFile.parentFile.mkdirs()
+        javaFile << """
+package example
+
+@javax.inject.Singleton
+class Foo {}
+"""
+
+        when:
+        def result = GradleRunner.create()
+                .withProjectDir(testProjectDir.root)
+                .withArguments('assemble')
+                .withPluginClasspath()
+                .build()
+
+        println result.output
+        then:
+        result.task(":assemble").outcome == TaskOutcome.SUCCESS
+        result.output.contains("Creating bean classes for 1 type elements")
+    }
 }

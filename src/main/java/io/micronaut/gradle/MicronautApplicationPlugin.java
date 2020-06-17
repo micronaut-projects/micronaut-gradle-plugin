@@ -9,6 +9,12 @@ import org.gradle.api.tasks.TaskContainer;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+/**
+ * A plugin for a Micronaut application. Applies the "application" plugin.
+ *
+ * @author graemerocher
+ * @since 1.0.0
+ */
 public class MicronautApplicationPlugin extends MicronautLibraryPlugin {
     @Override
     public void apply(Project project) {
