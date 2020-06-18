@@ -106,8 +106,6 @@ public class MicronautLibraryPlugin implements Plugin<Project> {
             final MicronautExtension micronautExtension = p.getExtensions().getByType(MicronautExtension.class);
             final MicronautExtension.AnnotationProcessingConfig processingConfig = micronautExtension.getProcessingConfig();
             final boolean isIncremental = processingConfig.isIncremental().getOrElse(true);
-            System.out.println("project.getGroup() = " + p.getGroup());
-            System.out.println("project.getName() = " + p.getName());
             final String group = processingConfig.getGroup().getOrElse(p.getGroup().toString());
             final String module = processingConfig.getModule().getOrElse(p.getName());
             if (isIncremental) {
