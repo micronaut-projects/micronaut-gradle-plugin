@@ -1,6 +1,8 @@
 package io.micronaut.gradle;
 
 import com.diffplug.gradle.eclipse.apt.AptEclipsePlugin;
+import io.micronaut.gradle.graalvm.GraalUtil;
+import org.gradle.api.Action;
 import org.gradle.api.InvalidUserCodeException;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
@@ -64,18 +66,6 @@ public class MicronautLibraryPlugin implements Plugin<Project> {
                 );
             }
 
-            for (String configuration : getJavaAnnotationProcessorConfigurations()) {
-                dependencyHandler.add(
-                        configuration,
-                        "io.micronaut:micronaut-inject-java"
-                );
-            }
-
-            dependencyHandler.add(
-                    isLibrary ? API_CONFIGURATION_NAME : IMPLEMENTATION_CONFIGURATION_NAME,
-                    "io.micronaut:micronaut-inject"
-            );
-
             boolean hasGroovy = plugins.findPlugin(GroovyPlugin.class) != null;
             if (hasGroovy) {
                 for (String configuration : getGroovyAstTransformConfigurations()) {
@@ -89,13 +79,37 @@ public class MicronautLibraryPlugin implements Plugin<Project> {
     }
 
     private void configureJava(Project project, TaskContainer tasks) {
-        tasks.withType(JavaCompile.class, javaCompile -> {
+        final DependencyHandler dependencyHandler = project.getDependencies();
+        for (String configuration : getJavaAnnotationProcessorConfigurations()) {
+            dependencyHandler.add(
+                    configuration,
+                    "io.micronaut:micronaut-inject-java"
+            );
+        }
+
+        if (GraalUtil.isGraalJVM()) {
+            for (String configuration : getJavaAnnotationProcessorConfigurations()) {
+                dependencyHandler.add(
+                        configuration,
+                        "io.micronaut:micronaut-graal"
+                );
+            }
+        }
+
+        dependencyHandler.add(
+                isLibrary ? API_CONFIGURATION_NAME : IMPLEMENTATION_CONFIGURATION_NAME,
+                "io.micronaut:micronaut-inject"
+        );
+
+        project.afterEvaluate(p -> tasks.withType(JavaCompile.class, javaCompile -> {
             final List<String> compilerArgs = javaCompile.getOptions().getCompilerArgs();
-            final MicronautExtension micronautExtension = project.getExtensions().getByType(MicronautExtension.class);
+            final MicronautExtension micronautExtension = p.getExtensions().getByType(MicronautExtension.class);
             final MicronautExtension.AnnotationProcessingConfig processingConfig = micronautExtension.getProcessingConfig();
             final boolean isIncremental = processingConfig.isIncremental().getOrElse(true);
-            final String group = processingConfig.getGroup().getOrElse(project.getGroup().toString());
-            final String module = processingConfig.getModule().getOrElse(project.getName());
+            System.out.println("project.getGroup() = " + p.getGroup());
+            System.out.println("project.getName() = " + p.getName());
+            final String group = processingConfig.getGroup().getOrElse(p.getGroup().toString());
+            final String module = processingConfig.getModule().getOrElse(p.getName());
             if (isIncremental) {
                 final List<String> annotations = processingConfig.getAnnotations().getOrElse(Collections.emptyList());
                 compilerArgs.add("-Amicronaut.processing.incremental=true");
@@ -108,9 +122,12 @@ public class MicronautLibraryPlugin implements Plugin<Project> {
                 }
             }
 
-            compilerArgs.add("-Amicronaut.processing.group=" + group);
-            compilerArgs.add("-Amicronaut.processing.module=" + module);
-        });
+            if (group.length() > 0) {
+                compilerArgs.add("-Amicronaut.processing.group=" + group);
+                compilerArgs.add("-Amicronaut.processing.module=" + module);
+            }
+        }));
+
     }
 
     private void configureGroovy(TaskContainer tasks) {
