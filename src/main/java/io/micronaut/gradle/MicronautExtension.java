@@ -44,6 +44,7 @@ public class MicronautExtension {
     /**
      * Configures processing.
      * @param action The action
+     * @return This extension
      */
     public MicronautExtension processing(Action<AnnotationProcessingConfigBuilder> action) {
         action.execute(processing);
