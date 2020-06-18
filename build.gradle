@@ -28,11 +28,6 @@ gradlePlugin {
       id = 'io.micronaut.library'
       implementationClass = 'io.micronaut.gradle.MicronautLibraryPlugin'
     }
-  }
-}
-
-gradlePlugin {
-  plugins {
     applicationPlugin {
       id = 'io.micronaut.application'
       implementationClass = 'io.micronaut.gradle.MicronautApplicationPlugin'
