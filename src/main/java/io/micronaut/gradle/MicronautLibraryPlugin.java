@@ -2,7 +2,6 @@ package io.micronaut.gradle;
 
 import com.diffplug.gradle.eclipse.apt.AptEclipsePlugin;
 import io.micronaut.gradle.graalvm.GraalUtil;
-import org.gradle.api.Action;
 import org.gradle.api.InvalidUserCodeException;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
