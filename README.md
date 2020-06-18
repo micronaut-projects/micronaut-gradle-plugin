@@ -37,7 +37,7 @@ micronaut {
         // Sets the group.
         // This should be th same as the groupId in the POM
         group project.group
-        // Sets the packages containing in any custom Micronaut 
+        // Sets the Java package names containing any custom Micronaut 
         // meta annotations (new annotations annotated with say @Around). 
         // Generally used only for advanced cases such as defining new AOP
         // advice. If omitted however, incremental annotation processing
