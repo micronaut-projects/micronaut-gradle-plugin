@@ -1,5 +1,6 @@
 package io.micronaut.gradle;
 
+import io.micronaut.gradle.graalvm.GraalUtil;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Dependency;
 import org.gradle.api.artifacts.dsl.DependencyHandler;
@@ -79,6 +80,15 @@ public class MicronautKotlinSupport {
                     kaptConfig,
                     "io.micronaut:micronaut-inject-java"
             );
+        }
+
+        if (GraalUtil.isGraalJVM()) {
+            for (String configuration : kaptConfigs) {
+                dependencies.add(
+                        configuration,
+                        "io.micronaut:micronaut-graal"
+                );
+            }
         }
 
         project.afterEvaluate(p -> {
