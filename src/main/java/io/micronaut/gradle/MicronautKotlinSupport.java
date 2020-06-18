@@ -53,6 +53,8 @@ public class MicronautKotlinSupport {
 
     /**
      * Configure Kotlin.
+     *
+     * @param project The project
      */
     public static void configureKotlin(Project project) {
         final PluginContainer plugins = project.getPlugins();
