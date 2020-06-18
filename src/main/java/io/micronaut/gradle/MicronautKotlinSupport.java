@@ -1,7 +1,5 @@
 package io.micronaut.gradle;
 
-import org.gradle.api.Action;
-import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Dependency;
 import org.gradle.api.artifacts.dsl.DependencyHandler;
@@ -17,6 +15,12 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * Extension to integration support for Kotlin.
+ *
+ * @author graemerocher
+ * @since 1.0.0
+ */
 public class MicronautKotlinSupport {
 
     /**
@@ -53,10 +57,10 @@ public class MicronautKotlinSupport {
     public static void configureKotlin(Project project) {
         final PluginContainer plugins = project.getPlugins();
         boolean hasKotlin = plugins.findPlugin("org.jetbrains.kotlin.kapt") != null;
-        if (!hasKotlin) {
+        if (!hasKotlin || !isKotlinSupportPresent()) {
             return;
         }
-        
+
         plugins.apply("org.jetbrains.kotlin.plugin.allopen");
         plugins.apply("org.jetbrains.kotlin.kapt");
 
