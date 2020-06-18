@@ -12,7 +12,17 @@ plugins {
 }
 ```
 
-The [Micronaut library plugin](https://plugins.gradle.org/plugin/io.micronaut.library) sets up basic annotation processing and applies the `java-library` plugin. The `micronaut` DSL can be used to configure how this behaves. Complete example with the default settings:
+The [Micronaut library plugin](https://plugins.gradle.org/plugin/io.micronaut.library) sets up basic annotation processing and applies the `java-library` plugin. The `micronaut` DSL can be used to configure how this behaves.
+
+The minimum requirement is to set the Micronaut version to use. This can be done by setting `micronautVersion` in `gradle.properties` or as follows in `build.gradle`:
+
+```groovy
+micronaut {
+    version "2.0.0.RC1"
+}
+```
+
+Complete example with the default settings:
 
 ```groovy
 
