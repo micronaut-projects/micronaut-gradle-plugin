@@ -36,6 +36,19 @@ micronaut {
     }   
 }
 ```
+
+Note that the Micronaut Library plugin can also be used with Groovy and Kotlin.
+
+For Kotlin, the Kotlin `jvm` and `kapt` plugins must be configured:
+
+```groovy
+plugins {
+    id "org.jetbrains.kotlin.jvm" version "{kotlin.version}"
+    id "org.jetbrains.kotlin.kapt" version "{kotlin.version}"
+    id "io.micronaut.library" version "{version}"   
+}
+```
+
 ## Micronaut Application Plugin
 
 ```groovy
