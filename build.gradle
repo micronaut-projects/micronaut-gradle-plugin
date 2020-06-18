@@ -55,12 +55,15 @@ dependencies {
 pluginBundle {
   website = 'https://micronaut.io/'
   vcsUrl = 'https://github.com/micronaut-projects/micronaut-gradle-plugins'
-  description = 'Gradles plugins for Micronaut Framework'
+  description = 'Gradle Plugins for Micronaut'
   tags = ['micronaut']
 
   plugins {
     libraryPlugin {
       displayName = 'Micronaut Library Plugin'
+    }
+    applicationPlugin {
+      displayName = 'Micronaut Application Plugin'
     }
   }
 }
