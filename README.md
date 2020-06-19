@@ -72,7 +72,7 @@ The [Micronaut application plugin](https://plugins.gradle.org/plugin/io.micronau
 In addition, the plugin correctly configures the `run` task so it can be used with continuous build:
 
 ```bash
-$ ./gradlew run --continuous --watch-fs
+$ ./gradlew run --t
 ```
 
 ## GraalVM Native Image
