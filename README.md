@@ -49,6 +49,8 @@ micronaut {
 
 Note that the Micronaut Library plugin can also be used with Groovy and Kotlin.
 
+### Kotlin Support
+
 For Kotlin, the Kotlin `jvm` and `kapt` plugins must be configured:
 
 ```groovy
@@ -56,6 +58,36 @@ plugins {
     id "org.jetbrains.kotlin.jvm" version "{kotlin.version}"
     id "org.jetbrains.kotlin.kapt" version "{kotlin.version}"
     id "io.micronaut.library" version "{version}"   
+}
+```
+
+### Minimal Build
+
+With the `io.micronaut.library` plugin applied a minimal build to get started writing a library for Micronaut that written in Java and is tested with JUnit 5 looks like:
+
+```groovy
+plugins {
+    id 'io.micronaut.library' version '1.0.0.M3'
+}
+
+version "0.1"
+group "com.example"
+
+repositories {
+    mavenCentral()
+}
+
+micronaut {
+    version = "2.0.0.RC1"
+}
+
+dependencies {
+    testImplementation("io.micronaut.test:micronaut-test-junit5")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
+}
+
+test {
+    useJUnitPlatform()
 }
 ```
 
@@ -72,5 +104,47 @@ The [Micronaut application plugin](https://plugins.gradle.org/plugin/io.micronau
 In addition, the plugin correctly configures the `run` task so it can be used with continuous build:
 
 ```bash
-$ ./gradlew run --continuous --watch-fs
+$ ./gradlew run --t
+```
+
+### Minimal Build
+
+With the `io.micronaut.application` plugin applied a minimal build to get started with a Micronaut server application that is written in Java and tested with JUnit 5 looks like:
+
+```groovy
+plugins {
+    id 'io.micronaut.application' version '1.0.0.M3'
+}
+
+version "0.1"
+group "com.example"
+
+repositories {
+    mavenCentral()
+}
+
+micronaut {
+    version = "2.0.0.RC1"
+}
+
+dependencies {
+    implementation("io.micronaut:micronaut-http-server-netty")
+    runtimeOnly("ch.qos.logback:logback-classic")
+    testImplementation("io.micronaut.test:micronaut-test-junit5")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
+}
+
+mainClassName = "example.Application"
+
+test {
+    useJUnitPlatform()
+}
+```
+
+### GraalVM Native Image
+
+If the JVM being used to build is GraalVM a `nativeImage` task is added that will build the native image using the currently active GraalVM distribution:
+
+```
+$./gradlew nativeImage
 ```
