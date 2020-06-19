@@ -74,3 +74,11 @@ In addition, the plugin correctly configures the `run` task so it can be used wi
 ```bash
 $ ./gradlew run --continuous --watch-fs
 ```
+
+## GraalVM Native Image
+
+If the JVM being used to build is GraalVM a `nativeImage` task is added that will build the native image using the currently active GraalVM distribution:
+
+```
+$./gradlew nativeImage
+```
