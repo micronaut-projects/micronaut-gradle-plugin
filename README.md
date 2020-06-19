@@ -63,9 +63,6 @@ plugins {
 
 ### Minimal Build
 
-
-### Minimal Build
-
 With the `io.micronaut.library` plugin applied a minimal build to get started writing a library for Micronaut that written in Java and is tested with JUnit 5 looks like:
 
 ```groovy
