@@ -2,7 +2,9 @@ package io.micronaut.gradle.graalvm;
 
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
+import org.gradle.api.Task;
 import org.gradle.api.file.FileCollection;
+import org.gradle.api.plugins.BasePlugin;
 import org.gradle.api.plugins.JavaApplication;
 import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.tasks.SourceSet;
@@ -24,8 +26,15 @@ public class MicronautGraalPlugin implements Plugin<Project> {
         if (GraalUtil.isGraalJVM()) {
             if (project.getPlugins().hasPlugin("application")) {
                 TaskContainer tasks = project.getTasks();
-                tasks.register("nativeImage", NativeImageTask.class, nativeImageTask ->
-                        nativeImageTask.dependsOn(tasks.findByName("classes")));
+                tasks.register("nativeImage", NativeImageTask.class, nativeImageTask -> {
+                    nativeImageTask.dependsOn(tasks.findByName("classes"));
+                    nativeImageTask.setGroup(BasePlugin.ASSEMBLE_TASK_NAME);
+                    Task assemble = tasks.findByName("assemble");
+                    if (assemble != null) {
+                        assemble.dependsOn(nativeImageTask);
+                    }
+                });
+
             }
 
             project.afterEvaluate(p -> p.getTasks().withType(NativeImageTask.class, nativeImageTask -> {
