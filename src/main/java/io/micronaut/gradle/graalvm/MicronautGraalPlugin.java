@@ -14,6 +14,8 @@ import org.gradle.api.tasks.TaskContainer;
 import java.io.File;
 import java.util.Set;
 
+import static org.gradle.api.plugins.JavaPlugin.ANNOTATION_PROCESSOR_CONFIGURATION_NAME;
+
 /**
  * Support for building GraalVM native images.
  *
@@ -35,25 +37,30 @@ public class MicronautGraalPlugin implements Plugin<Project> {
                     }
                 });
 
+                project.afterEvaluate(p -> p.getTasks().withType(NativeImageTask.class, nativeImageTask -> {
+                    JavaApplication javaApplication = p.getExtensions().getByType(JavaApplication.class);
+                    String mainClassName = javaApplication.getMainClassName();
+                    String imageName = p.getName();
+                    nativeImageTask.setMain(mainClassName);
+                    nativeImageTask.setImageName(imageName);
+                    FileCollection runtimeConfig = p
+                            .getConfigurations()
+                            .getByName(JavaPlugin.RUNTIME_CLASSPATH_CONFIGURATION_NAME);
+                    SourceSetContainer sourceSets = project.getExtensions().getByType(SourceSetContainer.class);
+                    SourceSet mainSourceSet = sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME);
+                    FileCollection outputDirs = mainSourceSet.getOutput().getClassesDirs();
+                    runtimeConfig = runtimeConfig.plus(outputDirs);
+                    Set<File> resourceDirs = mainSourceSet.getResources().getSrcDirs();
+                    runtimeConfig = runtimeConfig.plus(project.files(resourceDirs));
+                    nativeImageTask.setClasspath(runtimeConfig);
+                }));
             }
 
-            project.afterEvaluate(p -> p.getTasks().withType(NativeImageTask.class, nativeImageTask -> {
-                JavaApplication javaApplication = p.getExtensions().getByType(JavaApplication.class);
-                String mainClassName = javaApplication.getMainClassName();
-                String imageName = p.getName();
-                nativeImageTask.setMain(mainClassName);
-                nativeImageTask.setImageName(imageName);
-                FileCollection runtimeConfig = p
-                        .getConfigurations()
-                        .getByName(JavaPlugin.RUNTIME_CLASSPATH_CONFIGURATION_NAME);
-                SourceSetContainer sourceSets = project.getExtensions().getByType(SourceSetContainer.class);
-                SourceSet mainSourceSet = sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME);
-                FileCollection outputDirs = mainSourceSet.getOutput().getClassesDirs();
-                runtimeConfig = runtimeConfig.plus(outputDirs);
-                Set<File> resourceDirs = mainSourceSet.getResources().getSrcDirs();
-                runtimeConfig = runtimeConfig.plus(project.files(resourceDirs));
-                nativeImageTask.setClasspath(runtimeConfig);
-            }));
+            project.getDependencies().add(
+                    ANNOTATION_PROCESSOR_CONFIGURATION_NAME,
+                    "io.micronaut:micronaut-graal"
+            );
+
         }
     }
 }

@@ -35,9 +35,6 @@ public class MicronautApplicationPlugin extends MicronautLibraryPlugin {
             project.getDependencies().add(CONFIGURATION_DEVELOPMENT_ONLY, "io.micronaut:micronaut-runtime-osx");
         }
 
-        if (GraalUtil.isGraalJVM()) {
-            project.getPlugins().apply(MicronautGraalPlugin.class);
-        }
         project.afterEvaluate(p -> {
             final MicronautExtension ext = p.getExtensions().getByType(MicronautExtension.class);
             final String v = getMicronautVersion(p, ext);

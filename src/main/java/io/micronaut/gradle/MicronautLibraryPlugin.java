@@ -2,6 +2,7 @@ package io.micronaut.gradle;
 
 import com.diffplug.gradle.eclipse.apt.AptEclipsePlugin;
 import io.micronaut.gradle.graalvm.GraalUtil;
+import io.micronaut.gradle.graalvm.MicronautGraalPlugin;
 import org.gradle.api.InvalidUserCodeException;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
@@ -39,6 +40,11 @@ public class MicronautLibraryPlugin implements Plugin<Project> {
         plugins.apply(AptEclipsePlugin.class);
         ExtensionContainer extensions = project.getExtensions();
         extensions.create("micronaut", MicronautExtension.class);
+
+
+        if (GraalUtil.isGraalJVM()) {
+            project.getPlugins().apply(MicronautGraalPlugin.class);
+        }
 
         final TaskContainer tasks = project.getTasks();
 
@@ -84,15 +90,6 @@ public class MicronautLibraryPlugin implements Plugin<Project> {
                     configuration,
                     "io.micronaut:micronaut-inject-java"
             );
-        }
-
-        if (GraalUtil.isGraalJVM()) {
-            for (String configuration : getJavaAnnotationProcessorConfigurations()) {
-                dependencyHandler.add(
-                        configuration,
-                        "io.micronaut:micronaut-graal"
-                );
-            }
         }
 
         dependencyHandler.add(
