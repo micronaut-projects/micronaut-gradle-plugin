@@ -41,7 +41,6 @@ public class MicronautLibraryPlugin implements Plugin<Project> {
         ExtensionContainer extensions = project.getExtensions();
         extensions.create("micronaut", MicronautExtension.class);
 
-
         if (GraalUtil.isGraalJVM()) {
             project.getPlugins().apply(MicronautGraalPlugin.class);
         }
@@ -86,10 +85,14 @@ public class MicronautLibraryPlugin implements Plugin<Project> {
     private void configureJava(Project project, TaskContainer tasks) {
         final DependencyHandler dependencyHandler = project.getDependencies();
         for (String configuration : getJavaAnnotationProcessorConfigurations()) {
-            dependencyHandler.add(
-                    configuration,
-                    "io.micronaut:micronaut-inject-java"
-            );
+            List<String> annotationProcessorModules = getAnnotationProcessorModules();
+            for (String annotationProcessorModule : annotationProcessorModules) {
+                dependencyHandler.add(
+                        configuration,
+                        "io.micronaut:micronaut-" + annotationProcessorModule
+                );
+            }
+
         }
 
         dependencyHandler.add(
@@ -164,6 +167,10 @@ public class MicronautLibraryPlugin implements Plugin<Project> {
     protected String getBasePluginName() {
         this.isLibrary = true;
         return "java-library";
+    }
+
+    static List<String> getAnnotationProcessorModules() {
+        return Arrays.asList("inject-java", "validation");
     }
 
     static String getMicronautVersion(Project p, MicronautExtension micronautExtension) {
