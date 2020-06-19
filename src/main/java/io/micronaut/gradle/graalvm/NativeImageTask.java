@@ -75,6 +75,7 @@ public class NativeImageTask extends AbstractExecTask<NativeImageTask> implement
             args("-J" + jvmArg);
         }
         super.exec();
+        System.out.println("Native Image written to: " + getNativeImageOutput());
     }
 
     @Override
