@@ -76,10 +76,13 @@ public class MicronautKotlinSupport {
         List<String> kaptConfigs = Arrays.asList("kapt", "kaptTest");
         final DependencyHandler dependencies = project.getDependencies();
         for (String kaptConfig : kaptConfigs) {
-            dependencies.add(
-                    kaptConfig,
-                    "io.micronaut:micronaut-inject-java"
-            );
+            List<String> modules = MicronautLibraryPlugin.getAnnotationProcessorModules();
+            for (String module : modules) {
+                dependencies.add(
+                        kaptConfig,
+                        "io.micronaut:micronaut-" + module
+                );
+            }
         }
 
         if (GraalUtil.isGraalJVM()) {
