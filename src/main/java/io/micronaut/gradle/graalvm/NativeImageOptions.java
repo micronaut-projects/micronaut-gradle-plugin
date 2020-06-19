@@ -6,7 +6,6 @@ import org.gradle.api.provider.MapProperty;
 import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.Classpath;
 import org.gradle.api.tasks.Input;
-import org.gradle.api.tasks.Optional;
 
 import javax.annotation.Nullable;
 import java.util.List;
