@@ -1,8 +1,6 @@
 package io.micronaut.gradle;
 
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar;
-import io.micronaut.gradle.graalvm.GraalUtil;
-import io.micronaut.gradle.graalvm.MicronautGraalPlugin;
 import org.apache.tools.ant.taskdefs.condition.Os;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
