@@ -12,13 +12,19 @@ plugins {
 }
 ```
 
-The [Micronaut library plugin](https://plugins.gradle.org/plugin/io.micronaut.library) sets up basic annotation processing and applies the `java-library` plugin. The `micronaut` DSL can be used to configure how this behaves.
+The [Micronaut library plugin](https://plugins.gradle.org/plugin/io.micronaut.library) applies the following modifications to the build:
+
+* Applies the [Micronaut Bill of Materials (BOM)](https://search.maven.org/artifact/io.micronaut/micronaut-bom)
+* Applies the `java-library` plugin
+* Configures annotation processing for the current language (Groovy, Java or Kotlin)
+
+The `micronaut` DSL can be used to configure how this behaves.
 
 The minimum requirement is to set the Micronaut version to use. This can be done by setting `micronautVersion` in `gradle.properties` or as follows in `build.gradle`:
 
 ```groovy
 micronaut {
-    version "2.0.0.RC1"
+    version "2.0.0.RC2"
 }
 ```
 
@@ -27,7 +33,7 @@ Complete example with the default settings:
 ```groovy
 
 micronaut {
-    version "2.0.0.RC1"
+    version "2.0.0.RC2"
     processing {
         // Sets whether incremental annotation processing is enabled
         incremental true
@@ -67,7 +73,7 @@ With the `io.micronaut.library` plugin applied a minimal build to get started wr
 
 ```groovy
 plugins {
-    id 'io.micronaut.library' version '1.0.0.M3'
+    id 'io.micronaut.library' version '{version}'
 }
 
 version "0.1"
@@ -78,7 +84,7 @@ repositories {
 }
 
 micronaut {
-    version = "2.0.0.RC1"
+    version = "2.0.0.RC2"
 }
 
 dependencies {
@@ -99,12 +105,16 @@ plugins {
 }
 ```
 
-The [Micronaut application plugin](https://plugins.gradle.org/plugin/io.micronaut.application) extends the Micronaut Library plugin and instead applies the Gradle `application` plugin as well.
+The [Micronaut application plugin](https://plugins.gradle.org/plugin/io.micronaut.application) extends the Micronaut Library plugin and adds the following customizations:
 
-In addition, the plugin correctly configures the `run` task so it can be used with continuous build:
+* Instead of the `java-library` plugin the plugin applies the Gradle `application` plugin.
+* If the current JVM is GraalVM configures a `nativeImage` task
+* Correctly configures Gradle for continuous build
+
+To run an application with continuous build use the `run` task with the `-t` parameter:
 
 ```bash
-$ ./gradlew run --t
+$ ./gradlew run -t
 ```
 
 ### Minimal Build
@@ -113,7 +123,7 @@ With the `io.micronaut.application` plugin applied a minimal build to get starte
 
 ```groovy
 plugins {
-    id 'io.micronaut.application' version '1.0.0.M3'
+    id 'io.micronaut.application' version '{version}'
 }
 
 version "0.1"
@@ -124,7 +134,7 @@ repositories {
 }
 
 micronaut {
-    version = "2.0.0.RC1"
+    version = "2.0.0.RC2"
 }
 
 dependencies {
@@ -149,7 +159,7 @@ The most simple Kotlin build using a `build.gradle.kts` file looks like:
 plugins {
     id("org.jetbrains.kotlin.jvm") version "1.3.72"
     id("org.jetbrains.kotlin.kapt") version "1.3.72"
-    id("io.micronaut.application") version "1.0.0.M5"
+    id("io.micronaut.application") version "{version}"
 }
 
 version "0.1"
