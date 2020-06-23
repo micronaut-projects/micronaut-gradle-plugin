@@ -141,6 +141,48 @@ test {
 }
 ```
 
+### Kotlin Support
+
+The most simple Kotlin build using a `build.gradle.kts` file looks like:
+
+```kotlin
+plugins {
+    id("org.jetbrains.kotlin.jvm") version "1.3.72"
+    id("org.jetbrains.kotlin.kapt") version "1.3.72"
+    id("io.micronaut.application") version "1.0.0.M5"
+}
+
+version "0.1"
+group "com.example"
+
+repositories {
+    mavenCentral()
+}
+
+micronaut {
+    version( "2.0.0.RC2")
+}
+
+dependencies {
+    implementation("io.micronaut:micronaut-http-server-netty")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.3.72")
+    implementation("org.jetbrains.kotlin:kotlin-reflect:1.3.72")
+    runtimeOnly("ch.qos.logback:logback-classic")
+    testImplementation("io.micronaut.test:micronaut-test-junit5")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
+}
+
+application {
+    mainClass.set("example.ApplicationKt")
+}
+
+tasks {
+    test {
+        useJUnitPlatform()
+    }    
+}
+```
+
 ### GraalVM Native Image
 
 If the JVM being used to build is GraalVM a `nativeImage` task is added that will build the native image using the currently active GraalVM distribution:
