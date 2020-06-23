@@ -3,6 +3,7 @@ package io.micronaut.gradle;
 import com.diffplug.gradle.eclipse.apt.AptEclipsePlugin;
 import io.micronaut.gradle.graalvm.GraalUtil;
 import io.micronaut.gradle.graalvm.MicronautGraalPlugin;
+import org.gradle.api.Action;
 import org.gradle.api.InvalidUserCodeException;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
@@ -71,7 +72,7 @@ public class MicronautLibraryPlugin implements Plugin<Project> {
 
         configureJava(project, tasks);
 
-        configureGroovy(tasks);
+        configureGroovy(project, tasks);
 
         if (MicronautKotlinSupport.isKotlinSupportPresent()) {
             MicronautKotlinSupport.configureKotlin(project);
@@ -170,7 +171,7 @@ public class MicronautLibraryPlugin implements Plugin<Project> {
 
     }
 
-    private void configureGroovy(TaskContainer tasks) {
+    private void configureGroovy(Project project, TaskContainer tasks) {
         tasks.withType(GroovyCompile.class, groovyCompile -> {
             final GroovyForkOptions forkOptions = groovyCompile.getGroovyOptions().getForkOptions();
             List<String> jvmArgs = forkOptions.getJvmArgs();
@@ -182,6 +183,13 @@ public class MicronautLibraryPlugin implements Plugin<Project> {
                 forkOptions.setJvmArgs(jvmArgs);
             }
         });
+
+        project.afterEvaluate(p -> {
+            if (p.getPlugins().hasPlugin("groovy")) {
+                applyAdditionalProcessors(p, COMPILE_ONLY_CONFIGURATION_NAME, TEST_COMPILE_ONLY_CONFIGURATION_NAME);
+            }
+        });
+
     }
 
     private List<String> getJavaAnnotationProcessorConfigurations() {
