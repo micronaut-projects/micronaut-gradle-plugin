@@ -85,6 +85,7 @@ public class MicronautKotlinSupport {
             }
         }
 
+
         if (GraalUtil.isGraalJVM()) {
             for (String configuration : kaptConfigs) {
                 dependencies.add(
@@ -95,6 +96,10 @@ public class MicronautKotlinSupport {
         }
 
         project.afterEvaluate(p -> {
+            MicronautLibraryPlugin.applyAdditionalProcessors(
+                    p,
+                    "kapt", "kaptTest"
+            );
             final MicronautExtension micronautExtension = p
                     .getExtensions()
                     .getByType(MicronautExtension.class);

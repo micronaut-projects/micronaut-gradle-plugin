@@ -7,6 +7,7 @@ import org.gradle.api.InvalidUserCodeException;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Dependency;
+import org.gradle.api.artifacts.DependencySet;
 import org.gradle.api.artifacts.dsl.DependencyHandler;
 import org.gradle.api.plugins.ExtensionContainer;
 import org.gradle.api.plugins.GroovyPlugin;
@@ -16,10 +17,8 @@ import org.gradle.api.tasks.compile.GroovyCompile;
 import org.gradle.api.tasks.compile.GroovyForkOptions;
 import org.gradle.api.tasks.compile.JavaCompile;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Stream;
 
 import static org.gradle.api.plugins.JavaPlugin.*;
 
@@ -30,6 +29,29 @@ import static org.gradle.api.plugins.JavaPlugin.*;
  * @since 1.0.0
  */
 public class MicronautLibraryPlugin implements Plugin<Project> {
+    private static final Map<String, String> GROUP_TO_PROCESSOR_MAP = new HashMap<>();
+
+    static {
+        GROUP_TO_PROCESSOR_MAP.put(
+            "io.swagger.core.v3", "io.micronaut.configuration:micronaut-openapi"
+        );
+        GROUP_TO_PROCESSOR_MAP.put(
+            "io.micronaut-data", "io.micronaut.data:micronaut-data-processor"
+        );
+        GROUP_TO_PROCESSOR_MAP.put(
+            "javax.transaction", "io.micronaut.data:micronaut-data-processor"
+        );
+        GROUP_TO_PROCESSOR_MAP.put(
+            "jakarta.transaction", "io.micronaut.data:micronaut-data-processor"
+        );
+        GROUP_TO_PROCESSOR_MAP.put(
+            "io.micronaut.jaxrs", "io.micronaut.jaxrs:micronaut-jaxrs-processor"
+        );
+        GROUP_TO_PROCESSOR_MAP.put(
+            "io.micronaut.security", "io.micronaut.security:micronaut-security-annotations"
+        );
+    }
+
     private boolean isLibrary = false;
 
     @Override
@@ -58,6 +80,7 @@ public class MicronautLibraryPlugin implements Plugin<Project> {
         project.afterEvaluate(p -> {
 
             final DependencyHandler dependencyHandler = p.getDependencies();
+
             final MicronautExtension micronautExtension = p.getExtensions().getByType(MicronautExtension.class);
 
             String micronautVersion = getMicronautVersion(p, micronautExtension);
@@ -70,6 +93,8 @@ public class MicronautLibraryPlugin implements Plugin<Project> {
                 );
             }
 
+            applyAdditionalProcessors(p, ANNOTATION_PROCESSOR_CONFIGURATION_NAME, TEST_ANNOTATION_PROCESSOR_CONFIGURATION_NAME);
+
             boolean hasGroovy = plugins.findPlugin(GroovyPlugin.class) != null;
             if (hasGroovy) {
                 for (String configuration : getGroovyAstTransformConfigurations()) {
@@ -80,6 +105,24 @@ public class MicronautLibraryPlugin implements Plugin<Project> {
                 }
             }
         });
+    }
+
+    static void applyAdditionalProcessors(Project project, String ... configurations) {
+        Stream.of(IMPLEMENTATION_CONFIGURATION_NAME, COMPILE_ONLY_CONFIGURATION_NAME).forEach(config -> {
+            final DependencySet allDependencies = project.getConfigurations().getByName(config)
+                    .getAllDependencies();
+            for (String group : GROUP_TO_PROCESSOR_MAP.keySet()) {
+                boolean hasDep = !allDependencies.matching(dependency -> Objects.equals(dependency.getGroup(), group)).isEmpty();
+                if (hasDep) {
+                    final DependencyHandler dependencies = project.getDependencies();
+                    for (String configuration : configurations) {
+                        dependencies.add(configuration, GROUP_TO_PROCESSOR_MAP.get(group));
+                    }
+                }
+            }
+        });
+
+
     }
 
     private void configureJava(Project project, TaskContainer tasks) {
