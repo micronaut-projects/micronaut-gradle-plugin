@@ -20,6 +20,127 @@ class MicronautLibraryPluginSpec extends Specification {
         kotlinBuildFile = testProjectDir.newFile('build.gradle.kts')
     }
 
+    def "test add jaxrs processing"() {
+        given:
+        settingsFile << "rootProject.name = 'hello-world'"
+        buildFile << """
+            plugins {
+                id "io.micronaut.library"
+            }
+            
+            micronaut {
+                version "2.0.0.RC2"
+            }
+            
+            repositories {
+                jcenter()
+                mavenCentral()
+            }
+            
+            dependencies {
+                implementation("io.micronaut.jaxrs:micronaut-jaxrs-server")
+            }
+            
+        """
+        testProjectDir.newFolder("src", "main", "java", "example")
+        def javaFile = testProjectDir.newFile("src/main/java/example/Foo.java")
+        javaFile.parentFile.mkdirs()
+        javaFile << """
+package example;
+
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+
+@Path("/foo")
+public class Foo {
+
+    @GET
+    @Path("/")
+    public String index() {
+        return "Example Response";
+    }
+}
+"""
+
+        when:
+        def result = GradleRunner.create()
+                .withProjectDir(testProjectDir.root)
+                .withArguments('assemble')
+                .withPluginClasspath()
+                .build()
+
+        then:
+        result.task(":assemble").outcome == TaskOutcome.SUCCESS
+        result.output.contains("Creating bean classes for 1 type elements")
+        new File(
+                testProjectDir.getRoot(),
+                'build/classes/java/main/example/$FooDefinition.class'
+        ).exists()
+    }
+
+    def "test add openapi processing"() {
+        given:
+        settingsFile << "rootProject.name = 'hello-world'"
+        buildFile << """
+            plugins {
+                id "io.micronaut.library"
+            }
+            
+            micronaut {
+                version "2.0.0.RC2"
+                
+                processing {
+                    incremental true
+                }
+            }
+            
+            repositories {
+                jcenter()
+                mavenCentral()
+            }
+            
+            dependencies {
+                compileOnly "io.swagger.core.v3:swagger-annotations"
+            }
+            
+        """
+        testProjectDir.newFolder("src", "main", "java", "example")
+        def javaFile = testProjectDir.newFile("src/main/java/example/Foo.java")
+        javaFile.parentFile.mkdirs()
+        javaFile << """
+package example;
+
+import io.swagger.v3.oas.annotations.*;
+import io.swagger.v3.oas.annotations.info.*;
+
+
+@javax.inject.Singleton
+@OpenAPIDefinition(
+    info = @Info(
+            title = "demo",
+            version = "0.0"
+    )
+)
+class Foo {}
+"""
+
+        when:
+        def result = GradleRunner.create()
+                .withProjectDir(testProjectDir.root)
+                .withArguments('assemble')
+                .withPluginClasspath()
+                .build()
+
+        then:
+        result.task(":assemble").outcome == TaskOutcome.SUCCESS
+        result.output.contains("Creating bean classes for 1 type elements")
+        result.output.contains("Generating OpenAPI Documentation")
+        new File(
+                testProjectDir.getRoot(),
+                'build/classes/java/main/example/$FooDefinition.class'
+        ).exists()
+    }
+
     def "test apply defaults for micronaut-library and java"() {
         given:
         settingsFile << "rootProject.name = 'hello-world'"
