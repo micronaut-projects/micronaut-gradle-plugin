@@ -103,12 +103,12 @@ public class MicronautLibraryPlugin implements Plugin<Project> {
         project.afterEvaluate(p -> tasks.withType(JavaCompile.class, javaCompile -> {
             final List<String> compilerArgs = javaCompile.getOptions().getCompilerArgs();
             final MicronautExtension micronautExtension = p.getExtensions().getByType(MicronautExtension.class);
-            final MicronautExtension.AnnotationProcessingConfig processingConfig = micronautExtension.getProcessingConfig();
-            final boolean isIncremental = processingConfig.isIncremental().getOrElse(true);
-            final String group = processingConfig.getGroup().getOrElse(p.getGroup().toString());
-            final String module = processingConfig.getModule().getOrElse(p.getName());
+            final AnnotationProcessing processing = micronautExtension.getProcessing();
+            final boolean isIncremental = processing.getIncremental().getOrElse(true);
+            final String group = processing.getGroup().getOrElse(p.getGroup().toString());
+            final String module = processing.getModule().getOrElse(p.getName());
             if (isIncremental) {
-                final List<String> annotations = processingConfig.getAnnotations().getOrElse(Collections.emptyList());
+                final List<String> annotations = processing.getAnnotations().getOrElse(Collections.emptyList());
                 compilerArgs.add("-Amicronaut.processing.incremental=true");
                 if (!annotations.isEmpty()) {
                     compilerArgs.add("-Amicronaut.processing.annotations=" + String.join(",", annotations));
