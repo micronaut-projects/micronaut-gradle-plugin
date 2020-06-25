@@ -91,10 +91,6 @@ dependencies {
     testImplementation("io.micronaut.test:micronaut-test-junit5")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
 }
-
-test {
-    useJUnitPlatform()
-}
 ```
 
 ## Micronaut Application Plugin
