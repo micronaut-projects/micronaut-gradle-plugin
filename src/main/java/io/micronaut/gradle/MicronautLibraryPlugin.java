@@ -7,16 +7,19 @@ import org.gradle.api.Action;
 import org.gradle.api.InvalidUserCodeException;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
+import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.Dependency;
 import org.gradle.api.artifacts.DependencySet;
 import org.gradle.api.artifacts.dsl.DependencyHandler;
 import org.gradle.api.plugins.ExtensionContainer;
 import org.gradle.api.plugins.GroovyPlugin;
 import org.gradle.api.plugins.PluginContainer;
+import org.gradle.api.specs.Spec;
 import org.gradle.api.tasks.TaskContainer;
 import org.gradle.api.tasks.compile.GroovyCompile;
 import org.gradle.api.tasks.compile.GroovyForkOptions;
 import org.gradle.api.tasks.compile.JavaCompile;
+import org.gradle.api.tasks.testing.Test;
 
 import java.util.*;
 import java.util.stream.Stream;
@@ -104,6 +107,17 @@ public class MicronautLibraryPlugin implements Plugin<Project> {
                             "io.micronaut:micronaut-inject-groovy"
                     );
                 }
+            }
+
+            Configuration testConfig = p.getConfigurations().getByName(TEST_IMPLEMENTATION_CONFIGURATION_NAME);
+            boolean hasJunit5 = !testConfig.getAllDependencies()
+                    .matching(dependency -> {
+                        String name = dependency.getName();
+                        return name.equals("junit-jupiter-engine") || name.equals("micronaut-test-junit5");
+                    })
+                    .isEmpty();
+            if (hasJunit5) {
+                project.getTasks().withType(Test.class, Test::useJUnitPlatform);
             }
         });
     }

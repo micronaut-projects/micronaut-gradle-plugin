@@ -189,6 +189,65 @@ class Foo {}
         ).exists()
     }
 
+    def "test apply junit 5 platform is junit jupiter is present"() {
+        given:
+        settingsFile << "rootProject.name = 'hello-world'"
+        buildFile << """
+            plugins {
+                id "io.micronaut.library"
+            }
+            
+            micronaut {
+                version "2.0.0.RC2"
+            }
+            
+            repositories {
+                mavenCentral()
+            }
+            
+            dependencies {
+                testImplementation("io.micronaut.test:micronaut-test-junit5")
+                testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")            
+            }
+            
+        """
+        testProjectDir.newFolder("src", "test", "java", "example")
+        def javaFile = testProjectDir.newFile("src/test/java/example/Foo.java")
+        javaFile.parentFile.mkdirs()
+        javaFile << """
+package example;
+
+import io.micronaut.context.BeanContext;
+import io.micronaut.test.annotation.MicronautTest;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Assertions;
+
+import javax.inject.Inject;
+
+@MicronautTest
+class Foo {
+    @Inject
+    BeanContext context;
+
+    @Test
+    void testItWorks() {
+        Assertions.assertTrue(context.isRunning());
+    }
+}
+"""
+
+        when:
+        def result = GradleRunner.create()
+                .withProjectDir(testProjectDir.root)
+                .withArguments('test')
+                .withPluginClasspath()
+                .build()
+
+        then:
+        result.task(":test").outcome == TaskOutcome.SUCCESS
+        result.output.contains("Creating bean classes for 1 type elements")
+    }
+
     def "test apply defaults for micronaut-library and groovy"() {
         given:
         settingsFile << "rootProject.name = 'hello-world'"
