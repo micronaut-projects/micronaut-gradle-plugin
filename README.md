@@ -141,10 +141,6 @@ dependencies {
 }
 
 mainClassName = "example.Application"
-
-test {
-    useJUnitPlatform()
-}
 ```
 
 ### Kotlin Support
@@ -180,12 +176,6 @@ dependencies {
 
 application {
     mainClass.set("example.ApplicationKt")
-}
-
-tasks {
-    test {
-        useJUnitPlatform()
-    }    
 }
 ```
 
