@@ -67,9 +67,7 @@ public class MicronautLibraryPlugin implements Plugin<Project> {
         ExtensionContainer extensions = project.getExtensions();
         extensions.create("micronaut", MicronautExtension.class);
 
-        if (GraalUtil.isGraalJVM()) {
-            project.getPlugins().apply(MicronautGraalPlugin.class);
-        }
+        project.getPlugins().apply(MicronautGraalPlugin.class);
 
         final TaskContainer tasks = project.getTasks();
 
