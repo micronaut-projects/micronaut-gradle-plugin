@@ -13,13 +13,23 @@ import javax.inject.Inject;
 import java.io.File;
 import java.util.*;
 
-public class NativeImageTask extends AbstractExecTask<NativeImageTask> implements NativeImageOptions {
+/**
+ * A gradle task for building a native image.
+ *
+ * @author graemerocher
+ * @since 1.0.0
+ */
+public class NativeImageTask extends AbstractExecTask<NativeImageTask>
+        implements NativeImageOptions {
     private final Property<String> imageName;
     private final Property<String> main;
     private final MapProperty<String, Object> systemProperties;
     private @Nullable FileCollection classpath;
     private final ListProperty<String> jvmArgs;
 
+    /**
+     * Default constructor.
+     */
     public NativeImageTask() {
         super(NativeImageTask.class);
         setExecutable("native-image");

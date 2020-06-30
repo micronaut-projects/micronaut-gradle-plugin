@@ -1,0 +1,8 @@
+FROM @base.image@
+@base.image.setup@
+WORKDIR /home/app
+COPY build/layers/libs /home/app/libs
+COPY build/layers/resources /home/app/resources
+COPY build/layers/application.jar /home/app/application.jar
+EXPOSE 8080
+CMD ["java", "-Dcom.sun.management.jmxremote", "-Xmx128m", "-jar", "/home/app/application.jar"]
