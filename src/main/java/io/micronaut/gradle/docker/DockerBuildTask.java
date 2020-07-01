@@ -39,6 +39,7 @@ public class DockerBuildTask extends AbstractExecTask<DockerBuildTask> {
     private final Property<String> minHeapSize;
     private final Property<String> baseImage;
     private final Property<String> tag;
+    private final Property<Integer> port;
 
     public DockerBuildTask() {
         super(DockerBuildTask.class);
@@ -57,6 +58,7 @@ public class DockerBuildTask extends AbstractExecTask<DockerBuildTask> {
         this.baseImage = objectFactory.property(String.class)
                                       .convention("openjdk:14-alpine");
         this.tag = objectFactory.property(String.class);
+        this.port = objectFactory.property(Integer.class).convention(8080);
     }
 
     @Input
@@ -67,6 +69,11 @@ public class DockerBuildTask extends AbstractExecTask<DockerBuildTask> {
     @Input
     public Property<String> getBaseImage() {
         return baseImage;
+    }
+
+    @Input
+    public Property<Integer> getPort() {
+        return port;
     }
 
     @Override
@@ -105,6 +112,7 @@ public class DockerBuildTask extends AbstractExecTask<DockerBuildTask> {
             Map<String, String> tokens = new HashMap<>(5);
             tokens.put("@base.image@", baseImage.get());
             tokens.put("@command.line@", javaCmd);
+            tokens.put("@application.port@", String.valueOf(port.get()));
             if (resource != null) {
                 File buildDir = getProject().getBuildDir();
                 File dockerTemplate = new File(buildDir, "layers/Dockerfile");
