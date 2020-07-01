@@ -9,11 +9,17 @@ public class DockerSettings {
 
     private final Property<String> from;
     private final Property<String> tag;
+    private final Property<Integer> port;
 
     @Inject
     public DockerSettings(ObjectFactory objectFactory) {
         this.from = objectFactory.property(String.class);
         this.tag = objectFactory.property(String.class);
+        this.port = objectFactory.property(Integer.class).convention(8080);
+    }
+
+    public Property<Integer> getPort() {
+        return port;
     }
 
     public Property<String> getTag() {
@@ -31,6 +37,11 @@ public class DockerSettings {
 
     public DockerSettings tag(String tag) {
         this.tag.set(tag);
+        return this;
+    }
+
+    public DockerSettings port(int port) {
+        this.port.set(port);
         return this;
     }
 }

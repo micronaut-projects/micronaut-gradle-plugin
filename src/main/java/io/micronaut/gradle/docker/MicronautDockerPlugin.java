@@ -117,6 +117,8 @@ public class MicronautDockerPlugin implements Plugin<Project> {
             }
             String tag = docker.getTag().getOrElse(project.getName());
             task.getTag().set(tag);
+            int port = docker.getPort().get();
+            task.getPort().set(port);
         }));
 
 
