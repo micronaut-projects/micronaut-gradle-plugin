@@ -6,7 +6,7 @@ COPY build/layers/libs /home/app/libs
 COPY build/layers/resources /home/app/resources
 COPY build/layers/application.jar /home/app/application.jar
 
-RUN native-image @graalvm.nativeimage.args@ -H:Class=@main.class@ -H:Name=application --no-server --no-fallback -cp /home/app/libs/*.jar:/home/app/resources:/home/app/application.jar
+RUN native-image @graalvm.nativeimage.args@ --no-server --no-fallback -cp /home/app/libs/*.jar:/home/app/resources:/home/app/application.jar
 
 FROM @base.image@
 @base.image.setup@

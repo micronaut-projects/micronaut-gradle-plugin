@@ -1,5 +1,6 @@
 package io.micronaut.gradle;
 
+import io.micronaut.gradle.docker.DockerSettings;
 import org.gradle.api.Action;
 import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.provider.Property;
@@ -16,11 +17,13 @@ public class MicronautExtension {
 
     private final AnnotationProcessing processing;
     private final Property<String> version;
+    private final DockerSettings docker;
 
     @Inject
     public MicronautExtension(ObjectFactory objectFactory) {
         this.processing = objectFactory.newInstance(AnnotationProcessing.class);
         this.version = objectFactory.property(String.class);
+        this.docker = objectFactory.newInstance(DockerSettings.class);
     }
 
     /**
@@ -46,12 +49,29 @@ public class MicronautExtension {
     }
 
     /**
+     * @return The docker settings
+     */
+    public DockerSettings getDocker() {
+        return docker;
+    }
+
+    /**
      * Allows configuring processing.
      * @param processingAction The processing action
      * @return This extension
      */
     public MicronautExtension processing(Action<AnnotationProcessing> processingAction) {
         processingAction.execute(this.getProcessing());
+        return this;
+    }
+
+    /**
+     * Allows configuring docker builds.
+     * @param dockerSettings The processing action
+     * @return This extension
+     */
+    public MicronautExtension docker(Action<DockerSettings> dockerSettings) {
+        dockerSettings.execute(this.getDocker());
         return this;
     }
 }
