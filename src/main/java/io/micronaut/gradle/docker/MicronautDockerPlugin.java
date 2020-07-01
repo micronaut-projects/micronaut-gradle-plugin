@@ -106,8 +106,9 @@ public class MicronautDockerPlugin implements Plugin<Project> {
             assemble.dependsOn(buildLayersTask);
         }
 
-        project.afterEvaluate(p -> tasks.register("buildDockerImage", DockerBuildTask.class, task -> {
-            task.dependsOn(buildLayersTask);
+        tasks.register("buildDockerImage", DockerBuildTask.class, task ->
+            task.dependsOn(buildLayersTask)
+        ).configure(task -> {
             task.setGroup(BasePlugin.BUILD_GROUP);
             task.setDescription("Builds a Docker Image");
             DockerSettings docker = micronautExtension.getDocker();
@@ -119,7 +120,9 @@ public class MicronautDockerPlugin implements Plugin<Project> {
             task.getTag().set(tag);
             int port = docker.getPort().get();
             task.getPort().set(port);
-        }));
+
+        });
+
 
 
     }

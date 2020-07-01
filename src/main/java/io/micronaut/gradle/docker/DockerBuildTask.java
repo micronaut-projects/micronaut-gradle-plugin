@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 
 /**
  * A task for building a docker image. This task
- * extends from {@link JavaExec} to allow customizing the java command
+ * extends from {@link AbstractExecTask} to allow customizing the java command
  * used to execute the application within the docker file.
  *
  * @author graemerocher
@@ -46,11 +46,8 @@ public class DockerBuildTask extends AbstractExecTask<DockerBuildTask> {
         setExecutable("java");
 
         ObjectFactory objectFactory = getObjectFactory();
-        this.jvmArgs = objectFactory.listProperty(String.class)
-                .convention(new ArrayList<>(5));
-        this.systemProperties = objectFactory.mapProperty(String.class, Object.class)
-                .convention(new LinkedHashMap<>(5));
-
+        this.jvmArgs = objectFactory.listProperty(String.class);
+        this.systemProperties = objectFactory.mapProperty(String.class, Object.class);
         this.defaultCharacterEncoding = objectFactory.property(String.class)
                                                      .convention(StandardCharsets.UTF_8.name());
         this.maxHeapSize = objectFactory.property(String.class);
@@ -61,16 +58,26 @@ public class DockerBuildTask extends AbstractExecTask<DockerBuildTask> {
         this.port = objectFactory.property(Integer.class).convention(8080);
     }
 
+    /**
+     * @return The tag to use
+     */
     @Input
     public Property<String> getTag() {
         return tag;
     }
 
+    /**
+     * @return The base image
+     */
     @Input
     public Property<String> getBaseImage() {
         return baseImage;
     }
 
+    /**
+     *
+     * @return The exposed port. Defaults to 8080.
+     */
     @Input
     public Property<Integer> getPort() {
         return port;
@@ -150,18 +157,18 @@ public class DockerBuildTask extends AbstractExecTask<DockerBuildTask> {
         }
     }
 
-    private String replaceTokens(String v, Map<String, String> tokens) {
-        for (Map.Entry<String, String> entry : tokens.entrySet()) {
-            v = v.replace(entry.getKey(), entry.getValue());
-        }
-        return v;
-    }
-
+    /**
+     * @return The system properties to pass to the java command
+     */
     @Input
     public Map<String, Object> getSystemProperties() {
-        return this.systemProperties.getOrElse(new HashMap<>());
+        return this.systemProperties.get();
     }
 
+    /**
+     * Sets the system properties to pass to the java command
+     * @param map A map of properties
+     */
     public void setSystemProperties(Map<String, ?> map) {
         HashMap<String, Object> newMap = new HashMap<>();
         map.forEach((key, v) -> {
@@ -171,24 +178,32 @@ public class DockerBuildTask extends AbstractExecTask<DockerBuildTask> {
                 newMap.put(key, v.toString());
             }
         });
-        this.systemProperties.set(newMap);
+        this.systemProperties.empty();
+        this.systemProperties.putAll(newMap);
     }
 
+    /**
+     * Sets the system properties to pass to the java command
+     * @param map A map of properties
+     */
     public DockerBuildTask systemProperties(Map<String, ?> map) {
-        Map<String, Object> existing = this.systemProperties.getOrElse(new HashMap<>());
         map.forEach((key, v) -> {
             if (v == null) {
-                existing.put(key, null);
+                systemProperties.put(key, (Object) null);
             } else {
-                existing.put(key, v.toString());
+                systemProperties.put(key, v.toString());
             }
         });
-        this.systemProperties.set(existing);
         return this;
     }
 
-    public DockerBuildTask systemProperty(String s, Object o) {
-        systemProperties(Collections.singletonMap(s, o));
+    /**
+     * Set a the system property to pass to the java command
+     * @param name The name of the property
+     * @param value The value
+     */
+    public DockerBuildTask systemProperty(String name, Object value) {
+        systemProperties(Collections.singletonMap(name, value));
         return this;
     }
 
@@ -242,8 +257,7 @@ public class DockerBuildTask extends AbstractExecTask<DockerBuildTask> {
     public DockerBuildTask jvmArgs(Iterable<?> iterable) {
         List<String> list = iterableToList(iterable);
         if (list != null) {
-            List<String> args = this.jvmArgs.getOrElse(new ArrayList<>());
-            args.addAll(list);
+            this.jvmArgs.addAll(list);
         }
         return this;
     }
@@ -280,5 +294,12 @@ public class DockerBuildTask extends AbstractExecTask<DockerBuildTask> {
             }
         }
         return list;
+    }
+
+    private String replaceTokens(String v, Map<String, String> tokens) {
+        for (Map.Entry<String, String> entry : tokens.entrySet()) {
+            v = v.replace(entry.getKey(), entry.getValue());
+        }
+        return v;
     }
 }
