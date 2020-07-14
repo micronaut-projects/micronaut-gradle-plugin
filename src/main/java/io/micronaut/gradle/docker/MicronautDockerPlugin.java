@@ -25,6 +25,7 @@ public class MicronautDockerPlugin implements Plugin<Project> {
         File applicationLayout = new File(project.getBuildDir(), "layers");
         TaskProvider<Jar> runnerJar = tasks.register("runnerJar", Jar.class, jar -> {
             jar.dependsOn(tasks.findByName("classes"));
+            jar.getArchiveClassifier().set("runner");
             SourceSetContainer sourceSets = project
                     .getExtensions().getByType(SourceSetContainer.class);
 
@@ -32,26 +33,35 @@ public class MicronautDockerPlugin implements Plugin<Project> {
                     .getByName(SourceSet.MAIN_SOURCE_SET_NAME);
 
             FileCollection dirs = mainSourceSet.getOutput().getClassesDirs();
-            jar.getArchiveClassifier().set("runner");
+
             jar.from(dirs);
-            jar.manifest(manifest -> {
-                Map<String, Object> attrs = new HashMap<>(2);
-                JavaApplication javaApplication = project.getExtensions().getByType(JavaApplication.class);
-                String mainClassName = javaApplication.getMainClassName();
-                Configuration runtimeClasspath = project.getConfigurations()
-                        .getByName(RUNTIME_CLASSPATH_CONFIGURATION_NAME);
-
-                List<String> classpath = new ArrayList<>();
-                for (File file : runtimeClasspath) {
-                    classpath.add("libs/" + file.getName());
-                }
-                classpath.add("resources/");
-
-                attrs.put("Main-Class", mainClassName);
-                attrs.put("Class-Path", String.join(" ", classpath));
-                manifest.attributes(attrs);
-            });
         });
+
+        //noinspection Convert2Lambda
+        project.afterEvaluate(new Action<Project>() {
+            @Override
+            public void execute(Project project) {
+                Jar jar = runnerJar.get();
+                jar.manifest(manifest -> {
+                    Map<String, Object> attrs = new HashMap<>(2);
+                    JavaApplication javaApplication = project.getExtensions().getByType(JavaApplication.class);
+                    String mainClassName = javaApplication.getMainClassName();
+                    Configuration runtimeClasspath = project.getConfigurations()
+                            .getByName(RUNTIME_CLASSPATH_CONFIGURATION_NAME);
+
+                    List<String> classpath = new ArrayList<>();
+                    for (File file : runtimeClasspath) {
+                        classpath.add("libs/" + file.getName());
+                    }
+                    classpath.add("resources/");
+
+                    attrs.put("Main-Class", mainClassName);
+                    attrs.put("Class-Path", String.join(" ", classpath));
+                    manifest.attributes(attrs);
+                });
+            }
+        });
+
 
         TaskProvider<Task> buildLayersTask = tasks.register("buildLayers", task -> {
             task.dependsOn(runnerJar);
