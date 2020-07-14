@@ -1,9 +1,7 @@
 package io.micronaut.gradle;
 
 import com.diffplug.gradle.eclipse.apt.AptEclipsePlugin;
-import io.micronaut.gradle.graalvm.GraalUtil;
 import io.micronaut.gradle.graalvm.MicronautGraalPlugin;
-import org.gradle.api.Action;
 import org.gradle.api.InvalidUserCodeException;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
@@ -14,7 +12,6 @@ import org.gradle.api.artifacts.dsl.DependencyHandler;
 import org.gradle.api.plugins.ExtensionContainer;
 import org.gradle.api.plugins.GroovyPlugin;
 import org.gradle.api.plugins.PluginContainer;
-import org.gradle.api.specs.Spec;
 import org.gradle.api.tasks.TaskContainer;
 import org.gradle.api.tasks.compile.GroovyCompile;
 import org.gradle.api.tasks.compile.GroovyForkOptions;
@@ -67,9 +64,7 @@ public class MicronautLibraryPlugin implements Plugin<Project> {
         ExtensionContainer extensions = project.getExtensions();
         extensions.create("micronaut", MicronautExtension.class);
 
-        if (GraalUtil.isGraalJVM()) {
-            project.getPlugins().apply(MicronautGraalPlugin.class);
-        }
+        project.getPlugins().apply(MicronautGraalPlugin.class);
 
         final TaskContainer tasks = project.getTasks();
 

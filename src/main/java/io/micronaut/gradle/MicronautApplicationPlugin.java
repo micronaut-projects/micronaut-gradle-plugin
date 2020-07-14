@@ -1,6 +1,7 @@
 package io.micronaut.gradle;
 
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar;
+import io.micronaut.gradle.docker.MicronautDockerPlugin;
 import org.apache.tools.ant.taskdefs.condition.Os;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
@@ -33,11 +34,14 @@ public class MicronautApplicationPlugin extends MicronautLibraryPlugin {
             project.getDependencies().add(CONFIGURATION_DEVELOPMENT_ONLY, "io.micronaut:micronaut-runtime-osx");
         }
 
+        new MicronautDockerPlugin().apply(project);
+
         project.afterEvaluate(p -> {
             final MicronautExtension ext = p.getExtensions().getByType(MicronautExtension.class);
             final String v = getMicronautVersion(p, ext);
             final DependencyHandler dependencyHandler = p.getDependencies();
-            dependencyHandler.add(CONFIGURATION_DEVELOPMENT_ONLY, dependencyHandler.platform("io.micronaut:micronaut-bom:" + v));
+            dependencyHandler.add(CONFIGURATION_DEVELOPMENT_ONLY,
+                    dependencyHandler.platform("io.micronaut:micronaut-bom:" + v));
         });
         final TaskContainer tasks = project.getTasks();
         tasks.withType(JavaExec.class, javaExec -> {

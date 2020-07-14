@@ -1,0 +1,16 @@
+FROM @graalvm.image@ as graalvm
+RUN gu install native-image
+
+WORKDIR /home/app
+COPY build/layers/libs /home/app/libs
+COPY build/layers/resources /home/app/resources
+COPY build/layers/application.jar /home/app/application.jar
+
+RUN @graalvm.nativeimage.cmd@ --no-server --no-fallback -cp /home/app/libs/*.jar:/home/app/resources:/home/app/application.jar
+
+FROM @base.image@
+@base.image.setup@
+# RUN apk update && apk add libstdc++
+EXPOSE @application.port@
+COPY --from=graalvm /home/app/application /app/application
+ENTRYPOINT ["/app/application"]
