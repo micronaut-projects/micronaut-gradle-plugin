@@ -11,7 +11,16 @@ public final class GraalUtil {
      * @return Return whether the JVM in use a GraalVM JVM.
      */
     public static boolean isGraalJVM() {
-        String vv = System.getProperty("jvmci.Compiler");
-        return vv != null && vv.toLowerCase(Locale.ENGLISH).contains("graal");
+        return isGraal("jvmci.Compiler", "java.vendor.version");
+    }
+
+    private static boolean isGraal(String... props) {
+        for (String prop : props) {
+            String vv = System.getProperty(prop);
+            if (vv != null && vv.toLowerCase(Locale.ENGLISH).contains("graal")) {
+                return true;
+            }
+        }
+        return false;
     }
 }
