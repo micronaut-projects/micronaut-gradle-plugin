@@ -1,6 +1,7 @@
 package io.micronaut.gradle;
 
 import io.micronaut.gradle.docker.DockerSettings;
+import io.micronaut.gradle.graalvm.GraalUtil;
 import org.gradle.api.Action;
 import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.provider.Property;
@@ -17,6 +18,7 @@ public class MicronautExtension {
 
     private final AnnotationProcessing processing;
     private final Property<String> version;
+    private final Property<Boolean> enableNativeImage;
     private final DockerSettings docker;
 
     @Inject
@@ -24,6 +26,27 @@ public class MicronautExtension {
         this.processing = objectFactory.newInstance(AnnotationProcessing.class);
         this.version = objectFactory.property(String.class);
         this.docker = objectFactory.newInstance(DockerSettings.class);
+        this.enableNativeImage = objectFactory.property(Boolean.class)
+                                    .convention(GraalUtil.isGraalJVM());
+    }
+
+    /**
+     * Whether native image is enabled
+     * @return True if it is
+     */
+    public Property<Boolean> getEnableNativeImage() {
+        return enableNativeImage;
+    }
+
+    /**
+     * Sets whether native image is enabled.
+     *
+     * @param b Whether native image is enabled.
+     * @return This extension
+     */
+    public MicronautExtension enableNativeImage(boolean b) {
+        this.enableNativeImage.set(b);
+        return this;
     }
 
     /**

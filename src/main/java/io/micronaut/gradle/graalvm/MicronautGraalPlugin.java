@@ -1,5 +1,6 @@
 package io.micronaut.gradle.graalvm;
 
+import io.micronaut.gradle.MicronautExtension;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
@@ -25,17 +26,20 @@ import static org.gradle.api.plugins.JavaPlugin.ANNOTATION_PROCESSOR_CONFIGURATI
 public class MicronautGraalPlugin implements Plugin<Project> {
     @Override
     public void apply(Project project) {
-        boolean isGraalVM = GraalUtil.isGraalJVM();
-        if (isGraalVM) {
-            project.getDependencies().add(
-                    ANNOTATION_PROCESSOR_CONFIGURATION_NAME,
-                    "io.micronaut:micronaut-graal"
-            );
-        }
+        project.afterEvaluate(p -> {
+            MicronautExtension extension = p.getExtensions().getByType(MicronautExtension.class);
+            if (extension.getEnableNativeImage().getOrElse(false)) {
+                p.getDependencies().add(
+                        ANNOTATION_PROCESSOR_CONFIGURATION_NAME,
+                        "io.micronaut:micronaut-graal"
+                );
+            }
+        });
 
         if (project.getPlugins().hasPlugin("application")) {
             TaskContainer tasks = project.getTasks();
             tasks.register("nativeImage", NativeImageTask.class, nativeImageTask -> {
+                MicronautExtension extension = project.getExtensions().getByType(MicronautExtension.class);
                 nativeImageTask.dependsOn(tasks.findByName("classes"));
                 nativeImageTask.setGroup(BasePlugin.BUILD_GROUP);
                 nativeImageTask.setDescription("Builds a GraalVM Native Image");
@@ -43,7 +47,7 @@ public class MicronautGraalPlugin implements Plugin<Project> {
                 if (assemble != null) {
                     assemble.dependsOn(nativeImageTask);
                 }
-                nativeImageTask.setEnabled(isGraalVM);
+                nativeImageTask.setEnabled(extension.getEnableNativeImage().getOrElse(false));
             });
 
             project.afterEvaluate(p -> p.getTasks().withType(NativeImageTask.class, nativeImageTask -> {
