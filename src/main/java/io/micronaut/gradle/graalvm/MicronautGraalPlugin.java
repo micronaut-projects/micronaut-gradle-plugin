@@ -39,7 +39,6 @@ public class MicronautGraalPlugin implements Plugin<Project> {
         if (project.getPlugins().hasPlugin("application")) {
             TaskContainer tasks = project.getTasks();
             tasks.register("nativeImage", NativeImageTask.class, nativeImageTask -> {
-                MicronautExtension extension = project.getExtensions().getByType(MicronautExtension.class);
                 nativeImageTask.dependsOn(tasks.findByName("classes"));
                 nativeImageTask.setGroup(BasePlugin.BUILD_GROUP);
                 nativeImageTask.setDescription("Builds a GraalVM Native Image");
@@ -47,10 +46,12 @@ public class MicronautGraalPlugin implements Plugin<Project> {
                 if (assemble != null) {
                     assemble.dependsOn(nativeImageTask);
                 }
-                nativeImageTask.setEnabled(extension.getEnableNativeImage().getOrElse(false));
+
             });
 
             project.afterEvaluate(p -> p.getTasks().withType(NativeImageTask.class, nativeImageTask -> {
+                MicronautExtension extension = project.getExtensions().getByType(MicronautExtension.class);
+                nativeImageTask.setEnabled(extension.getEnableNativeImage().getOrElse(false));
                 JavaApplication javaApplication = p.getExtensions().getByType(JavaApplication.class);
                 String mainClassName = javaApplication.getMainClassName();
                 String imageName = p.getName();
