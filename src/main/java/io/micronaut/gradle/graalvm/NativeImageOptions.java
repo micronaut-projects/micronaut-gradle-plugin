@@ -180,4 +180,26 @@ public interface NativeImageOptions {
      */
     NativeImageOptions jvmArgs(Object... arguments);
 
+
+    /**
+     * Sets the native image build to be verbose
+     *
+     * @return this
+     */
+    NativeImageOptions verbose(boolean verbose);
+
+    /**
+     * Enables server build. Server build is disabled by default
+     *
+     * @return this
+     */
+    NativeImageOptions enableServerBuild(boolean enabled);
+
+    /**
+     * Builds a native image with debug symbols
+     *
+     * @return this
+     */
+    NativeImageOptions debug(boolean debug);
+
 }
