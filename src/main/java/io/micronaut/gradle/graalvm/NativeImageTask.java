@@ -1,5 +1,6 @@
 package io.micronaut.gradle.graalvm;
 
+import org.apache.groovy.util.Maps;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.provider.ListProperty;
@@ -12,6 +13,7 @@ import javax.annotation.Nullable;
 import javax.inject.Inject;
 import java.io.File;
 import java.util.*;
+import java.util.function.BooleanSupplier;
 
 /**
  * A gradle task for building a native image.
@@ -26,6 +28,10 @@ public class NativeImageTask extends AbstractExecTask<NativeImageTask>
     private final MapProperty<String, Object> systemProperties;
     private @Nullable FileCollection classpath;
     private final ListProperty<String> jvmArgs;
+    private final Property<Boolean> isDebug;
+    private final Property<Boolean> isVerbose;
+    private final Property<Boolean> isServerBuild;
+    private final Map<BooleanSupplier, String> booleanCmds;
 
     /**
      * Default constructor.
@@ -33,15 +39,24 @@ public class NativeImageTask extends AbstractExecTask<NativeImageTask>
     public NativeImageTask() {
         super(NativeImageTask.class);
         setExecutable("native-image");
-        setWorkingDir(new File(getProject().getBuildDir(), "native-image" ));
+        setWorkingDir(new File(getProject().getBuildDir(), "native-image"));
         ObjectFactory objectFactory = getObjectFactory();
         this.imageName = objectFactory.property(String.class)
-                                      .convention("application");
+                .convention("application");
         this.main = objectFactory.property(String.class);
         this.jvmArgs = objectFactory.listProperty(String.class)
-                                    .convention(new ArrayList<>(5));
+                .convention(new ArrayList<>(5));
         this.systemProperties = objectFactory.mapProperty(String.class, Object.class)
-                                    .convention(new LinkedHashMap<>(5));
+                .convention(new LinkedHashMap<>(5));
+        this.isDebug = objectFactory.property(Boolean.class).convention(false);
+        this.isVerbose = objectFactory.property(Boolean.class).convention(false);
+        this.isServerBuild = objectFactory.property(Boolean.class).convention(false);
+        booleanCmds = Maps.of(
+                isDebug::get, "-H:GenerateDebugInfo=1",
+                isVerbose::get,  "--verbose",
+                () -> !isServerBuild.get(), "--no-server"
+        );
+
     }
 
     @Inject
@@ -72,6 +87,14 @@ public class NativeImageTask extends AbstractExecTask<NativeImageTask>
         // set the image name
         String imageName = getImageName().get();
         args("-H:Name=" + imageName);
+
+        // Adds boolean flags to the command line
+        booleanCmds.forEach((property, cmd) -> {
+            if (property.getAsBoolean()) {
+                args(cmd);
+            }
+        });
+
 
         Map<String, Object> sysProps = getSystemProperties().get();
         sysProps.forEach((n, v) -> {
@@ -196,5 +219,35 @@ public class NativeImageTask extends AbstractExecTask<NativeImageTask>
     public NativeImageOptions jvmArgs(Object... arguments) {
         setJvmArgs(Arrays.asList(arguments));
         return this;
+    }
+
+    @Override
+    public NativeImageOptions verbose(boolean verbose) {
+        isVerbose.set(verbose);
+        return this;
+    }
+
+    @Override
+    public NativeImageOptions enableServerBuild(boolean enabled) {
+        isVerbose.set(enabled);
+        return this;
+    }
+
+    @Override
+    public NativeImageOptions debug(boolean debug) {
+        isDebug.set(debug);
+        return this;
+    }
+
+    public Property<Boolean> debug() {
+        return isDebug;
+    }
+
+    public Property<Boolean> verbose() {
+        return isVerbose;
+    }
+
+    public Property<Boolean> serverBuild() {
+        return isServerBuild;
     }
 }
