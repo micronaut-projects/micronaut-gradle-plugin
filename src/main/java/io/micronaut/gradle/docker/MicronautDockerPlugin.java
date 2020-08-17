@@ -143,7 +143,7 @@ public class MicronautDockerPlugin implements Plugin<Project> {
                 task.copyFile("build/layers/libs", "/home/app/libs");
                 task.copyFile("build/layers/resources", "/home/app/resources");
                 task.copyFile("build/layers/application.jar", "/home/app/application.jar");
-                task.exposePort(docker.getPort().map(Collections::singletonList));
+                task.exposePort(docker.getPorts());
                 task.defaultCommand("java", "-jar", "/home/app/application.jar");
                 task.dependsOn(buildLayersTask);
             });

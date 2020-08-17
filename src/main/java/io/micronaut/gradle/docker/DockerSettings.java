@@ -1,9 +1,11 @@
 package io.micronaut.gradle.docker;
 
 import org.gradle.api.model.ObjectFactory;
+import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Property;
 
 import javax.inject.Inject;
+import java.util.Collections;
 
 /**
  * Settings for building Docker images.
@@ -15,22 +17,22 @@ public class DockerSettings {
 
     private final Property<String> from;
     private final Property<String> tag;
-    private final Property<Integer> port;
+    private final ListProperty<Integer> ports;
 
     @Inject
     public DockerSettings(ObjectFactory objectFactory) {
         this.from = objectFactory.property(String.class)
                         .convention("openjdk:14-alpine");
         this.tag = objectFactory.property(String.class);
-        this.port = objectFactory.property(Integer.class)
-                                 .convention(8080);
+        this.ports = objectFactory.listProperty(Integer.class)
+                                 .convention(Collections.singletonList(8080));
     }
 
     /**
      * @return The exposed port
      */
-    public Property<Integer> getPort() {
-        return port;
+    public ListProperty<Integer> getPorts() {
+        return ports;
     }
 
     /**
@@ -73,7 +75,7 @@ public class DockerSettings {
      * @return These settings
      */
     public DockerSettings port(int port) {
-        this.port.set(port);
+        this.ports.add(port);
         return this;
     }
 }
