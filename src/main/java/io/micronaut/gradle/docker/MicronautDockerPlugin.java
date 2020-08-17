@@ -1,13 +1,14 @@
 package io.micronaut.gradle.docker;
 
+import com.bmuschko.gradle.docker.DockerExtension;
+import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage;
+import com.bmuschko.gradle.docker.tasks.image.Dockerfile;
 import io.micronaut.gradle.MicronautExtension;
-import org.gradle.api.Action;
-import org.gradle.api.Plugin;
-import org.gradle.api.Project;
-import org.gradle.api.Task;
+import org.gradle.api.*;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.plugins.BasePlugin;
+import org.gradle.api.plugins.ExtensionContainer;
 import org.gradle.api.plugins.JavaApplication;
 import org.gradle.api.tasks.*;
 import org.gradle.api.tasks.bundling.Jar;
@@ -21,7 +22,9 @@ public class MicronautDockerPlugin implements Plugin<Project> {
     @Override
     public void apply(Project project) {
         TaskContainer tasks = project.getTasks();
-        MicronautExtension micronautExtension = project.getExtensions().getByType(MicronautExtension.class);
+        ExtensionContainer extensions = project.getExtensions();
+        extensions.create("docker", DockerExtension.class);
+        MicronautExtension micronautExtension = extensions.getByType(MicronautExtension.class);
         File applicationLayout = new File(project.getBuildDir(), "layers");
         TaskProvider<Jar> runnerJar = tasks.register("runnerJar", Jar.class, jar -> {
             jar.dependsOn(tasks.findByName("classes"));
@@ -37,6 +40,8 @@ public class MicronautDockerPlugin implements Plugin<Project> {
             jar.from(dirs);
         });
 
+        // NOTE: Has to be an anonymous inner class otherwise incremental build does not work
+        // DO NOT REPLACE WITH LAMBDA
         //noinspection Convert2Lambda
         project.afterEvaluate(new Action<Project>() {
             @Override
@@ -103,6 +108,7 @@ public class MicronautDockerPlugin implements Plugin<Project> {
                                     .into(applicationLayout)
                                     .rename(s -> "application.jar")
                     );
+                    project.mkdir(new File(applicationLayout, "resources"));
                     project.copy(copy ->
                             copy.from(project.files(resourceDirs))
                                     .into(new File(applicationLayout, "resources"))
@@ -116,24 +122,41 @@ public class MicronautDockerPlugin implements Plugin<Project> {
             assemble.dependsOn(buildLayersTask);
         }
 
-        tasks.register("buildDockerImage", DockerBuildTask.class, task ->
-            task.dependsOn(buildLayersTask)
-        ).configure(task -> {
+        File f = project.file("Dockerfile");
+
+        TaskProvider<Dockerfile> dockerFileTask;
+        if (f.exists()) {
+            dockerFileTask = tasks.register("createDockerFile", Dockerfile.class, task -> {
+                        task.setGroup(BasePlugin.BUILD_GROUP);
+                        task.setDescription("Builds a Docker File");
+                        task.instructionsFromTemplate(f);
+                    }
+            );
+        } else {
+            dockerFileTask = tasks.register("createDockerFile", Dockerfile.class);
+            dockerFileTask.configure(task -> {
+                task.setGroup(BasePlugin.BUILD_GROUP);
+                task.setDescription("Builds a Docker File");
+                DockerSettings docker = micronautExtension.getDocker();
+                task.from(docker.getFrom().map(Dockerfile.From::new));
+                task.workingDir("/home/app");
+                task.copyFile("build/layers/libs", "/home/app/libs");
+                task.copyFile("build/layers/resources", "/home/app/resources");
+                task.copyFile("build/layers/application.jar", "/home/app/application.jar");
+                task.exposePort(docker.getPort().map(Collections::singletonList));
+                task.defaultCommand("java", "-jar", "/home/app/application.jar");
+                task.dependsOn(buildLayersTask);
+            });
+        }
+        TaskProvider<DockerBuildImage> dockerBuildTask = tasks.register("buildDockerImage", DockerBuildImage.class);
+        dockerBuildTask.configure(task -> {
+            DockerSettings docker = micronautExtension.getDocker();
             task.setGroup(BasePlugin.BUILD_GROUP);
             task.setDescription("Builds a Docker Image");
-            DockerSettings docker = micronautExtension.getDocker();
-            String baseImage = docker.getFrom().getOrNull();
-            if (baseImage != null) {
-                task.getBaseImage().set(baseImage);
-            }
-            String tag = docker.getTag().getOrElse(project.getName());
-            task.getTag().set(tag);
-            int port = docker.getPort().get();
-            task.getPort().set(port);
-
+            task.getInputDir().set(project.getRootDir());
+            task.getDockerFile()
+                    .convention(dockerFileTask.flatMap(Dockerfile::getDestFile));
+            task.getImages().set(docker.getTag().orElse(project.getName()).map(Collections::singletonList));
         });
-
-
-
     }
 }

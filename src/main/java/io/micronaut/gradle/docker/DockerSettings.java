@@ -19,7 +19,8 @@ public class DockerSettings {
 
     @Inject
     public DockerSettings(ObjectFactory objectFactory) {
-        this.from = objectFactory.property(String.class);
+        this.from = objectFactory.property(String.class)
+                        .convention("openjdk:14-alpine");
         this.tag = objectFactory.property(String.class);
         this.port = objectFactory.property(Integer.class)
                                  .convention(8080);

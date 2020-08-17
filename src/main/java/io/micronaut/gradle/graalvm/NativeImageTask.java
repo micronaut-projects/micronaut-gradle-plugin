@@ -1,6 +1,5 @@
 package io.micronaut.gradle.graalvm;
 
-import org.apache.groovy.util.Maps;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.provider.ListProperty;
@@ -51,12 +50,10 @@ public class NativeImageTask extends AbstractExecTask<NativeImageTask>
         this.isDebug = objectFactory.property(Boolean.class).convention(false);
         this.isVerbose = objectFactory.property(Boolean.class).convention(false);
         this.isServerBuild = objectFactory.property(Boolean.class).convention(false);
-        booleanCmds = Maps.of(
-                isDebug::get, "-H:GenerateDebugInfo=1",
-                isVerbose::get,  "--verbose",
-                () -> !isServerBuild.get(), "--no-server"
-        );
-
+        this.booleanCmds = new LinkedHashMap<>(3);
+        booleanCmds.put(isDebug::get, "-H:GenerateDebugInfo=1");
+        booleanCmds.put(isVerbose::get,  "--verbose");
+        booleanCmds.put(() -> !isServerBuild.get(), "--no-server");
     }
 
     @Inject
