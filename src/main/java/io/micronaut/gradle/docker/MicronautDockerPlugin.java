@@ -2,6 +2,7 @@ package io.micronaut.gradle.docker;
 
 import com.bmuschko.gradle.docker.DockerExtension;
 import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage;
+import com.bmuschko.gradle.docker.tasks.image.DockerPushImage;
 import com.bmuschko.gradle.docker.tasks.image.Dockerfile;
 import io.micronaut.gradle.MicronautExtension;
 import org.gradle.api.*;
@@ -10,6 +11,7 @@ import org.gradle.api.file.FileCollection;
 import org.gradle.api.plugins.BasePlugin;
 import org.gradle.api.plugins.ExtensionContainer;
 import org.gradle.api.plugins.JavaApplication;
+import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.*;
 import org.gradle.api.tasks.bundling.Jar;
 
@@ -157,6 +159,14 @@ public class MicronautDockerPlugin implements Plugin<Project> {
             task.getDockerFile()
                     .convention(dockerFileTask.flatMap(Dockerfile::getDestFile));
             task.getImages().set(docker.getTag().orElse(project.getName()).map(Collections::singletonList));
+        });
+
+        TaskProvider<DockerPushImage> pushDockerImage = tasks.register("pushDockerImage", DockerPushImage.class);
+        pushDockerImage.configure(task -> {
+            task.dependsOn(dockerBuildTask);
+            task.setGroup(BasePlugin.UPLOAD_GROUP);
+            task.setDescription("Pushes a Docker Image");
+            task.getImages().set(dockerBuildTask.flatMap(DockerBuildImage::getImages));
         });
     }
 }
