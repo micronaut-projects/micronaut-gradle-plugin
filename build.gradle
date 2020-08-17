@@ -37,7 +37,7 @@ gradlePlugin {
 }
 
 dependencies {
-  implementation "com.diffplug.gradle:goomph:3.22.0"
+  implementation "com.diffplug.gradle:goomph:3.24.0"
   implementation "com.github.jengelman.gradle.plugins:shadow:6.0.0"
   implementation "org.jetbrains.kotlin:kotlin-allopen:1.3.72"
   compileOnly "org.jetbrains.kotlin:kotlin-gradle-plugin:1.3.72"
