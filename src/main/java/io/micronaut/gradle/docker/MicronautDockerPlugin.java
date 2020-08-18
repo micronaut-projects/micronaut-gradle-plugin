@@ -11,7 +11,6 @@ import org.gradle.api.file.FileCollection;
 import org.gradle.api.plugins.BasePlugin;
 import org.gradle.api.plugins.ExtensionContainer;
 import org.gradle.api.plugins.JavaApplication;
-import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.*;
 import org.gradle.api.tasks.bundling.Jar;
 
@@ -124,6 +123,11 @@ public class MicronautDockerPlugin implements Plugin<Project> {
             assemble.dependsOn(buildLayersTask);
         }
 
+        configureDockerBuild(project, tasks, micronautExtension, buildLayersTask);
+        configureNativeDockerBuild(project, tasks, micronautExtension, buildLayersTask);
+    }
+
+    private void configureDockerBuild(Project project, TaskContainer tasks, MicronautExtension micronautExtension, TaskProvider<Task> buildLayersTask) {
         File f = project.file("Dockerfile");
 
         TaskProvider<Dockerfile> dockerFileTask;
@@ -141,10 +145,7 @@ public class MicronautDockerPlugin implements Plugin<Project> {
                 task.setDescription("Builds a Docker File");
                 DockerSettings docker = micronautExtension.getDocker();
                 task.from(docker.getFrom().map(Dockerfile.From::new));
-                task.workingDir("/home/app");
-                task.copyFile("build/layers/libs", "/home/app/libs");
-                task.copyFile("build/layers/resources", "/home/app/resources");
-                task.copyFile("build/layers/application.jar", "/home/app/application.jar");
+                setupResources(task);
                 task.exposePort(docker.getPorts());
                 task.defaultCommand("java", "-jar", "/home/app/application.jar");
                 task.dependsOn(buildLayersTask);
@@ -168,5 +169,45 @@ public class MicronautDockerPlugin implements Plugin<Project> {
             task.setDescription("Pushes a Docker Image");
             task.getImages().set(dockerBuildTask.flatMap(DockerBuildImage::getImages));
         });
+    }
+
+    private void configureNativeDockerBuild(Project project, TaskContainer tasks, MicronautExtension micronautExtension, TaskProvider<Task> buildLayersTask) {
+        File f = project.file("Dockerfile.native");
+
+        TaskProvider<NativeImageDockerfile> dockerFileTask;
+        if (f.exists()) {
+            dockerFileTask = tasks.register("createNativeDockerFile", NativeImageDockerfile.class, task -> {
+                        task.instructionsFromTemplate(f);
+                        task.dependsOn(buildLayersTask);
+            });
+        } else {
+            dockerFileTask = tasks.register("createNativeDockerFile", NativeImageDockerfile.class);
+            dockerFileTask.configure(task -> task.dependsOn(buildLayersTask));
+        }
+        TaskProvider<DockerBuildImage> dockerBuildTask = tasks.register("buildDockerNativeImage", DockerBuildImage.class);
+        dockerBuildTask.configure(task -> {
+            DockerSettings docker = micronautExtension.getDocker();
+            task.setGroup(BasePlugin.BUILD_GROUP);
+            task.setDescription("Builds a Native Docker Image using GraalVM");
+            task.getInputDir().set(project.getRootDir());
+            task.getDockerFile()
+                    .convention(dockerFileTask.flatMap(Dockerfile::getDestFile));
+            task.getImages().set(docker.getTag().orElse(project.getName()).map(Collections::singletonList));
+        });
+
+        TaskProvider<DockerPushImage> pushDockerImage = tasks.register("pushDockerNativeImage", DockerPushImage.class);
+        pushDockerImage.configure(task -> {
+            task.dependsOn(dockerBuildTask);
+            task.setGroup(BasePlugin.UPLOAD_GROUP);
+            task.setDescription("Pushes a Native Docker Image using GraalVM");
+            task.getImages().set(dockerBuildTask.flatMap(DockerBuildImage::getImages));
+        });
+    }
+
+    static void setupResources(Dockerfile task) {
+        task.workingDir("/home/app");
+        task.copyFile("build/layers/libs", "/home/app/libs");
+        task.copyFile("build/layers/resources", "/home/app/resources");
+        task.copyFile("build/layers/application.jar", "/home/app/application.jar");
     }
 }
