@@ -68,6 +68,15 @@ public class NativeImageTask extends AbstractExecTask<NativeImageTask>
 
     @Override
     protected void exec() {
+        configure();
+        super.exec();
+        System.out.println("Native Image written to: " + getNativeImageOutput());
+    }
+
+    /**
+     * Configure the task.
+     */
+    public void configure() {
         // set the classpath
         FileCollection cp = getClasspath();
         if (cp != null) {
@@ -104,8 +113,6 @@ public class NativeImageTask extends AbstractExecTask<NativeImageTask>
         for (String jvmArg : jvmArgs) {
             args("-J" + jvmArg);
         }
-        super.exec();
-        System.out.println("Native Image written to: " + getNativeImageOutput());
     }
 
     @Override
@@ -236,15 +243,15 @@ public class NativeImageTask extends AbstractExecTask<NativeImageTask>
         return this;
     }
 
-    public Property<Boolean> debug() {
+    public Property<Boolean> isDebug() {
         return isDebug;
     }
 
-    public Property<Boolean> verbose() {
+    public Property<Boolean> isVerbose() {
         return isVerbose;
     }
 
-    public Property<Boolean> serverBuild() {
+    public Property<Boolean> isServerBuild() {
         return isServerBuild;
     }
 }
