@@ -5,6 +5,7 @@ import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage;
 import com.bmuschko.gradle.docker.tasks.image.DockerPushImage;
 import com.bmuschko.gradle.docker.tasks.image.Dockerfile;
 import io.micronaut.gradle.MicronautExtension;
+import io.micronaut.gradle.MicronautRuntime;
 import org.gradle.api.*;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.file.FileCollection;
@@ -144,10 +145,30 @@ public class MicronautDockerPlugin implements Plugin<Project> {
                 task.setGroup(BasePlugin.BUILD_GROUP);
                 task.setDescription("Builds a Docker File");
                 DockerSettings docker = micronautExtension.getDocker();
-                task.from(docker.getFrom().map(Dockerfile.From::new));
-                setupResources(task);
-                task.exposePort(docker.getPorts());
-                task.defaultCommand("java", "-jar", "/home/app/application.jar");
+                MicronautRuntime micronautRuntime = micronautExtension.getRuntime().get();
+                String from = docker.getFrom().getOrNull();
+                if (from == null) {
+
+                    switch (micronautRuntime) {
+                        case OCF:
+                            task.from(new Dockerfile.From("fnproject/fn-java-fdk:" + getProjectFnVersion()));
+                            task.workingDir("/function");
+                            task.copyFile("build/layers/libs", "/function/app/");
+                            task.copyFile("build/layers/resources", "/function/app/");
+                            task.copyFile("build/layers/application.jar", "/function/app/");
+                            task.defaultCommand("io.micronaut.oci.function.http.HttpFunction::handleRequest");
+                        break;
+                        case LAMBDA:
+                            // TODO
+                        default:
+                            task.from(new Dockerfile.From("openjdk:14-alpine"));
+                            setupResources(task);
+                            task.exposePort(docker.getPorts());
+                            task.defaultCommand("java", "-jar", "/home/app/application.jar");
+                    }
+                }
+
+
                 task.dependsOn(buildLayersTask);
             });
         }
@@ -171,14 +192,18 @@ public class MicronautDockerPlugin implements Plugin<Project> {
         });
     }
 
+    private String getProjectFnVersion() {
+        return "1.0.105";
+    }
+
     private void configureNativeDockerBuild(Project project, TaskContainer tasks, MicronautExtension micronautExtension, TaskProvider<Task> buildLayersTask) {
         File f = project.file("Dockerfile.native");
 
         TaskProvider<NativeImageDockerfile> dockerFileTask;
         if (f.exists()) {
             dockerFileTask = tasks.register("createNativeDockerFile", NativeImageDockerfile.class, task -> {
-                        task.instructionsFromTemplate(f);
-                        task.dependsOn(buildLayersTask);
+                task.instructionsFromTemplate(f);
+                task.dependsOn(buildLayersTask);
             });
         } else {
             dockerFileTask = tasks.register("createNativeDockerFile", NativeImageDockerfile.class);

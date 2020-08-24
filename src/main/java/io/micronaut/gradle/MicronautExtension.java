@@ -7,6 +7,7 @@ import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.provider.Property;
 
 import javax.inject.Inject;
+import java.util.Locale;
 
 /**
  * Configuration for the Micronaut extension.
@@ -20,6 +21,7 @@ public class MicronautExtension {
     private final Property<String> version;
     private final Property<Boolean> enableNativeImage;
     private final DockerSettings docker;
+    private final Property<MicronautRuntime> runtime;
 
     @Inject
     public MicronautExtension(ObjectFactory objectFactory) {
@@ -28,6 +30,15 @@ public class MicronautExtension {
         this.docker = objectFactory.newInstance(DockerSettings.class);
         this.enableNativeImage = objectFactory.property(Boolean.class)
                                     .convention(GraalUtil.isGraalJVM());
+        this.runtime = objectFactory.property(MicronautRuntime.class)
+                                      .convention(MicronautRuntime.NETTY);
+    }
+
+    /**
+     * @return The packaging type to use for the micronaut application.
+     */
+    public Property<MicronautRuntime> getRuntime() {
+        return runtime;
     }
 
     /**
@@ -57,6 +68,32 @@ public class MicronautExtension {
      */
     public MicronautExtension version(String version) {
         this.version.set(version);
+        return this;
+    }
+
+    /**
+     * Configures the packaging type.
+     *
+     * @param runtime The micronaut packaging type
+     * @return This extension
+     */
+    public MicronautExtension runtime(String runtime) {
+        if (runtime != null) {
+            this.runtime.set(MicronautRuntime.valueOf(runtime.toUpperCase(Locale.ENGLISH)));
+        }
+        return this;
+    }
+
+    /**
+     * Configures the packaging type.
+     *
+     * @param micronautRuntime The micronaut runtime type
+     * @return This extension
+     */
+    public MicronautExtension runtime(MicronautRuntime micronautRuntime) {
+        if (micronautRuntime != null) {
+            this.runtime.set(micronautRuntime);
+        }
         return this;
     }
 
