@@ -4,6 +4,8 @@ import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.Input;
 
+import javax.annotation.Nullable;
+
 /**
  * Build options for Docker.
  *
@@ -21,6 +23,7 @@ public interface DockerBuildOptions {
      * @return The base image to use
      */
     @Input
+    @Nullable
     Property<String> getBaseImage();
 
     /**

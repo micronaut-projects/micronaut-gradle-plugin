@@ -30,7 +30,8 @@ public enum MicronautRuntime {
     /**
      * Oracle Cloud Function, packaged as a docker container.
      */
-    ORACLE_FUNCTION("io.micronaut.oci:micronaut-oci-function-http"),
+    // TODO: remove hard coded version
+    ORACLE_FUNCTION("io.micronaut.oci:micronaut-oci-function-http:1.0.0.M1"),
     /**
      * Google Cloud Function, packaged as a Fat JAR.
      */
