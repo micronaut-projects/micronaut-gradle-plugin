@@ -13,6 +13,7 @@ import org.gradle.api.tasks.TaskContainer;
 
 import java.util.Arrays;
 import java.util.LinkedHashMap;
+import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -46,7 +47,14 @@ public class MicronautApplicationPlugin extends MicronautLibraryPlugin {
             dependencyHandler.add(CONFIGURATION_DEVELOPMENT_ONLY,
                     dependencyHandler.platform("io.micronaut:micronaut-bom:" + v));
 
-            MicronautRuntime micronautRuntime = ext.getRuntime().get();
+            Object o = p.findProperty("micronaut.runtime");
+
+            MicronautRuntime micronautRuntime;
+            if (o != null) {
+                micronautRuntime = MicronautRuntime.valueOf(o.toString().toUpperCase(Locale.ENGLISH));
+            } else {
+                micronautRuntime = ext.getRuntime().get();
+            }
             JavaApplication javaApplication = p.getExtensions().getByType(JavaApplication.class);
             dependencyHandler.add(JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME, micronautRuntime.getImplementation());
 
