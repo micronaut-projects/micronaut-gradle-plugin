@@ -4,9 +4,12 @@ import com.github.jengelman.gradle.plugins.shadow.ShadowPlugin;
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar;
 import io.micronaut.gradle.docker.MicronautDockerPlugin;
 import org.apache.tools.ant.taskdefs.condition.Os;
+import org.gradle.api.Action;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.dsl.DependencyHandler;
+import org.gradle.api.artifacts.dsl.RepositoryHandler;
+import org.gradle.api.artifacts.repositories.MavenArtifactRepository;
 import org.gradle.api.plugins.*;
 import org.gradle.api.tasks.JavaExec;
 import org.gradle.api.tasks.TaskContainer;
@@ -48,6 +51,12 @@ public class MicronautApplicationPlugin extends MicronautLibraryPlugin {
                     dependencyHandler.platform("io.micronaut:micronaut-bom:" + v));
 
             MicronautRuntime micronautRuntime = resolveRuntime(p, ext);
+            if (micronautRuntime == MicronautRuntime.ORACLE_FUNCTION) {
+                RepositoryHandler repositories = project.getRepositories();
+                repositories.add(
+                    repositories.maven(mavenArtifactRepository -> mavenArtifactRepository.setUrl("https://dl.bintray.com/fnproject/fnproject"))
+                );
+            }
             JavaApplication javaApplication = p.getExtensions().getByType(JavaApplication.class);
             dependencyHandler.add(JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME, micronautRuntime.getImplementation());
 
@@ -61,7 +70,7 @@ public class MicronautApplicationPlugin extends MicronautLibraryPlugin {
                 // oracle cloud function
                 case ORACLE_FUNCTION:
                     // OCI functions require Project.fn as a runtime dependency
-                    dependencyHandler.add(JavaPlugin.RUNTIME_ONLY_CONFIGURATION_NAME, "com.fnproject.fn:runtime");
+                    dependencyHandler.add(JavaPlugin.RUNTIME_ONLY_CONFIGURATION_NAME, "com.fnproject.fn:runtime:1.0.105");
                     // The main class must by the fn entry point
                     javaApplication.setMainClassName("com.fnproject.fn.runtime.EntryPoint");
                 break;

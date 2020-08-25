@@ -1,7 +1,9 @@
 package io.micronaut.gradle.docker;
 
 import com.bmuschko.gradle.docker.tasks.image.Dockerfile;
+import io.micronaut.gradle.MicronautApplicationPlugin;
 import io.micronaut.gradle.MicronautExtension;
+import io.micronaut.gradle.MicronautRuntime;
 import io.micronaut.gradle.graalvm.NativeImageTask;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
@@ -12,6 +14,7 @@ import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.TaskAction;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -28,6 +31,7 @@ public class NativeImageDockerfile extends Dockerfile implements DockerBuildOpti
     @Input
     private final Property<String> graalImage;
     @Input
+    @Nullable
     private final Property<String> baseImage;
     @Input
     private final ListProperty<String> args;
@@ -43,7 +47,7 @@ public class NativeImageDockerfile extends Dockerfile implements DockerBuildOpti
         this.graalImage = objects.property(String.class)
                             .convention("oracle/graalvm-ce:20.2.0-java11");
         this.baseImage = objects.property(String.class)
-                            .convention("frolvlad/alpine-glibc");
+                                    .convention("null");
         Task nit = project.getTasks().getByName("nativeImage");
         if (nit instanceof NativeImageTask) {
             this.nativeImageTask = (NativeImageTask) nit;
@@ -73,6 +77,7 @@ public class NativeImageDockerfile extends Dockerfile implements DockerBuildOpti
      * @return The base image to use
      */
     @Override
+    @Nullable
     public Property<String> getBaseImage() {
         return baseImage;
     }
@@ -86,6 +91,8 @@ public class NativeImageDockerfile extends Dockerfile implements DockerBuildOpti
     @TaskAction
     public void create() {
         MicronautExtension micronautExtension = getProject().getExtensions().getByType(MicronautExtension.class);
+        MicronautRuntime micronautRuntime = MicronautApplicationPlugin.resolveRuntime(getProject(), micronautExtension);
+
         from(new From(graalImage.get()).withStage("graalvm"));
         runCommand("gu install native-image");
         MicronautDockerfile.setupResources(this);
@@ -93,28 +100,68 @@ public class NativeImageDockerfile extends Dockerfile implements DockerBuildOpti
         this.nativeImageTask.setClasspath(getProject().files());
         // use hard coded image name
         this.nativeImageTask.setImageName("application");
+        if (micronautRuntime == MicronautRuntime.ORACLE_FUNCTION) {
+            this.nativeImageTask.setMain("com.fnproject.fn.runtime.EntryPoint");
+            this.nativeImageTask.args("--report-unsupported-elements-at-runtime");
+        } else if (micronautRuntime == MicronautRuntime.LAMBDA) {
+            this.nativeImageTask.setMain("io.micronaut.function.aws.runtime.MicronautLambdaRuntime");
+        }
         this.nativeImageTask.configure();
         List<String> commandLine = this.nativeImageTask.getCommandLine();
         commandLine.add("-cp");
         commandLine.add("/home/app/libs/*.jar:/home/app/resources:/home/app/application.jar");
-        String bi = baseImage.get();
+        String baseImage = this.baseImage.get();
+        // why I have to do this horrible hack on the Gradle gods know
+        if ("null".equalsIgnoreCase(baseImage)) {
+            baseImage = null;
+        }
         // add --static if image is scratch
-        if (bi.equalsIgnoreCase("scratch") && !commandLine.contains("--static")) {
+        if (baseImage != null && baseImage.equalsIgnoreCase("scratch") && !commandLine.contains("--static")) {
             commandLine.add("--static");
         }
         runCommand(String.join(" ", commandLine));
-        from(bi);
-        if (bi.contains("alpine-glibc")) {
-            runCommand("apk update && apk add libstdc++");
+        switch (micronautRuntime) {
+            case ORACLE_FUNCTION:
+                if (baseImage == null) {
+                    baseImage = "oraclelinux:7-slim";
+                }
+                from(new From("fnproject/fn-java-fdk:1.0.105").withStage("fnfdk"));
+                from(baseImage);
+                workingDir("/function");
+                runCommand("groupadd -g 1000 fn && useradd --uid 1000 -g fn fn");
+                copyFile(new CopyFile("/home/app/application", "/function/func").withStage("graalvm"));
+                copyFile(new CopyFile("/function/runtime/lib/*", ".").withStage("fnfdk"));
+                entryPoint(args.map(strings -> {
+                    List<String> newList = new ArrayList<>(strings.size() + 1);
+                    newList.add("./func");
+                    newList.addAll(strings);
+                    return newList;
+                }));
+                defaultCommand("io.micronaut.oci.function.http.HttpFunction::handleRequest");
+            break;
+            case LAMBDA:
+                // TODO: handle lambda
+//                if (baseImage == null) {
+//                    baseImage = "amazonlinux:latest";
+//                }
+            default:
+                if (baseImage == null) {
+                    baseImage = "frolvlad/alpine-glibc";
+                }
+                from(baseImage);
+                if (baseImage.contains("alpine-glibc")) {
+                    runCommand("apk update && apk add libstdc++");
+                }
+                exposePort(this.exposedPorts);
+                copyFile(new CopyFile("/home/app/application", "/app/application").withStage("graalvm"));
+                entryPoint(args.map(strings -> {
+                    List<String> newList = new ArrayList<>(strings.size() + 1);
+                    newList.add("/app/application");
+                    newList.addAll(strings);
+                    return newList;
+                }));
+            break;
         }
-        exposePort(this.exposedPorts);
-        copyFile(new CopyFile("/home/app/application", "/app/application").withStage("graalvm"));
-        entryPoint(args.map(strings -> {
-            List<String> newList = new ArrayList<>(strings.size() + 1);
-            newList.add("/app/application");
-            newList.addAll(strings);
-            return newList;
-        }));
         super.create();
     }
 
