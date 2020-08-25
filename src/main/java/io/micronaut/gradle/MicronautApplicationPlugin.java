@@ -47,14 +47,7 @@ public class MicronautApplicationPlugin extends MicronautLibraryPlugin {
             dependencyHandler.add(CONFIGURATION_DEVELOPMENT_ONLY,
                     dependencyHandler.platform("io.micronaut:micronaut-bom:" + v));
 
-            Object o = p.findProperty("micronaut.runtime");
-
-            MicronautRuntime micronautRuntime;
-            if (o != null) {
-                micronautRuntime = MicronautRuntime.valueOf(o.toString().toUpperCase(Locale.ENGLISH));
-            } else {
-                micronautRuntime = ext.getRuntime().get();
-            }
+            MicronautRuntime micronautRuntime = resolveRuntime(p, ext);
             JavaApplication javaApplication = p.getExtensions().getByType(JavaApplication.class);
             dependencyHandler.add(JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME, micronautRuntime.getImplementation());
 
@@ -147,5 +140,17 @@ public class MicronautApplicationPlugin extends MicronautLibraryPlugin {
     @Override
     protected String getBasePluginName() {
         return "application";
+    }
+
+    public static MicronautRuntime resolveRuntime(Project p, MicronautExtension ext) {
+        Object o = p.findProperty("micronaut.runtime");
+
+        MicronautRuntime micronautRuntime;
+        if (o != null) {
+            micronautRuntime = MicronautRuntime.valueOf(o.toString().toUpperCase(Locale.ENGLISH));
+        } else {
+            micronautRuntime = ext.getRuntime().get();
+        }
+        return micronautRuntime;
     }
 }

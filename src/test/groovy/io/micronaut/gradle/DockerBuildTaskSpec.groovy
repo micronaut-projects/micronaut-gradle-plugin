@@ -1,13 +1,11 @@
 package io.micronaut.gradle
 
 
-import io.micronaut.gradle.docker.DockerSettings
-import org.gradle.testfixtures.ProjectBuilder
-import org.gradle.testkit.runner.BuildTask
 import org.gradle.testkit.runner.GradleRunner
 import org.gradle.testkit.runner.TaskOutcome
 import org.junit.Rule
 import org.junit.rules.TemporaryFolder
+import spock.lang.IgnoreIf
 import spock.lang.Specification
 
 class DockerBuildTaskSpec extends Specification {
@@ -32,10 +30,6 @@ class DockerBuildTaskSpec extends Specification {
             
             micronaut {
                 version "2.0.1"
-                
-                docker {
-                    tag "my-tag"
-                }
             }
             
             repositories {
@@ -63,16 +57,17 @@ class Application {
         when:
         def result = GradleRunner.create()
                 .withProjectDir(testProjectDir.root)
-                .withArguments('buildDockerImage')
+                .withArguments('dockerBuild')
                 .withPluginClasspath()
                 .build()
 
-        def task = result.task(":buildDockerImage")
+        def task = result.task(":dockerBuild")
         then:
-        result.output.contains("Successfully tagged my-tag:latest")
+        result.output.contains("Successfully tagged hello-world:latest")
         task.outcome == TaskOutcome.SUCCESS
     }
 
+    @IgnoreIf({ jvm.current.isJava11Compatible() })
     def "test build docker native image"() {
         given:
         settingsFile << "rootProject.name = 'hello-world'"
@@ -83,10 +78,6 @@ class Application {
             
             micronaut {
                 version "2.0.1"
-                
-                docker {
-                    tag "my-tag"
-                }
             }
             
             repositories {
@@ -114,13 +105,13 @@ class Application {
         when:
         def result = GradleRunner.create()
                 .withProjectDir(testProjectDir.root)
-                .withArguments('buildDockerNativeImage')
+                .withArguments('dockerBuildNative')
                 .withPluginClasspath()
                 .build()
 
-        def task = result.task(":buildDockerNativeImage")
+        def task = result.task(":dockerBuildNative")
         then:
-        result.output.contains("Successfully tagged my-tag:latest")
+        result.output.contains("Successfully tagged hello-world:latest")
         task.outcome == TaskOutcome.SUCCESS
     }
 

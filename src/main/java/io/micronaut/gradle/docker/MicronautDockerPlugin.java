@@ -5,7 +5,6 @@ import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage;
 import com.bmuschko.gradle.docker.tasks.image.DockerPushImage;
 import com.bmuschko.gradle.docker.tasks.image.Dockerfile;
 import io.micronaut.gradle.MicronautExtension;
-import io.micronaut.gradle.MicronautRuntime;
 import org.gradle.api.*;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.file.FileCollection;
@@ -124,66 +123,37 @@ public class MicronautDockerPlugin implements Plugin<Project> {
             assemble.dependsOn(buildLayersTask);
         }
 
-        configureDockerBuild(project, tasks, micronautExtension, buildLayersTask);
+        configureDockerBuild(project, tasks, buildLayersTask);
         configureNativeDockerBuild(project, tasks, micronautExtension, buildLayersTask);
     }
 
-    private void configureDockerBuild(Project project, TaskContainer tasks, MicronautExtension micronautExtension, TaskProvider<Task> buildLayersTask) {
+    private void configureDockerBuild(Project project, TaskContainer tasks, TaskProvider<Task> buildLayersTask) {
         File f = project.file("Dockerfile");
 
-        TaskProvider<Dockerfile> dockerFileTask;
+        TaskProvider<? extends Dockerfile> dockerFileTask;
         if (f.exists()) {
-            dockerFileTask = tasks.register("createDockerFile", Dockerfile.class, task -> {
+            dockerFileTask = tasks.register("dockerfile", Dockerfile.class, task -> {
                         task.setGroup(BasePlugin.BUILD_GROUP);
                         task.setDescription("Builds a Docker File");
                         task.instructionsFromTemplate(f);
                     }
             );
         } else {
-            dockerFileTask = tasks.register("createDockerFile", Dockerfile.class);
-            dockerFileTask.configure(task -> {
-                task.setGroup(BasePlugin.BUILD_GROUP);
-                task.setDescription("Builds a Docker File");
-                DockerSettings docker = micronautExtension.getDocker();
-                MicronautRuntime micronautRuntime = micronautExtension.getRuntime().get();
-                String from = docker.getFrom().getOrNull();
-                if (from == null) {
-
-                    switch (micronautRuntime) {
-                        case ORACLE_FUNCTION:
-                            task.from(new Dockerfile.From("fnproject/fn-java-fdk:" + getProjectFnVersion()));
-                            task.workingDir("/function");
-                            task.copyFile("build/layers/libs", "/function/app/");
-                            task.copyFile("build/layers/resources", "/function/app/");
-                            task.copyFile("build/layers/application.jar", "/function/app/");
-                            task.defaultCommand("io.micronaut.oci.function.http.HttpFunction::handleRequest");
-                        break;
-                        case LAMBDA:
-                            // TODO
-                        default:
-                            task.from(new Dockerfile.From("openjdk:14-alpine"));
-                            setupResources(task);
-                            task.exposePort(docker.getPorts());
-                            task.defaultCommand("java", "-jar", "/home/app/application.jar");
-                    }
-                }
-
-
-                task.dependsOn(buildLayersTask);
-            });
+            dockerFileTask = tasks.register("dockerfile", MicronautDockerfile.class);
+            dockerFileTask.configure(task -> task.dependsOn(buildLayersTask));
         }
-        TaskProvider<DockerBuildImage> dockerBuildTask = tasks.register("buildDockerImage", DockerBuildImage.class);
+        TaskProvider<DockerBuildImage> dockerBuildTask = tasks.register("dockerBuild", DockerBuildImage.class);
         dockerBuildTask.configure(task -> {
-            DockerSettings docker = micronautExtension.getDocker();
             task.setGroup(BasePlugin.BUILD_GROUP);
             task.setDescription("Builds a Docker Image");
             task.getInputDir().set(project.getRootDir());
             task.getDockerFile()
                     .convention(dockerFileTask.flatMap(Dockerfile::getDestFile));
-            task.getImages().set(docker.getTag().orElse(project.getName()).map(Collections::singletonList));
+            task.getImages().set(Collections.singletonList(project.getName()));
         });
 
-        TaskProvider<DockerPushImage> pushDockerImage = tasks.register("pushDockerImage", DockerPushImage.class);
+
+        TaskProvider<DockerPushImage> pushDockerImage = tasks.register("dockerPush", DockerPushImage.class);
         pushDockerImage.configure(task -> {
             task.dependsOn(dockerBuildTask);
             task.setGroup(BasePlugin.UPLOAD_GROUP);
@@ -192,35 +162,30 @@ public class MicronautDockerPlugin implements Plugin<Project> {
         });
     }
 
-    private String getProjectFnVersion() {
-        return "1.0.105";
-    }
-
     private void configureNativeDockerBuild(Project project, TaskContainer tasks, MicronautExtension micronautExtension, TaskProvider<Task> buildLayersTask) {
         File f = project.file("Dockerfile.native");
 
         TaskProvider<NativeImageDockerfile> dockerFileTask;
         if (f.exists()) {
-            dockerFileTask = tasks.register("createNativeDockerFile", NativeImageDockerfile.class, task -> {
+            dockerFileTask = tasks.register("dockerfileNative", NativeImageDockerfile.class, task -> {
                 task.instructionsFromTemplate(f);
                 task.dependsOn(buildLayersTask);
             });
         } else {
-            dockerFileTask = tasks.register("createNativeDockerFile", NativeImageDockerfile.class);
+            dockerFileTask = tasks.register("dockerfileNative", NativeImageDockerfile.class);
             dockerFileTask.configure(task -> task.dependsOn(buildLayersTask));
         }
-        TaskProvider<DockerBuildImage> dockerBuildTask = tasks.register("buildDockerNativeImage", DockerBuildImage.class);
+        TaskProvider<DockerBuildImage> dockerBuildTask = tasks.register("dockerBuildNative", DockerBuildImage.class);
         dockerBuildTask.configure(task -> {
-            DockerSettings docker = micronautExtension.getDocker();
             task.setGroup(BasePlugin.BUILD_GROUP);
             task.setDescription("Builds a Native Docker Image using GraalVM");
             task.getInputDir().set(project.getRootDir());
             task.getDockerFile()
                     .convention(dockerFileTask.flatMap(Dockerfile::getDestFile));
-            task.getImages().set(docker.getTag().orElse(project.getName()).map(Collections::singletonList));
+            task.getImages().set(Collections.singletonList(project.getName()));
         });
 
-        TaskProvider<DockerPushImage> pushDockerImage = tasks.register("pushDockerNativeImage", DockerPushImage.class);
+        TaskProvider<DockerPushImage> pushDockerImage = tasks.register("dockerPushNative", DockerPushImage.class);
         pushDockerImage.configure(task -> {
             task.dependsOn(dockerBuildTask);
             task.setGroup(BasePlugin.UPLOAD_GROUP);
@@ -229,10 +194,4 @@ public class MicronautDockerPlugin implements Plugin<Project> {
         });
     }
 
-    static void setupResources(Dockerfile task) {
-        task.workingDir("/home/app");
-        task.copyFile("build/layers/libs", "/home/app/libs");
-        task.copyFile("build/layers/resources", "/home/app/resources");
-        task.copyFile("build/layers/application.jar", "/home/app/application.jar");
-    }
 }

@@ -7,10 +7,13 @@ import org.gradle.api.Project;
 import org.gradle.api.Task;
 import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.plugins.BasePlugin;
+import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.TaskAction;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -19,14 +22,17 @@ import java.util.List;
  * @author gkrocher
  * @since 1.0.0
  */
-public class NativeImageDockerfile extends Dockerfile {
-
-
+public class NativeImageDockerfile extends Dockerfile implements DockerBuildOptions {
     private final NativeImageTask nativeImageTask;
+
     @Input
     private final Property<String> graalImage;
     @Input
     private final Property<String> baseImage;
+    @Input
+    private final ListProperty<String> args;
+    @Input
+    private ListProperty<Integer> exposedPorts;
 
     public NativeImageDockerfile() {
         Project project = getProject();
@@ -35,16 +41,25 @@ public class NativeImageDockerfile extends Dockerfile {
         getDestFile().set(project.getLayout().getBuildDirectory().file("docker/DockerfileNative"));
         ObjectFactory objects = project.getObjects();
         this.graalImage = objects.property(String.class)
-                            .convention("oracle/graalvm-ce:20.1.0-java11");
+                            .convention("oracle/graalvm-ce:20.2.0-java11");
         this.baseImage = objects.property(String.class)
                             .convention("frolvlad/alpine-glibc");
         Task nit = project.getTasks().getByName("nativeImage");
         if (nit instanceof NativeImageTask) {
             this.nativeImageTask = (NativeImageTask) nit;
         } else {
-            throw new IllegalStateException("No native image task present!");
+            throw new IllegalStateException("No native image task present! Must be used in conjunction with a NativeImageTask.");
         }
+        this.args = objects.listProperty(String.class);
+        this.exposedPorts = objects.listProperty(Integer.class);
+    }
 
+    /**
+     * @return The arguments to pass to the native image executable when starting up in the docker container.
+     */
+    @Override
+    public ListProperty<String> getArgs() {
+        return args;
     }
 
     /**
@@ -57,17 +72,23 @@ public class NativeImageDockerfile extends Dockerfile {
     /**
      * @return The base image to use
      */
+    @Override
     public Property<String> getBaseImage() {
         return baseImage;
     }
 
     @Override
+    public ListProperty<Integer> getExposedPorts() {
+        return this.exposedPorts;
+    }
+
+    @Override
     @TaskAction
     public void create() {
-        DockerSettings docker = getProject().getExtensions().getByType(MicronautExtension.class).getDocker();
+        MicronautExtension micronautExtension = getProject().getExtensions().getByType(MicronautExtension.class);
         from(new From(graalImage.get()).withStage("graalvm"));
         runCommand("gu install native-image");
-        MicronautDockerPlugin.setupResources(this);
+        MicronautDockerfile.setupResources(this);
         // clear out classpath
         this.nativeImageTask.setClasspath(getProject().files());
         // use hard coded image name
@@ -86,9 +107,46 @@ public class NativeImageDockerfile extends Dockerfile {
         if (bi.contains("alpine-glibc")) {
             runCommand("apk update && apk add libstdc++");
         }
-        exposePort(docker.getPorts());
+        exposePort(this.exposedPorts);
         copyFile(new CopyFile("/home/app/application", "/app/application").withStage("graalvm"));
-        entryPoint("/app/application");
+        entryPoint(args.map(strings -> {
+            List<String> newList = new ArrayList<>(strings.size() + 1);
+            newList.add("/app/application");
+            newList.addAll(strings);
+            return newList;
+        }));
         super.create();
+    }
+
+    /**
+     * Adds additional args to pass to the native image executable.
+     * @param args The args
+     * @return This instance.
+     */
+    @Override
+    public NativeImageDockerfile args(String... args) {
+        this.args.addAll(args);
+        return this;
+    }
+
+    @Override
+    public NativeImageDockerfile baseImage(String imageName) {
+        if (imageName != null) {
+            this.baseImage.set(imageName);
+        }
+        return this;
+    }
+
+    @Override
+    public DockerBuildOptions exportPorts(Integer... ports) {
+        this.exposedPorts.set(Arrays.asList(ports));
+        return this;
+    }
+
+    public NativeImageDockerfile graalImage(String imageName) {
+        if (imageName != null) {
+            this.graalImage.set(imageName);
+        }
+        return this;
     }
 }
