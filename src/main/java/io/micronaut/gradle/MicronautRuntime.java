@@ -14,11 +14,11 @@ public enum MicronautRuntime {
     /**
      * Tomcat server.
      */
-    TOMCAT("io.micronaut.servlet:micronaut-http-server-jetty"),
+    TOMCAT("io.micronaut.servlet:micronaut-http-server-tomcat"),
     /**
      * Jetty server.
      */
-    JETTY("io.micronaut.servlet:micronaut-http-server-tomcat"),
+    JETTY("io.micronaut.servlet:micronaut-http-server-jetty"),
     /**
      * Undertow server.
      */
