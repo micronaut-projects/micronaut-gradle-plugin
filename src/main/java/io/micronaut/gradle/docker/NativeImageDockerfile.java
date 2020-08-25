@@ -36,7 +36,7 @@ public class NativeImageDockerfile extends Dockerfile implements DockerBuildOpti
     @Input
     private final ListProperty<String> args;
     @Input
-    private ListProperty<Integer> exposedPorts;
+    private final ListProperty<Integer> exposedPorts;
 
     public NativeImageDockerfile() {
         Project project = getProject();
