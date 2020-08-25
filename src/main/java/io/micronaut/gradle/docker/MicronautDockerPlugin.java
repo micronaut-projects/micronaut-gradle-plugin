@@ -150,7 +150,7 @@ public class MicronautDockerPlugin implements Plugin<Project> {
                 if (from == null) {
 
                     switch (micronautRuntime) {
-                        case OCF:
+                        case ORACLE_FUNCTION:
                             task.from(new Dockerfile.From("fnproject/fn-java-fdk:" + getProjectFnVersion()));
                             task.workingDir("/function");
                             task.copyFile("build/layers/libs", "/function/app/");

@@ -4,20 +4,16 @@ import com.github.jengelman.gradle.plugins.shadow.ShadowPlugin;
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar;
 import io.micronaut.gradle.docker.MicronautDockerPlugin;
 import org.apache.tools.ant.taskdefs.condition.Os;
-import org.gradle.api.Action;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.dsl.DependencyHandler;
-import org.gradle.api.file.FileTree;
 import org.gradle.api.plugins.*;
 import org.gradle.api.tasks.JavaExec;
 import org.gradle.api.tasks.TaskContainer;
 
-import java.io.File;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * A plugin for a Micronaut application. Applies the "application" plugin.
@@ -60,15 +56,15 @@ public class MicronautApplicationPlugin extends MicronautLibraryPlugin {
                             JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME,
                             "io.micronaut.aws:micronaut-function-aws-api-proxy"
                     );
-                    break;
+                break;
                 // oracle cloud function
-                case OCF:
+                case ORACLE_FUNCTION:
                     // OCI functions require Project.fn as a runtime dependency
                     dependencyHandler.add(JavaPlugin.RUNTIME_ONLY_CONFIGURATION_NAME, "com.fnproject.fn:runtime");
                     // The main class must by the fn entry point
                     javaApplication.setMainClassName("com.fnproject.fn.runtime.EntryPoint");
-                    break;
-                case GCF:
+                break;
+                case GOOGLE_FUNCTION:
                     dependencyHandler.add(
                             JavaPlugin.COMPILE_ONLY_CONFIGURATION_NAME,
                             "com.google.cloud.functions:functions-framework-api"
@@ -107,7 +103,7 @@ public class MicronautApplicationPlugin extends MicronautLibraryPlugin {
                         plugins.apply(ShadowPlugin.class);
                     }
                     break;
-                case ACF:
+                case AZURE_FUNCTION:
                     dependencyHandler.add(JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME, "com.microsoft.azure.functions:azure-functions-java-library");
                 break;
 
