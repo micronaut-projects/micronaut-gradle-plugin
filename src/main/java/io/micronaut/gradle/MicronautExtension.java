@@ -1,6 +1,5 @@
 package io.micronaut.gradle;
 
-import io.micronaut.gradle.docker.DockerSettings;
 import io.micronaut.gradle.graalvm.GraalUtil;
 import org.gradle.api.Action;
 import org.gradle.api.model.ObjectFactory;
@@ -20,14 +19,12 @@ public class MicronautExtension {
     private final AnnotationProcessing processing;
     private final Property<String> version;
     private final Property<Boolean> enableNativeImage;
-    private final DockerSettings docker;
     private final Property<MicronautRuntime> runtime;
 
     @Inject
     public MicronautExtension(ObjectFactory objectFactory) {
         this.processing = objectFactory.newInstance(AnnotationProcessing.class);
         this.version = objectFactory.property(String.class);
-        this.docker = objectFactory.newInstance(DockerSettings.class);
         this.enableNativeImage = objectFactory.property(Boolean.class)
                                     .convention(GraalUtil.isGraalJVM());
         this.runtime = objectFactory.property(MicronautRuntime.class)
@@ -109,29 +106,12 @@ public class MicronautExtension {
     }
 
     /**
-     * @return The docker settings
-     */
-    public DockerSettings getDocker() {
-        return docker;
-    }
-
-    /**
      * Allows configuring processing.
      * @param processingAction The processing action
      * @return This extension
      */
     public MicronautExtension processing(Action<AnnotationProcessing> processingAction) {
         processingAction.execute(this.getProcessing());
-        return this;
-    }
-
-    /**
-     * Allows configuring docker builds.
-     * @param dockerSettings The processing action
-     * @return This extension
-     */
-    public MicronautExtension docker(Action<DockerSettings> dockerSettings) {
-        dockerSettings.execute(this.getDocker());
         return this;
     }
 }
