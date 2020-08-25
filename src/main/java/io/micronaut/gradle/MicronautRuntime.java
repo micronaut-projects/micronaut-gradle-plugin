@@ -30,15 +30,15 @@ public enum MicronautRuntime {
     /**
      * Oracle Cloud Function, packaged as a docker container.
      */
-    OCF("io.micronaut.oci:micronaut-oci-function-http"),
+    ORACLE_FUNCTION("io.micronaut.oci:micronaut-oci-function-http"),
     /**
      * Google Cloud Function, packaged as a Fat JAR.
      */
-    GCF("io.micronaut.gcp:micronaut-gcp-function-http"),
+    GOOGLE_FUNCTION("io.micronaut.gcp:micronaut-gcp-function-http"),
     /**
      * Azure Cloud Function.
      */
-    ACF("io.micronaut.azure:micronaut-azure-function-http");
+    AZURE_FUNCTION("io.micronaut.azure:micronaut-azure-function-http");
 
     private final String implementation;
 
