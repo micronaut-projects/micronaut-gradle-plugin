@@ -28,7 +28,7 @@ public class MicronautExtension {
         this.enableNativeImage = objectFactory.property(Boolean.class)
                                     .convention(GraalUtil.isGraalJVM());
         this.runtime = objectFactory.property(MicronautRuntime.class)
-                                      .convention(MicronautRuntime.NETTY);
+                                    .convention(MicronautRuntime.NONE);
     }
 
     /**

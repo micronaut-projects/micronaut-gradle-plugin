@@ -56,7 +56,9 @@ public class MicronautApplicationPlugin extends MicronautLibraryPlugin {
                 );
             }
             JavaApplication javaApplication = p.getExtensions().getByType(JavaApplication.class);
-            dependencyHandler.add(JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME, micronautRuntime.getImplementation());
+            if (micronautRuntime != MicronautRuntime.NONE) {
+                dependencyHandler.add(JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME, micronautRuntime.getImplementation());
+            }
 
             switch (micronautRuntime) {
                 case LAMBDA:
@@ -157,7 +159,7 @@ public class MicronautApplicationPlugin extends MicronautLibraryPlugin {
         if (o != null) {
             micronautRuntime = MicronautRuntime.valueOf(o.toString().toUpperCase(Locale.ENGLISH));
         } else {
-            micronautRuntime = ext.getRuntime().get();
+            micronautRuntime = ext.getRuntime().getOrElse(MicronautRuntime.NONE);
         }
         return micronautRuntime;
     }
