@@ -46,7 +46,8 @@ public class NativeImageDockerfile extends Dockerfile implements DockerBuildOpti
         setDescription("Builds a Docker File for Native Image");
         getDestFile().set(project.getLayout().getBuildDirectory().file("docker/DockerfileNative"));
         ObjectFactory objects = project.getObjects();
-        this.micronautRuntime = objects.property(MicronautRuntime.class);
+        this.micronautRuntime = objects.property(MicronautRuntime.class)
+                                        .convention(MicronautRuntime.NONE);
         this.graalImage = objects.property(String.class)
                             .convention("oracle/graalvm-ce:20.2.0-java11");
         this.baseImage = objects.property(String.class)
@@ -101,7 +102,7 @@ public class NativeImageDockerfile extends Dockerfile implements DockerBuildOpti
     @Override
     @TaskAction
     public void create() {
-        MicronautRuntime micronautRuntime = this.micronautRuntime.getOrElse(MicronautRuntime.NETTY);
+        MicronautRuntime micronautRuntime = this.micronautRuntime.getOrElse(MicronautRuntime.NONE);
 
         from(new From(graalImage.get()).withStage("graalvm"));
         runCommand("gu install native-image");

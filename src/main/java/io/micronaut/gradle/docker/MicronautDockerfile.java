@@ -44,7 +44,7 @@ public class MicronautDockerfile extends Dockerfile implements DockerBuildOption
     @Override
     @TaskAction
     public void create() {
-        MicronautRuntime micronautRuntime = this.micronautRuntime.getOrElse(MicronautRuntime.NETTY);
+        MicronautRuntime micronautRuntime = this.micronautRuntime.getOrElse(MicronautRuntime.NONE);
         String from = getBaseImage().getOrNull();
         switch (micronautRuntime) {
             case ORACLE_FUNCTION:

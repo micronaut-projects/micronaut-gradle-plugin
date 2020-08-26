@@ -8,6 +8,10 @@ package io.micronaut.gradle;
  */
 public enum MicronautRuntime {
     /**
+     * No specific runtime specified.
+     */
+    NONE("none"),
+    /**
      * Default packaging.
      */
     NETTY("io.micronaut:micronaut-http-server-netty"),
