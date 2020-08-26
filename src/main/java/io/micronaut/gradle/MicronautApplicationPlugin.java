@@ -4,12 +4,10 @@ import com.github.jengelman.gradle.plugins.shadow.ShadowPlugin;
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar;
 import io.micronaut.gradle.docker.MicronautDockerPlugin;
 import org.apache.tools.ant.taskdefs.condition.Os;
-import org.gradle.api.Action;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.dsl.DependencyHandler;
 import org.gradle.api.artifacts.dsl.RepositoryHandler;
-import org.gradle.api.artifacts.repositories.MavenArtifactRepository;
 import org.gradle.api.plugins.*;
 import org.gradle.api.tasks.JavaExec;
 import org.gradle.api.tasks.TaskContainer;
@@ -50,7 +48,7 @@ public class MicronautApplicationPlugin extends MicronautLibraryPlugin {
             dependencyHandler.add(CONFIGURATION_DEVELOPMENT_ONLY,
                     dependencyHandler.platform("io.micronaut:micronaut-bom:" + v));
 
-            MicronautRuntime micronautRuntime = resolveRuntime(p, ext);
+            MicronautRuntime micronautRuntime = resolveRuntime(p);
             if (micronautRuntime == MicronautRuntime.ORACLE_FUNCTION) {
                 RepositoryHandler repositories = project.getRepositories();
                 repositories.add(
@@ -151,7 +149,8 @@ public class MicronautApplicationPlugin extends MicronautLibraryPlugin {
         return "application";
     }
 
-    public static MicronautRuntime resolveRuntime(Project p, MicronautExtension ext) {
+    public static MicronautRuntime resolveRuntime(Project p) {
+        MicronautExtension ext = p.getExtensions().getByType(MicronautExtension.class);
         Object o = p.findProperty("micronaut.runtime");
 
         MicronautRuntime micronautRuntime;

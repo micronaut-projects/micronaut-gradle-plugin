@@ -37,6 +37,8 @@ public class NativeImageDockerfile extends Dockerfile implements DockerBuildOpti
     private final ListProperty<String> args;
     @Input
     private final ListProperty<Integer> exposedPorts;
+    private final Property<MicronautRuntime> micronautRuntime;
+
 
     public NativeImageDockerfile() {
         Project project = getProject();
@@ -44,6 +46,7 @@ public class NativeImageDockerfile extends Dockerfile implements DockerBuildOpti
         setDescription("Builds a Docker File for Native Image");
         getDestFile().set(project.getLayout().getBuildDirectory().file("docker/DockerfileNative"));
         ObjectFactory objects = project.getObjects();
+        this.micronautRuntime = objects.property(MicronautRuntime.class);
         this.graalImage = objects.property(String.class)
                             .convention("oracle/graalvm-ce:20.2.0-java11");
         this.baseImage = objects.property(String.class)
@@ -56,6 +59,14 @@ public class NativeImageDockerfile extends Dockerfile implements DockerBuildOpti
         }
         this.args = objects.listProperty(String.class);
         this.exposedPorts = objects.listProperty(Integer.class);
+    }
+
+    /**
+     * @return The micronaut runtime
+     */
+    @Input
+    public Property<MicronautRuntime> getMicronautRuntime() {
+        return micronautRuntime;
     }
 
     /**
@@ -90,8 +101,7 @@ public class NativeImageDockerfile extends Dockerfile implements DockerBuildOpti
     @Override
     @TaskAction
     public void create() {
-        MicronautExtension micronautExtension = getProject().getExtensions().getByType(MicronautExtension.class);
-        MicronautRuntime micronautRuntime = MicronautApplicationPlugin.resolveRuntime(getProject(), micronautExtension);
+        MicronautRuntime micronautRuntime = this.micronautRuntime.getOrElse(MicronautRuntime.NETTY);
 
         from(new From(graalImage.get()).withStage("graalvm"));
         runCommand("gu install native-image");
