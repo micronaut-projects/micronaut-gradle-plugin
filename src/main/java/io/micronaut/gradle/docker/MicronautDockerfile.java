@@ -25,6 +25,7 @@ public class MicronautDockerfile extends Dockerfile implements DockerBuildOption
     private final ListProperty<String> args;
     @Input
     private final ListProperty<Integer> exposedPorts;
+    private final Property<MicronautRuntime> micronautRuntime;
 
 
     public MicronautDockerfile() {
@@ -32,6 +33,7 @@ public class MicronautDockerfile extends Dockerfile implements DockerBuildOption
         setGroup(BasePlugin.BUILD_GROUP);
         setDescription("Builds a Docker File for a Micronaut application");
         ObjectFactory objects = project.getObjects();
+        this.micronautRuntime = objects.property(MicronautRuntime.class);
         this.baseImage = objects.property(String.class)
                 .convention("openjdk:14-alpine");
         this.args = objects.listProperty(String.class);
@@ -42,9 +44,7 @@ public class MicronautDockerfile extends Dockerfile implements DockerBuildOption
     @Override
     @TaskAction
     public void create() {
-        Project project = getProject();
-        MicronautExtension ext = project.getExtensions().getByType(MicronautExtension.class);
-        MicronautRuntime micronautRuntime = MicronautApplicationPlugin.resolveRuntime(project, ext);
+        MicronautRuntime micronautRuntime = this.micronautRuntime.getOrElse(MicronautRuntime.NETTY);
         String from = getBaseImage().getOrNull();
         switch (micronautRuntime) {
             case ORACLE_FUNCTION:
@@ -71,6 +71,14 @@ public class MicronautDockerfile extends Dockerfile implements DockerBuildOption
                 }));
         }
         super.create();
+    }
+
+    /**
+     * @return The micronaut runtime.
+     */
+    @Input
+    public Property<MicronautRuntime> getMicronautRuntime() {
+        return micronautRuntime;
     }
 
     @Override
