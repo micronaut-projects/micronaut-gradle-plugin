@@ -37,13 +37,7 @@ public class MicronautLibraryPlugin implements Plugin<Project> {
             "io.swagger.core.v3", "io.micronaut.configuration:micronaut-openapi"
         );
         GROUP_TO_PROCESSOR_MAP.put(
-            "io.micronaut-data", "io.micronaut.data:micronaut-data-processor"
-        );
-        GROUP_TO_PROCESSOR_MAP.put(
-            "javax.transaction", "io.micronaut.data:micronaut-data-processor"
-        );
-        GROUP_TO_PROCESSOR_MAP.put(
-            "jakarta.transaction", "io.micronaut.data:micronaut-data-processor"
+            "io.micronaut.data", "io.micronaut.data:micronaut-data-processor"
         );
         GROUP_TO_PROCESSOR_MAP.put(
             "io.micronaut.jaxrs", "io.micronaut.jaxrs:micronaut-jaxrs-processor"
