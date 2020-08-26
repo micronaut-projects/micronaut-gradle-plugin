@@ -4,6 +4,7 @@ import com.bmuschko.gradle.docker.tasks.image.Dockerfile;
 import io.micronaut.gradle.MicronautApplicationPlugin;
 import io.micronaut.gradle.MicronautExtension;
 import io.micronaut.gradle.MicronautRuntime;
+import org.gradle.api.JavaVersion;
 import org.gradle.api.Project;
 import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.plugins.BasePlugin;
@@ -11,6 +12,7 @@ import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.TaskAction;
+import org.gradle.internal.jvm.Jvm;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -34,8 +36,7 @@ public class MicronautDockerfile extends Dockerfile implements DockerBuildOption
         setDescription("Builds a Docker File for a Micronaut application");
         ObjectFactory objects = project.getObjects();
         this.micronautRuntime = objects.property(MicronautRuntime.class);
-        this.baseImage = objects.property(String.class)
-                .convention("openjdk:14-alpine");
+        this.baseImage = objects.property(String.class).convention("none");
         this.args = objects.listProperty(String.class);
         this.exposedPorts = objects.listProperty(Integer.class)
                     .convention(Collections.singletonList(8080));
@@ -46,15 +47,18 @@ public class MicronautDockerfile extends Dockerfile implements DockerBuildOption
     public void create() {
         MicronautRuntime micronautRuntime = this.micronautRuntime.getOrElse(MicronautRuntime.NONE);
         String from = getBaseImage().getOrNull();
+        if ("none".equalsIgnoreCase(from)) {
+            from = null;
+        }
         switch (micronautRuntime) {
             case ORACLE_FUNCTION:
                 from(new Dockerfile.From(from != null ? from : "fnproject/fn-java-fdk:" + getProjectFnVersion()));
                 workingDir("/function");
-                copyFile("build/layers/libs", "/function/app/");
-                copyFile("build/layers/resources", "/function/app/");
+                copyFile("build/layers/libs/*.jar", "/function/app/");
+                copyFile("build/layers/resources/*", "/function/app/");
                 copyFile("build/layers/application.jar", "/function/app/");
                 defaultCommand("io.micronaut.oci.function.http.HttpFunction::handleRequest");
-                break;
+            break;
             case LAMBDA:
                 // TODO
             default:
@@ -117,7 +121,11 @@ public class MicronautDockerfile extends Dockerfile implements DockerBuildOption
     }
 
     private String getProjectFnVersion() {
-        return "1.0.105";
+        JavaVersion javaVersion = Jvm.current().getJavaVersion();
+        if (javaVersion != null && javaVersion.isJava11Compatible()) {
+            return "jre11-latest";
+        }
+        return "latest";
     }
 
     static void setupResources(Dockerfile task) {
