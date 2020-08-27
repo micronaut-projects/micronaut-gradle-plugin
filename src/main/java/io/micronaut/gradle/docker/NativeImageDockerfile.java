@@ -1,10 +1,9 @@
 package io.micronaut.gradle.docker;
 
 import com.bmuschko.gradle.docker.tasks.image.Dockerfile;
-import io.micronaut.gradle.MicronautApplicationPlugin;
-import io.micronaut.gradle.MicronautExtension;
 import io.micronaut.gradle.MicronautRuntime;
 import io.micronaut.gradle.graalvm.NativeImageTask;
+import org.gradle.api.JavaVersion;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
 import org.gradle.api.model.ObjectFactory;
@@ -13,6 +12,7 @@ import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.TaskAction;
+import org.gradle.internal.jvm.Jvm;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -28,6 +28,10 @@ import java.util.List;
 public class NativeImageDockerfile extends Dockerfile implements DockerBuildOptions {
     private final NativeImageTask nativeImageTask;
 
+    @Input
+    private final Property<String> jdkVersion;
+    @Input
+    private final Property<String> graalVersion;
     @Input
     private final Property<String> graalImage;
     @Input
@@ -48,8 +52,18 @@ public class NativeImageDockerfile extends Dockerfile implements DockerBuildOpti
         ObjectFactory objects = project.getObjects();
         this.micronautRuntime = objects.property(MicronautRuntime.class)
                                         .convention(MicronautRuntime.NONE);
+        this.jdkVersion = objects.property(String.class);
+
+        JavaVersion javaVersion = Jvm.current().getJavaVersion();
+        if (javaVersion.isJava11Compatible()) {
+            jdkVersion.convention("java11");
+        } else {
+            jdkVersion.convention("java8");
+        }
+        this.graalVersion = objects.property(String.class)
+                               .convention("20.2.0");
         this.graalImage = objects.property(String.class)
-                            .convention("oracle/graalvm-ce:20.2.0-java11");
+                               .convention(graalVersion.map(version -> "oracle/graalvm-ce:" + version + "-" + jdkVersion.get()));
         this.baseImage = objects.property(String.class)
                                     .convention("null");
         Task nit = project.getTasks().getByName("nativeImage");
@@ -60,6 +74,13 @@ public class NativeImageDockerfile extends Dockerfile implements DockerBuildOpti
         }
         this.args = objects.listProperty(String.class);
         this.exposedPorts = objects.listProperty(Integer.class);
+    }
+
+    /**
+     * @return The JDK version to use with native image.
+     */
+    public Property<String> getJdkVersion() {
+        return jdkVersion;
     }
 
     /**
@@ -86,6 +107,13 @@ public class NativeImageDockerfile extends Dockerfile implements DockerBuildOpti
     }
 
     /**
+     * @return The Graal version to use.
+     */
+    public Property<String> getGraalVersion() {
+        return graalVersion;
+    }
+
+    /**
      * @return The base image to use
      */
     @Override
@@ -104,8 +132,24 @@ public class NativeImageDockerfile extends Dockerfile implements DockerBuildOpti
     public void create() {
         MicronautRuntime micronautRuntime = this.micronautRuntime.getOrElse(MicronautRuntime.NONE);
 
-        from(new From(graalImage.get()).withStage("graalvm"));
-        runCommand("gu install native-image");
+        if (micronautRuntime == MicronautRuntime.LAMBDA) {
+            from(new From("amazonlinux:latest").withStage("graalvm"));
+            environmentVariable("LANG", "en_US.UTF-8");
+            runCommand("yum install -y gcc gcc-c++ libc6-dev  zlib1g-dev curl bash zlib zlib-devel zip tar gzip");
+            String jdkVersion = this.jdkVersion.get();
+            String graalVersion = this.graalVersion.get();
+            String fileName = "graalvm-ce-" + jdkVersion + "-linux-amd64-" + graalVersion + ".tar.gz";
+            runCommand("curl -4 -L https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-" + graalVersion + "/" + fileName + " -o /tmp/" + fileName);
+            runCommand("tar -zxvf /tmp/" + fileName + " -C /tmp && mv /tmp/graalvm-ce-" + jdkVersion + "-" + graalVersion + " /usr/lib/graalvm");
+            runCommand("rm -rf /tmp/*");
+            runCommand("/usr/lib/graalvm/bin/gu install native-image");
+            defaultCommand("/usr/lib/graalvm/bin/native-image");
+            environmentVariable("PATH", "/usr/lib/graalvm/bin:${PATH}");
+            from(new From("graalvm").withStage("builder"));
+        } else {
+            from(new From(graalImage.get()).withStage("graalvm"));
+            runCommand("gu install native-image");
+        }
         MicronautDockerfile.setupResources(this);
         // clear out classpath
         this.nativeImageTask.setClasspath(getProject().files());
@@ -130,7 +174,8 @@ public class NativeImageDockerfile extends Dockerfile implements DockerBuildOpti
         if (baseImage != null && baseImage.equalsIgnoreCase("scratch") && !commandLine.contains("--static")) {
             commandLine.add("--static");
         }
-        runCommand(String.join(" ", commandLine));
+        String nativeImageCommand = String.join(" ", commandLine);
+        runCommand(nativeImageCommand);
         switch (micronautRuntime) {
             case ORACLE_FUNCTION:
                 if (baseImage == null) {
@@ -151,10 +196,26 @@ public class NativeImageDockerfile extends Dockerfile implements DockerBuildOpti
                 defaultCommand("io.micronaut.oci.function.http.HttpFunction::handleRequest");
             break;
             case LAMBDA:
-                // TODO: handle lambda
-//                if (baseImage == null) {
-//                    baseImage = "amazonlinux:latest";
-//                }
+                if (baseImage == null) {
+                    baseImage = "amazonlinux:latest";
+                }
+                from(baseImage);
+                workingDir("/function");
+                runCommand("yum install -y zip");
+                copyFile(new CopyFile("/home/app/application", "/function/func").withStage("builder"));
+                String funcCmd = String.join(" ", args.map(strings -> {
+                    List<String> newList = new ArrayList<>(strings.size() + 1);
+                    newList.add("./func");
+                    newList.addAll(strings);
+                    newList.add("-Djava.library.path=$(pwd)");
+                    return newList;
+                }).get());
+                runCommand("echo \"#!/bin/sh\" >> bootstrap && echo \"set -euo pipefail\" >> bootstrap && echo \"" + funcCmd + "\" >> bootsrap");
+                runCommand("chmod 777 bootstrap");
+                runCommand("chmod 777 func");
+                runCommand("zip -j function.zip bootstrap func");
+                entryPoint("/function/func");
+            break;
             default:
                 if (baseImage == null) {
                     baseImage = "frolvlad/alpine-glibc";
