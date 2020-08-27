@@ -211,7 +211,7 @@ public class NativeImageDockerfile extends Dockerfile implements DockerBuildOpti
                     newList.add("-Djava.library.path=$(pwd)");
                     return newList;
                 }).get());
-                runCommand("echo \"#!/bin/sh\" >> bootstrap && echo \"set -euo pipefail\" >> bootstrap && echo \"" + funcCmd + "\" >> bootsrap");
+                runCommand("echo \"#!/bin/sh\" >> bootstrap && echo \"set -euo pipefail\" >> bootstrap && echo \"" + funcCmd + "\" >> bootstrap");
                 runCommand("chmod 777 bootstrap");
                 runCommand("chmod 777 func");
                 runCommand("zip -j function.zip bootstrap func");
