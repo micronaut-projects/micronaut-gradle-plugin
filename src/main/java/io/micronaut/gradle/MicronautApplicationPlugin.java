@@ -63,9 +63,10 @@ public class MicronautApplicationPlugin extends MicronautLibraryPlugin {
             switch (micronautRuntime) {
                 case LAMBDA:
                     dependencyHandler.add(
-                            JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME,
-                            "io.micronaut.aws:micronaut-function-aws-api-proxy"
+                            JavaPlugin.RUNTIME_ONLY_CONFIGURATION_NAME,
+                            "io.micronaut.aws:micronaut-function-aws-custom-runtime"
                     );
+                    javaApplication.setMainClassName("io.micronaut.function.aws.runtime.MicronautLambdaRuntime");
                 break;
                 // oracle cloud function
                 case ORACLE_FUNCTION:

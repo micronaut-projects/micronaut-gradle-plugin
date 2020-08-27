@@ -1,8 +1,6 @@
 package io.micronaut.gradle.docker;
 
 import com.bmuschko.gradle.docker.tasks.image.Dockerfile;
-import io.micronaut.gradle.MicronautApplicationPlugin;
-import io.micronaut.gradle.MicronautExtension;
 import io.micronaut.gradle.MicronautRuntime;
 import org.gradle.api.JavaVersion;
 import org.gradle.api.Project;
