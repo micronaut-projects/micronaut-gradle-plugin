@@ -1,9 +1,11 @@
 package io.micronaut.gradle;
 
+import com.bmuschko.gradle.docker.tasks.container.DockerCopyFileFromContainer;
 import com.github.jengelman.gradle.plugins.shadow.ShadowPlugin;
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar;
 import io.micronaut.gradle.docker.MicronautDockerPlugin;
 import org.apache.tools.ant.taskdefs.condition.Os;
+import org.gradle.api.Action;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.dsl.DependencyHandler;
@@ -11,6 +13,7 @@ import org.gradle.api.artifacts.dsl.RepositoryHandler;
 import org.gradle.api.plugins.*;
 import org.gradle.api.tasks.JavaExec;
 import org.gradle.api.tasks.TaskContainer;
+import org.gradle.api.tasks.TaskProvider;
 
 import java.util.Arrays;
 import java.util.LinkedHashMap;
@@ -62,6 +65,7 @@ public class MicronautApplicationPlugin extends MicronautLibraryPlugin {
 
             switch (micronautRuntime) {
                 case LAMBDA:
+                case LAMBDA_NATIVE:
                     dependencyHandler.add(
                             JavaPlugin.RUNTIME_ONLY_CONFIGURATION_NAME,
                             "io.micronaut.aws:micronaut-function-aws-custom-runtime"

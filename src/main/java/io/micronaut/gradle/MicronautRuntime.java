@@ -28,9 +28,13 @@ public enum MicronautRuntime {
      */
     UNDERTOW("io.micronaut.servlet:micronaut-http-server-undertow"),
     /**
-     * AWS lambda, packaged into a zip file.
+     * AWS lambda packaged as a Jar file.
      */
     LAMBDA("io.micronaut.aws:micronaut-function-aws-api-proxy"),
+    /**
+     * AWS native lambda, packaged into a zip file.
+     */
+    LAMBDA_NATIVE("io.micronaut.aws:micronaut-function-aws-api-proxy"),
     /**
      * Oracle Cloud Function, packaged as a docker container.
      */

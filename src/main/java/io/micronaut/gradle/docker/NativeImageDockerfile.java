@@ -132,7 +132,7 @@ public class NativeImageDockerfile extends Dockerfile implements DockerBuildOpti
     public void create() {
         MicronautRuntime micronautRuntime = this.micronautRuntime.getOrElse(MicronautRuntime.NONE);
 
-        if (micronautRuntime == MicronautRuntime.LAMBDA) {
+        if (micronautRuntime == MicronautRuntime.LAMBDA || micronautRuntime == MicronautRuntime.LAMBDA_NATIVE) {
             from(new From("amazonlinux:latest").withStage("graalvm"));
             environmentVariable("LANG", "en_US.UTF-8");
             runCommand("yum install -y gcc gcc-c++ libc6-dev  zlib1g-dev curl bash zlib zlib-devel zip tar gzip");
@@ -158,7 +158,7 @@ public class NativeImageDockerfile extends Dockerfile implements DockerBuildOpti
         if (micronautRuntime == MicronautRuntime.ORACLE_FUNCTION) {
             this.nativeImageTask.setMain("com.fnproject.fn.runtime.EntryPoint");
             this.nativeImageTask.args("--report-unsupported-elements-at-runtime");
-        } else if (micronautRuntime == MicronautRuntime.LAMBDA) {
+        } else if (micronautRuntime == MicronautRuntime.LAMBDA || micronautRuntime == MicronautRuntime.LAMBDA_NATIVE) {
             this.nativeImageTask.setMain("io.micronaut.function.aws.runtime.MicronautLambdaRuntime");
         }
         this.nativeImageTask.configure();
@@ -195,6 +195,7 @@ public class NativeImageDockerfile extends Dockerfile implements DockerBuildOpti
                 }));
                 defaultCommand("io.micronaut.oci.function.http.HttpFunction::handleRequest");
             break;
+            case LAMBDA_NATIVE:
             case LAMBDA:
                 if (baseImage == null) {
                     baseImage = "amazonlinux:latest";

@@ -1,6 +1,10 @@
 package io.micronaut.gradle.docker;
 
 import com.bmuschko.gradle.docker.DockerExtension;
+import com.bmuschko.gradle.docker.tasks.container.DockerCopyFileFromContainer;
+import com.bmuschko.gradle.docker.tasks.container.DockerCreateContainer;
+import com.bmuschko.gradle.docker.tasks.container.DockerRemoveContainer;
+import com.bmuschko.gradle.docker.tasks.container.DockerRenameContainer;
 import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage;
 import com.bmuschko.gradle.docker.tasks.image.DockerPushImage;
 import com.bmuschko.gradle.docker.tasks.image.Dockerfile;
@@ -13,10 +17,13 @@ import org.gradle.api.file.FileCollection;
 import org.gradle.api.plugins.BasePlugin;
 import org.gradle.api.plugins.ExtensionContainer;
 import org.gradle.api.plugins.JavaApplication;
+import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.*;
 import org.gradle.api.tasks.bundling.Jar;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.*;
 
 import static org.gradle.api.plugins.JavaPlugin.RUNTIME_CLASSPATH_CONFIGURATION_NAME;
@@ -201,6 +208,38 @@ public class MicronautDockerPlugin implements Plugin<Project> {
             task.setGroup(BasePlugin.UPLOAD_GROUP);
             task.setDescription("Pushes a Native Docker Image using GraalVM");
             task.getImages().set(dockerBuildTask.flatMap(DockerBuildImage::getImages));
+        });
+
+        project.afterEvaluate(p -> {
+            MicronautRuntime mr = MicronautApplicationPlugin.resolveRuntime(p);
+            if (mr == MicronautRuntime.LAMBDA_NATIVE) {
+                TaskContainer taskContainer = p.getTasks();
+                TaskProvider<DockerCreateContainer> createLambdaContainer = taskContainer.register("createLambdaContainer", DockerCreateContainer.class);
+                createLambdaContainer.configure(task -> {
+                    task.dependsOn(dockerBuildTask);
+                    task.targetImageId(dockerBuildTask.flatMap(DockerBuildImage::getImageId));
+                });
+                TaskProvider<DockerCopyFileFromContainer> buildLambdaZip = taskContainer.register("buildLambdaZip", DockerCopyFileFromContainer.class);
+                File lambdaZip = new File(project.getBuildDir(), "libs/" + project.getName() + "-" + project.getVersion() + "-lambda.zip");
+                buildLambdaZip.configure(task -> {
+                    task.dependsOn(createLambdaContainer);
+                    task.getContainerId().set(
+                            createLambdaContainer.flatMap(DockerCreateContainer::getContainerId)
+                    );
+                    task.getRemotePath().set("/function/function.zip");
+                    task.getHostPath().set(lambdaZip.getAbsolutePath());
+                    task.doLast(task1 -> System.out.println("AWS Lambda ZIP built: " + lambdaZip));
+                });
+                TaskProvider<DockerRemoveContainer> removeContainer = taskContainer.register("destroyLambdaContainer", DockerRemoveContainer.class);
+                removeContainer.configure(task -> {
+                    task.mustRunAfter(buildLambdaZip);
+                    task.getContainerId().set(
+                            createLambdaContainer.flatMap(DockerCreateContainer::getContainerId)
+                    );
+                });
+                taskContainer.getByName("assemble").dependsOn(buildLambdaZip, removeContainer);
+            }
+
         });
     }
 
