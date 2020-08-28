@@ -76,6 +76,9 @@ public class NativeImageTask extends AbstractExecTask<NativeImageTask>
 
     @Override
     protected void exec() {
+        if (!GraalUtil.isGraalJVM()) {
+            throw new RuntimeException("A GraalVM SDK is required to build native images");
+        }
         configure();
         super.exec();
         System.out.println("Native Image written to: " + getNativeImageOutput());
