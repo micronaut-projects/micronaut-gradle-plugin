@@ -2,7 +2,9 @@ package io.micronaut.gradle.docker;
 
 import com.bmuschko.gradle.docker.tasks.image.Dockerfile;
 import io.micronaut.gradle.MicronautRuntime;
+import io.micronaut.gradle.graalvm.GraalUtil;
 import io.micronaut.gradle.graalvm.NativeImageTask;
+import org.gradle.api.BuildCancelledException;
 import org.gradle.api.JavaVersion;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
@@ -12,6 +14,7 @@ import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.TaskAction;
+import org.gradle.api.tasks.TaskExecutionException;
 import org.gradle.internal.jvm.Jvm;
 
 import javax.annotation.Nullable;
@@ -41,6 +44,8 @@ public class NativeImageDockerfile extends Dockerfile implements DockerBuildOpti
     private final ListProperty<String> args;
     @Input
     private final ListProperty<Integer> exposedPorts;
+    @Input
+    private final Property<Boolean> requireGraalSdk;
     private final Property<MicronautRuntime> micronautRuntime;
 
 
@@ -53,7 +58,7 @@ public class NativeImageDockerfile extends Dockerfile implements DockerBuildOpti
         this.micronautRuntime = objects.property(MicronautRuntime.class)
                                         .convention(MicronautRuntime.NONE);
         this.jdkVersion = objects.property(String.class);
-
+        this.requireGraalSdk = objects.property(Boolean.class).convention(true);
         JavaVersion javaVersion = Jvm.current().getJavaVersion();
         if (javaVersion.isJava11Compatible()) {
             jdkVersion.convention("java11");
@@ -74,6 +79,14 @@ public class NativeImageDockerfile extends Dockerfile implements DockerBuildOpti
         }
         this.args = objects.listProperty(String.class);
         this.exposedPorts = objects.listProperty(Integer.class);
+    }
+
+    /**
+     *
+     * @return Whether a Graal SDK is required (defaults to 'true').
+     */
+    public Property<Boolean> getRequireGraalSdk() {
+        return requireGraalSdk;
     }
 
     /**
@@ -131,7 +144,9 @@ public class NativeImageDockerfile extends Dockerfile implements DockerBuildOpti
     @TaskAction
     public void create() {
         MicronautRuntime micronautRuntime = this.micronautRuntime.getOrElse(MicronautRuntime.NONE);
-
+        if (requireGraalSdk.get() && !GraalUtil.isGraalJVM()) {
+            throw new RuntimeException("A GraalVM SDK is required to build native images");
+        }
         if (micronautRuntime == MicronautRuntime.LAMBDA || micronautRuntime == MicronautRuntime.LAMBDA_NATIVE) {
             from(new From("amazonlinux:latest").withStage("graalvm"));
             environmentVariable("LANG", "en_US.UTF-8");

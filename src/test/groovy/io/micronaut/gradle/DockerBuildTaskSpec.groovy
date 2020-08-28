@@ -88,6 +88,10 @@ class Application {
             
             mainClassName="example.Application"
             
+            dockerfileNative {
+                requireGraalSdk = false
+            }
+            
         """
         testProjectDir.newFolder("src", "main", "java", "example")
         def javaFile = testProjectDir.newFile("src/main/java/example/Application.java")
