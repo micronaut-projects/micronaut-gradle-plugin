@@ -1,49 +1,122 @@
 package io.micronaut.gradle
 
-import io.micronaut.gradle.docker.DockerBuildTask
-import io.micronaut.gradle.docker.DockerSettings
-import org.gradle.testfixtures.ProjectBuilder
+
+import org.gradle.testkit.runner.GradleRunner
+import org.gradle.testkit.runner.TaskOutcome
+import org.junit.Rule
+import org.junit.rules.TemporaryFolder
+import spock.lang.IgnoreIf
 import spock.lang.Specification
 
 class DockerBuildTaskSpec extends Specification {
 
+    @Rule TemporaryFolder testProjectDir = new TemporaryFolder()
 
-    void "test docker build task command line"() {
-        when:
-        def project = ProjectBuilder.builder()
-                .build()
-        project.plugins.apply(MicronautApplicationPlugin)
-        DockerBuildTask task = project.tasks.getByName("buildDockerImage")
-        String commandLine = task.getCommandLine().join(" ")
+    File settingsFile
+    File buildFile
 
-        then:
-        commandLine == 'java -Xmx128m -jar /home/app/application.jar'
+    def setup() {
+        settingsFile = testProjectDir.newFile('settings.gradle')
+        buildFile = testProjectDir.newFile('build.gradle')
     }
 
-    void "test docker build configure"() {
-        when:
-        def project = ProjectBuilder.builder()
-                .build()
-        project.plugins.apply(MicronautApplicationPlugin)
-        project.extensions.configure(MicronautExtension, { MicronautExtension ext ->
-            ext.docker({ DockerSettings settings ->
-                settings.from("scratch")
-                settings.tag("something")
-                settings.port(8090)
-            })
-        })
-        project.tasks.withType(DockerBuildTask) { DockerBuildTask task ->
-            task.setMaxHeapSize("256m")
-            task.systemProperties(foo:'bar')
-            task.jvmArgs("-verbose")
-        }
-        DockerBuildTask task = project.tasks.getByName("buildDockerImage")
-        String commandLine = task.getCommandLine().join(" ")
+    def "test build docker image"() {
+        given:
+        settingsFile << "rootProject.name = 'hello-world'"
+        buildFile << """
+            plugins {
+                id "io.micronaut.application"
+            }
+            
+            micronaut {
+                version "2.0.1"
+            }
+            
+            repositories {
+                jcenter()
+                mavenCentral()
+            }
+            
+            
+            mainClassName="example.Application"
+            
+        """
+        testProjectDir.newFolder("src", "main", "java", "example")
+        def javaFile = testProjectDir.newFile("src/main/java/example/Application.java")
+        javaFile.parentFile.mkdirs()
+        javaFile << """
+package example;
 
-        then:
-        commandLine == 'java -Dfoo="bar" -Xmx256m -verbose -jar /home/app/application.jar'
-        task.port.get() == 8090
-        task.baseImage.get() == 'scratch'
-        task.tag.get() == 'something'
+class Application {
+    public static void main(String... args) {
+    
     }
+}
+"""
+
+        when:
+        def result = GradleRunner.create()
+                .withProjectDir(testProjectDir.root)
+                .withArguments('dockerBuild')
+                .withPluginClasspath()
+                .build()
+
+        def task = result.task(":dockerBuild")
+        then:
+        result.output.contains("Successfully tagged hello-world:latest")
+        task.outcome == TaskOutcome.SUCCESS
+    }
+
+    @IgnoreIf({ jvm.current.isJava11Compatible() })
+    def "test build docker native image"() {
+        given:
+        settingsFile << "rootProject.name = 'hello-world'"
+        buildFile << """
+            plugins {
+                id "io.micronaut.application"
+            }
+            
+            micronaut {
+                version "2.0.1"
+            }
+            
+            repositories {
+                jcenter()
+                mavenCentral()
+            }
+            
+            
+            mainClassName="example.Application"
+            
+            dockerfileNative {
+                requireGraalSdk = false
+            }
+            
+        """
+        testProjectDir.newFolder("src", "main", "java", "example")
+        def javaFile = testProjectDir.newFile("src/main/java/example/Application.java")
+        javaFile.parentFile.mkdirs()
+        javaFile << """
+package example;
+
+class Application {
+    public static void main(String... args) {
+    
+    }
+}
+"""
+
+        when:
+        def result = GradleRunner.create()
+                .withProjectDir(testProjectDir.root)
+                .withArguments('dockerBuildNative')
+                .withPluginClasspath()
+                .build()
+
+        def task = result.task(":dockerBuildNative")
+        then:
+        result.output.contains("Successfully tagged hello-world:latest")
+        task.outcome == TaskOutcome.SUCCESS
+    }
+
 }
