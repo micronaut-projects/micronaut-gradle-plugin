@@ -7,6 +7,7 @@ import org.junit.Rule
 import org.junit.rules.TemporaryFolder
 import spock.lang.IgnoreIf
 import spock.lang.Specification
+import spock.lang.Unroll
 
 class DockerBuildTaskSpec extends Specification {
 
@@ -68,7 +69,8 @@ class Application {
     }
 
     @IgnoreIf({ jvm.current.isJava11Compatible() })
-    def "test build docker native image"() {
+    @Unroll
+    def "test build docker native image for runtime #runtime"() {
         given:
         settingsFile << "rootProject.name = 'hello-world'"
         buildFile << """
@@ -78,6 +80,7 @@ class Application {
             
             micronaut {
                 version "2.0.1"
+                runtime "$runtime"
             }
             
             repositories {
@@ -106,7 +109,6 @@ class Application {
 }
 """
 
-        when:
         def result = GradleRunner.create()
                 .withProjectDir(testProjectDir.root)
                 .withArguments('dockerBuildNative')
@@ -114,9 +116,12 @@ class Application {
                 .build()
 
         def task = result.task(":dockerBuildNative")
-        then:
+        expect:
         result.output.contains("Successfully tagged hello-world:latest")
         task.outcome == TaskOutcome.SUCCESS
+
+        where:
+        runtime << ["netty", "lambda_native", "oracle_function", "jetty"]
     }
 
 }
