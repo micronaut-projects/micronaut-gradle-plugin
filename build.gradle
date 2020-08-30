@@ -4,7 +4,7 @@ plugins {
   id "java-gradle-plugin"
   id "maven-publish"
   id "groovy"
-  id "com.adarshr.test-logger" version "2.0.0"
+  id "com.adarshr.test-logger" version "2.1.0"
   // Apply other plugins here, e.g. the kotlin plugin for a plugin written in Kotlin
   // or the groovy plugin if the plugin uses Groovy
 }
@@ -37,12 +37,13 @@ gradlePlugin {
 }
 
 dependencies {
-  implementation "com.diffplug.gradle:goomph:3.22.0"
+  implementation "com.bmuschko:gradle-docker-plugin:6.6.1"
+  implementation "com.diffplug.gradle:goomph:3.24.0"
   implementation "com.github.jengelman.gradle.plugins:shadow:6.0.0"
-  implementation "org.jetbrains.kotlin:kotlin-allopen:1.3.72"
+  implementation "org.jetbrains.kotlin:kotlin-allopen:1.4.0"
   compileOnly "org.jetbrains.kotlin:kotlin-gradle-plugin:1.3.72"
 
-  testImplementation("org.codehaus.groovy:groovy:2.5.11")
+  testImplementation("org.codehaus.groovy:groovy:3.0.5")
   testImplementation("org.spockframework:spock-core:1.3-groovy-2.5")
 }
 

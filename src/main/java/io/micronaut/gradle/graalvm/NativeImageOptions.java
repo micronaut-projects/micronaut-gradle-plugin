@@ -11,7 +11,18 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Interface that declares native image options.
+ *
+ * @author gkrocher
+ * @since 1.0.0
+ */
 public interface NativeImageOptions {
+    /**
+     * @return Whether to enable fallbacks (defaults to false).
+     */
+    Property<Boolean> isFallback();
+
     /**
      * Gets the name of the native executable to be generated.
      */
@@ -180,4 +191,50 @@ public interface NativeImageOptions {
      */
     NativeImageOptions jvmArgs(Object... arguments);
 
+
+    /**
+     * Sets the native image build to be verbose
+     *
+     * @return this
+     */
+    NativeImageOptions verbose(boolean verbose);
+
+    /**
+     * Enables server build. Server build is disabled by default
+     *
+     * @return this
+     */
+    NativeImageOptions enableServerBuild(boolean enabled);
+
+    /**
+     * Builds a native image with debug symbols
+     *
+     * @return this
+     */
+    NativeImageOptions debug(boolean debug);
+
+    /**
+     * Sets whether to enable a fallback or not
+     *
+     * @return this
+     */
+    NativeImageOptions fallback(boolean fallback);
+
+    /**
+     * @return Is debug enabled
+     */
+    @Input
+    Property<Boolean> isDebug();
+
+    /**
+     * @return Is verbose output
+     */
+    @Input
+    Property<Boolean> isVerbose();
+
+    /**
+     * @return Should the build run on a server (defaults to false).
+     */
+    @Input
+    Property<Boolean> isServerBuild();
 }
