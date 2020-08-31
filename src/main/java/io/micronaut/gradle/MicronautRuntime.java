@@ -1,5 +1,11 @@
 package io.micronaut.gradle;
 
+import org.gradle.api.plugins.JavaPlugin;
+
+import java.util.Arrays;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 /**
  * The packaging kind of the application.
  *
@@ -10,7 +16,7 @@ public enum MicronautRuntime {
     /**
      * No specific runtime specified.
      */
-    NONE("none"),
+    NONE(),
     /**
      * Default packaging.
      */
@@ -34,12 +40,12 @@ public enum MicronautRuntime {
     /**
      * AWS native lambda, packaged into a zip file.
      */
-    LAMBDA_NATIVE("io.micronaut.aws:micronaut-function-aws-api-proxy"),
+    LAMBDA_NATIVE("io.micronaut.aws:micronaut-function-aws-api-proxy", "io.micronaut.aws:micronaut-function-aws-custom-runtime"),
     /**
      * Oracle Cloud Function, packaged as a docker container.
      */
     // TODO: remove hard coded version
-    ORACLE_FUNCTION("io.micronaut.oci:micronaut-oci-function-http:1.0.0.M1"),
+    ORACLE_FUNCTION("io.micronaut.oraclecloud:micronaut-oraclecloud-function-http:1.0.0.M3"),
     /**
      * Google Cloud Function, packaged as a Fat JAR.
      */
@@ -49,13 +55,15 @@ public enum MicronautRuntime {
      */
     AZURE_FUNCTION("io.micronaut.azure:micronaut-azure-function-http");
 
-    private final String implementation;
+    private final Map<String, String> implementation;
 
-    MicronautRuntime(String implementation) {
-        this.implementation = implementation;
+    MicronautRuntime(String... dependencies) {
+        this.implementation = Arrays.stream(dependencies).collect(
+                Collectors.toMap((v)-> JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME, (v) -> v)
+        );
     }
 
-    public String getImplementation() {
+    public Map<String, String> getDependencies() {
         return implementation;
     }
 }
