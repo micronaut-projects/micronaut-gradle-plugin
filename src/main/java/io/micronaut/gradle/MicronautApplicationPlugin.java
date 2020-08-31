@@ -1,11 +1,9 @@
 package io.micronaut.gradle;
 
-import com.bmuschko.gradle.docker.tasks.container.DockerCopyFileFromContainer;
 import com.github.jengelman.gradle.plugins.shadow.ShadowPlugin;
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar;
 import io.micronaut.gradle.docker.MicronautDockerPlugin;
 import org.apache.tools.ant.taskdefs.condition.Os;
-import org.gradle.api.Action;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.dsl.DependencyHandler;
@@ -13,12 +11,8 @@ import org.gradle.api.artifacts.dsl.RepositoryHandler;
 import org.gradle.api.plugins.*;
 import org.gradle.api.tasks.JavaExec;
 import org.gradle.api.tasks.TaskContainer;
-import org.gradle.api.tasks.TaskProvider;
 
-import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 
 /**
  * A plugin for a Micronaut application. Applies the "application" plugin.
@@ -51,6 +45,7 @@ public class MicronautApplicationPlugin extends MicronautLibraryPlugin {
             dependencyHandler.add(CONFIGURATION_DEVELOPMENT_ONLY,
                     dependencyHandler.platform("io.micronaut:micronaut-bom:" + v));
 
+            MicronautTestRuntime testRuntime = ext.getTestRuntime().get();
             MicronautRuntime micronautRuntime = resolveRuntime(p);
             if (micronautRuntime == MicronautRuntime.ORACLE_FUNCTION) {
                 RepositoryHandler repositories = project.getRepositories();
@@ -59,17 +54,11 @@ public class MicronautApplicationPlugin extends MicronautLibraryPlugin {
                 );
             }
             JavaApplication javaApplication = p.getExtensions().getByType(JavaApplication.class);
-            if (micronautRuntime != MicronautRuntime.NONE) {
-                dependencyHandler.add(JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME, micronautRuntime.getImplementation());
-            }
-
+            micronautRuntime.getDependencies().forEach(dependencyHandler::add);
+            testRuntime.getDependencies().forEach(dependencyHandler::add);
             switch (micronautRuntime) {
                 case LAMBDA:
                 case LAMBDA_NATIVE:
-                    dependencyHandler.add(
-                            JavaPlugin.RUNTIME_ONLY_CONFIGURATION_NAME,
-                            "io.micronaut.aws:micronaut-function-aws-custom-runtime"
-                    );
                     javaApplication.setMainClassName("io.micronaut.function.aws.runtime.MicronautLambdaRuntime");
                 break;
                 // oracle cloud function

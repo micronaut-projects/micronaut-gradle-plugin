@@ -55,7 +55,7 @@ public class MicronautDockerfile extends Dockerfile implements DockerBuildOption
                 copyFile("build/layers/libs/*.jar", "/function/app/");
                 copyFile("build/layers/resources/*", "/function/app/");
                 copyFile("build/layers/application.jar", "/function/app/");
-                defaultCommand("io.micronaut.oci.function.http.HttpFunction::handleRequest");
+                defaultCommand("io.micronaut.oraclecloud.function.http.HttpFunction::handleRequest");
             break;
             case LAMBDA:
                 // TODO

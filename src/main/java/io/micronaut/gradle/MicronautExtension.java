@@ -20,6 +20,7 @@ public class MicronautExtension {
     private final Property<String> version;
     private final Property<Boolean> enableNativeImage;
     private final Property<MicronautRuntime> runtime;
+    private final Property<MicronautTestRuntime> testRuntime;
 
     @Inject
     public MicronautExtension(ObjectFactory objectFactory) {
@@ -29,6 +30,15 @@ public class MicronautExtension {
                                     .convention(GraalUtil.isGraalJVM());
         this.runtime = objectFactory.property(MicronautRuntime.class)
                                     .convention(MicronautRuntime.NONE);
+        this.testRuntime = objectFactory.property(MicronautTestRuntime.class)
+                                        .convention(MicronautTestRuntime.NONE);
+    }
+
+    /**
+     * @return The test runtime to use.
+     */
+    public Property<MicronautTestRuntime> getTestRuntime() {
+        return testRuntime;
     }
 
     /**

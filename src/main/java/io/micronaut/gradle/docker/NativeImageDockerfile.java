@@ -208,7 +208,7 @@ public class NativeImageDockerfile extends Dockerfile implements DockerBuildOpti
                     newList.addAll(strings);
                     return newList;
                 }));
-                defaultCommand("io.micronaut.oci.function.http.HttpFunction::handleRequest");
+                defaultCommand("io.micronaut.oraclecloud.function.http.HttpFunction::handleRequest");
             break;
             case LAMBDA_NATIVE:
             case LAMBDA:
