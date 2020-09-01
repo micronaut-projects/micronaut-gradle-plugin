@@ -65,7 +65,7 @@ public class Foo {
         when:
         def result = GradleRunner.create()
                 .withProjectDir(testProjectDir.root)
-                .withArguments('assemble')
+                .withArguments('assemble', "--stacktrace")
                 .withPluginClasspath()
                 .build()
 
