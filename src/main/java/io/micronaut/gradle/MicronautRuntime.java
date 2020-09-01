@@ -3,8 +3,9 @@ package io.micronaut.gradle;
 import org.gradle.api.plugins.JavaPlugin;
 
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * The packaging kind of the application.
@@ -55,15 +56,13 @@ public enum MicronautRuntime {
      */
     AZURE_FUNCTION("io.micronaut.azure:micronaut-azure-function-http");
 
-    private final Map<String, String> implementation;
+    private final Map<String, List<String>> implementation;
 
     MicronautRuntime(String... dependencies) {
-        this.implementation = Arrays.stream(dependencies).collect(
-                Collectors.toMap((v)-> JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME, (v) -> v)
-        );
+        this.implementation = Collections.singletonMap(JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME, Arrays.asList(dependencies));
     }
 
-    public Map<String, String> getDependencies() {
+    public Map<String, List<String>> getDependencies() {
         return implementation;
     }
 }

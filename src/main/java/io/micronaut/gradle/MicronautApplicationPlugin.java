@@ -54,8 +54,16 @@ public class MicronautApplicationPlugin extends MicronautLibraryPlugin {
                 );
             }
             JavaApplication javaApplication = p.getExtensions().getByType(JavaApplication.class);
-            micronautRuntime.getDependencies().forEach(dependencyHandler::add);
-            testRuntime.getDependencies().forEach(dependencyHandler::add);
+            micronautRuntime.getDependencies().forEach((scope, dependencies) -> {
+                for (String dependency : dependencies) {
+                    dependencyHandler.add(scope, dependency);
+                }
+            });
+            testRuntime.getDependencies().forEach((scope, dependencies) -> {
+                for (String dependency : dependencies) {
+                    dependencyHandler.add(scope, dependency);
+                }
+            });
             switch (micronautRuntime) {
                 case LAMBDA:
                 case LAMBDA_NATIVE:
