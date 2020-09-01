@@ -121,7 +121,7 @@ class Application {
         task.outcome == TaskOutcome.SUCCESS
 
         where:
-        runtime << ["netty", "lambda_native", "oracle_function", "jetty"]
+        runtime << ["netty", "lambda_native", "jetty"]
     }
 
 }
