@@ -248,9 +248,15 @@ For example the following configures `dockerPush` to use Oracle Container Regist
 
 ```groovy
 dockerBuild {
-    images = ["eu-frankfurt-1.ocir.io/xyzzyz/repo/image-name:$project.version"]
+    images = ["eu-frankfurt-1.ocir.io/xyzzyz/repo/my-image:$project.version"]
+}
+
+dockerBuildNative {
+    images = ["eu-frankfurt-1.ocir.io/xyzzyz/repo/my-image-native:$project.version"]
 }
 ```
+
+Notice that you can supply two different image names to push to for the JVM version and the native version of the application.
 
 If you wish to customize the docker builds that are used, the easiest way is to run `./gradlew dockerfile` (or `dockerfileNative` for the native versrion) and copy the generated `Dockerfile` from `build/docker` to your root directory and modify as required.
 
