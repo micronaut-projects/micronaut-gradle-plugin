@@ -41,25 +41,47 @@ public enum MicronautRuntime {
     /**
      * AWS native lambda, packaged into a zip file.
      */
-    LAMBDA_NATIVE("io.micronaut.aws:micronaut-function-aws-api-proxy", "io.micronaut.aws:micronaut-function-aws-custom-runtime"),
+    LAMBDA_NATIVE(
+            "io.micronaut.aws:micronaut-function-aws-api-proxy",
+            "io.micronaut.aws:micronaut-function-aws-custom-runtime"),
     /**
      * Oracle Cloud Function, packaged as a docker container.
      */
-    // TODO: remove hard coded version
-    ORACLE_FUNCTION("io.micronaut.oraclecloud:micronaut-oraclecloud-function-http:1.0.0.M3"),
+    // TODO: remove hard coded versions
+    ORACLE_FUNCTION(MicronautExtension.mapOf(
+            JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME,
+            Collections.singletonList("io.micronaut.oraclecloud:micronaut-oraclecloud-function-http"),
+            JavaPlugin.TEST_IMPLEMENTATION_CONFIGURATION_NAME,
+            Collections.singletonList("io.micronaut.oraclecloud:micronaut-oraclecloud-function-http-test"),
+            "developmentOnly",
+            Collections.singletonList("io.micronaut.oraclecloud:micronaut-oraclecloud-function-http-test"),
+            JavaPlugin.RUNTIME_ONLY_CONFIGURATION_NAME,
+            Collections.singletonList("com.fnproject.fn:runtime")
+    )),
     /**
      * Google Cloud Function, packaged as a Fat JAR.
      */
-    GOOGLE_FUNCTION("io.micronaut.gcp:micronaut-gcp-function-http"),
+    GOOGLE_FUNCTION(MicronautExtension.mapOf(
+            JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME,
+            Collections.singletonList("io.micronaut.gcp:micronaut-gcp-function-http"),
+            JavaPlugin.COMPILE_ONLY_CONFIGURATION_NAME,
+            Collections.singletonList("com.google.cloud.functions:functions-framework-api"),
+            JavaPlugin.TEST_IMPLEMENTATION_CONFIGURATION_NAME,
+            Collections.singletonList("com.google.cloud.functions:functions-framework-api")
+    )),
     /**
      * Azure Cloud Function.
      */
-    AZURE_FUNCTION("io.micronaut.azure:micronaut-azure-function-http");
+    AZURE_FUNCTION("io.micronaut.azure:micronaut-azure-function-http", "com.microsoft.azure.functions:azure-functions-java-library");
 
     private final Map<String, List<String>> implementation;
 
     MicronautRuntime(String... dependencies) {
         this.implementation = Collections.singletonMap(JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME, Arrays.asList(dependencies));
+    }
+
+    MicronautRuntime(Map<String, List<String>> implementation) {
+        this.implementation = implementation;
     }
 
     public Map<String, List<String>> getDependencies() {
