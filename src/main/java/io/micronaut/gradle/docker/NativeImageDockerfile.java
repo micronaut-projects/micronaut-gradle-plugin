@@ -10,6 +10,7 @@ import org.gradle.api.Project;
 import org.gradle.api.Task;
 import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.plugins.BasePlugin;
+import org.gradle.api.plugins.JavaApplication;
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.Input;
@@ -144,6 +145,7 @@ public class NativeImageDockerfile extends Dockerfile implements DockerBuildOpti
     @TaskAction
     public void create() {
         MicronautRuntime micronautRuntime = this.micronautRuntime.getOrElse(MicronautRuntime.NONE);
+        JavaApplication javaApplication = getProject().getExtensions().getByType(JavaApplication.class);
         if (requireGraalSdk.get() && !GraalUtil.isGraalJVM()) {
             throw new RuntimeException("A GraalVM SDK is required to build native images");
         }
@@ -171,9 +173,11 @@ public class NativeImageDockerfile extends Dockerfile implements DockerBuildOpti
         // use hard coded image name
         this.nativeImageTask.setImageName("application");
         if (micronautRuntime == MicronautRuntime.ORACLE_FUNCTION) {
+            javaApplication.setMainClassName("com.fnproject.fn.runtime.EntryPoint");
             this.nativeImageTask.setMain("com.fnproject.fn.runtime.EntryPoint");
             this.nativeImageTask.args("--report-unsupported-elements-at-runtime");
         } else if (micronautRuntime == MicronautRuntime.LAMBDA || micronautRuntime == MicronautRuntime.LAMBDA_NATIVE) {
+            javaApplication.setMainClassName("io.micronaut.function.aws.runtime.MicronautLambdaRuntime");
             this.nativeImageTask.setMain("io.micronaut.function.aws.runtime.MicronautLambdaRuntime");
         }
         this.nativeImageTask.configure();

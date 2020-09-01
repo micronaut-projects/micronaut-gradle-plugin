@@ -6,6 +6,7 @@ import org.gradle.api.JavaVersion;
 import org.gradle.api.Project;
 import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.plugins.BasePlugin;
+import org.gradle.api.plugins.JavaApplication;
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.Input;
@@ -44,12 +45,14 @@ public class MicronautDockerfile extends Dockerfile implements DockerBuildOption
     @TaskAction
     public void create() {
         MicronautRuntime micronautRuntime = this.micronautRuntime.getOrElse(MicronautRuntime.NONE);
+        JavaApplication javaApplication = getProject().getExtensions().getByType(JavaApplication.class);
         String from = getBaseImage().getOrNull();
         if ("none".equalsIgnoreCase(from)) {
             from = null;
         }
         switch (micronautRuntime) {
             case ORACLE_FUNCTION:
+                javaApplication.setMainClassName("com.fnproject.fn.runtime.EntryPoint");
                 from(new Dockerfile.From(from != null ? from : "fnproject/fn-java-fdk:" + getProjectFnVersion()));
                 workingDir("/function");
                 copyFile("build/layers/libs/*.jar", "/function/app/");
@@ -58,7 +61,8 @@ public class MicronautDockerfile extends Dockerfile implements DockerBuildOption
                 defaultCommand("io.micronaut.oraclecloud.function.http.HttpFunction::handleRequest");
             break;
             case LAMBDA:
-                // TODO
+            case LAMBDA_NATIVE:
+                javaApplication.setMainClassName("io.micronaut.function.aws.runtime.MicronautLambdaRuntime");
             default:
                 from(new Dockerfile.From(from != null ? from : "openjdk:14-alpine"));
                 setupResources(this);

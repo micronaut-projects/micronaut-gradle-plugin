@@ -6,7 +6,10 @@ import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.provider.Property;
 
 import javax.inject.Inject;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 /**
  * Configuration for the Micronaut extension.
@@ -123,5 +126,19 @@ public class MicronautExtension {
     public MicronautExtension processing(Action<AnnotationProcessing> processingAction) {
         processingAction.execute(this.getProcessing());
         return this;
+    }
+
+    static Map<String, List<String>> mapOf(Object... values) {
+        int len = values.length;
+        if (len % 2 != 0) {
+            throw new IllegalArgumentException("Number of arguments should be an even number representing the keys and values");
+        }
+
+        Map<String, List<String>> answer = new LinkedHashMap<>(len / 2);
+        int i = 0;
+        while (i < values.length - 1) {
+            answer.put(values[i++].toString(), (List<String>) values[i++]);
+        }
+        return answer;
     }
 }
