@@ -208,9 +208,9 @@ nativeImage {
 
 ### Docker Support
 
-The Micronaut plugin includes integration with the https://bmuschko.github.io/gradle-docker-plugin/[Gradle Docker plugin] allowing you to easily build applications and native images using Docker containers.
+The Micronaut plugin includes integration with the [Gradle Docker plugin](https://bmuschko.github.io/gradle-docker-plugin) allowing you to easily build applications and native images using Docker containers.
 
-Applications are built with as layers JARs using the `buildLayers` task ensuring optimized Docker images for Java applications.
+Applications are built as layered JARs using the `buildLayers` task ensuring optimized Docker images for Java applications.
 
 To build a regular Java application into a Docker container that is ready to be deployed and exposes ports 8080 you can simply do:
 
@@ -254,7 +254,7 @@ dockerBuild {
 
 If you wish to customize the docker builds that are used, the easiest way is to run `./gradlew dockerfile` (or `dockerfileNative` for the native versrion) and copy the generated `Dockerfile` from `build/docker` to your root directory and modify as required.
 
-If you mergely wish to customize the JVM arguments or native image arguments then it is possible to do so with the `args` method of the `dockerfile` and `dockerfileNative` tasks:
+If you wish to customize the JVM arguments or native image arguments then it is possible to do so with the `args` method of the `dockerfile` and `dockerfileNative` tasks:
 
 ```groovy
 dockerfile {
