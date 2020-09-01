@@ -188,8 +188,13 @@ public class MicronautLibraryPlugin implements Plugin<Project> {
         });
 
         project.afterEvaluate(p -> {
-            if (p.getPlugins().hasPlugin("groovy")) {
-                applyAdditionalProcessors(p, COMPILE_ONLY_CONFIGURATION_NAME, TEST_COMPILE_ONLY_CONFIGURATION_NAME);
+            PluginContainer plugins = p.getPlugins();
+            boolean hasGroovy = plugins.hasPlugin("groovy");
+            if (hasGroovy && project.file("src/main/groovy").exists()) {
+                applyAdditionalProcessors(p, COMPILE_ONLY_CONFIGURATION_NAME);
+            }
+            if (hasGroovy && project.file("src/test/groovy").exists()) {
+                applyAdditionalProcessors(p, TEST_COMPILE_ONLY_CONFIGURATION_NAME);
             }
         });
 
