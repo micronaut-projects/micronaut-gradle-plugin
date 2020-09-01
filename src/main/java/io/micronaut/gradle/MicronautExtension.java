@@ -108,6 +108,32 @@ public class MicronautExtension {
     }
 
     /**
+     * Configures the test runtime to use.
+     *
+     * @param runtime The micronaut packaging type
+     * @return This extension
+     */
+    public MicronautExtension testRuntime(String runtime) {
+        if (runtime != null) {
+            this.testRuntime.set(MicronautTestRuntime.parse(runtime));
+        }
+        return this;
+    }
+
+    /**
+     * Configures the test runtime to use.
+     *
+     * @param testRuntime The micronaut runtime type
+     * @return This extension
+     */
+    public MicronautExtension testRuntime(MicronautTestRuntime testRuntime) {
+        if (testRuntime != null) {
+            this.testRuntime.set(testRuntime);
+        }
+        return this;
+    }
+
+    /**
      * @return The micronaut version.
      */
     public Property<String> getVersion() {

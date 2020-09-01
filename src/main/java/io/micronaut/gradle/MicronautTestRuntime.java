@@ -27,7 +27,11 @@ public enum MicronautTestRuntime {
     JavaPlugin.TEST_COMPILE_ONLY_CONFIGURATION_NAME,
             Collections.singletonList("io.micronaut:micronaut-inject-groovy"),
             JavaPlugin.TEST_IMPLEMENTATION_CONFIGURATION_NAME,
-            Arrays.asList("org.spockframework:spock-core", "io.micronaut.test:micronaut-test-spock")
+            Arrays.asList(
+                    "org.spockframework:spock-core",
+                    "io.micronaut.test:micronaut-test-spock",
+                    "org.codehaus.groovy:groovy"
+            )
     )),
 
     /**
@@ -47,5 +51,22 @@ public enum MicronautTestRuntime {
 
     public Map<String, List<String>> getDependencies() {
         return implementation;
+    }
+
+    public static MicronautTestRuntime parse(String str) {
+        if (str != null) {
+            str = str.toUpperCase(Locale.ENGLISH);
+            switch (str) {
+                case "JUNIT":
+                case "JUNIT5":
+                case "JUNIT_5":
+                    return MicronautTestRuntime.JUNIT_5;
+                case "SPOCK":
+                case "SPOCK2":
+                case "SPOCK_2":
+                    return MicronautTestRuntime.SPOCK_2;
+            }
+        }
+        return MicronautTestRuntime.NONE;
     }
 }
