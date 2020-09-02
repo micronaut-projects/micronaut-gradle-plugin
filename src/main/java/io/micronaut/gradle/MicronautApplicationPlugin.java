@@ -11,6 +11,7 @@ import org.gradle.api.artifacts.dsl.RepositoryHandler;
 import org.gradle.api.plugins.*;
 import org.gradle.api.tasks.JavaExec;
 import org.gradle.api.tasks.TaskContainer;
+import org.gradle.api.tasks.testing.Test;
 
 import java.util.*;
 
@@ -64,6 +65,11 @@ public class MicronautApplicationPlugin extends MicronautLibraryPlugin {
                     dependencyHandler.add(scope, dependency);
                 }
             });
+
+            if (testRuntime != MicronautTestRuntime.NONE) {
+                // set JUnit 5 platform
+                project.getTasks().withType(Test.class, Test::useJUnitPlatform);
+            }
             if (micronautRuntime == MicronautRuntime.GOOGLE_FUNCTION) {
                 String invokerConfig = "invoker";
                 Configuration ic = project.getConfigurations().create(invokerConfig);

@@ -73,6 +73,7 @@ public class ExampleTest {
                 .build()
 
         def task = result.task(":test")
+        println result.output
         then:
         result.output.contains('Creating bean classes for 1 type elements')
         task.outcome == TaskOutcome.SUCCESS
