@@ -48,7 +48,7 @@ micronaut {
         // Generally used only for advanced cases such as defining new AOP
         // advice. If omitted however, incremental annotation processing
         // will not work correctly
-        anntations "com.example.*"
+        annotations "com.example.*"
     }   
 }
 ```
