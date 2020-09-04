@@ -8,8 +8,11 @@ import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.dsl.DependencyHandler;
 import org.gradle.api.artifacts.dsl.RepositoryHandler;
+import org.gradle.api.file.SourceDirectorySet;
 import org.gradle.api.plugins.*;
 import org.gradle.api.tasks.JavaExec;
+import org.gradle.api.tasks.SourceSet;
+import org.gradle.api.tasks.SourceSetOutput;
 import org.gradle.api.tasks.TaskContainer;
 import org.gradle.api.tasks.testing.Test;
 
@@ -76,7 +79,9 @@ public class MicronautApplicationPlugin extends MicronautLibraryPlugin {
                 dependencyHandler.add(invokerConfig, "com.google.cloud.functions.invoker:java-function-invoker:1.0.0-beta2");
 
                 // reconfigure the run task to use Google cloud invoker
-                JavaExec run = (JavaExec) project.getTasks().getByName("run");
+                TaskContainer taskContainer = project.getTasks();
+                JavaExec run = (JavaExec) taskContainer.getByName("run");
+                run.dependsOn(taskContainer.findByName("processResources"));
                 run.setMain("com.google.cloud.functions.invoker.runner.Invoker");
                 run.setClasspath(ic);
                 run.setArgs(Arrays.asList(
@@ -84,10 +89,14 @@ public class MicronautApplicationPlugin extends MicronautLibraryPlugin {
                         "--port", 8080
                 ));
                 run.doFirst(t -> {
+                    JavaPluginConvention plugin = project.getConvention().getPlugin(JavaPluginConvention.class);
+                    SourceSet sourceSet = plugin.getSourceSets().getByName("main");
+                    SourceSetOutput output = sourceSet.getOutput();
+                    String runtimeClasspath = project.files(project.getConfigurations().getByName("runtimeClasspath"),
+                            output
+                    ).getAsPath();
                     ((JavaExec) t).args("--classpath",
-                            project.files(project.getConfigurations().getByName("runtimeClasspath"),
-                                    project.getConvention().getPlugin(JavaPluginConvention.class).getSourceSets().getByName("main").getOutput()
-                            ).getAsPath()
+                            runtimeClasspath
                     );
                 });
                 // apply required GCP function dependencies
