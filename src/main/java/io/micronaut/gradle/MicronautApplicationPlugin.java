@@ -6,6 +6,7 @@ import io.micronaut.gradle.docker.MicronautDockerPlugin;
 import org.apache.tools.ant.taskdefs.condition.Os;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
+import org.gradle.api.artifacts.Dependency;
 import org.gradle.api.artifacts.dsl.DependencyHandler;
 import org.gradle.api.artifacts.dsl.RepositoryHandler;
 import org.gradle.api.file.SourceDirectorySet;
@@ -46,8 +47,8 @@ public class MicronautApplicationPlugin extends MicronautLibraryPlugin {
             final MicronautExtension ext = p.getExtensions().getByType(MicronautExtension.class);
             final String v = getMicronautVersion(p, ext);
             final DependencyHandler dependencyHandler = p.getDependencies();
-            dependencyHandler.add(CONFIGURATION_DEVELOPMENT_ONLY,
-                    dependencyHandler.platform("io.micronaut:micronaut-bom:" + v));
+            Dependency platform = resolveMicronautPlatform(dependencyHandler, v);
+            dependencyHandler.add(CONFIGURATION_DEVELOPMENT_ONLY, platform);
 
             MicronautTestRuntime testRuntime = ext.getTestRuntime().get();
             MicronautRuntime micronautRuntime = resolveRuntime(p);

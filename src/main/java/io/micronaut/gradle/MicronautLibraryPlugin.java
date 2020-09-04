@@ -78,7 +78,7 @@ public class MicronautLibraryPlugin implements Plugin<Project> {
 
             String micronautVersion = getMicronautVersion(p, micronautExtension);
 
-            final Dependency platform = dependencyHandler.platform("io.micronaut:micronaut-bom:" + micronautVersion);
+            final Dependency platform = resolveMicronautPlatform(dependencyHandler, micronautVersion);
             for (String configuration : getBomConfigurations()) {
                 dependencyHandler.add(
                         configuration,
@@ -109,6 +109,17 @@ public class MicronautLibraryPlugin implements Plugin<Project> {
                 project.getTasks().withType(Test.class, Test::useJUnitPlatform);
             }
         });
+    }
+
+    static Dependency resolveMicronautPlatform(DependencyHandler dependencyHandler, String micronautVersion) {
+        final Dependency platform;
+        if (micronautVersion.endsWith("-SNAPSHOT")) {
+            // enforced platform has to be used for snapshots to work correctly 
+            platform = dependencyHandler.enforcedPlatform("io.micronaut:micronaut-bom:" + micronautVersion);
+        } else {
+            platform = dependencyHandler.platform("io.micronaut:micronaut-bom:" + micronautVersion);
+        }
+        return platform;
     }
 
     static void applyAdditionalProcessors(Project project, String ... configurations) {
