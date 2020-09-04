@@ -123,7 +123,7 @@ public class MicronautKotlinSupport {
                     micronautExtension
             );
             final DependencyHandler dependencyHandler = p.getDependencies();
-            final Dependency platform = dependencyHandler.platform("io.micronaut:micronaut-bom:" + micronautVersion);
+            final Dependency platform = MicronautLibraryPlugin.resolveMicronautPlatform(dependencyHandler, micronautVersion);
 
             for (String kaptConfig : kaptConfigs) {
                 dependencyHandler.add(
