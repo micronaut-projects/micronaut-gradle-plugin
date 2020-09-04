@@ -86,6 +86,19 @@ public class MicronautLibraryPlugin implements Plugin<Project> {
                 );
             }
 
+            MicronautTestRuntime testRuntime = micronautExtension.getTestRuntime().get();
+
+            testRuntime.getDependencies().forEach((scope, dependencies) -> {
+                for (String dependency : dependencies) {
+                    dependencyHandler.add(scope, dependency);
+                }
+            });
+
+            if (testRuntime != MicronautTestRuntime.NONE) {
+                // set JUnit 5 platform
+                project.getTasks().withType(Test.class, Test::useJUnitPlatform);
+            }
+
             applyAdditionalProcessors(p, ANNOTATION_PROCESSOR_CONFIGURATION_NAME, TEST_ANNOTATION_PROCESSOR_CONFIGURATION_NAME);
 
             boolean hasGroovy = plugins.findPlugin(GroovyPlugin.class) != null;

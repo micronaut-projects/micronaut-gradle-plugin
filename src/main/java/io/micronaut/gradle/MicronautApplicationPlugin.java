@@ -50,7 +50,6 @@ public class MicronautApplicationPlugin extends MicronautLibraryPlugin {
             Dependency platform = resolveMicronautPlatform(dependencyHandler, v);
             dependencyHandler.add(CONFIGURATION_DEVELOPMENT_ONLY, platform);
 
-            MicronautTestRuntime testRuntime = ext.getTestRuntime().get();
             MicronautRuntime micronautRuntime = resolveRuntime(p);
             if (micronautRuntime == MicronautRuntime.ORACLE_FUNCTION) {
                 RepositoryHandler repositories = project.getRepositories();
@@ -64,16 +63,7 @@ public class MicronautApplicationPlugin extends MicronautLibraryPlugin {
                     dependencyHandler.add(scope, dependency);
                 }
             });
-            testRuntime.getDependencies().forEach((scope, dependencies) -> {
-                for (String dependency : dependencies) {
-                    dependencyHandler.add(scope, dependency);
-                }
-            });
 
-            if (testRuntime != MicronautTestRuntime.NONE) {
-                // set JUnit 5 platform
-                project.getTasks().withType(Test.class, Test::useJUnitPlatform);
-            }
             if (micronautRuntime == MicronautRuntime.GOOGLE_FUNCTION) {
                 String invokerConfig = "invoker";
                 Configuration ic = project.getConfigurations().create(invokerConfig);
