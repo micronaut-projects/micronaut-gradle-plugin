@@ -149,7 +149,7 @@ public class NativeImageDockerfile extends Dockerfile implements DockerBuildOpti
         if (requireGraalSdk.get() && !GraalUtil.isGraalJVM()) {
             throw new RuntimeException("A GraalVM SDK is required to build native images");
         }
-        if (micronautRuntime == MicronautRuntime.LAMBDA || micronautRuntime == MicronautRuntime.LAMBDA_NATIVE) {
+        if (micronautRuntime == MicronautRuntime.LAMBDA) {
             from(new From("amazonlinux:latest").withStage("graalvm"));
             environmentVariable("LANG", "en_US.UTF-8");
             runCommand("yum install -y gcc gcc-c++ libc6-dev  zlib1g-dev curl bash zlib zlib-devel zip tar gzip");
@@ -176,7 +176,7 @@ public class NativeImageDockerfile extends Dockerfile implements DockerBuildOpti
             javaApplication.setMainClassName("com.fnproject.fn.runtime.EntryPoint");
             this.nativeImageTask.setMain("com.fnproject.fn.runtime.EntryPoint");
             this.nativeImageTask.args("--report-unsupported-elements-at-runtime");
-        } else if (micronautRuntime == MicronautRuntime.LAMBDA || micronautRuntime == MicronautRuntime.LAMBDA_NATIVE) {
+        } else if (micronautRuntime == MicronautRuntime.LAMBDA) {
             javaApplication.setMainClassName("io.micronaut.function.aws.runtime.MicronautLambdaRuntime");
             this.nativeImageTask.setMain("io.micronaut.function.aws.runtime.MicronautLambdaRuntime");
         }
@@ -214,7 +214,6 @@ public class NativeImageDockerfile extends Dockerfile implements DockerBuildOpti
                 }));
                 defaultCommand("io.micronaut.oraclecloud.function.http.HttpFunction::handleRequest");
             break;
-            case LAMBDA_NATIVE:
             case LAMBDA:
                 if (baseImage == null) {
                     baseImage = "amazonlinux:latest";

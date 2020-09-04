@@ -61,7 +61,6 @@ public class MicronautDockerfile extends Dockerfile implements DockerBuildOption
                 defaultCommand("io.micronaut.oraclecloud.function.http.HttpFunction::handleRequest");
             break;
             case LAMBDA:
-            case LAMBDA_NATIVE:
                 javaApplication.setMainClassName("io.micronaut.function.aws.runtime.MicronautLambdaRuntime");
             default:
                 from(new Dockerfile.From(from != null ? from : "openjdk:14-alpine"));

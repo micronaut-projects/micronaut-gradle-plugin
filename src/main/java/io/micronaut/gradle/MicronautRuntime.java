@@ -37,17 +37,11 @@ public enum MicronautRuntime {
     /**
      * AWS lambda packaged as a Jar file.
      */
-    LAMBDA("io.micronaut.aws:micronaut-function-aws-api-proxy"),
-    /**
-     * AWS native lambda, packaged into a zip file.
-     */
-    LAMBDA_NATIVE(
-            "io.micronaut.aws:micronaut-function-aws-api-proxy",
+    LAMBDA("io.micronaut.aws:micronaut-function-aws-api-proxy",
             "io.micronaut.aws:micronaut-function-aws-custom-runtime"),
     /**
      * Oracle Cloud Function, packaged as a docker container.
      */
-    // TODO: remove hard coded versions
     ORACLE_FUNCTION(MicronautExtension.mapOf(
             JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME,
             Collections.singletonList("io.micronaut.oraclecloud:micronaut-oraclecloud-function-http"),

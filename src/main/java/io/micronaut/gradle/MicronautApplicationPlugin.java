@@ -63,7 +63,9 @@ public class MicronautApplicationPlugin extends MicronautLibraryPlugin {
                     dependencyHandler.add(scope, dependency);
                 }
             });
-
+            if (micronautRuntime == MicronautRuntime.LAMBDA) {
+                javaApplication.setMainClassName("io.micronaut.function.aws.runtime.MicronautLambdaRuntime");
+            }
             if (micronautRuntime == MicronautRuntime.GOOGLE_FUNCTION) {
                 String invokerConfig = "invoker";
                 Configuration ic = project.getConfigurations().create(invokerConfig);
