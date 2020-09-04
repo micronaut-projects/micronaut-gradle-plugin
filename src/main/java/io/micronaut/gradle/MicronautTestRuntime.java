@@ -48,7 +48,7 @@ public enum MicronautTestRuntime {
                     "io.kotest:kotest-assertions-core-jvm"
             ),
             JavaPlugin.TEST_RUNTIME_ONLY_CONFIGURATION_NAME,
-            Collections.singletonList("oio.kotest:kotest-runner-junit5-jvm")
+            Collections.singletonList("io.kotest:kotest-runner-junit5-jvm")
     )),
     /**
      * No test runtime.
