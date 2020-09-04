@@ -87,7 +87,7 @@ public class Foo {
             }
             
             micronaut {
-                version "2.0.0.RC2"
+                version "2.1.0.M1"
                 
                 processing {
                     incremental true
@@ -302,7 +302,7 @@ class Foo {}
             }
             
             micronaut {
-                version "2.0.0.RC2"
+                version "2.0.1.M1"
             }
             
             repositories {
