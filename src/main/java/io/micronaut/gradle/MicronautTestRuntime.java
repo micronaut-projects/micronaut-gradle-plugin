@@ -24,16 +24,31 @@ public enum MicronautTestRuntime {
      * Spock 2.
      */
     SPOCK_2(MicronautExtension.mapOf(
-    JavaPlugin.TEST_COMPILE_ONLY_CONFIGURATION_NAME,
+            JavaPlugin.TEST_COMPILE_ONLY_CONFIGURATION_NAME,
             Collections.singletonList("io.micronaut:micronaut-inject-groovy"),
             JavaPlugin.TEST_IMPLEMENTATION_CONFIGURATION_NAME,
             Arrays.asList(
                     "org.spockframework:spock-core",
                     "io.micronaut.test:micronaut-test-spock",
                     "org.codehaus.groovy:groovy"
-            )
+            ),
+            JavaPlugin.TEST_RUNTIME_ONLY_CONFIGURATION_NAME,
+            Collections.singletonList("org.junit.jupiter:junit-jupiter-engine")
     )),
-
+    /**
+     * Kotest 4.
+     */
+    KOTEST_4(MicronautExtension.mapOf(
+            "kaptTest",
+            Collections.singletonList("io.micronaut:micronaut-inject-java"),
+            JavaPlugin.TEST_IMPLEMENTATION_CONFIGURATION_NAME,
+            Arrays.asList(
+                    "io.micronaut.test:micronaut-test-kotest",
+                    "io.kotest:kotest-assertions-core-jvm"
+            ),
+            JavaPlugin.TEST_RUNTIME_ONLY_CONFIGURATION_NAME,
+            Collections.singletonList("oio.kotest:kotest-runner-junit5-jvm")
+    )),
     /**
      * No test runtime.
      */
@@ -65,6 +80,10 @@ public enum MicronautTestRuntime {
                 case "SPOCK2":
                 case "SPOCK_2":
                     return MicronautTestRuntime.SPOCK_2;
+                case "KOTEST":
+                case "KOTEST4":
+                case "KOTEST_4":
+                    return MicronautTestRuntime.KOTEST_4;
             }
         }
         return MicronautTestRuntime.NONE;
