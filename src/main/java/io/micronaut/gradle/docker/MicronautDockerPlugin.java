@@ -212,15 +212,22 @@ public class MicronautDockerPlugin implements Plugin<Project> {
 
         project.afterEvaluate(p -> {
             MicronautRuntime mr = MicronautApplicationPlugin.resolveRuntime(p);
-            if (mr == MicronautRuntime.LAMBDA_NATIVE) {
+            if (mr == MicronautRuntime.LAMBDA) {
                 TaskContainer taskContainer = p.getTasks();
                 TaskProvider<DockerCreateContainer> createLambdaContainer = taskContainer.register("createLambdaContainer", DockerCreateContainer.class);
                 createLambdaContainer.configure(task -> {
                     task.dependsOn(dockerBuildTask);
                     task.targetImageId(dockerBuildTask.flatMap(DockerBuildImage::getImageId));
                 });
-                TaskProvider<DockerCopyFileFromContainer> buildLambdaZip = taskContainer.register("buildLambdaZip", DockerCopyFileFromContainer.class);
+                TaskProvider<DockerCopyFileFromContainer> buildLambdaZip = taskContainer.register("buildNativeLambda", DockerCopyFileFromContainer.class);
                 File lambdaZip = new File(project.getBuildDir(), "libs/" + project.getName() + "-" + project.getVersion() + "-lambda.zip");
+                TaskProvider<DockerRemoveContainer> removeContainer = taskContainer.register("destroyLambdaContainer", DockerRemoveContainer.class);
+                removeContainer.configure(task -> {
+                    task.mustRunAfter(buildLambdaZip);
+                    task.getContainerId().set(
+                            createLambdaContainer.flatMap(DockerCreateContainer::getContainerId)
+                    );
+                });
                 buildLambdaZip.configure(task -> {
                     task.dependsOn(createLambdaContainer);
                     task.getContainerId().set(
@@ -229,15 +236,8 @@ public class MicronautDockerPlugin implements Plugin<Project> {
                     task.getRemotePath().set("/function/function.zip");
                     task.getHostPath().set(lambdaZip.getAbsolutePath());
                     task.doLast(task1 -> System.out.println("AWS Lambda ZIP built: " + lambdaZip));
+                    task.finalizedBy(removeContainer);
                 });
-                TaskProvider<DockerRemoveContainer> removeContainer = taskContainer.register("destroyLambdaContainer", DockerRemoveContainer.class);
-                removeContainer.configure(task -> {
-                    task.mustRunAfter(buildLambdaZip);
-                    task.getContainerId().set(
-                            createLambdaContainer.flatMap(DockerCreateContainer::getContainerId)
-                    );
-                });
-                taskContainer.getByName("assemble").dependsOn(buildLambdaZip, removeContainer);
             }
 
         });
