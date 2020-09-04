@@ -43,6 +43,20 @@ public class MicronautKotlinSupport {
      *
      * @return True if Kotlin support is present
      */
+    public static boolean isKotlinAllOpenSupportPresent() {
+        try {
+            //noinspection ConstantConditions
+            return AllOpenExtension.class != null;
+        } catch (Throwable e) {
+            return false;
+        }
+    }
+
+    /**
+     * Check whether Kotlin support is present.
+     *
+     * @return True if Kotlin support is present
+     */
     public static boolean isKotlinJvmPresent() {
         try {
             //noinspection ConstantConditions
@@ -63,14 +77,15 @@ public class MicronautKotlinSupport {
         if (!hasKotlin || !isKotlinSupportPresent()) {
             return;
         }
-
         plugins.apply("org.jetbrains.kotlin.plugin.allopen");
         plugins.apply("org.jetbrains.kotlin.kapt");
 
         // configure all open
-        final AllOpenExtension allOpen = project.getExtensions()
-                .getByType(AllOpenExtension.class);
-        allOpen.annotation("io.micronaut.aop.Around");
+        if (isKotlinAllOpenSupportPresent()) {
+            final AllOpenExtension allOpen = project.getExtensions()
+                    .getByType(AllOpenExtension.class);
+            allOpen.annotation("io.micronaut.aop.Around");
+        }
 
         // add inject-java to kapt scopes
         List<String> kaptConfigs = Arrays.asList("kapt", "kaptTest");
