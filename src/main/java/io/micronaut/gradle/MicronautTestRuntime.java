@@ -43,6 +43,7 @@ public enum MicronautTestRuntime {
             Collections.singletonList("io.micronaut:micronaut-inject-java"),
             JavaPlugin.TEST_IMPLEMENTATION_CONFIGURATION_NAME,
             Arrays.asList(
+                    "io.mockk:mockk",
                     "io.micronaut.test:micronaut-test-kotest",
                     "io.kotest:kotest-assertions-core-jvm"
             ),
