@@ -81,7 +81,7 @@ public class MicronautApplicationPlugin extends MicronautLibraryPlugin {
                 // reconfigure the run task to use Google cloud invoker
                 TaskContainer taskContainer = project.getTasks();
                 JavaExec run = (JavaExec) taskContainer.getByName("run");
-                run.dependsOn(taskContainer.findByName("processResources"));
+                run.dependsOn(taskContainer.findByName("processResources"), taskContainer.findByName("classes"));
                 run.setMain("com.google.cloud.functions.invoker.runner.Invoker");
                 run.setClasspath(ic);
                 run.setArgs(Arrays.asList(
