@@ -100,6 +100,7 @@ public class Foo {
             }
             
             dependencies {
+                annotationProcessor "io.micronaut.configuration:micronaut-openapi"
                 compileOnly "io.swagger.core.v3:swagger-annotations"
             }
             
@@ -310,6 +311,7 @@ class Foo {}
             }
             
             dependencies {
+                compileOnly "io.micronaut.configuration:micronaut-openapi"
                 compileOnly "io.swagger.core.v3:swagger-annotations"
             }
             
