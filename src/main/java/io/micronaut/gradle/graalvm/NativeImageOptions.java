@@ -232,9 +232,4 @@ public interface NativeImageOptions {
     @Input
     Property<Boolean> isVerbose();
 
-    /**
-     * @return Should the build run on a server (defaults to false).
-     */
-    @Input
-    Property<Boolean> isServerBuild();
 }
