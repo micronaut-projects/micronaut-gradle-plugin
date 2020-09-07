@@ -159,7 +159,7 @@ public class MicronautDockerPlugin implements Plugin<Project> {
         dockerBuildTask.configure(task -> {
             task.setGroup(BasePlugin.BUILD_GROUP);
             task.setDescription("Builds a Docker Image");
-            task.getInputDir().set(project.getRootDir());
+            task.getInputDir().set(project.getProjectDir());
             task.getDockerFile()
                     .convention(dockerFileTask.flatMap(Dockerfile::getDestFile));
             task.getImages().set(Collections.singletonList(project.getName()));
@@ -196,7 +196,7 @@ public class MicronautDockerPlugin implements Plugin<Project> {
         dockerBuildTask.configure(task -> {
             task.setGroup(BasePlugin.BUILD_GROUP);
             task.setDescription("Builds a Native Docker Image using GraalVM");
-            task.getInputDir().set(project.getRootDir());
+            task.getInputDir().set(project.getProjectDir());
             task.getDockerFile()
                     .convention(dockerFileTask.flatMap(Dockerfile::getDestFile));
             task.getImages().set(Collections.singletonList(project.getName()));
