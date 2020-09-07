@@ -30,7 +30,6 @@ public class NativeImageTask extends AbstractExecTask<NativeImageTask>
     private final Property<Boolean> isDebug;
     private final Property<Boolean> isFallback;
     private final Property<Boolean> isVerbose;
-    private final Property<Boolean> isServerBuild;
     private final Map<BooleanSupplier, String> booleanCmds;
 
     /**
@@ -51,12 +50,10 @@ public class NativeImageTask extends AbstractExecTask<NativeImageTask>
         this.isDebug = objectFactory.property(Boolean.class).convention(false);
         this.isFallback = objectFactory.property(Boolean.class).convention(false);
         this.isVerbose = objectFactory.property(Boolean.class).convention(false);
-        this.isServerBuild = objectFactory.property(Boolean.class).convention(false);
         this.booleanCmds = new LinkedHashMap<>(3);
         booleanCmds.put(isDebug::get, "-H:GenerateDebugInfo=1");
         booleanCmds.put(() -> !isFallback.get(), "--no-fallback");
         booleanCmds.put(isVerbose::get,  "--verbose");
-        booleanCmds.put(() -> !isServerBuild.get(), "--no-server");
     }
 
     @Override
@@ -268,10 +265,5 @@ public class NativeImageTask extends AbstractExecTask<NativeImageTask>
     @Override
     public Property<Boolean> isVerbose() {
         return isVerbose;
-    }
-
-    @Override
-    public Property<Boolean> isServerBuild() {
-        return isServerBuild;
     }
 }
