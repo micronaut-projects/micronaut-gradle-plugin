@@ -33,7 +33,12 @@ public enum MicronautTestRuntime {
                     "org.codehaus.groovy:groovy"
             ),
             JavaPlugin.TEST_RUNTIME_ONLY_CONFIGURATION_NAME,
-            Collections.singletonList("org.junit.jupiter:junit-jupiter-engine")
+            Arrays.asList(
+                    "org.junit.jupiter:junit-jupiter-engine",
+                    // needed on JDK 8 otherwise exception occurs TypeNotPresentInProxy
+                    // due to a reference to MicronautJunit5TestExtension in the @MicronautTest annotation
+                    "io.micronaut.test:micronaut-test-junit5"
+            )
     )),
     /**
      * Kotest 4.
