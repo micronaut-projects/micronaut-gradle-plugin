@@ -162,6 +162,7 @@ The most simple Kotlin build using a `build.gradle.kts` file looks like:
 plugins {
     id("org.jetbrains.kotlin.jvm") version "1.3.72"
     id("org.jetbrains.kotlin.kapt") version "1.3.72"
+    id("org.jetbrains.kotlin.plugin.allopen") version "1.3.72"    
     id("io.micronaut.application") version "{version}"
 }
 
