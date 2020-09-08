@@ -94,11 +94,11 @@ public class FooControllerTest {
 
         def result = GradleRunner.create()
                 .withProjectDir(testProjectDir.root)
-                .withArguments('test')
+                .withArguments('testClasses')
                 .withPluginClasspath()
                 .build()
 
-        def task = result.task(":test")
+        def task = result.task(":testClasses")
         expect:
         task.outcome == TaskOutcome.SUCCESS
 
