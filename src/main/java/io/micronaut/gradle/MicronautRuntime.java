@@ -37,8 +37,14 @@ public enum MicronautRuntime {
     /**
      * AWS lambda packaged as a Jar file.
      */
-    LAMBDA("io.micronaut.aws:micronaut-function-aws-api-proxy",
-            "io.micronaut.aws:micronaut-function-aws-custom-runtime"),
+    LAMBDA(MicronautExtension.mapOf(
+            JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME,
+            Arrays.asList("io.micronaut.aws:micronaut-function-aws-api-proxy", "io.micronaut.aws:micronaut-function-aws-custom-runtime"),
+            "developmentOnly",
+            Collections.singletonList("io.micronaut.aws:micronaut-function-aws-api-proxy-test"),
+            JavaPlugin.TEST_IMPLEMENTATION_CONFIGURATION_NAME,
+            Collections.singletonList("io.micronaut.aws:micronaut-function-aws-api-proxy-test")
+    )),
     /**
      * Oracle Cloud Function, packaged as a docker container.
      */
@@ -58,15 +64,24 @@ public enum MicronautRuntime {
     GOOGLE_FUNCTION(MicronautExtension.mapOf(
             JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME,
             Collections.singletonList("io.micronaut.gcp:micronaut-gcp-function-http"),
+            "developmentOnly",
+            Arrays.asList("com.google.cloud.functions:functions-framework-api", "io.micronaut.gcp:micronaut-gcp-function-http-test"),
             JavaPlugin.COMPILE_ONLY_CONFIGURATION_NAME,
             Collections.singletonList("com.google.cloud.functions:functions-framework-api"),
             JavaPlugin.TEST_IMPLEMENTATION_CONFIGURATION_NAME,
-            Collections.singletonList("com.google.cloud.functions:functions-framework-api")
+            Arrays.asList("com.google.cloud.functions:functions-framework-api", "io.micronaut.gcp:micronaut-gcp-function-http-test")
     )),
     /**
      * Azure Cloud Function.
      */
-    AZURE_FUNCTION("io.micronaut.azure:micronaut-azure-function-http", "com.microsoft.azure.functions:azure-functions-java-library");
+    AZURE_FUNCTION(MicronautExtension.mapOf(
+            JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME,
+            Arrays.asList("io.micronaut.azure:micronaut-azure-function-http", "com.microsoft.azure.functions:azure-functions-java-library"),
+            "developmentOnly",
+            Collections.singletonList("io.micronaut.azure:micronaut-azure-function-http-test"),
+            JavaPlugin.TEST_IMPLEMENTATION_CONFIGURATION_NAME,
+            Collections.singletonList("io.micronaut.azure:micronaut-azure-function-http-test")
+    ));
 
     private final Map<String, List<String>> implementation;
 
