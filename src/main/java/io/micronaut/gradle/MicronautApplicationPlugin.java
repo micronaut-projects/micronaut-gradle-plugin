@@ -4,6 +4,7 @@ import com.github.jengelman.gradle.plugins.shadow.ShadowPlugin;
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar;
 import io.micronaut.gradle.docker.MicronautDockerPlugin;
 import org.apache.tools.ant.taskdefs.condition.Os;
+import org.gradle.api.Action;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.Dependency;
@@ -54,7 +55,9 @@ public class MicronautApplicationPlugin extends MicronautLibraryPlugin {
             if (micronautRuntime == MicronautRuntime.ORACLE_FUNCTION) {
                 RepositoryHandler repositories = project.getRepositories();
                 repositories.add(
-                    repositories.maven(mavenArtifactRepository -> mavenArtifactRepository.setUrl("https://dl.bintray.com/fnproject/fnproject"))
+                    repositories.maven(mavenArtifactRepository ->
+                            mavenArtifactRepository.setUrl("https://dl.bintray.com/fnproject/fnproject")
+                    )
                 );
             }
             JavaApplication javaApplication = p.getExtensions().getByType(JavaApplication.class);
@@ -63,9 +66,6 @@ public class MicronautApplicationPlugin extends MicronautLibraryPlugin {
                     dependencyHandler.add(scope, dependency);
                 }
             });
-            if (micronautRuntime == MicronautRuntime.LAMBDA) {
-                javaApplication.setMainClassName("io.micronaut.function.aws.runtime.MicronautLambdaRuntime");
-            }
             if (micronautRuntime == MicronautRuntime.GOOGLE_FUNCTION) {
                 String invokerConfig = "invoker";
                 Configuration ic = project.getConfigurations().create(invokerConfig);
@@ -73,30 +73,30 @@ public class MicronautApplicationPlugin extends MicronautLibraryPlugin {
 
                 // reconfigure the run task to use Google cloud invoker
                 TaskContainer taskContainer = project.getTasks();
-                JavaExec run = (JavaExec) taskContainer.getByName("run");
-                run.dependsOn(taskContainer.findByName("processResources"), taskContainer.findByName("classes"));
-                run.setMain("com.google.cloud.functions.invoker.runner.Invoker");
-                run.setClasspath(ic);
-                run.setArgs(Arrays.asList(
-                        "--target", "io.micronaut.gcp.function.http.HttpFunction",
-                        "--port", 8080
-                ));
-                run.doFirst(t -> {
-                    JavaPluginConvention plugin = project.getConvention().getPlugin(JavaPluginConvention.class);
-                    SourceSet sourceSet = plugin.getSourceSets().getByName("main");
-                    SourceSetOutput output = sourceSet.getOutput();
-                    String runtimeClasspath = project.files(project.getConfigurations().getByName("runtimeClasspath"),
-                            output
-                    ).getAsPath();
-                    ((JavaExec) t).args("--classpath",
-                            runtimeClasspath
-                    );
+                taskContainer.register("runFunction", JavaExec.class, run -> {
+                    run.dependsOn(taskContainer.findByName("processResources"), taskContainer.findByName("classes"));
+                    run.setMain("com.google.cloud.functions.invoker.runner.Invoker");
+                    run.setClasspath(ic);
+                    run.setArgs(Arrays.asList(
+                            "--target", "io.micronaut.gcp.function.http.HttpFunction",
+                            "--port", 8080
+                    ));
+                    run.doFirst(t -> {
+                        JavaPluginConvention plugin = project.getConvention().getPlugin(JavaPluginConvention.class);
+                        SourceSet sourceSet = plugin.getSourceSets().getByName("main");
+                        SourceSetOutput output = sourceSet.getOutput();
+                        String runtimeClasspath = project.files(project.getConfigurations().getByName("runtimeClasspath"),
+                                output
+                        ).getAsPath();
+                        ((JavaExec) t).args("--classpath",
+                                runtimeClasspath
+                        );
+                    });
                 });
+
                 // apply required GCP function dependencies
                 dependencyHandler.add(JavaPlugin.COMPILE_ONLY_CONFIGURATION_NAME, "com.google.cloud.functions:functions-framework-api");
                 dependencyHandler.add(JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME,  "io.micronaut.gcp:micronaut-gcp-function-http");
-                // set the main class name appropriately
-                javaApplication.setMainClassName("io.micronaut.gcp.function.http.HttpFunction");
                 PluginContainer plugins = project.getPlugins();
                 // Google Cloud Function requires shadow packaging
                 if (!plugins.hasPlugin(ShadowPlugin.class)) {
