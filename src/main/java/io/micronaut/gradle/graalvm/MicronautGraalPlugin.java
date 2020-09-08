@@ -42,11 +42,6 @@ public class MicronautGraalPlugin implements Plugin<Project> {
                 nativeImageTask.dependsOn(tasks.findByName("classes"));
                 nativeImageTask.setGroup(BasePlugin.BUILD_GROUP);
                 nativeImageTask.setDescription("Builds a GraalVM Native Image");
-                Task assemble = tasks.findByName("assemble");
-                if (assemble != null) {
-                    assemble.dependsOn(nativeImageTask);
-                }
-
             });
 
             project.afterEvaluate(p -> p.getTasks().withType(NativeImageTask.class, nativeImageTask -> {
