@@ -237,7 +237,7 @@ $ ./gradlew dockerBuildNative
 
 Note that for this to work you must build the application with the same GraalVM SDK as used to build the image.
 
-To push the container to the currently configure configured container registry you can use either `dockerPush` or `dockerPush` native for the native image:
+To push the container to the currently configure configured container registry you can use either `dockerPush` or `dockerPushNative` for the native image:
 
 ```bash
 $ ./gradlew dockerPush
