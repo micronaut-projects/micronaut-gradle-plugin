@@ -3,7 +3,7 @@ package io.micronaut.gradle;
 /**
  * Allows configuration of annotation processing.
  */
-interface AnnotationProcessingConfigBuilder {
+public interface AnnotationProcessingConfigBuilder {
     /**
      * Whether incremental processing is enabled.
      * @param incremental True if incremental processing is enabled
