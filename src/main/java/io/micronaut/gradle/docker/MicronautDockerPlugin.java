@@ -59,7 +59,7 @@ public class MicronautDockerPlugin implements Plugin<Project> {
                 jar.manifest(manifest -> {
                     Map<String, Object> attrs = new HashMap<>(2);
                     JavaApplication javaApplication = project.getExtensions().getByType(JavaApplication.class);
-                    String mainClassName = javaApplication.getMainClassName();
+                    String mainClassName = javaApplication.getMainClass().get();
                     Configuration runtimeClasspath = project.getConfigurations()
                             .getByName(RUNTIME_CLASSPATH_CONFIGURATION_NAME);
 
