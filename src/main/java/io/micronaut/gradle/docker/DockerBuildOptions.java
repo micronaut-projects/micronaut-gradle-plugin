@@ -30,7 +30,6 @@ public interface DockerBuildOptions {
      * @return The default command to use
      */
     @Input
-    @Nullable
     Property<String> getDefaultCommand();
 
     /**

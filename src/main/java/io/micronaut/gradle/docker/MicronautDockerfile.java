@@ -41,7 +41,7 @@ public class MicronautDockerfile extends Dockerfile implements DockerBuildOption
         this.buildStrategy = objects.property(DockerBuildStrategy.class)
                                     .convention(DockerBuildStrategy.DEFAULT);
         this.baseImage = objects.property(String.class).convention("none");
-        this.defaultCommand = objects.property(String.class);
+        this.defaultCommand = objects.property(String.class).convention("none");
         this.args = objects.listProperty(String.class);
         this.exposedPorts = objects.listProperty(Integer.class)
                     .convention(Collections.singletonList(8080));
@@ -75,7 +75,12 @@ public class MicronautDockerfile extends Dockerfile implements DockerBuildOption
                 copyFile("build/layers/libs/*.jar", "/function/app/");
                 copyFile("build/layers/resources/*", "/function/app/");
                 copyFile("build/layers/application.jar", "/function/app/");
-                super.defaultCommand(this.defaultCommand.getOrElse("io.micronaut.oraclecloud.function.http.HttpFunction::handleRequest"));
+                String cmd = this.defaultCommand.get();
+                if ("none".equals(cmd)) {
+                    super.defaultCommand("io.micronaut.oraclecloud.function.http.HttpFunction::handleRequest");
+                } else {
+                    super.defaultCommand(cmd);
+                }
             break;
             case LAMBDA:
                 javaApplication.setMainClassName("io.micronaut.function.aws.runtime.MicronautLambdaRuntime");
