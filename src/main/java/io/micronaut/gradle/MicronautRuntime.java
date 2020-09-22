@@ -1,5 +1,6 @@
 package io.micronaut.gradle;
 
+import io.micronaut.gradle.docker.DockerBuildStrategy;
 import org.gradle.api.plugins.JavaPlugin;
 
 import java.util.Arrays;
@@ -37,7 +38,7 @@ public enum MicronautRuntime {
     /**
      * AWS lambda packaged as a Jar file.
      */
-    LAMBDA(MicronautExtension.mapOf(
+    LAMBDA(DockerBuildStrategy.LAMBDA, MicronautExtension.mapOf(
             JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME,
             Arrays.asList("io.micronaut.aws:micronaut-function-aws-api-proxy", "io.micronaut.aws:micronaut-function-aws-custom-runtime"),
             "developmentOnly",
@@ -48,7 +49,7 @@ public enum MicronautRuntime {
     /**
      * Oracle Cloud Function, packaged as a docker container.
      */
-    ORACLE_FUNCTION(MicronautExtension.mapOf(
+    ORACLE_FUNCTION(DockerBuildStrategy.ORACLE_FUNCTION, MicronautExtension.mapOf(
             JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME,
             Collections.singletonList("io.micronaut.oraclecloud:micronaut-oraclecloud-function-http"),
             JavaPlugin.TEST_IMPLEMENTATION_CONFIGURATION_NAME,
@@ -84,16 +85,35 @@ public enum MicronautRuntime {
     ));
 
     private final Map<String, List<String>> implementation;
+    private final DockerBuildStrategy buildStrategy;
 
     MicronautRuntime(String... dependencies) {
         this.implementation = Collections.singletonMap(JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME, Arrays.asList(dependencies));
+        this.buildStrategy = DockerBuildStrategy.DEFAULT;
     }
 
     MicronautRuntime(Map<String, List<String>> implementation) {
         this.implementation = implementation;
+        this.buildStrategy = DockerBuildStrategy.DEFAULT;
     }
 
+    MicronautRuntime(DockerBuildStrategy buildStrategy, Map<String, List<String>> implementation) {
+        this.implementation = implementation;
+        this.buildStrategy = buildStrategy;
+    }
+
+    /**
+     * A map of dependencies and scopes
+     * @return The dependencies and scopes
+     */
     public Map<String, List<String>> getDependencies() {
         return implementation;
+    }
+
+    /**
+     * @return The docker build strategy
+     */
+    public DockerBuildStrategy getBuildStrategy() {
+        return buildStrategy;
     }
 }
