@@ -2,10 +2,8 @@ package io.micronaut.gradle.docker;
 
 import com.bmuschko.gradle.docker.tasks.image.Dockerfile;
 import io.micronaut.gradle.MicronautRuntime;
-import org.gradle.api.Action;
 import org.gradle.api.JavaVersion;
 import org.gradle.api.Project;
-import org.gradle.api.Task;
 import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.plugins.BasePlugin;
 import org.gradle.api.plugins.JavaApplication;
@@ -14,8 +12,8 @@ import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.TaskAction;
 import org.gradle.internal.jvm.Jvm;
+import org.jetbrains.annotations.Nullable;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -29,7 +27,10 @@ public class MicronautDockerfile extends Dockerfile implements DockerBuildOption
     private final ListProperty<String> args;
     @Input
     private final ListProperty<Integer> exposedPorts;
-    private final Property<MicronautRuntime> micronautRuntime;
+    @Input
+    private final Property<DockerBuildStrategy> buildStrategy;
+    @Input
+    private final Property<String> defaultCommand;
 
 
     public MicronautDockerfile() {
@@ -37,8 +38,10 @@ public class MicronautDockerfile extends Dockerfile implements DockerBuildOption
         setGroup(BasePlugin.BUILD_GROUP);
         setDescription("Builds a Docker File for a Micronaut application");
         ObjectFactory objects = project.getObjects();
-        this.micronautRuntime = objects.property(MicronautRuntime.class);
+        this.buildStrategy = objects.property(DockerBuildStrategy.class)
+                                    .convention(DockerBuildStrategy.DEFAULT);
         this.baseImage = objects.property(String.class).convention("none");
+        this.defaultCommand = objects.property(String.class);
         this.args = objects.listProperty(String.class);
         this.exposedPorts = objects.listProperty(Integer.class)
                     .convention(Collections.singletonList(8080));
@@ -49,16 +52,22 @@ public class MicronautDockerfile extends Dockerfile implements DockerBuildOption
         });
     }
 
+    @Nullable
+    @Override
+    public Property<String> getDefaultCommand() {
+        return defaultCommand;
+    }
+
     @Override
     @TaskAction
     public void create() {
-        MicronautRuntime micronautRuntime = this.micronautRuntime.getOrElse(MicronautRuntime.NONE);
+        DockerBuildStrategy buildStrategy = this.buildStrategy.getOrElse(DockerBuildStrategy.DEFAULT);
         JavaApplication javaApplication = getProject().getExtensions().getByType(JavaApplication.class);
         String from = getBaseImage().getOrNull();
         if ("none".equalsIgnoreCase(from)) {
             from = null;
         }
-        switch (micronautRuntime) {
+        switch (buildStrategy) {
             case ORACLE_FUNCTION:
                 javaApplication.setMainClassName("com.fnproject.fn.runtime.EntryPoint");
                 from(new Dockerfile.From(from != null ? from : "fnproject/fn-java-fdk:" + getProjectFnVersion()));
@@ -66,7 +75,7 @@ public class MicronautDockerfile extends Dockerfile implements DockerBuildOption
                 copyFile("build/layers/libs/*.jar", "/function/app/");
                 copyFile("build/layers/resources/*", "/function/app/");
                 copyFile("build/layers/application.jar", "/function/app/");
-                defaultCommand("io.micronaut.oraclecloud.function.http.HttpFunction::handleRequest");
+                super.defaultCommand(this.defaultCommand.getOrElse("io.micronaut.oraclecloud.function.http.HttpFunction::handleRequest"));
             break;
             case LAMBDA:
                 javaApplication.setMainClassName("io.micronaut.function.aws.runtime.MicronautLambdaRuntime");
@@ -87,11 +96,11 @@ public class MicronautDockerfile extends Dockerfile implements DockerBuildOption
     }
 
     /**
-     * @return The micronaut runtime.
+     * @return The build startegy.
      */
     @Input
-    public Property<MicronautRuntime> getMicronautRuntime() {
-        return micronautRuntime;
+    public Property<DockerBuildStrategy> getBuildStrategy() {
+        return buildStrategy;
     }
 
     @Override

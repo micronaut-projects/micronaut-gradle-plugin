@@ -47,7 +47,10 @@ public class NativeImageDockerfile extends Dockerfile implements DockerBuildOpti
     private final ListProperty<Integer> exposedPorts;
     @Input
     private final Property<Boolean> requireGraalSdk;
-    private final Property<MicronautRuntime> micronautRuntime;
+    @Input
+    private final Property<DockerBuildStrategy> buildStrategy;
+    @Input
+    private final Property<String> defaultCommand;
 
 
     public NativeImageDockerfile() {
@@ -56,8 +59,8 @@ public class NativeImageDockerfile extends Dockerfile implements DockerBuildOpti
         setDescription("Builds a Docker File for Native Image");
         getDestFile().set(project.getLayout().getBuildDirectory().file("docker/DockerfileNative"));
         ObjectFactory objects = project.getObjects();
-        this.micronautRuntime = objects.property(MicronautRuntime.class)
-                                        .convention(MicronautRuntime.NONE);
+        this.buildStrategy = objects.property(DockerBuildStrategy.class)
+                                        .convention(DockerBuildStrategy.DEFAULT);
         this.jdkVersion = objects.property(String.class);
         this.requireGraalSdk = objects.property(Boolean.class).convention(true);
         JavaVersion javaVersion = Jvm.current().getJavaVersion();
@@ -80,7 +83,7 @@ public class NativeImageDockerfile extends Dockerfile implements DockerBuildOpti
         }
         this.args = objects.listProperty(String.class);
         this.exposedPorts = objects.listProperty(Integer.class);
-
+        this.defaultCommand = objects.property(String.class);
         doLast(task -> {
             java.io.File f = getDestFile().get().getAsFile();
             System.out.println("Dockerfile written to: " + f.getAbsolutePath());
@@ -103,11 +106,10 @@ public class NativeImageDockerfile extends Dockerfile implements DockerBuildOpti
     }
 
     /**
-     * @return The micronaut runtime
+     * @return The build startegy
      */
-    @Input
-    public Property<MicronautRuntime> getMicronautRuntime() {
-        return micronautRuntime;
+    public Property<DockerBuildStrategy> getBuildStrategy() {
+        return buildStrategy;
     }
 
     /**
@@ -142,6 +144,11 @@ public class NativeImageDockerfile extends Dockerfile implements DockerBuildOpti
     }
 
     @Override
+    public Property<String> getDefaultCommand() {
+        return this.defaultCommand;
+    }
+
+    @Override
     public ListProperty<Integer> getExposedPorts() {
         return this.exposedPorts;
     }
@@ -149,12 +156,12 @@ public class NativeImageDockerfile extends Dockerfile implements DockerBuildOpti
     @Override
     @TaskAction
     public void create() {
-        MicronautRuntime micronautRuntime = this.micronautRuntime.getOrElse(MicronautRuntime.NONE);
+        DockerBuildStrategy buildStrategy = this.buildStrategy.getOrElse(DockerBuildStrategy.DEFAULT);
         JavaApplication javaApplication = getProject().getExtensions().getByType(JavaApplication.class);
         if (requireGraalSdk.get() && !GraalUtil.isGraalJVM()) {
             throw new RuntimeException("A GraalVM SDK is required to build native images");
         }
-        if (micronautRuntime == MicronautRuntime.LAMBDA) {
+        if (buildStrategy == DockerBuildStrategy.LAMBDA) {
             from(new From("amazonlinux:latest").withStage("graalvm"));
             environmentVariable("LANG", "en_US.UTF-8");
             runCommand("yum install -y gcc gcc-c++ libc6-dev  zlib1g-dev curl bash zlib zlib-devel zip tar gzip");
@@ -177,11 +184,11 @@ public class NativeImageDockerfile extends Dockerfile implements DockerBuildOpti
         this.nativeImageTask.setClasspath(getProject().files());
         // use hard coded image name
         this.nativeImageTask.setImageName("application");
-        if (micronautRuntime == MicronautRuntime.ORACLE_FUNCTION) {
+        if (buildStrategy == DockerBuildStrategy.ORACLE_FUNCTION) {
             javaApplication.setMainClassName("com.fnproject.fn.runtime.EntryPoint");
             this.nativeImageTask.setMain("com.fnproject.fn.runtime.EntryPoint");
             this.nativeImageTask.args("--report-unsupported-elements-at-runtime");
-        } else if (micronautRuntime == MicronautRuntime.LAMBDA) {
+        } else if (buildStrategy == DockerBuildStrategy.LAMBDA) {
             javaApplication.setMainClassName("io.micronaut.function.aws.runtime.MicronautLambdaRuntime");
             this.nativeImageTask.setMain("io.micronaut.function.aws.runtime.MicronautLambdaRuntime");
         }
@@ -200,12 +207,12 @@ public class NativeImageDockerfile extends Dockerfile implements DockerBuildOpti
         }
         String nativeImageCommand = String.join(" ", commandLine);
         runCommand(nativeImageCommand);
-        switch (micronautRuntime) {
+        switch (buildStrategy) {
             case ORACLE_FUNCTION:
                 if (baseImage == null) {
                     baseImage = "oraclelinux:7-slim";
                 }
-                from(new From("fnproject/fn-java-fdk:1.0.105").withStage("fnfdk"));
+                from(new From("fnproject/fn-java-fdk:" + getProjectFnVersion()).withStage("fnfdk"));
                 from(baseImage);
                 workingDir("/function");
                 runCommand("groupadd -g 1000 fn && useradd --uid 1000 -g fn fn");
@@ -217,7 +224,7 @@ public class NativeImageDockerfile extends Dockerfile implements DockerBuildOpti
                     newList.addAll(strings);
                     return newList;
                 }));
-                defaultCommand("io.micronaut.oraclecloud.function.http.HttpFunction::handleRequest");
+                super.defaultCommand(this.defaultCommand.getOrElse("io.micronaut.oraclecloud.function.http.HttpFunction::handleRequest"));
             break;
             case LAMBDA:
                 if (baseImage == null) {
@@ -291,5 +298,13 @@ public class NativeImageDockerfile extends Dockerfile implements DockerBuildOpti
             this.graalImage.set(imageName);
         }
         return this;
+    }
+
+    private String getProjectFnVersion() {
+        JavaVersion javaVersion = Jvm.current().getJavaVersion();
+        if (javaVersion != null && javaVersion.isJava11Compatible()) {
+            return "jre11-latest";
+        }
+        return "latest";
     }
 }

@@ -150,7 +150,9 @@ public class MicronautDockerPlugin implements Plugin<Project> {
             dockerFileTask = tasks.register("dockerfile", MicronautDockerfile.class);
             dockerFileTask.configure(task -> {
                 MicronautRuntime mr = MicronautApplicationPlugin.resolveRuntime(project);
-                ((MicronautDockerfile) task).getMicronautRuntime().set(mr);
+                if (mr != MicronautRuntime.NONE) {
+                    ((MicronautDockerfile) task).getBuildStrategy().set(mr.getBuildStrategy());
+                }
                 task.dependsOn(buildLayersTask);
             });
         }
@@ -191,7 +193,9 @@ public class MicronautDockerPlugin implements Plugin<Project> {
             dockerFileTask = tasks.register("dockerfileNative", NativeImageDockerfile.class);
             dockerFileTask.configure(task -> {
                 MicronautRuntime mr = MicronautApplicationPlugin.resolveRuntime(project);
-                task.getMicronautRuntime().set(mr);
+                if (mr != MicronautRuntime.NONE) {
+                    task.getBuildStrategy().set(mr.getBuildStrategy());
+                }
                 task.dependsOn(buildLayersTask);
             });
         }
