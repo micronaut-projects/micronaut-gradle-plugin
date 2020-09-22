@@ -83,7 +83,7 @@ public class NativeImageDockerfile extends Dockerfile implements DockerBuildOpti
         }
         this.args = objects.listProperty(String.class);
         this.exposedPorts = objects.listProperty(Integer.class);
-        this.defaultCommand = objects.property(String.class);
+        this.defaultCommand = objects.property(String.class).convention("none");
         doLast(task -> {
             java.io.File f = getDestFile().get().getAsFile();
             System.out.println("Dockerfile written to: " + f.getAbsolutePath());
