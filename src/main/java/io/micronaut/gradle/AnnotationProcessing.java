@@ -1,8 +1,10 @@
 package io.micronaut.gradle;
 
+import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Property;
+import org.gradle.api.tasks.SourceSet;
 
 import javax.inject.Inject;
 
@@ -17,6 +19,7 @@ public class AnnotationProcessing implements AnnotationProcessingConfigBuilder {
     private final Property<Boolean> incremental;
     private final Property<String> module;
     private final ListProperty<String> annotations;
+    private final ListProperty<SourceSet> additionalSourceSets;
 
     @Inject
     public AnnotationProcessing(ObjectFactory objectFactory) {
@@ -24,6 +27,7 @@ public class AnnotationProcessing implements AnnotationProcessingConfigBuilder {
         this.module = objectFactory.property(String.class);
         this.group = objectFactory.property(String.class);
         this.annotations = objectFactory.listProperty(String.class);
+        this.additionalSourceSets = objectFactory.listProperty(SourceSet.class);
     }
 
     /**
@@ -52,6 +56,19 @@ public class AnnotationProcessing implements AnnotationProcessingConfigBuilder {
      */
     public ListProperty<String> getAnnotations() {
         return annotations;
+    }
+
+    /**
+     * @return The additional configurations to apply annotation processing to.
+     */
+    public ListProperty<SourceSet> getAdditionalSourceSets() {
+        return additionalSourceSets;
+    }
+
+    @Override
+    public AnnotationProcessingConfigBuilder sourceSets(SourceSet... sourceSets) {
+        this.additionalSourceSets.addAll(sourceSets);
+        return this;
     }
 
     @Override
