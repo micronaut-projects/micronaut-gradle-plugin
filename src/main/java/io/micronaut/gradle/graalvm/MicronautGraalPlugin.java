@@ -51,7 +51,9 @@ public class MicronautGraalPlugin implements Plugin<Project> {
                 String mainClassName = javaApplication.getMainClass().get();
                 String imageName = p.getName();
                 nativeImageTask.setMain(mainClassName);
-                nativeImageTask.setImageName(imageName);
+                if (!nativeImageTask.getImageName().isPresent()) {
+                    nativeImageTask.setImageName(imageName);
+                }
                 FileCollection runtimeConfig = p
                         .getConfigurations()
                         .getByName(JavaPlugin.RUNTIME_CLASSPATH_CONFIGURATION_NAME);
