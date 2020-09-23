@@ -12,6 +12,8 @@ import org.gradle.api.artifacts.dsl.DependencyHandler;
 import org.gradle.api.plugins.ExtensionContainer;
 import org.gradle.api.plugins.GroovyPlugin;
 import org.gradle.api.plugins.PluginContainer;
+import org.gradle.api.provider.ListProperty;
+import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.TaskContainer;
 import org.gradle.api.tasks.compile.GroovyCompile;
 import org.gradle.api.tasks.compile.GroovyForkOptions;
@@ -96,7 +98,41 @@ public class MicronautLibraryPlugin implements Plugin<Project> {
                 project.getTasks().withType(Test.class, Test::useJUnitPlatform);
             }
 
-            applyAdditionalProcessors(p, ANNOTATION_PROCESSOR_CONFIGURATION_NAME, TEST_ANNOTATION_PROCESSOR_CONFIGURATION_NAME);
+            applyAdditionalProcessors(
+                    p,
+                    ANNOTATION_PROCESSOR_CONFIGURATION_NAME,
+                    TEST_ANNOTATION_PROCESSOR_CONFIGURATION_NAME
+            );
+
+            ListProperty<SourceSet> additionalSourceSets =
+                    micronautExtension.getProcessing().getAdditionalSourceSets();
+
+            if (additionalSourceSets.isPresent()) {
+                List<SourceSet> configurations = additionalSourceSets.get();
+                if (!configurations.isEmpty()) {
+                    for (SourceSet sourceSet : configurations) {
+                        String annotationProcessorConfigurationName = sourceSet
+                                                .getAnnotationProcessorConfigurationName();
+                        String implementationConfigurationName = sourceSet
+                                                .getImplementationConfigurationName();
+                        List<String> both = Arrays.asList(
+                                implementationConfigurationName,
+                                annotationProcessorConfigurationName
+                        );
+                        for (String configuration : both) {
+                            dependencyHandler.add(
+                                    configuration,
+                                    platform
+                            );
+                        }
+                        configureAnnotationProcessors(p,
+                                implementationConfigurationName,
+                                Collections.singletonList(
+                                        annotationProcessorConfigurationName
+                                ));
+                    }
+                }
+            }
 
             boolean hasGroovy = plugins.findPlugin(GroovyPlugin.class) != null;
             if (hasGroovy) {
@@ -151,22 +187,9 @@ public class MicronautLibraryPlugin implements Plugin<Project> {
     }
 
     private void configureJava(Project project, TaskContainer tasks) {
-        final DependencyHandler dependencyHandler = project.getDependencies();
-        for (String configuration : getJavaAnnotationProcessorConfigurations()) {
-            List<String> annotationProcessorModules = getAnnotationProcessorModules();
-            for (String annotationProcessorModule : annotationProcessorModules) {
-                dependencyHandler.add(
-                        configuration,
-                        "io.micronaut:micronaut-" + annotationProcessorModule
-                );
-            }
-
-        }
-
-        dependencyHandler.add(
-                isLibrary ? API_CONFIGURATION_NAME : IMPLEMENTATION_CONFIGURATION_NAME,
-                "io.micronaut:micronaut-inject"
-        );
+        String implementationScope = isLibrary ? API_CONFIGURATION_NAME : IMPLEMENTATION_CONFIGURATION_NAME;
+        List<String> annotationProcessorConfigurations = getJavaAnnotationProcessorConfigurations();
+        configureAnnotationProcessors(project, implementationScope, annotationProcessorConfigurations);
 
         project.afterEvaluate(p -> tasks.withType(JavaCompile.class, javaCompile -> {
             final List<String> compilerArgs = javaCompile.getOptions().getCompilerArgs();
@@ -193,6 +216,28 @@ public class MicronautLibraryPlugin implements Plugin<Project> {
             }
         }));
 
+    }
+
+    static void configureAnnotationProcessors(
+            Project project,
+            String implementationScope,
+            List<String> annotationProcessorConfigurations) {
+        final DependencyHandler dependencyHandler = project.getDependencies();
+        for (String configuration : annotationProcessorConfigurations) {
+            List<String> annotationProcessorModules = getAnnotationProcessorModules();
+            for (String annotationProcessorModule : annotationProcessorModules) {
+                dependencyHandler.add(
+                        configuration,
+                        "io.micronaut:micronaut-" + annotationProcessorModule
+                );
+            }
+
+        }
+
+        dependencyHandler.add(
+                implementationScope,
+                "io.micronaut:micronaut-inject"
+        );
     }
 
     private void configureGroovy(Project project, TaskContainer tasks) {

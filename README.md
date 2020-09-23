@@ -49,6 +49,11 @@ micronaut {
         // advice. If omitted however, incremental annotation processing
         // will not work correctly
         annotations "com.example.*"
+        // additional sourceSets can be configured here to apply the BOM
+        // and annotation processors to source sets other than 'main' 
+        sourceSets(
+             sourceSets.main        
+        )     
     }   
 }
 ```

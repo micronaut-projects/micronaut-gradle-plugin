@@ -6,6 +6,8 @@ import org.gradle.api.artifacts.Dependency;
 import org.gradle.api.artifacts.dsl.DependencyHandler;
 import org.gradle.api.plugins.ExtensionContainer;
 import org.gradle.api.plugins.PluginContainer;
+import org.gradle.api.provider.ListProperty;
+import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.TaskContainer;
 import org.jetbrains.kotlin.allopen.gradle.AllOpenExtension;
 import org.jetbrains.kotlin.gradle.dsl.KotlinCompile;
@@ -15,6 +17,8 @@ import org.jetbrains.kotlin.gradle.plugin.KaptExtension;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+
+import static java.util.Locale.ENGLISH;
 
 /**
  * Extension to integration support for Kotlin.
@@ -118,12 +122,41 @@ public class MicronautKotlinSupport {
             final MicronautExtension micronautExtension = p
                     .getExtensions()
                     .getByType(MicronautExtension.class);
+            ListProperty<SourceSet> additionalSourceSets =
+                    micronautExtension.getProcessing().getAdditionalSourceSets();
+            final DependencyHandler dependencyHandler = p.getDependencies();
             final String micronautVersion = MicronautLibraryPlugin.getMicronautVersion(
                     p,
                     micronautExtension
             );
-            final DependencyHandler dependencyHandler = p.getDependencies();
+
             final Dependency platform = MicronautLibraryPlugin.resolveMicronautPlatform(dependencyHandler, micronautVersion);
+            if (additionalSourceSets.isPresent()) {
+                List<SourceSet> configurations = additionalSourceSets.get();
+                if (!configurations.isEmpty()) {
+                    for (SourceSet sourceSet : configurations) {
+                        String annotationProcessorConfigurationName = "kapt" + capitalize(sourceSet.getName());
+                        String implementationConfigurationName = sourceSet
+                                .getImplementationConfigurationName();
+                        List<String> both = Arrays.asList(
+                                implementationConfigurationName,
+                                annotationProcessorConfigurationName
+                        );
+                        for (String configuration : both) {
+                            dependencyHandler.add(
+                                    configuration,
+                                    platform
+                            );
+                        }
+                        MicronautLibraryPlugin.configureAnnotationProcessors(p,
+                                implementationConfigurationName,
+                                Collections.singletonList(
+                                        annotationProcessorConfigurationName
+                                ));
+                    }
+                }
+            }
+
 
             for (String kaptConfig : kaptConfigs) {
                 dependencyHandler.add(
@@ -171,5 +204,12 @@ public class MicronautKotlinSupport {
             });
 
         }
+    }
+
+    private static String capitalize(String name) {
+        if (name == null || name.length() == 0) {
+            return name;
+        }
+        return name.substring(0, 1).toUpperCase(ENGLISH) + name.substring(1);
     }
 }

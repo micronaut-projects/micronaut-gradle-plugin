@@ -2,6 +2,8 @@ package io.micronaut.gradle
 
 import org.gradle.testkit.runner.GradleRunner
 import org.gradle.testkit.runner.TaskOutcome
+import org.gradle.testkit.runner.internal.PluginUnderTestMetadataReading
+import org.jetbrains.kotlin.gradle.dsl.KotlinCompile
 import org.junit.Rule
 import org.junit.rules.TemporaryFolder
 import spock.lang.Specification
@@ -187,6 +189,172 @@ class Foo {}
         new File(
                 testProjectDir.getRoot(),
                 'build/classes/java/main/example/$FooDefinition.class'
+        ).exists()
+    }
+
+
+    def "test apply defaults for micronaut-library and kotlin with kotlin DSL"() {
+        given:
+        settingsFile << "rootProject.name = 'hello-world'"
+        buildFile.delete()
+        kotlinBuildFile << """
+            plugins {
+                id("org.jetbrains.kotlin.jvm") version("1.4.10")
+                id("org.jetbrains.kotlin.kapt") version("1.4.10")
+                id("org.jetbrains.kotlin.plugin.allopen") version("1.4.10")
+                id("io.micronaut.library")
+            }
+            
+            micronaut {
+                version("2.0.3")
+                processing {
+                    incremental(true)
+                }
+            }
+            
+            repositories {
+                jcenter()
+                mavenCentral()
+            }
+            
+        """
+        testProjectDir.newFolder("src", "main", "kotlin", "example")
+        def javaFile = testProjectDir.newFile("src/main/kotlin/example/Foo.kt")
+        javaFile.parentFile.mkdirs()
+        javaFile << """
+package example
+
+@javax.inject.Singleton
+class Foo {}
+"""
+
+        when:
+        def result = GradleRunner.create()
+                .withProjectDir(testProjectDir.root)
+                .withArguments('assemble')
+                .withPluginClasspath()
+
+                .build()
+
+        println result.output
+        then:
+        result.task(":assemble").outcome == TaskOutcome.SUCCESS
+        result.output.contains("Creating bean classes for 1 type elements")
+    }
+
+    def "test custom soruceSet for micronaut-library and kotlin with kotlin DSL"() {
+        given:
+        settingsFile << "rootProject.name = 'hello-world'"
+        buildFile.delete()
+        kotlinBuildFile << """
+            plugins {
+                id("org.jetbrains.kotlin.jvm") version("1.4.10")
+                id("org.jetbrains.kotlin.kapt") version("1.4.10")
+                id("org.jetbrains.kotlin.plugin.allopen") version("1.4.10")
+                id("io.micronaut.library")
+            }
+            
+            sourceSets {
+                val custom by creating {
+                    compileClasspath += sourceSets["main"].output
+                    runtimeClasspath += sourceSets["main"].output
+                }
+            }            
+            micronaut {
+                version("2.0.3")
+                processing {
+                    incremental(true)
+                    sourceSets(
+                        sourceSets["custom"]        
+                    )                    
+                }
+            }            
+            
+            repositories {
+                jcenter()
+                mavenCentral()
+            }
+            
+        """
+        testProjectDir.newFolder("src", "custom", "kotlin", "example")
+        def javaFile = testProjectDir.newFile("src/custom/kotlin/example/Foo.kt")
+        javaFile.parentFile.mkdirs()
+        javaFile << """
+package example
+
+@javax.inject.Singleton
+class Foo {}
+"""
+
+        when:
+        def result = GradleRunner.create()
+                .withProjectDir(testProjectDir.root)
+                .withArguments('compileCustomKotlin')
+                .withPluginClasspath()
+
+                .build()
+
+        println result.output
+        then:
+        result.task(":compileCustomKotlin").outcome == TaskOutcome.SUCCESS
+        result.output.contains("Creating bean classes for 1 type elements")
+    }
+
+    def "test custom sourceset micronaut-library and java"() {
+        given:
+        settingsFile << "rootProject.name = 'hello-world'"
+        buildFile << """
+            plugins {
+                id "io.micronaut.library"
+            }
+            
+            sourceSets {
+                custom {
+                    java {
+                        srcDirs("src/custom/java")
+                    }
+                }
+            }            
+            micronaut {
+                version "2.0.0.RC1"
+                processing {
+                    incremental true
+                    sourceSets(
+                        sourceSets.custom        
+                    )                    
+                }
+            }
+            
+            repositories {
+                jcenter()
+                mavenCentral()
+            }
+
+            
+        """
+        testProjectDir.newFolder("src", "custom", "java", "example")
+        def javaFile = testProjectDir.newFile("src/custom/java/example/Foo.java")
+        javaFile.parentFile.mkdirs()
+        javaFile << """
+package example;
+
+@javax.inject.Singleton
+class Foo {}
+"""
+
+        when:
+        def result = GradleRunner.create()
+                .withProjectDir(testProjectDir.root)
+                .withArguments('compileCustomJava')
+                .withPluginClasspath()
+                .build()
+
+        then:
+        result.task(":compileCustomJava").outcome == TaskOutcome.SUCCESS
+        result.output.contains("Creating bean classes for 1 type elements")
+        new File(
+                testProjectDir.getRoot(),
+                'build/classes/java/custom/example/$FooDefinition.class'
         ).exists()
     }
 

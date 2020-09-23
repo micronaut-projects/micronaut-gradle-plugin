@@ -1,5 +1,8 @@
 package io.micronaut.gradle;
 
+import org.gradle.api.artifacts.Configuration;
+import org.gradle.api.tasks.SourceSet;
+
 /**
  * Allows configuration of annotation processing.
  */
@@ -31,4 +34,11 @@ public interface AnnotationProcessingConfigBuilder {
      * @return This builder
      */
     AnnotationProcessingConfigBuilder annotations(String...annotations);
+
+    /**
+     * Additional source sets to apply processing to.
+     * @param sourceSets The source sets
+     * @return This builder
+     */
+    AnnotationProcessingConfigBuilder sourceSets(SourceSet... sourceSets);
 }
