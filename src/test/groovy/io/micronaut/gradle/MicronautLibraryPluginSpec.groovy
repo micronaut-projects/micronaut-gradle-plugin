@@ -2,8 +2,6 @@ package io.micronaut.gradle
 
 import org.gradle.testkit.runner.GradleRunner
 import org.gradle.testkit.runner.TaskOutcome
-import org.gradle.testkit.runner.internal.PluginUnderTestMetadataReading
-import org.jetbrains.kotlin.gradle.dsl.KotlinCompile
 import org.junit.Rule
 import org.junit.rules.TemporaryFolder
 import spock.lang.Specification
@@ -20,6 +18,84 @@ class MicronautLibraryPluginSpec extends Specification {
         settingsFile = testProjectDir.newFile('settings.gradle')
         buildFile = testProjectDir.newFile('build.gradle')
         kotlinBuildFile = testProjectDir.newFile('build.gradle.kts')
+    }
+
+    def "test lombok works"() {
+        given:
+        settingsFile << "rootProject.name = 'hello-world'"
+        buildFile << """
+            plugins {
+                id "io.micronaut.library"
+            }
+            
+            micronaut {
+                version "2.0.3"
+                testRuntime "junit"
+                processing {
+                    incremental true
+                }
+            }
+            
+            repositories {
+                jcenter()
+                mavenCentral()
+            }
+            
+            dependencies {
+                annotationProcessor 'org.projectlombok:lombok:1.18.12'
+                compileOnly 'org.projectlombok:lombok:1.18.12'
+            }
+            
+        """
+        testProjectDir.newFolder("src", "main", "java", "example")
+        testProjectDir.newFolder("src", "test", "java", "example")
+        def javaFile = testProjectDir.newFile("src/main/java/example/Foo.java")
+        def testJavaFile = testProjectDir.newFile("src/test/java/example/FooTest.java")
+        javaFile.parentFile.mkdirs()
+        javaFile << """
+package example;
+
+import lombok.Data;
+import io.micronaut.context.annotation.*;
+
+@Data
+@ConfigurationProperties("foo")
+class Foo {
+    private String name;
+}
+"""
+        testJavaFile.parentFile.mkdirs()
+        testJavaFile << """
+package example;
+
+import io.micronaut.test.annotation.MicronautTest;
+import io.micronaut.context.annotation.*;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
+@MicronautTest
+@Property(name="foo.name", value="Good")
+class FooTest {
+    @javax.inject.Inject
+    Foo foo;
+    
+    @Test
+    void testLombokValue() {
+        Assertions.assertEquals("Good", foo.getName());
+    }
+}
+"""
+
+        when:
+        def result = GradleRunner.create()
+                .withProjectDir(testProjectDir.root)
+                .withArguments('test')
+                .withPluginClasspath()
+                .build()
+
+        then:
+        result.task(":test").outcome == TaskOutcome.SUCCESS
+        result.output.contains("Creating bean classes for 1 type elements")
     }
 
     def "test add jaxrs processing"() {
