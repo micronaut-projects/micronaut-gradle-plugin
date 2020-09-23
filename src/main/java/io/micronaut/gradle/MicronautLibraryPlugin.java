@@ -187,34 +187,37 @@ public class MicronautLibraryPlugin implements Plugin<Project> {
     }
 
     private void configureJava(Project project, TaskContainer tasks) {
-        String implementationScope = isLibrary ? API_CONFIGURATION_NAME : IMPLEMENTATION_CONFIGURATION_NAME;
-        List<String> annotationProcessorConfigurations = getJavaAnnotationProcessorConfigurations();
-        configureAnnotationProcessors(project, implementationScope, annotationProcessorConfigurations);
 
-        project.afterEvaluate(p -> tasks.withType(JavaCompile.class, javaCompile -> {
-            final List<String> compilerArgs = javaCompile.getOptions().getCompilerArgs();
-            final MicronautExtension micronautExtension = p.getExtensions().getByType(MicronautExtension.class);
-            final AnnotationProcessing processing = micronautExtension.getProcessing();
-            final boolean isIncremental = processing.getIncremental().getOrElse(true);
-            final String group = processing.getGroup().getOrElse(p.getGroup().toString());
-            final String module = processing.getModule().getOrElse(p.getName());
-            if (isIncremental) {
-                final List<String> annotations = processing.getAnnotations().getOrElse(Collections.emptyList());
-                compilerArgs.add("-Amicronaut.processing.incremental=true");
-                if (!annotations.isEmpty()) {
-                    compilerArgs.add("-Amicronaut.processing.annotations=" + String.join(",", annotations));
-                } else {
-                    if (group.length() > 0) {
-                        compilerArgs.add("-Amicronaut.processing.annotations=" + group + ".*");
+        project.afterEvaluate(p -> {
+            String implementationScope = isLibrary ? API_CONFIGURATION_NAME : IMPLEMENTATION_CONFIGURATION_NAME;
+            List<String> annotationProcessorConfigurations = getJavaAnnotationProcessorConfigurations();
+            configureAnnotationProcessors(project, implementationScope, annotationProcessorConfigurations);
+
+            tasks.withType(JavaCompile.class, javaCompile -> {
+                final List<String> compilerArgs = javaCompile.getOptions().getCompilerArgs();
+                final MicronautExtension micronautExtension = p.getExtensions().getByType(MicronautExtension.class);
+                final AnnotationProcessing processing = micronautExtension.getProcessing();
+                final boolean isIncremental = processing.getIncremental().getOrElse(true);
+                final String group = processing.getGroup().getOrElse(p.getGroup().toString());
+                final String module = processing.getModule().getOrElse(p.getName());
+                if (isIncremental) {
+                    final List<String> annotations = processing.getAnnotations().getOrElse(Collections.emptyList());
+                    compilerArgs.add("-Amicronaut.processing.incremental=true");
+                    if (!annotations.isEmpty()) {
+                        compilerArgs.add("-Amicronaut.processing.annotations=" + String.join(",", annotations));
+                    } else {
+                        if (group.length() > 0) {
+                            compilerArgs.add("-Amicronaut.processing.annotations=" + group + ".*");
+                        }
                     }
                 }
-            }
 
-            if (group.length() > 0) {
-                compilerArgs.add("-Amicronaut.processing.group=" + group);
-                compilerArgs.add("-Amicronaut.processing.module=" + module);
-            }
-        }));
+                if (group.length() > 0) {
+                    compilerArgs.add("-Amicronaut.processing.group=" + group);
+                    compilerArgs.add("-Amicronaut.processing.module=" + module);
+                }
+            });
+        });
 
     }
 
