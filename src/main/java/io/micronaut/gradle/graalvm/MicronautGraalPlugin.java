@@ -3,19 +3,20 @@ package io.micronaut.gradle.graalvm;
 import io.micronaut.gradle.MicronautExtension;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
-import org.gradle.api.Task;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.plugins.BasePlugin;
 import org.gradle.api.plugins.JavaApplication;
 import org.gradle.api.plugins.JavaPlugin;
+import org.gradle.api.plugins.JavaPluginConvention;
+import org.gradle.api.provider.ListProperty;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.SourceSetContainer;
 import org.gradle.api.tasks.TaskContainer;
 
 import java.io.File;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
-
-import static org.gradle.api.plugins.JavaPlugin.ANNOTATION_PROCESSOR_CONFIGURATION_NAME;
 
 /**
  * Support for building GraalVM native images.
@@ -29,10 +30,27 @@ public class MicronautGraalPlugin implements Plugin<Project> {
         project.afterEvaluate(p -> {
             MicronautExtension extension = p.getExtensions().getByType(MicronautExtension.class);
             if (extension.getEnableNativeImage().getOrElse(false)) {
-                p.getDependencies().add(
-                        ANNOTATION_PROCESSOR_CONFIGURATION_NAME,
-                        "io.micronaut:micronaut-graal"
-                );
+                SourceSetContainer sourceSets = p.getConvention().getPlugin(JavaPluginConvention.class)
+                        .getSourceSets();
+                for (String sourceSetName : Arrays.asList("main", "test")) {
+                    SourceSet sourceSet = sourceSets.findByName(sourceSetName);
+                    if (sourceSet != null) {
+                        p.getDependencies().add(
+                                sourceSet.getAnnotationProcessorConfigurationName(),
+                                "io.micronaut:micronaut-graal"
+                        );
+                    }
+                }
+                ListProperty<SourceSet> additionalSourceSets = extension.getProcessing().getAdditionalSourceSets();
+                if (additionalSourceSets.isPresent()) {
+                    List<SourceSet> sourceSetList = additionalSourceSets.get();
+                    for (SourceSet sourceSet : sourceSetList) {
+                        p.getDependencies().add(
+                                sourceSet.getAnnotationProcessorConfigurationName(),
+                                "io.micronaut:micronaut-graal"
+                        );
+                    }
+                }
             }
         });
 
