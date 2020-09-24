@@ -11,15 +11,19 @@ import org.gradle.api.artifacts.DependencySet;
 import org.gradle.api.artifacts.dsl.DependencyHandler;
 import org.gradle.api.plugins.ExtensionContainer;
 import org.gradle.api.plugins.GroovyPlugin;
+import org.gradle.api.plugins.JavaPluginConvention;
 import org.gradle.api.plugins.PluginContainer;
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.tasks.SourceSet;
+import org.gradle.api.tasks.SourceSetContainer;
 import org.gradle.api.tasks.TaskContainer;
 import org.gradle.api.tasks.compile.GroovyCompile;
 import org.gradle.api.tasks.compile.GroovyForkOptions;
 import org.gradle.api.tasks.compile.JavaCompile;
 import org.gradle.api.tasks.testing.Test;
+import org.jetbrains.annotations.NotNull;
 
+import java.io.File;
 import java.util.*;
 import java.util.stream.Stream;
 
@@ -127,21 +131,43 @@ public class MicronautLibraryPlugin implements Plugin<Project> {
                         }
                         configureAnnotationProcessors(p,
                                 implementationConfigurationName,
-                                Collections.singletonList(
-                                        annotationProcessorConfigurationName
-                                ));
+                                annotationProcessorConfigurationName);
                     }
                 }
             }
 
-            boolean hasGroovy = plugins.findPlugin(GroovyPlugin.class) != null;
+            boolean hasGroovy = plugins.hasPlugin(GroovyPlugin.class);
             if (hasGroovy) {
-                for (String configuration : getGroovyAstTransformConfigurations()) {
-                    dependencyHandler.add(
-                            configuration,
-                            "io.micronaut:micronaut-inject-groovy"
-                    );
+                for (String defaultSourceSetName : Arrays.asList("main", "test")) {
+                    SourceSet sourceSet = p.getConvention().getPlugin(JavaPluginConvention.class)
+                            .getSourceSets()
+                            .findByName(defaultSourceSetName);
+                    if (sourceSet != null) {
+                        String configName = sourceSet.getCompileOnlyConfigurationName();
+                        Optional<File> groovySrcDir = getGroovySrcDir(sourceSet);
+                        if (groovySrcDir.isPresent()) {
+                            dependencyHandler.add(
+                                    configName,
+                                    "io.micronaut:micronaut-inject-groovy"
+                            );
+                        }
+                    }
                 }
+                if (additionalSourceSets.isPresent()) {
+                    List<SourceSet> sourceSets = additionalSourceSets.get();
+                    for (SourceSet sourceSet : sourceSets) {
+                        String configName = sourceSet.getCompileOnlyConfigurationName();
+                        Optional<File> groovySrcDir = getGroovySrcDir(sourceSet);
+                        if (groovySrcDir.isPresent()) {
+                            dependencyHandler.add(
+                                    configName,
+                                    "io.micronaut:micronaut-inject-groovy"
+                            );
+                            applyAdditionalProcessors(project, configName);
+                        }
+                    }
+                }
+
             }
 
             Configuration testConfig = p.getConfigurations().getByName(TEST_IMPLEMENTATION_CONFIGURATION_NAME);
@@ -189,9 +215,34 @@ public class MicronautLibraryPlugin implements Plugin<Project> {
     private void configureJava(Project project, TaskContainer tasks) {
 
         project.afterEvaluate(p -> {
-            String implementationScope = isLibrary ? API_CONFIGURATION_NAME : IMPLEMENTATION_CONFIGURATION_NAME;
-            List<String> annotationProcessorConfigurations = getJavaAnnotationProcessorConfigurations();
-            configureAnnotationProcessors(project, implementationScope, annotationProcessorConfigurations);
+            SourceSetContainer sourceSets = p.getConvention().getPlugin(JavaPluginConvention.class)
+                    .getSourceSets();
+            for (String sourceSetName : Arrays.asList("main", "test")) {
+                SourceSet sourceSet = sourceSets.findByName(sourceSetName);
+                if (sourceSet != null) {
+                    String implementationScope;
+
+                    if (isLibrary) {
+                        String apiConfigurationName = sourceSet.getApiConfigurationName();
+                        Configuration c = p.getConfigurations().findByName(apiConfigurationName);
+                        if (c != null) {
+                            implementationScope = apiConfigurationName;
+                        } else {
+                            implementationScope = sourceSet.getImplementationConfigurationName();
+                        }
+                    } else {
+                        implementationScope = sourceSet.getImplementationConfigurationName();
+                    }
+                    String annotationProcessorConfigurationName =
+                            sourceSet.getAnnotationProcessorConfigurationName();
+
+                    configureAnnotationProcessors(
+                            project,
+                            implementationScope,
+                            annotationProcessorConfigurationName
+                    );
+                }
+            }
 
             tasks.withType(JavaCompile.class, javaCompile -> {
                 final List<String> compilerArgs = javaCompile.getOptions().getCompilerArgs();
@@ -224,17 +275,14 @@ public class MicronautLibraryPlugin implements Plugin<Project> {
     static void configureAnnotationProcessors(
             Project project,
             String implementationScope,
-            List<String> annotationProcessorConfigurations) {
+            String annotationProcessorConfiguration) {
         final DependencyHandler dependencyHandler = project.getDependencies();
-        for (String configuration : annotationProcessorConfigurations) {
-            List<String> annotationProcessorModules = getAnnotationProcessorModules();
-            for (String annotationProcessorModule : annotationProcessorModules) {
-                dependencyHandler.add(
-                        configuration,
-                        "io.micronaut:micronaut-" + annotationProcessorModule
-                );
-            }
-
+        List<String> annotationProcessorModules = getAnnotationProcessorModules();
+        for (String annotationProcessorModule : annotationProcessorModules) {
+            dependencyHandler.add(
+                    annotationProcessorConfiguration,
+                    "io.micronaut:micronaut-" + annotationProcessorModule
+            );
         }
 
         dependencyHandler.add(
@@ -259,28 +307,45 @@ public class MicronautLibraryPlugin implements Plugin<Project> {
         project.afterEvaluate(p -> {
             PluginContainer plugins = p.getPlugins();
             boolean hasGroovy = plugins.hasPlugin("groovy");
-            if (hasGroovy && project.file("src/main/groovy").exists()) {
-                applyAdditionalProcessors(p, COMPILE_ONLY_CONFIGURATION_NAME);
-            }
-            if (hasGroovy && project.file("src/test/groovy").exists()) {
-                applyAdditionalProcessors(p, TEST_COMPILE_ONLY_CONFIGURATION_NAME);
+            if (hasGroovy) {
+                JavaPluginConvention plugin = project.getConvention().getPlugin(JavaPluginConvention.class);
+                configureDefaultGroovySourceSet(
+                        p,
+                        plugin,
+                        COMPILE_ONLY_CONFIGURATION_NAME,
+                        "main"
+                );
+                configureDefaultGroovySourceSet(
+                        p,
+                        plugin,
+                        TEST_COMPILE_ONLY_CONFIGURATION_NAME,
+                        "test"
+                );
+
             }
         });
 
     }
 
-    private List<String> getJavaAnnotationProcessorConfigurations() {
-        return Arrays.asList(
-                ANNOTATION_PROCESSOR_CONFIGURATION_NAME,
-                TEST_ANNOTATION_PROCESSOR_CONFIGURATION_NAME
-        );
+    private void configureDefaultGroovySourceSet(Project p, JavaPluginConvention plugin, String scope, String sourceSetName) {
+        SourceSet groovySourceSet = plugin.getSourceSets().findByName(sourceSetName);
+        if (groovySourceSet != null) {
+            Optional<File> groovySrc = getGroovySrcDir(groovySourceSet);
+            groovySrc.ifPresent((f -> applyAdditionalProcessors(p, scope)));
+        }
     }
 
-    private List<String> getGroovyAstTransformConfigurations() {
-        return Arrays.asList(
-                COMPILE_ONLY_CONFIGURATION_NAME,
-                TEST_COMPILE_ONLY_CONFIGURATION_NAME
-        );
+    @NotNull
+    private Optional<File> getGroovySrcDir(SourceSet groovySourceSet) {
+        Optional<File> groovySrc = groovySourceSet.getAllJava().getSrcDirs()
+                    .stream().filter(f -> f.getName().endsWith("groovy"))
+                    .findFirst();
+        return groovySrc.flatMap(file -> {
+            if (file.exists()) {
+                return Optional.of(file);
+            }
+            return Optional.empty();
+        });
     }
 
     private List<String> getBomConfigurations() {

@@ -150,9 +150,13 @@ public class MicronautKotlinSupport {
                         }
                         MicronautLibraryPlugin.configureAnnotationProcessors(p,
                                 implementationConfigurationName,
-                                Collections.singletonList(
-                                        annotationProcessorConfigurationName
-                                ));
+                                annotationProcessorConfigurationName);
+                        if (GraalUtil.isGraalJVM()) {
+                            dependencies.add(
+                                    annotationProcessorConfigurationName,
+                                    "io.micronaut:micronaut-graal"
+                            );
+                        }
                     }
                 }
             }

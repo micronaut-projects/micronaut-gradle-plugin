@@ -318,7 +318,7 @@ class Foo {}
         result.output.contains("Creating bean classes for 1 type elements")
     }
 
-    def "test custom soruceSet for micronaut-library and kotlin with kotlin DSL"() {
+    def "test custom sourceSet for micronaut-library and kotlin with kotlin DSL"() {
         given:
         settingsFile << "rootProject.name = 'hello-world'"
         buildFile.delete()
@@ -491,6 +491,70 @@ class Foo {
         then:
         result.task(":test").outcome == TaskOutcome.SUCCESS
         result.output.contains("Creating bean classes for 1 type elements")
+    }
+
+    def "test custom sourceSets for micronaut-library and groovy"() {
+        given:
+        settingsFile << "rootProject.name = 'hello-world'"
+        buildFile << """
+            plugins {
+                id "io.micronaut.library"
+                id "groovy"
+            }
+            
+            sourceSets {
+                custom {
+                    groovy {
+                        srcDirs("src/custom/groovy")
+                    }
+                }
+            }                    
+            micronaut {
+                version "2.0.3"
+                processing {
+                    incremental true
+                    sourceSets(
+                        sourceSets.custom        
+                    )                    
+                }                
+            }
+            
+            repositories {
+                jcenter()
+                mavenCentral()
+            }
+            
+            dependencies {
+                customImplementation("org.codehaus.groovy:groovy")
+            }
+        """
+        testProjectDir.newFolder("src", "custom", "groovy", "example")
+        def javaFile = testProjectDir.newFile("src/custom/groovy/example/Foo.groovy")
+        javaFile.parentFile.mkdirs()
+        javaFile << """
+package example;
+
+@javax.inject.Singleton
+class Foo {}
+"""
+
+        when:
+        def result = GradleRunner.create()
+                .withProjectDir(testProjectDir.root)
+                .withArguments('compileCustomGroovy')
+                .withPluginClasspath()
+                .build()
+
+        then:
+        result.task(":compileCustomGroovy").outcome == TaskOutcome.SUCCESS
+        new File(
+                testProjectDir.getRoot(),
+                'build/classes/groovy/custom/example/Foo.class'
+        ).exists()
+        new File(
+                testProjectDir.getRoot(),
+                'build/classes/groovy/custom/example/$FooDefinition.class'
+        ).exists()
     }
 
     def "test apply defaults for micronaut-library and groovy"() {
