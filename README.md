@@ -330,3 +330,25 @@ The available runtimes are:
 * `azure_function` - A runtime for deploying Azure Functions
 
 The advantage of allowing your dependencies to be dictated by the runtime is that you can potentially take the same application and deploy it to any of the above runtimes without changes.
+
+### Packaging application
+
+By default the plugin doesn't create a runnable fatjar when running `./gradlew assemble`. There are a couple of options:
+
+#### Layered application
+
+The plugin creates a "layered" application in `build/layers` and from that directory you can run `java -jar myapp.jar`. It works because that directory contains a `lib` directory with all the libraries and a `resources` directory with the configuration.
+Keep in mind that copying the only `.jar` file to another directory won't work.
+
+
+#### Add Shadow plugin
+
+You can add Gradle Shadow plugin so when running `./gradlew assemble` a runnable fatjar is created in `build/libs` directory.
+
+```groovy
+plugins {
+    ...
+    id "com.github.johnrengelman.shadow" version "6.0.0"
+    ...
+}
+```
