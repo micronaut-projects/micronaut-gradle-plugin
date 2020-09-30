@@ -264,7 +264,7 @@ dockerBuildNative {
 
 Notice that you can supply two different image names to push to for the JVM version and the native version of the application.
 
-If you wish to customize the docker builds that are used, the easiest way is to run `./gradlew dockerfile` (or `dockerfileNative` for the native versrion) and copy the generated `Dockerfile` from `build/docker` to your root directory and modify as required.
+If you wish to customize the docker builds that are used, the easiest way is to run `./gradlew dockerfile` (or `dockerfileNative` for the native version) and copy the generated `Dockerfile` from `build/docker` to your root directory and modify as required.
 
 If you wish to customize the JVM arguments or native image arguments then it is possible to do so with the `args` method of the `dockerfile` and `dockerfileNative` tasks:
 
