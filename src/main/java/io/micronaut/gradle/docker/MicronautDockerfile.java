@@ -52,7 +52,6 @@ public class MicronautDockerfile extends Dockerfile implements DockerBuildOption
         });
     }
 
-    @Nullable
     @Override
     public Property<String> getDefaultCommand() {
         return defaultCommand;
