@@ -185,11 +185,11 @@ public class NativeImageDockerfile extends Dockerfile implements DockerBuildOpti
         // use hard coded image name
         this.nativeImageTask.setImageName("application");
         if (buildStrategy == DockerBuildStrategy.ORACLE_FUNCTION) {
-            javaApplication.setMainClassName("com.fnproject.fn.runtime.EntryPoint");
+            javaApplication.getMainClass().set("com.fnproject.fn.runtime.EntryPoint");
             this.nativeImageTask.setMain("com.fnproject.fn.runtime.EntryPoint");
             this.nativeImageTask.args("--report-unsupported-elements-at-runtime");
         } else if (buildStrategy == DockerBuildStrategy.LAMBDA) {
-            javaApplication.setMainClassName("io.micronaut.function.aws.runtime.MicronautLambdaRuntime");
+            javaApplication.getMainClass().set("io.micronaut.function.aws.runtime.MicronautLambdaRuntime");
             this.nativeImageTask.setMain("io.micronaut.function.aws.runtime.MicronautLambdaRuntime");
         }
         this.nativeImageTask.configure();
