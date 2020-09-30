@@ -23,7 +23,6 @@ public interface DockerBuildOptions {
      * @return The base image to use
      */
     @Input
-    @Nullable
     Property<String> getBaseImage();
 
     /**
