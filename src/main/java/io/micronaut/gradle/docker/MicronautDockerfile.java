@@ -69,7 +69,7 @@ public class MicronautDockerfile extends Dockerfile implements DockerBuildOption
         }
         switch (buildStrategy) {
             case ORACLE_FUNCTION:
-                javaApplication.setMainClassName("com.fnproject.fn.runtime.EntryPoint");
+                javaApplication.getMainClass().set("com.fnproject.fn.runtime.EntryPoint");
                 from(new Dockerfile.From(from != null ? from : "fnproject/fn-java-fdk:" + getProjectFnVersion()));
                 workingDir("/function");
                 copyFile("build/layers/libs/*.jar", "/function/app/");
@@ -83,7 +83,7 @@ public class MicronautDockerfile extends Dockerfile implements DockerBuildOption
                 }
             break;
             case LAMBDA:
-                javaApplication.setMainClassName("io.micronaut.function.aws.runtime.MicronautLambdaRuntime");
+                javaApplication.getMainClass().set("io.micronaut.function.aws.runtime.MicronautLambdaRuntime");
             default:
                 from(new Dockerfile.From(from != null ? from : "openjdk:14-alpine"));
                 setupResources(this);
