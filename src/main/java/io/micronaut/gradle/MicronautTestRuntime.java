@@ -31,13 +31,6 @@ public enum MicronautTestRuntime {
                     "org.spockframework:spock-core",
                     "io.micronaut.test:micronaut-test-spock",
                     "org.codehaus.groovy:groovy"
-            ),
-            JavaPlugin.TEST_RUNTIME_ONLY_CONFIGURATION_NAME,
-            Arrays.asList(
-                    "org.junit.jupiter:junit-jupiter-engine",
-                    // needed on JDK 8 otherwise exception occurs TypeNotPresentInProxy
-                    // due to a reference to MicronautJunit5TestExtension in the @MicronautTest annotation
-                    "io.micronaut.test:micronaut-test-junit5"
             )
     )),
     /**
