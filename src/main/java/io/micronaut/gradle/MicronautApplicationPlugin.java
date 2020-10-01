@@ -10,8 +10,8 @@ import org.gradle.api.artifacts.Dependency;
 import org.gradle.api.artifacts.dsl.DependencyHandler;
 import org.gradle.api.artifacts.dsl.RepositoryHandler;
 import org.gradle.api.file.SourceDirectorySet;
-import org.gradle.api.plugins.JavaPluginConvention;
-import org.gradle.api.plugins.PluginContainer;
+import org.gradle.api.plugins.*;
+import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.*;
 
 import java.io.File;
@@ -97,10 +97,20 @@ public class MicronautApplicationPlugin extends MicronautLibraryPlugin {
                     plugins.apply(ShadowPlugin.class);
                 }
             }
+            PluginContainer plugins = project.getPlugins();
+            if (plugins.hasPlugin(ShadowPlugin.class)) {
+                JavaApplication javaApplication = project
+                        .getExtensions().findByType(JavaApplication.class);
+                if (javaApplication != null) {
+                    Property<String> mainClass = javaApplication.getMainClass();
+                    if (mainClass.isPresent()) {
+                        project.setProperty("mainClassName", mainClass.get());
+                    }
+                }
+            }
         });
+        
         new MicronautDockerPlugin().apply(project);
-
-
         final TaskContainer tasks = project.getTasks();
         tasks.withType(JavaExec.class, javaExec -> {
             javaExec.classpath(developmentOnly);
