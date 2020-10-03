@@ -292,17 +292,7 @@ public class MicronautLibraryPlugin implements Plugin<Project> {
     }
 
     private void configureGroovy(Project project, TaskContainer tasks) {
-        tasks.withType(GroovyCompile.class, groovyCompile -> {
-            final GroovyForkOptions forkOptions = groovyCompile.getGroovyOptions().getForkOptions();
-            List<String> jvmArgs = forkOptions.getJvmArgs();
-            if (jvmArgs != null) {
-                jvmArgs.add("-Dgroovy.parameters=true");
-            } else {
-                jvmArgs = new ArrayList<>();
-                jvmArgs.add("-Dgroovy.parameters=true");
-                forkOptions.setJvmArgs(jvmArgs);
-            }
-        });
+        tasks.withType(GroovyCompile.class, groovyCompile -> groovyCompile.getGroovyOptions().setParameters(true));
 
         project.afterEvaluate(p -> {
             PluginContainer plugins = p.getPlugins();
