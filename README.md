@@ -212,6 +212,9 @@ nativeImage {
 }
 ```
 
+**IMPORTANT:** If you update an existing Micronaut application that contains the file `src/main/resources/META-INF/native-image/xxxxx/native-image.properties`, please make sure to delete the properties `-H:Name` and `-H:Class` from the file because they are managed automatically by the plugin.
+
+
 ### Docker Support
 
 The Micronaut plugin includes integration with the [Gradle Docker plugin](https://bmuschko.github.io/gradle-docker-plugin) allowing you to easily build applications and native images using Docker containers.
