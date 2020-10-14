@@ -153,11 +153,11 @@ public class MicronautDockerPlugin implements Plugin<Project> {
                 if (mr != MicronautRuntime.NONE) {
                     ((MicronautDockerfile) task).getBuildStrategy().set(mr.getBuildStrategy());
                 }
-                task.dependsOn(buildLayersTask);
             });
         }
         TaskProvider<DockerBuildImage> dockerBuildTask = tasks.register("dockerBuild", DockerBuildImage.class);
         dockerBuildTask.configure(task -> {
+            task.dependsOn(buildLayersTask);
             task.setGroup(BasePlugin.BUILD_GROUP);
             task.setDescription("Builds a Docker Image");
             task.getInputDir().set(project.getProjectDir());
@@ -187,7 +187,6 @@ public class MicronautDockerPlugin implements Plugin<Project> {
         if (f.exists()) {
             dockerFileTask = tasks.register("dockerfileNative", NativeImageDockerfile.class, task -> {
                 task.instructionsFromTemplate(f);
-                task.dependsOn(buildLayersTask);
             });
         } else {
             dockerFileTask = tasks.register("dockerfileNative", NativeImageDockerfile.class);
@@ -196,7 +195,6 @@ public class MicronautDockerPlugin implements Plugin<Project> {
                 if (mr != MicronautRuntime.NONE) {
                     task.getBuildStrategy().set(mr.getBuildStrategy());
                 }
-                task.dependsOn(buildLayersTask);
             });
         }
         TaskProvider<DockerBuildImage> dockerBuildTask = tasks.register("dockerBuildNative", DockerBuildImage.class);
@@ -211,6 +209,7 @@ public class MicronautDockerPlugin implements Plugin<Project> {
                         .convention(dockerFileTask.flatMap(Dockerfile::getDestFile));
             }
             task.getImages().set(Collections.singletonList(project.getName()));
+            task.dependsOn(buildLayersTask);
         });
 
         TaskProvider<DockerPushImage> pushDockerImage = tasks.register("dockerPushNative", DockerPushImage.class);
