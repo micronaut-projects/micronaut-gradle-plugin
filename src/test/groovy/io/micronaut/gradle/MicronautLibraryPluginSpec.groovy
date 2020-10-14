@@ -20,6 +20,64 @@ class MicronautLibraryPluginSpec extends Specification {
         kotlinBuildFile = testProjectDir.newFile('build.gradle.kts')
     }
 
+    def "test JUnit 5 platform excludes work"() {
+        given:
+        settingsFile << "rootProject.name = 'hello-world'"
+        buildFile << """
+            plugins {
+                id "io.micronaut.library"
+            }
+            
+            micronaut {
+                version "2.0.3"
+                testRuntime "junit"
+                processing {
+                    incremental true
+                }
+            }
+            
+            repositories {
+                jcenter()
+                mavenCentral()
+            }
+            
+            test {
+                useJUnitPlatform {
+                    excludeTags 'someTag'
+                }
+            }            
+        """
+        testProjectDir.newFolder("src", "test", "java", "example")
+        def testJavaFile = testProjectDir.newFile("src/test/java/example/FooTest.java")
+        testJavaFile.parentFile.mkdirs()
+        testJavaFile << """
+package example;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
+
+@org.junit.jupiter.api.Tag("someTag")
+class FooTest {
+    
+    @Test
+    void testShouldFail() {
+        Assertions.assertTrue(false);
+    }
+}
+"""
+
+        when:
+        def result = GradleRunner.create()
+                .withProjectDir(testProjectDir.root)
+                .withArguments('test')
+                .withPluginClasspath()
+                .build()
+
+        then:
+        result.task(":test").outcome == TaskOutcome.SUCCESS
+    }
+
     def "test lombok works"() {
         given:
         settingsFile << "rootProject.name = 'hello-world'"
