@@ -18,7 +18,6 @@ import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.SourceSetContainer;
 import org.gradle.api.tasks.TaskContainer;
 import org.gradle.api.tasks.compile.GroovyCompile;
-import org.gradle.api.tasks.compile.GroovyForkOptions;
 import org.gradle.api.tasks.compile.JavaCompile;
 import org.gradle.api.tasks.testing.Test;
 import org.jetbrains.annotations.NotNull;
@@ -99,7 +98,11 @@ public class MicronautLibraryPlugin implements Plugin<Project> {
 
             if (testRuntime != MicronautTestRuntime.NONE) {
                 // set JUnit 5 platform
-                project.getTasks().withType(Test.class, Test::useJUnitPlatform);
+                project.getTasks().withType(Test.class, test -> {
+                    if (!test.getTestFramework().getClass().getName().contains("JUnitPlatform")) {
+                        test.useJUnitPlatform();
+                    }
+                });
             }
 
             applyAdditionalProcessors(
@@ -178,7 +181,11 @@ public class MicronautLibraryPlugin implements Plugin<Project> {
                     })
                     .isEmpty();
             if (hasJunit5) {
-                project.getTasks().withType(Test.class, Test::useJUnitPlatform);
+                project.getTasks().withType(Test.class, test -> {
+                    if (!test.getTestFramework().getClass().getName().contains("JUnitPlatform")) {
+                        test.useJUnitPlatform();
+                    }
+                });
             }
         });
     }
