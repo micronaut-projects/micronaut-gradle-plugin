@@ -29,28 +29,36 @@ public class MicronautGraalPlugin implements Plugin<Project> {
     public void apply(Project project) {
         project.afterEvaluate(p -> {
             MicronautExtension extension = p.getExtensions().getByType(MicronautExtension.class);
-            if (extension.getEnableNativeImage().getOrElse(false)) {
-                SourceSetContainer sourceSets = p.getConvention().getPlugin(JavaPluginConvention.class)
-                        .getSourceSets();
-                for (String sourceSetName : Arrays.asList("main", "test")) {
-                    SourceSet sourceSet = sourceSets.findByName(sourceSetName);
-                    if (sourceSet != null) {
-                        p.getDependencies().add(
-                                sourceSet.getAnnotationProcessorConfigurationName(),
-                                "io.micronaut:micronaut-graal"
-                        );
+            if (extension.getEnableNativeImage().getOrElse(true)) {
+                p.getGradle().getTaskGraph().whenReady(taskGraph -> {
+                    TaskContainer tasks = p.getTasks();
+                    boolean addGraalProcessor = taskGraph.hasTask(tasks.findByName("nativeImage")) || taskGraph.hasTask(tasks.findByName("dockerfileNative"));
+                    if (addGraalProcessor) {
+                        SourceSetContainer sourceSets = p.getConvention().getPlugin(JavaPluginConvention.class)
+                                .getSourceSets();
+                        for (String sourceSetName : Arrays.asList("main", "test")) {
+                            SourceSet sourceSet = sourceSets.findByName(sourceSetName);
+                            if (sourceSet != null) {
+                                p.getDependencies().add(
+                                        sourceSet.getAnnotationProcessorConfigurationName(),
+                                        "io.micronaut:micronaut-graal"
+                                );
+                            }
+                        }
+                        ListProperty<SourceSet> additionalSourceSets = extension.getProcessing().getAdditionalSourceSets();
+                        if (additionalSourceSets.isPresent()) {
+                            List<SourceSet> sourceSetList = additionalSourceSets.get();
+                            for (SourceSet sourceSet : sourceSetList) {
+                                p.getDependencies().add(
+                                        sourceSet.getAnnotationProcessorConfigurationName(),
+                                        "io.micronaut:micronaut-graal"
+                                );
+                            }
+                        }
                     }
-                }
-                ListProperty<SourceSet> additionalSourceSets = extension.getProcessing().getAdditionalSourceSets();
-                if (additionalSourceSets.isPresent()) {
-                    List<SourceSet> sourceSetList = additionalSourceSets.get();
-                    for (SourceSet sourceSet : sourceSetList) {
-                        p.getDependencies().add(
-                                sourceSet.getAnnotationProcessorConfigurationName(),
-                                "io.micronaut:micronaut-graal"
-                        );
-                    }
-                }
+                });
+
+
             }
         });
 

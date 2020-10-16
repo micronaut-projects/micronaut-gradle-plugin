@@ -68,7 +68,6 @@ class Application {
         task.outcome == TaskOutcome.SUCCESS
     }
 
-    @IgnoreIf({ jvm.current.isJava11Compatible() })
     @Unroll
     def "test build docker native image for runtime #runtime"() {
         given:
@@ -91,12 +90,15 @@ class Application {
             
             mainClassName="example.Application"
             
-            dockerfileNative {
-                requireGraalSdk = false
+            java {
+                sourceCompatibility = JavaVersion.toVersion('8')
+                targetCompatibility = JavaVersion.toVersion('8')
             }
             
         """
         testProjectDir.newFolder("src", "main", "java", "example")
+        def resources = testProjectDir.newFolder("src", "main", "resources")
+        resources.mkdirs()
         def javaFile = testProjectDir.newFile("src/main/java/example/Application.java")
         javaFile.parentFile.mkdirs()
         javaFile << """
@@ -108,6 +110,23 @@ class Application {
     }
 }
 """
+        def controllerFile = testProjectDir.newFile("src/main/java/example/TestController.java")
+        controllerFile << """
+package example;
+
+import io.micronaut.http.annotation.*;
+
+@Controller("/foo")
+class TestController {
+}
+"""
+        def config = testProjectDir.newFile("src/main/resources/application.yml")
+        config.parentFile.mkdirs()
+        config << """
+micronaut:
+   application:
+        name: test
+"""
 
         def result = GradleRunner.create()
                 .withProjectDir(testProjectDir.root)
@@ -118,6 +137,7 @@ class Application {
         def task = result.task(":dockerBuildNative")
         expect:
         result.output.contains("Successfully tagged hello-world:latest")
+        result.output.contains("Writing resource-config.json file")
         task.outcome == TaskOutcome.SUCCESS
 
         where:
