@@ -4,7 +4,7 @@ plugins {
   id "java-gradle-plugin"
   id "maven-publish"
   id "groovy"
-  id "com.adarshr.test-logger" version "2.1.0"
+  id "com.adarshr.test-logger" version "2.1.1"
   // Apply other plugins here, e.g. the kotlin plugin for a plugin written in Kotlin
   // or the groovy plugin if the plugin uses Groovy
 }
