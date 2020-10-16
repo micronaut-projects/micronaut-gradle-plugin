@@ -2,6 +2,7 @@ package io.micronaut.gradle;
 
 import io.micronaut.gradle.graalvm.GraalUtil;
 import org.gradle.api.Action;
+import org.gradle.api.Project;
 import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.provider.Property;
 
@@ -30,7 +31,7 @@ public class MicronautExtension {
         this.processing = objectFactory.newInstance(AnnotationProcessing.class);
         this.version = objectFactory.property(String.class);
         this.enableNativeImage = objectFactory.property(Boolean.class)
-                                    .convention(GraalUtil.isGraalJVM());
+                                    .convention(true);
         this.runtime = objectFactory.property(MicronautRuntime.class)
                                     .convention(MicronautRuntime.NONE);
         this.testRuntime = objectFactory.property(MicronautTestRuntime.class)
