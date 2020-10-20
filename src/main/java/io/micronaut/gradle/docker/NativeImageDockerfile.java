@@ -166,7 +166,7 @@ public class NativeImageDockerfile extends Dockerfile implements DockerBuildOpti
         if (buildStrategy == DockerBuildStrategy.LAMBDA) {
             from(new From("amazonlinux:latest").withStage("graalvm"));
             environmentVariable("LANG", "en_US.UTF-8");
-            runCommand("yum install -y gcc gcc-c++ libc6-dev  zlib1g-dev curl bash zlib zlib-devel zip tar gzip");
+            runCommand("yum update -y && yum install -y gcc gcc-c++ zlib-devel zip tar gzip && yum clean all");
             String jdkVersion = this.jdkVersion.get();
             String graalVersion = this.graalVersion.get();
             String fileName = "graalvm-ce-" + jdkVersion + "-linux-amd64-" + graalVersion + ".tar.gz";
