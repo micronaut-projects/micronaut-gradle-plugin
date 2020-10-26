@@ -76,8 +76,10 @@ class Application {
 package example;
 
 import io.micronaut.http.annotation.*;
+import io.micronaut.context.annotation.Requires;
 
 @Controller("/foo")
+@Requires(env="test")
 public class FooController {
 
     @Get(uri="/", produces="text/plain")
