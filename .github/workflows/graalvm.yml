@@ -1,4 +1,4 @@
-name: GraalVM CI
+name: GraalVM CE CI
 on:
   push:
     branches:
@@ -23,8 +23,8 @@ jobs:
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
           restore-keys: |
             ${{ runner.os }}-gradle-
-      - name: Set GraalVM
-        uses: DeLaGuardo/setup-graalvm@master
+      - name: Set GraalVM CE
+        uses: DeLaGuardo/setup-graalvm@2.0
         with:
           graalvm-version: ${{ matrix.graalvm }}
       - name: Build with Gradle
