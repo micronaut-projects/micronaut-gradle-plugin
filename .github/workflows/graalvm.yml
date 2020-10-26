@@ -23,10 +23,12 @@ jobs:
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
           restore-keys: |
             ${{ runner.os }}-gradle-
-      - name: Set GraalVM CE
+      - name: Setup GraalVM CE
         uses: DeLaGuardo/setup-graalvm@2.0
         with:
           graalvm-version: ${{ matrix.graalvm }}
+      - name: Install Native Image
+        run: gu install native-image
       - name: Build with Gradle
         run: ./gradlew check --parallel --continue
         env:

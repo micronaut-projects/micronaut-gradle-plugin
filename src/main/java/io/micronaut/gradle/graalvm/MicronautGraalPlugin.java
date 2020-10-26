@@ -12,6 +12,8 @@ import org.gradle.api.provider.ListProperty;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.SourceSetContainer;
 import org.gradle.api.tasks.TaskContainer;
+import org.gradle.api.tasks.TaskProvider;
+import org.gradle.api.tasks.testing.Test;
 
 import java.io.File;
 import java.util.Arrays;
@@ -64,10 +66,22 @@ public class MicronautGraalPlugin implements Plugin<Project> {
 
         if (project.getPlugins().hasPlugin("application")) {
             TaskContainer tasks = project.getTasks();
-            tasks.register("nativeImage", NativeImageTask.class, nativeImageTask -> {
+            TaskProvider<NativeImageTask> nit = tasks.register("nativeImage", NativeImageTask.class, nativeImageTask -> {
                 nativeImageTask.dependsOn(tasks.findByName("classes"));
                 nativeImageTask.setGroup(BasePlugin.BUILD_GROUP);
                 nativeImageTask.setDescription("Builds a GraalVM Native Image");
+            });
+
+            tasks.register("testNativeImage", NativeImageTestTask.class, nativeImageTestTask -> {
+                Test test = (Test) project.getTasks().findByName("test");
+                boolean enabled = test != null && test.isEnabled();
+                nativeImageTestTask.setEnabled(enabled);
+                if (enabled) {
+                    nativeImageTestTask.dependsOn(nit);
+                    test.mustRunAfter(nativeImageTestTask);
+                    nativeImageTestTask.finalizedBy(test);
+                }
+                nativeImageTestTask.setDescription("Runs tests against a native image build of the server. Requires the server to allow the port to configurable with 'micronaut.server.port'.");
             });
 
             project.afterEvaluate(p -> p.getTasks().withType(NativeImageTask.class, nativeImageTask -> {
