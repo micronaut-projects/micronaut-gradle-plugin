@@ -120,6 +120,7 @@ The following additional tasks are provided by this plugin:
 * `dockerfileNative` - Builds a Docker File for for GraalVM Native Image
 * `dockerBuildNative` - Builds a Native Docker Image using GraalVM Native Image
 * `nativeImage` - Builds a GraalVM Native Image
+* `testNativeImage` (since 1.1.0) - Builds a GraalVM Native Image, starts the native server and runs tests against the server
 * `dockerPush` - Pushes a Docker Image to configured container registry
 * `dockerPushNative` - Pushes a Docker Image built with GraalVM Native Image to configured container registry
 
@@ -214,6 +215,11 @@ nativeImage {
 
 **IMPORTANT:** If you update an existing Micronaut application that contains the file `src/main/resources/META-INF/native-image/xxxxx/native-image.properties`, please make sure to delete the properties `-H:Name` and `-H:Class` from the file because they are managed automatically by the plugin.
 
+Since 1.1.x of the plugin, you can also use the `testNativeImage` task to start the Micronaut native server and run tests against it. Using this task will replace the regular embedded server used for tests with the natively built executable:
+
+```
+./gradlew testNativeImage
+```
 
 ### Docker Support
 
