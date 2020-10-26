@@ -1,0 +1,34 @@
+name: GraalVM CI
+on:
+  push:
+    branches:
+      - master
+      - '[1-9]+.[0-9]+.x'
+  pull_request:
+    branches:
+      - master
+      - '[1-9]+.[0-9]+.x'
+jobs:
+  build:
+    if: github.repository != 'micronaut-projects/micronaut-project-template'
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        graalvm: ['20.2.0.java8', '20.2.0.java11']
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/cache@v2.1.2
+        with:
+          path: ~/.gradle/caches
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+      - name: Set GraalVM
+        uses: DeLaGuardo/setup-graalvm@master
+        with:
+          graalvm-version: ${{ matrix.graalvm }}
+      - name: Build with Gradle
+        run: ./gradlew check --parallel --continue
+        env:
+          TESTCONTAINERS_RYUK_DISABLED: true
+
