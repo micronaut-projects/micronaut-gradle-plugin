@@ -38,15 +38,14 @@ class NativeImageTestTaskSpec extends Specification {
             repositories {
                 jcenter()
                 mavenCentral()
-                maven { url "https://oss.jfrog.org/oss-snapshot-local" }
             }
             
             dependencies {
                 runtimeOnly("org.slf4j:slf4j-simple")
                 testImplementation("io.micronaut:micronaut-http-client")
-                testImplementation("io.micronaut.test:micronaut-test-core:2.2.0.BUILD-SNAPSHOT") {
+                testImplementation("io.micronaut.test:micronaut-test-core:2.2.0") {
                     version {
-                        strictly("2.2.0.BUILD-SNAPSHOT")
+                        strictly("2.2.0")
                     }
                 }
             }
