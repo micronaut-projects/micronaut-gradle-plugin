@@ -215,11 +215,19 @@ nativeImage {
 
 **IMPORTANT:** If you update an existing Micronaut application that contains the file `src/main/resources/META-INF/native-image/xxxxx/native-image.properties`, please make sure to delete the properties `-H:Name` and `-H:Class` from the file because they are managed automatically by the plugin.
 
+
+### Testing Native Images
+
 Since 1.1.x of the plugin, you can also use the `testNativeImage` task to start the Micronaut native server and run tests against it. Using this task will replace the regular embedded server used for tests with the natively built executable:
 
 ```
 ./gradlew testNativeImage
 ```
+
+It is important to note that there are some limitations to this approach in that the native server is no longer "embedded" in the test. This has the following implications:
+
+* It is not possible to mock components using `@MockBean` or replace beans using `@Replace` since the native server starts in a separate process.
+* The native server starts with the `test` environment active, however the classpath of the application is the runtime classpath not the test classpath this means that it is not possible to automatically use features from tools like Testcontainers to spin up servers and you would need to instead ensure any test servers are started prior to `testNativeImage` executing by modifying your Gradle build (using for example the [Docker Compose Plugin](https://github.com/avast/gradle-docker-compose-plugin))
 
 ### Docker Support
 
