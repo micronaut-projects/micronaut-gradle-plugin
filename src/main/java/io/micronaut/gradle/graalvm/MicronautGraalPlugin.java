@@ -79,7 +79,7 @@ public class MicronautGraalPlugin implements Plugin<Project> {
                     File file = nativeImage.getNativeImageOutput();
                     test.systemProperty("micronaut.test.server.executable", file.getAbsolutePath());
                 });
-                boolean enabled = test != null && test.isEnabled();
+                boolean enabled = test != null && test.isEnabled() && GraalUtil.isGraalJVM();
                 nativeImageTestTask.setEnabled(enabled);
                 if (enabled) {
                     nativeImageTestTask.dependsOn(nit);
