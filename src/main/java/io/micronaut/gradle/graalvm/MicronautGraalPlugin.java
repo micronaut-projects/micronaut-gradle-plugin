@@ -72,8 +72,13 @@ public class MicronautGraalPlugin implements Plugin<Project> {
                 nativeImageTask.setDescription("Builds a GraalVM Native Image");
             });
 
-            tasks.register("testNativeImage", NativeImageTestTask.class, nativeImageTestTask -> {
+            tasks.register("testNativeImage", nativeImageTestTask -> {
                 Test test = (Test) project.getTasks().findByName("test");
+                nativeImageTestTask.doLast((t) -> {
+                    NativeImageTask nativeImage = nit.get();
+                    File file = nativeImage.getNativeImageOutput();
+                    test.systemProperty("micronaut.test.server.executable", file.getAbsolutePath());
+                });
                 boolean enabled = test != null && test.isEnabled();
                 nativeImageTestTask.setEnabled(enabled);
                 if (enabled) {

@@ -38,14 +38,15 @@ class NativeImageTestTaskSpec extends Specification {
             repositories {
                 jcenter()
                 mavenCentral()
+                maven { url "https://oss.jfrog.org/oss-snapshot-local" }
             }
             
             dependencies {
                 runtimeOnly("org.slf4j:slf4j-simple")
                 testImplementation("io.micronaut:micronaut-http-client")
-                testImplementation("io.micronaut.test:micronaut-test-core:2.2.0") {
+                testImplementation("io.micronaut.test:micronaut-test-core:2.2.1.BUILD-SNAPSHOT") {
                     version {
-                        strictly("2.2.0")
+                        strictly("2.2.1.BUILD-SNAPSHOT")
                     }
                 }
             }
@@ -111,7 +112,7 @@ import io.micronaut.http.client.annotation.*;
 import javax.inject.Inject;
 import static org.junit.jupiter.api.Assertions.*;
 import io.micronaut.runtime.server.EmbeddedServer;
-import io.micronaut.test.support.server.TestEmbeddedServer;
+import io.micronaut.test.support.server.TestExecutableEmbeddedServer;
 
 @MicronautTest
 public class FooControllerTest {
@@ -126,7 +127,7 @@ public class FooControllerTest {
     @Test
     public void testIndex() throws Exception {
         assertTrue(
-            embeddedServer instanceof TestEmbeddedServer
+            embeddedServer instanceof TestExecutableEmbeddedServer
         );
         HttpResponse<String> response = client.toBlocking().exchange("/foo", String.class);
         assertEquals(HttpStatus.OK, response.status());
