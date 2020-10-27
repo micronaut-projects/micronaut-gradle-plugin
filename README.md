@@ -218,7 +218,11 @@ nativeImage {
 
 ### Testing Native Images
 
-Since 1.1.x of the plugin, you can also use the `testNativeImage` task to start the Micronaut native server and run tests against it. Using this task will replace the regular embedded server used for tests with the natively built executable:
+Since 1.1.x of the plugin, you can also use the `testNativeImage` task to start the Micronaut native server and run tests against it. 
+
+**IMPORTANT:** This feature only works in combination with `micronaut-test-core` versions 2.2.1 or above. Make sure your test classpath includes at least this version of Micronaut Test.
+
+Using this task will replace the regular embedded server used for tests with the natively built executable:
 
 ```
 ./gradlew testNativeImage
