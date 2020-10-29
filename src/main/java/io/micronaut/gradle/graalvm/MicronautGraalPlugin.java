@@ -72,22 +72,23 @@ public class MicronautGraalPlugin implements Plugin<Project> {
                 nativeImageTask.setDescription("Builds a GraalVM Native Image");
             });
 
-            tasks.register("testNativeImage", nativeImageTestTask -> {
-                Test test = (Test) project.getTasks().findByName("test");
-                nativeImageTestTask.doLast((t) -> {
-                    NativeImageTask nativeImage = nit.get();
-                    File file = nativeImage.getNativeImageOutput();
-                    test.systemProperty("micronaut.test.server.executable", file.getAbsolutePath());
-                });
-                boolean enabled = test != null && test.isEnabled() && GraalUtil.isGraalJVM();
-                nativeImageTestTask.setEnabled(enabled);
-                if (enabled) {
-                    nativeImageTestTask.dependsOn(nit);
-                    test.mustRunAfter(nativeImageTestTask);
-                    nativeImageTestTask.finalizedBy(test);
-                }
-                nativeImageTestTask.setDescription("Runs tests against a native image build of the server. Requires the server to allow the port to configurable with 'micronaut.server.port'.");
-            });
+            tasks.withType(Test.class, (test ->
+                tasks.register(test.getName() + "NativeImage", nativeImageTestTask -> {
+                    nativeImageTestTask.doLast((t) -> {
+                        NativeImageTask nativeImage = nit.get();
+                        File file = nativeImage.getNativeImageOutput();
+                        test.systemProperty("micronaut.test.server.executable", file.getAbsolutePath());
+                    });
+                    boolean enabled = test.isEnabled() && GraalUtil.isGraalJVM();
+                    nativeImageTestTask.setEnabled(enabled);
+                    if (enabled) {
+                        nativeImageTestTask.dependsOn(nit);
+                        test.mustRunAfter(nativeImageTestTask);
+                        nativeImageTestTask.finalizedBy(test);
+                    }
+                    nativeImageTestTask.setDescription("Runs tests against a native image build of the server. Requires the server to allow the port to configurable with 'micronaut.server.port'.");
+            })));
+
 
             project.afterEvaluate(p -> p.getTasks().withType(NativeImageTask.class, nativeImageTask -> {
                 MicronautExtension extension = project.getExtensions().getByType(MicronautExtension.class);

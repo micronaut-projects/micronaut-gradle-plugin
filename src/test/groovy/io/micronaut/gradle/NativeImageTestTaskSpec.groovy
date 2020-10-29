@@ -44,15 +44,19 @@ class NativeImageTestTaskSpec extends Specification {
             dependencies {
                 runtimeOnly("org.slf4j:slf4j-simple")
                 testImplementation("io.micronaut:micronaut-http-client")
-                testImplementation("io.micronaut.test:micronaut-test-core:2.2.1.BUILD-SNAPSHOT") {
+                testImplementation("io.micronaut.test:micronaut-test-core:2.2.1") {
                     version {
-                        strictly("2.2.1.BUILD-SNAPSHOT")
+                        strictly("2.2.1")
                     }
                 }
             }
             
             mainClassName="example.Application"
             
+            java {
+                sourceCompatibility = JavaVersion.toVersion('1.8')
+                targetCompatibility = JavaVersion.toVersion('1.8')
+            }            
             testlogger {
                showStandardStreams true
             }
