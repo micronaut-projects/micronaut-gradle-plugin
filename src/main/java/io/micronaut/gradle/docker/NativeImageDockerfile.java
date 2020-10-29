@@ -171,7 +171,7 @@ public class NativeImageDockerfile extends Dockerfile implements DockerBuildOpti
             String graalVersion = this.graalVersion.get();
             String fileName = "graalvm-ce-" + jdkVersion + "-linux-amd64-" + graalVersion + ".tar.gz";
             runCommand("curl -4 -L https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-" + graalVersion + "/" + fileName + " -o /tmp/" + fileName);
-            runCommand("tar -zxvf /tmp/" + fileName + " -C /tmp && mv /tmp/graalvm-ce-" + jdkVersion + "-" + graalVersion + " /usr/lib/graalvm");
+            runCommand("tar -zxf /tmp/" + fileName + " -C /tmp && mv /tmp/graalvm-ce-" + jdkVersion + "-" + graalVersion + " /usr/lib/graalvm");
             runCommand("rm -rf /tmp/*");
             runCommand("/usr/lib/graalvm/bin/gu install native-image");
             defaultCommand("/usr/lib/graalvm/bin/native-image");
