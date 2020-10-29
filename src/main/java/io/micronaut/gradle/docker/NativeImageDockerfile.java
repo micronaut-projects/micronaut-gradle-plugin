@@ -245,7 +245,7 @@ public class NativeImageDockerfile extends Dockerfile implements DockerBuildOpti
                     List<String> newList = new ArrayList<>(strings.size() + 1);
                     newList.add("./func");
                     newList.addAll(strings);
-                    newList.add("-Djava.library.path=$(pwd)");
+                    newList.add("-Xmx512m");
                     return newList;
                 }).get());
                 runCommand("echo \"#!/bin/sh\" >> bootstrap && echo \"set -euo pipefail\" >> bootstrap && echo \"" + funcCmd + "\" >> bootstrap");
