@@ -191,8 +191,12 @@ public class NativeImageDockerfile extends Dockerfile implements DockerBuildOpti
             this.nativeImageTask.setMain("com.fnproject.fn.runtime.EntryPoint");
             this.nativeImageTask.args("--report-unsupported-elements-at-runtime");
         } else if (buildStrategy == DockerBuildStrategy.LAMBDA) {
-            javaApplication.getMainClass().set("io.micronaut.function.aws.runtime.MicronautLambdaRuntime");
-            this.nativeImageTask.setMain("io.micronaut.function.aws.runtime.MicronautLambdaRuntime");
+            if (!javaApplication.getMainClass().isPresent()) {
+                javaApplication.getMainClass().set("io.micronaut.function.aws.runtime.MicronautLambdaRuntime");
+            }
+            if (!this.nativeImageTask.getMain().isPresent()) {
+                this.nativeImageTask.setMain("io.micronaut.function.aws.runtime.MicronautLambdaRuntime");
+            }
         }
         this.nativeImageTask.configure();
         List<String> commandLine = this.nativeImageTask.getCommandLine();
