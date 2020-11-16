@@ -128,11 +128,6 @@ public class MicronautApplicationPlugin extends MicronautLibraryPlugin {
                 );
             }
         });
-
-        // If shadow JAR is enabled it must be configured to merge
-        // all META-INF/services file into a single file otherwise this
-        // will break the application
-        tasks.withType(ShadowJar.class, ShadowJar::mergeServiceFiles);
     }
 
     private void configureLogging(Project p, DependencyHandler dependencyHandler) {
