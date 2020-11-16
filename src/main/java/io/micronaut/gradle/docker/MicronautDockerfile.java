@@ -84,7 +84,7 @@ public class MicronautDockerfile extends Dockerfile implements DockerBuildOption
             case LAMBDA:
                 javaApplication.getMainClass().set("io.micronaut.function.aws.runtime.MicronautLambdaRuntime");
             default:
-                from(new Dockerfile.From(from != null ? from : "openjdk:14-alpine"));
+                from(new Dockerfile.From(from != null ? from : "openjdk:15-alpine"));
                 setupResources(this);
                 exposePort(exposedPorts);
                 entryPoint(getArgs().map(strings -> {
