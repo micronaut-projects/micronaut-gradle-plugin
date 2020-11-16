@@ -3,12 +3,15 @@ package io.micronaut.gradle.graalvm;
 import io.micronaut.gradle.MicronautExtension;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
+import org.gradle.api.Task;
 import org.gradle.api.file.FileCollection;
+import org.gradle.api.logging.LogLevel;
 import org.gradle.api.plugins.BasePlugin;
 import org.gradle.api.plugins.JavaApplication;
 import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.plugins.JavaPluginConvention;
 import org.gradle.api.provider.ListProperty;
+import org.gradle.api.specs.Spec;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.SourceSetContainer;
 import org.gradle.api.tasks.TaskContainer;
@@ -80,7 +83,13 @@ public class MicronautGraalPlugin implements Plugin<Project> {
                         test.systemProperty("micronaut.test.server.executable", file.getAbsolutePath());
                     });
                     boolean enabled = test.isEnabled() && GraalUtil.isGraalJVM();
-                    nativeImageTestTask.setEnabled(enabled);
+                    nativeImageTestTask.onlyIf(task -> {
+                        boolean isGraal = GraalUtil.isGraalJVM();
+                        if (!isGraal) {
+                            project.getLogger().log(LogLevel.INFO, "Skipping testNativeImage because the configured JDK is not a GraalVM JDK");
+                        }
+                        return isGraal;
+                    });
                     if (enabled) {
                         nativeImageTestTask.dependsOn(nit);
                         test.mustRunAfter(nativeImageTestTask);
