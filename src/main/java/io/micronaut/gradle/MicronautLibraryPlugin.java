@@ -1,6 +1,7 @@
 package io.micronaut.gradle;
 
 import com.diffplug.gradle.eclipse.apt.AptEclipsePlugin;
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar;
 import io.micronaut.gradle.graalvm.MicronautGraalPlugin;
 import org.gradle.api.InvalidUserCodeException;
 import org.gradle.api.Plugin;
@@ -188,6 +189,11 @@ public class MicronautLibraryPlugin implements Plugin<Project> {
                 });
             }
         });
+
+        // If shadow JAR is enabled it must be configured to merge
+        // all META-INF/services file into a single file otherwise this
+        // will break the application
+        tasks.withType(ShadowJar.class, ShadowJar::mergeServiceFiles);
     }
 
     static Dependency resolveMicronautPlatform(DependencyHandler dependencyHandler, String micronautVersion) {
