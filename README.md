@@ -254,7 +254,7 @@ It is important to note that there are some limitations to this approach in that
 * It is not possible to mock components using `@MockBean` or replace beans using `@Replaces` since the native server starts in a separate process and beans injected into or defined by the test are no longer shared with the application under test since it is running in a separate process.
 * The native server starts with the `test` environment active, however the classpath of the application is the runtime classpath not the test classpath. This has the implication that certain testing features (like for example Testcontainers' usage of JDBC URLs to start containers) won't work and you have to explicitly start any test containers in the test itself.
 
-If you wish to split your native image tests got your regular tests you can [create an additional source set for integration tests](https://docs.gradle.org/current/userguide/java_testing.html#sec:configuring_java_integration_tests) and the plugin will add an additional task suffixed with `*NativeImage` to run the native image tests, for example: `gradle integrationTestNativeImage`.
+If you wish to split your native image tests from your regular tests you can [create an additional source set for integration tests](https://docs.gradle.org/current/userguide/java_testing.html#sec:configuring_java_integration_tests) and the plugin will add an additional task suffixed with `*NativeImage` to run the native image tests, for example: `gradle integrationTestNativeImage`.
 
 ### Docker Support
 
