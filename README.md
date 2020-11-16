@@ -4,6 +4,27 @@ A Gradle Plugin for Micronaut that configures the Micronaut BOM and sets up anno
 
 This project consists of 2 plugins: one for applications and one for Micronaut libraries.
 
+## Quick Start
+
+Template projects are available via [Micronaut Launch](https://micronaut.io/launch/) for each language. To get started you can use the Micronaut CLI:
+
+```bash
+$ mn create-app demo --lang java
+$ mn create-app demo --lang groovy
+$ mn create-app demo --lang kotlin
+```
+
+Or if you don't have it installed via `curl`:
+
+```bash
+# for Java
+$ curl https://launch.micronaut.io/demo.zip?lang=java -o demo.zip && unzip demo.zip -d demo && cd demo
+# for Groovy
+$ curl https://launch.micronaut.io/demo.zip?lang=groovy -o demo.zip && unzip demo.zip -d demo && cd demo
+# for Kotlin
+$ curl https://launch.micronaut.io/demo.zip?lang=kotlin -o demo.zip && unzip demo.zip -d demo && cd demo
+```
+
 ## Micronaut Library Plugin
 
 ```groovy
