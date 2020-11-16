@@ -103,9 +103,11 @@ public class MicronautGraalPlugin implements Plugin<Project> {
                 MicronautExtension extension = project.getExtensions().getByType(MicronautExtension.class);
                 nativeImageTask.setEnabled(extension.getEnableNativeImage().getOrElse(false));
                 JavaApplication javaApplication = p.getExtensions().getByType(JavaApplication.class);
-                String mainClassName = javaApplication.getMainClass().get();
+                String mainClassName = javaApplication.getMainClass().getOrNull();
                 String imageName = p.getName();
-                nativeImageTask.setMain(mainClassName);
+                if (mainClassName != null && !nativeImageTask.getMain().isPresent()) {
+                    nativeImageTask.setMain(mainClassName);
+                }
                 if (!nativeImageTask.getImageName().isPresent()) {
                     nativeImageTask.setImageName(imageName);
                 }

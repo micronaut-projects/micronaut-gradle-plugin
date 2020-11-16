@@ -144,4 +144,59 @@ micronaut:
         runtime << ["netty", "lambda", "jetty"]
     }
 
+
+    def "test build docker native image for lambda with custom main"() {
+        given:
+        settingsFile << "rootProject.name = 'hello-world'"
+        buildFile << """
+            plugins {
+                id "io.micronaut.application"
+            }
+            
+            micronaut {
+                version "2.0.1"
+                runtime "lambda"
+            }
+            
+            repositories {
+                jcenter()
+                mavenCentral()
+            }
+            
+            nativeImage {
+                main = "other.Application"
+            }
+            
+            java {
+                sourceCompatibility = JavaVersion.toVersion('8')
+                targetCompatibility = JavaVersion.toVersion('8')
+            }
+            
+            mainClassName="example.Application"
+        """
+        testProjectDir.newFolder("src", "main", "java", "other")
+        def javaFile = testProjectDir.newFile("src/main/java/other/Application.java")
+        javaFile.parentFile.mkdirs()
+        javaFile << """
+package other;
+
+class Application {
+    public static void main(String... args) {
+    
+    }
+}
+"""
+
+        def result = GradleRunner.create()
+                .withProjectDir(testProjectDir.root)
+                .withArguments('dockerBuildNative')
+                .withPluginClasspath()
+                .build()
+
+        def task = result.task(":dockerBuildNative")
+        expect:
+        result.output.contains("Successfully tagged hello-world:latest")
+        task.outcome == TaskOutcome.SUCCESS
+    }
+
 }
