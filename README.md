@@ -272,11 +272,11 @@ The default uses an OpenJDK 14 slim base image, however you can easily switch th
 
 ```groovy
 dockerfile {
-  baseImage = "oracle/graalvm-ce:20.2.0-java11"
+  baseImage = "oracle/graalvm-ce:20.3.0-java11"
 }
 ```
 
-The above examples switches to use GraalVM CE 20.2.0 as a base image.
+The above examples switches to use GraalVM CE 20.3.0 as a base image.
 
 To build the application into a Native Image you can run:
 
