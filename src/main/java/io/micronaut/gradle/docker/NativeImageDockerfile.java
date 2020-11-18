@@ -71,7 +71,7 @@ public class NativeImageDockerfile extends Dockerfile implements DockerBuildOpti
             jdkVersion.convention("java8");
         }
         this.graalVersion = objects.property(String.class)
-                               .convention("20.2.0");
+                               .convention("20.3.0");
         this.graalImage = objects.property(String.class)
                                .convention(graalVersion.map(version -> "oracle/graalvm-ce:" + version + "-" + jdkVersion.get()));
         this.baseImage = objects.property(String.class)
