@@ -12,6 +12,7 @@ import org.gradle.api.plugins.JavaPluginExtension;
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.Input;
+import org.gradle.api.tasks.StopActionException;
 import org.gradle.internal.jvm.Jvm;
 
 import javax.annotation.Nullable;
@@ -143,12 +144,12 @@ public class NativeImageDockerfile extends Dockerfile implements DockerBuildOpti
     }
 
     public void setupDockerfileInstructions() {
-        DockerBuildStrategy buildStrategy = this.buildStrategy.getOrElse(DockerBuildStrategy.DEFAULT);
-        JavaApplication javaApplication = getProject().getExtensions().getByType(JavaApplication.class);
         JavaPluginExtension javaPluginExtension = getProject().getExtensions().getByType(JavaPluginExtension.class);
         if (javaPluginExtension.getTargetCompatibility().isJava12Compatible()) {
-            throw new RuntimeException("To build native images you must set the Java target byte code level to Java 11 or below");
+            throw new StopActionException("To build native images you must set the Java target byte code level to Java 11 or below");
         }
+        DockerBuildStrategy buildStrategy = this.buildStrategy.getOrElse(DockerBuildStrategy.DEFAULT);
+        JavaApplication javaApplication = getProject().getExtensions().getByType(JavaApplication.class);
         if (buildStrategy == DockerBuildStrategy.LAMBDA) {
             from(new From("amazonlinux:latest").withStage("graalvm"));
             environmentVariable("LANG", "en_US.UTF-8");
@@ -174,7 +175,7 @@ public class NativeImageDockerfile extends Dockerfile implements DockerBuildOpti
         if (nit instanceof NativeImageTask) {
             nativeImageTask = (NativeImageTask) nit;
         } else {
-            throw new IllegalStateException("No native image task present! Must be used in conjunction with a NativeImageTask.");
+            throw new StopActionException("No native image task present! Must be used in conjunction with a NativeImageTask.");
         }
 
         // clear out classpath
@@ -274,7 +275,6 @@ public class NativeImageDockerfile extends Dockerfile implements DockerBuildOpti
                 }));
             break;
         }
-        super.create();
     }
 
     /**
