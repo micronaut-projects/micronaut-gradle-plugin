@@ -1,10 +1,7 @@
 package io.micronaut.gradle.docker;
 
 import com.bmuschko.gradle.docker.tasks.image.Dockerfile;
-import io.micronaut.gradle.MicronautRuntime;
-import io.micronaut.gradle.graalvm.GraalUtil;
 import io.micronaut.gradle.graalvm.NativeImageTask;
-import org.gradle.api.BuildCancelledException;
 import org.gradle.api.JavaVersion;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
@@ -15,8 +12,6 @@ import org.gradle.api.plugins.JavaPluginExtension;
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.Input;
-import org.gradle.api.tasks.TaskAction;
-import org.gradle.api.tasks.TaskExecutionException;
 import org.gradle.internal.jvm.Jvm;
 
 import javax.annotation.Nullable;
@@ -31,7 +26,6 @@ import java.util.List;
  * @since 1.0.0
  */
 public class NativeImageDockerfile extends Dockerfile implements DockerBuildOptions {
-    private final NativeImageTask nativeImageTask;
 
     @Input
     private final Property<String> jdkVersion;
@@ -76,12 +70,6 @@ public class NativeImageDockerfile extends Dockerfile implements DockerBuildOpti
                                .convention(graalVersion.map(version -> "oracle/graalvm-ce:" + version + "-" + jdkVersion.get()));
         this.baseImage = objects.property(String.class)
                                     .convention("null");
-        Task nit = project.getTasks().getByName("nativeImage");
-        if (nit instanceof NativeImageTask) {
-            this.nativeImageTask = (NativeImageTask) nit;
-        } else {
-            throw new IllegalStateException("No native image task present! Must be used in conjunction with a NativeImageTask.");
-        }
         this.args = objects.listProperty(String.class);
         this.exposedPorts = objects.listProperty(Integer.class);
         this.defaultCommand = objects.property(String.class).convention("none");
@@ -154,9 +142,7 @@ public class NativeImageDockerfile extends Dockerfile implements DockerBuildOpti
         return this.exposedPorts;
     }
 
-    @Override
-    @TaskAction
-    public void create() {
+    public void setupDockerfileInstructions() {
         DockerBuildStrategy buildStrategy = this.buildStrategy.getOrElse(DockerBuildStrategy.DEFAULT);
         JavaApplication javaApplication = getProject().getExtensions().getByType(JavaApplication.class);
         JavaPluginExtension javaPluginExtension = getProject().getExtensions().getByType(JavaPluginExtension.class);
@@ -182,24 +168,36 @@ public class NativeImageDockerfile extends Dockerfile implements DockerBuildOpti
             runCommand("gu install native-image");
         }
         MicronautDockerfile.setupResources(this);
+
+        Task nit = getProject().getTasks().findByName("nativeImage");
+        NativeImageTask nativeImageTask;
+        if (nit instanceof NativeImageTask) {
+            nativeImageTask = (NativeImageTask) nit;
+        } else {
+            throw new IllegalStateException("No native image task present! Must be used in conjunction with a NativeImageTask.");
+        }
+
         // clear out classpath
-        this.nativeImageTask.setClasspath(getProject().files());
+        nativeImageTask.setClasspath(getProject().files());
         // use hard coded image name
-        this.nativeImageTask.setImageName("application");
+        nativeImageTask.setImageName("application");
         if (buildStrategy == DockerBuildStrategy.ORACLE_FUNCTION) {
             javaApplication.getMainClass().set("com.fnproject.fn.runtime.EntryPoint");
-            this.nativeImageTask.setMain("com.fnproject.fn.runtime.EntryPoint");
-            this.nativeImageTask.args("--report-unsupported-elements-at-runtime");
+            nativeImageTask.setMain("com.fnproject.fn.runtime.EntryPoint");
+            nativeImageTask.args("--report-unsupported-elements-at-runtime");
         } else if (buildStrategy == DockerBuildStrategy.LAMBDA) {
             if (!javaApplication.getMainClass().isPresent()) {
                 javaApplication.getMainClass().set("io.micronaut.function.aws.runtime.MicronautLambdaRuntime");
             }
-            if (!this.nativeImageTask.getMain().isPresent()) {
-                this.nativeImageTask.setMain("io.micronaut.function.aws.runtime.MicronautLambdaRuntime");
+            if (!nativeImageTask.getMain().isPresent()) {
+                nativeImageTask.setMain("io.micronaut.function.aws.runtime.MicronautLambdaRuntime");
             }
+        } else if (!nativeImageTask.getMain().isPresent()) {
+            nativeImageTask.setMain(javaApplication.getMainClass().get());
         }
-        this.nativeImageTask.configure();
-        List<String> commandLine = this.nativeImageTask.getCommandLine();
+        nativeImageTask.configure();
+
+        List<String> commandLine = nativeImageTask.getCommandLine();
         commandLine.add("-cp");
         commandLine.add("/home/app/libs/*.jar:/home/app/resources:/home/app/application.jar");
         String baseImage = this.baseImage.get();
