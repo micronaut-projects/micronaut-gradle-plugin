@@ -10,6 +10,7 @@ import com.bmuschko.gradle.docker.tasks.image.Dockerfile;
 import io.micronaut.gradle.MicronautApplicationPlugin;
 import io.micronaut.gradle.MicronautRuntime;
 import org.gradle.api.Action;
+import org.gradle.api.JavaVersion;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
@@ -18,6 +19,7 @@ import org.gradle.api.file.FileCollection;
 import org.gradle.api.plugins.BasePlugin;
 import org.gradle.api.plugins.ExtensionContainer;
 import org.gradle.api.plugins.JavaApplication;
+import org.gradle.api.plugins.JavaPluginExtension;
 import org.gradle.api.tasks.*;
 import org.gradle.api.tasks.bundling.Jar;
 
@@ -130,7 +132,17 @@ public class MicronautDockerPlugin implements Plugin<Project> {
         }
 
         configureDockerBuild(project, tasks, buildLayersTask);
-        configureNativeDockerBuild(project, tasks, buildLayersTask);
+
+        project.afterEvaluate(eval -> {
+            //Native is only supported and added when the java version supports it
+            JavaPluginExtension javaPluginExtension = project.getExtensions().getByType(JavaPluginExtension.class);
+            if (javaPluginExtension.getTargetCompatibility().compareTo(JavaVersion.VERSION_11) <= 0) {
+                configureNativeDockerBuild(project, tasks, buildLayersTask);
+            }
+            else {
+                project.getLogger().debug("Native image not supported on java: {}", javaPluginExtension.getTargetCompatibility());
+            }
+        });
     }
 
     private void configureDockerBuild(Project project, TaskContainer tasks, TaskProvider<Task> buildLayersTask) {

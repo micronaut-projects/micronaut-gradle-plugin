@@ -8,7 +8,6 @@ import org.gradle.api.Task;
 import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.plugins.BasePlugin;
 import org.gradle.api.plugins.JavaApplication;
-import org.gradle.api.plugins.JavaPluginExtension;
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.Input;
@@ -144,10 +143,6 @@ public class NativeImageDockerfile extends Dockerfile implements DockerBuildOpti
     }
 
     public void setupDockerfileInstructions() {
-        JavaPluginExtension javaPluginExtension = getProject().getExtensions().getByType(JavaPluginExtension.class);
-        if (javaPluginExtension.getTargetCompatibility().isJava12Compatible()) {
-            throw new StopActionException("To build native images you must set the Java target byte code level to Java 11 or below");
-        }
         DockerBuildStrategy buildStrategy = this.buildStrategy.getOrElse(DockerBuildStrategy.DEFAULT);
         JavaApplication javaApplication = getProject().getExtensions().getByType(JavaApplication.class);
         if (buildStrategy == DockerBuildStrategy.LAMBDA) {
