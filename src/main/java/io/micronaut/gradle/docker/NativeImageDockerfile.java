@@ -18,6 +18,7 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Specialization of {@link Dockerfile} for building native images.
@@ -26,6 +27,8 @@ import java.util.List;
  * @since 1.0.0
  */
 public class NativeImageDockerfile extends Dockerfile implements DockerBuildOptions {
+
+    private static final String NATIVE_IMAGE_EXEC_TO_REPLACE = "NATIVE_IMAGE_EXEC";
 
     @Input
     private final Property<String> jdkVersion;
@@ -144,7 +147,6 @@ public class NativeImageDockerfile extends Dockerfile implements DockerBuildOpti
 
     public void setupDockerfileInstructions() {
         DockerBuildStrategy buildStrategy = this.buildStrategy.getOrElse(DockerBuildStrategy.DEFAULT);
-        JavaApplication javaApplication = getProject().getExtensions().getByType(JavaApplication.class);
         if (buildStrategy == DockerBuildStrategy.LAMBDA) {
             from(new From("amazonlinux:latest").withStage("graalvm"));
             environmentVariable("LANG", "en_US.UTF-8");
@@ -164,49 +166,12 @@ public class NativeImageDockerfile extends Dockerfile implements DockerBuildOpti
             runCommand("gu install native-image");
         }
         MicronautDockerfile.setupResources(this);
-
-        Task nit = getProject().getTasks().findByName("nativeImage");
-        NativeImageTask nativeImageTask;
-        if (nit instanceof NativeImageTask) {
-            nativeImageTask = (NativeImageTask) nit;
-        } else {
-            throw new StopActionException("No native image task present! Must be used in conjunction with a NativeImageTask.");
-        }
-
-        // clear out classpath
-        nativeImageTask.setClasspath(getProject().files());
-        // use hard coded image name
-        nativeImageTask.setImageName("application");
-        if (buildStrategy == DockerBuildStrategy.ORACLE_FUNCTION) {
-            javaApplication.getMainClass().set("com.fnproject.fn.runtime.EntryPoint");
-            nativeImageTask.setMain("com.fnproject.fn.runtime.EntryPoint");
-            nativeImageTask.args("--report-unsupported-elements-at-runtime");
-        } else if (buildStrategy == DockerBuildStrategy.LAMBDA) {
-            if (!javaApplication.getMainClass().isPresent()) {
-                javaApplication.getMainClass().set("io.micronaut.function.aws.runtime.MicronautLambdaRuntime");
-            }
-            if (!nativeImageTask.getMain().isPresent()) {
-                nativeImageTask.setMain("io.micronaut.function.aws.runtime.MicronautLambdaRuntime");
-            }
-        } else if (!nativeImageTask.getMain().isPresent()) {
-            nativeImageTask.setMain(javaApplication.getMainClass().get());
-        }
-        nativeImageTask.configure();
-
-        List<String> commandLine = nativeImageTask.getCommandLine();
-        commandLine.add("-cp");
-        commandLine.add("/home/app/libs/*.jar:/home/app/resources:/home/app/application.jar");
         String baseImage = this.baseImage.get();
         // why I have to do this horrible hack on the Gradle gods know
         if ("null".equalsIgnoreCase(baseImage)) {
             baseImage = null;
         }
-        // add --static if image is scratch
-        if (baseImage != null && baseImage.equalsIgnoreCase("scratch") && !commandLine.contains("--static")) {
-            commandLine.add("--static");
-        }
-        String nativeImageCommand = String.join(" ", commandLine);
-        runCommand(nativeImageCommand);
+        runCommand(NATIVE_IMAGE_EXEC_TO_REPLACE);
         switch (buildStrategy) {
             case ORACLE_FUNCTION:
                 if (baseImage == null) {
@@ -270,6 +235,59 @@ public class NativeImageDockerfile extends Dockerfile implements DockerBuildOpti
                 }));
             break;
         }
+    }
+
+    /**
+     * Because the nativeImage task must be configured during project setup, we can only access it and update
+     * our command with the proper command line post-evaluation
+     */
+    void setupNativeImageTaskPostEvaluate() {
+        JavaApplication javaApplication = getProject().getExtensions().getByType(JavaApplication.class);
+        DockerBuildStrategy buildStrategy = this.buildStrategy.getOrElse(DockerBuildStrategy.DEFAULT);
+        Task nit = getProject().getTasks().findByName("nativeImage");
+        NativeImageTask nativeImageTask;
+        if (nit instanceof NativeImageTask) {
+            nativeImageTask = (NativeImageTask) nit;
+        } else {
+            throw new StopActionException("No native image task present! Must be used in conjunction with a NativeImageTask.");
+        }
+
+        // clear out classpath
+        nativeImageTask.setClasspath(getProject().files());
+        // use hard coded image name
+        nativeImageTask.setImageName("application");
+        if (buildStrategy == DockerBuildStrategy.ORACLE_FUNCTION) {
+            javaApplication.getMainClass().set("com.fnproject.fn.runtime.EntryPoint");
+            nativeImageTask.setMain("com.fnproject.fn.runtime.EntryPoint");
+            nativeImageTask.args("--report-unsupported-elements-at-runtime");
+        } else if (buildStrategy == DockerBuildStrategy.LAMBDA) {
+            if (!javaApplication.getMainClass().isPresent()) {
+                javaApplication.getMainClass().set("io.micronaut.function.aws.runtime.MicronautLambdaRuntime");
+            }
+            if (!nativeImageTask.getMain().isPresent()) {
+                nativeImageTask.setMain("io.micronaut.function.aws.runtime.MicronautLambdaRuntime");
+            }
+        } else if (!nativeImageTask.getMain().isPresent()) {
+            nativeImageTask.setMain(javaApplication.getMainClass().get());
+        }
+        nativeImageTask.configure();
+
+        List<String> commandLine = nativeImageTask.getCommandLine();
+        commandLine.add("-cp");
+        commandLine.add("/home/app/libs/*.jar:/home/app/resources:/home/app/application.jar");
+        // add --static if image is scratch
+        if (baseImage != null && baseImage.isPresent() && baseImage.get().equalsIgnoreCase("scratch") &&
+                !commandLine.contains("--static")) {
+            commandLine.add("--static");
+        }
+        String nativeImageCommand = String.join(" ", commandLine);
+        List<Instruction> instructions = new ArrayList<>(getInstructions().get());
+        getInstructions().set(instructions.stream().map(i -> {
+            if (i instanceof RunCommandInstruction && i.getText().contains(NATIVE_IMAGE_EXEC_TO_REPLACE)) {
+                return new RunCommandInstruction(nativeImageCommand);
+            }
+            return i;
+        }).collect(Collectors.toList()));
     }
 
     /**
