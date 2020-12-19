@@ -100,7 +100,7 @@ public class MicronautDockerfile extends Dockerfile implements DockerBuildOption
     }
 
     /**
-     * @return The build startegy.
+     * @return The build strategy.
      */
     public Property<DockerBuildStrategy> getBuildStrategy() {
         return buildStrategy;
