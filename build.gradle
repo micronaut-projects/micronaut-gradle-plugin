@@ -47,11 +47,11 @@ dependencies {
   implementation "com.diffplug.gradle:goomph:3.25.0"
   implementation "com.github.jengelman.gradle.plugins:shadow:6.1.0"
   compileOnly "org.jetbrains.kotlin:kotlin-allopen:1.4.10"
-  compileOnly "org.jetbrains.kotlin:kotlin-gradle-plugin:1.4.20"
+  compileOnly "org.jetbrains.kotlin:kotlin-gradle-plugin:1.4.21-2"
 
 
   optionalPluginDependencies("org.jetbrains.kotlin:kotlin-allopen:1.4.10")
-  optionalPluginDependencies "org.jetbrains.kotlin:kotlin-gradle-plugin:1.4.10"
+  optionalPluginDependencies "org.jetbrains.kotlin:kotlin-gradle-plugin:1.4.21-2"
   testImplementation("org.jetbrains.kotlin:kotlin-allopen:1.4.10")
   testImplementation "org.jetbrains.kotlin:kotlin-gradle-plugin:1.4.10"
   testImplementation("org.codehaus.groovy:groovy:3.0.6")
