@@ -44,7 +44,7 @@ tasks.withType(PluginUnderTestMetadata) {
 
 dependencies {
   implementation "com.bmuschko:gradle-docker-plugin:6.7.0"
-  implementation "com.diffplug.gradle:goomph:3.25.0"
+  implementation "com.diffplug.gradle:goomph:3.26.0"
   implementation "com.github.jengelman.gradle.plugins:shadow:6.1.0"
   compileOnly "org.jetbrains.kotlin:kotlin-allopen:1.4.10"
   compileOnly "org.jetbrains.kotlin:kotlin-gradle-plugin:1.4.20"
