@@ -323,6 +323,20 @@ dockerfileNative {
 
 The above configuration uses a max heap setting of 128m for Java and 64m for native image for the application. 
 
+To add additional docker instructions to the generated Dockerfile, such as adding a HEALTHCHECK, you can do the following 
+```groovy
+dockerfile {
+ args("-Xmx128m")
+ instruction 'HEALTHCHECK CMD curl -s localhost:8090/health | grep \'"status":"UP"\''   
+}
+dockerfileNative {
+ args("-Xmx64m")
+ instruction 'HEALTHCHECK CMD curl -s localhost:8090/health | grep \'"status":"UP"\''
+}
+```
+
+You can also add any of the other instructions/commands that the docker plugin supports, see https://github.com/bmuschko/gradle-docker-plugin/blob/master/src/main/groovy/com/bmuschko/gradle/docker/tasks/image/Dockerfile.groovy 
+
 ### Micronaut Runtimes
 
 A higher level concept of "runtimes" is included in the Micronaut Gradle plugin which essentially allows the plugin to decide which server runtime to include in the dependencies of the application when building the application. For example consider this minimal build:
