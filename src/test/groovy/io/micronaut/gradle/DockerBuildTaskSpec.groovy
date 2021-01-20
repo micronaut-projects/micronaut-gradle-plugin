@@ -78,13 +78,14 @@ class Application {
             }
             
             micronaut {
-                version "2.0.1"
+                version "2.3.0-SNAPSHOT"
                 runtime "$runtime"
             }
             
             repositories {
                 jcenter()
                 mavenCentral()
+                maven { url "https://oss.jfrog.org/oss-snapshot-local" }
             }
             
             
@@ -154,13 +155,14 @@ micronaut:
             }
             
             micronaut {
-                version "2.0.1"
+                version "2.3.0-SNAPSHOT"
                 runtime "lambda"
             }
             
             repositories {
                 jcenter()
                 mavenCentral()
+                maven { url "https://oss.jfrog.org/oss-snapshot-local" }
             }
             
             nativeImage {
