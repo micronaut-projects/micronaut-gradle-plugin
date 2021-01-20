@@ -30,7 +30,7 @@ class NativeImageTestTaskSpec extends Specification {
             }
             
             micronaut {
-                version "2.1.2"
+                version "2.3.0-SNAPSHOT"
                 runtime "netty"
                 testRuntime "junit5"
             }
