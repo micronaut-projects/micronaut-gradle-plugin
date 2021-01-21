@@ -1,6 +1,7 @@
 package io.micronaut.gradle.docker;
 
 import com.bmuschko.gradle.docker.tasks.image.Dockerfile;
+import io.micronaut.gradle.MicronautRuntime;
 import org.gradle.api.JavaVersion;
 import org.gradle.api.Project;
 import org.gradle.api.model.ObjectFactory;
@@ -9,13 +10,14 @@ import org.gradle.api.plugins.JavaApplication;
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.Input;
+import org.gradle.api.tasks.TaskAction;
 import org.gradle.internal.jvm.Jvm;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class MicronautDockerfile extends Dockerfile implements DockerBuildOptions  {
 
@@ -55,7 +57,9 @@ public class MicronautDockerfile extends Dockerfile implements DockerBuildOption
         return defaultCommand;
     }
 
-    public void setupDockerfileInstructions() {
+    @Override
+    @TaskAction
+    public void create() {
         DockerBuildStrategy buildStrategy = this.buildStrategy.getOrElse(DockerBuildStrategy.DEFAULT);
         JavaApplication javaApplication = getProject().getExtensions().getByType(JavaApplication.class);
         String from = getBaseImage().getOrNull();
@@ -92,6 +96,7 @@ public class MicronautDockerfile extends Dockerfile implements DockerBuildOption
                     return newList;
                 }));
         }
+        super.create();
     }
 
     /**

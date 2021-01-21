@@ -95,9 +95,6 @@ public class NativeImageTask extends AbstractExecTask<NativeImageTask>
         }
 
         // set the main class
-        if (!getMain().isPresent()) {
-            throw new IllegalStateException("Main class must be set");
-        }
         String main = getMain().get();
         args("-H:Class=" + main);
 
