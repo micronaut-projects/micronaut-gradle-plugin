@@ -18,6 +18,7 @@ import org.gradle.api.file.FileCollection;
 import org.gradle.api.plugins.BasePlugin;
 import org.gradle.api.plugins.ExtensionContainer;
 import org.gradle.api.plugins.JavaApplication;
+import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.tasks.*;
 import org.gradle.api.tasks.bundling.Jar;
 
@@ -88,12 +89,12 @@ public class MicronautDockerPlugin implements Plugin<Project> {
             SourceSet mainSourceSet = sourceSets
                     .getByName(SourceSet.MAIN_SOURCE_SET_NAME);
 
-            Set<File> resourceDirs = mainSourceSet.getResources().getSrcDirs();
+            final File resourcesDir = mainSourceSet.getOutput().getResourcesDir();
 
             TaskInputs inputs = task.getInputs();
             inputs.files(runtimeClasspath);
             inputs.files(jarFiles);
-            inputs.files(resourceDirs);
+            inputs.files(resourcesDir);
 
 
             task.getOutputs().dir(applicationLayout);
@@ -117,7 +118,7 @@ public class MicronautDockerPlugin implements Plugin<Project> {
                     );
                     project.mkdir(new File(applicationLayout, "resources"));
                     project.copy(copy ->
-                            copy.from(project.files(resourceDirs))
+                            copy.from(resourcesDir)
                                     .into(new File(applicationLayout, "resources"))
                     );
                 }
