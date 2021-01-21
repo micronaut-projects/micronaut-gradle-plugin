@@ -12,10 +12,7 @@ import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.plugins.JavaPluginConvention;
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.specs.Spec;
-import org.gradle.api.tasks.SourceSet;
-import org.gradle.api.tasks.SourceSetContainer;
-import org.gradle.api.tasks.TaskContainer;
-import org.gradle.api.tasks.TaskProvider;
+import org.gradle.api.tasks.*;
 import org.gradle.api.tasks.testing.Test;
 
 import java.io.File;
@@ -116,10 +113,10 @@ public class MicronautGraalPlugin implements Plugin<Project> {
                         .getByName(JavaPlugin.RUNTIME_CLASSPATH_CONFIGURATION_NAME);
                 SourceSetContainer sourceSets = project.getExtensions().getByType(SourceSetContainer.class);
                 SourceSet mainSourceSet = sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME);
-                FileCollection outputDirs = mainSourceSet.getOutput().getClassesDirs();
+                final SourceSetOutput output = mainSourceSet.getOutput();
+                FileCollection outputDirs = output.getClassesDirs();
                 runtimeConfig = runtimeConfig.plus(outputDirs);
-                Set<File> resourceDirs = mainSourceSet.getResources().getSrcDirs();
-                runtimeConfig = runtimeConfig.plus(project.files(resourceDirs));
+                runtimeConfig = runtimeConfig.plus(project.files(output.getResourcesDir()));
                 nativeImageTask.setClasspath(runtimeConfig);
             }));
         }
