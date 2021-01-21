@@ -3,6 +3,7 @@ package io.micronaut.gradle;
 import com.github.jengelman.gradle.plugins.shadow.ShadowPlugin;
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar;
 import io.micronaut.gradle.docker.MicronautDockerPlugin;
+import io.micronaut.gradle.graalvm.GraalUtil;
 import org.apache.tools.ant.taskdefs.condition.Os;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
@@ -113,6 +114,15 @@ public class MicronautApplicationPlugin extends MicronautLibraryPlugin {
         new MicronautDockerPlugin().apply(project);
         final TaskContainer tasks = project.getTasks();
         tasks.withType(JavaExec.class, javaExec -> {
+            if (javaExec.getName().equals("run")) {
+                javaExec.jvmArgs(
+                        "-Dcom.sun.management.jmxremote"
+                );
+                if (!GraalUtil.isGraalJVM()) {
+                    // graal doesn't support this
+                    javaExec.jvmArgs("-XX:TieredStopAtLevel=1");
+                }
+            }
             javaExec.classpath(developmentOnly);
 
             // If -t (continuous mode) is enabled feed parameters to the JVM
