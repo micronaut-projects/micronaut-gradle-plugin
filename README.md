@@ -234,6 +234,15 @@ nativeImage {
 }
 ```
 
+> :information_source: All Gradle Groovy DSL build file `build.gradle` task examples also work for the Gradle Kotlin DSL build file `build.gradle.kts` when placed inside the `tasks` container e.g.
+> ```kotlin
+> tasks {
+>     nativeImage {
+>         args("--static")
+>     }
+> }
+> ```
+
 **IMPORTANT:** If you update an existing Micronaut application that contains the file `src/main/resources/META-INF/native-image/xxxxx/native-image.properties`, please make sure to delete the properties `-H:Name` and `-H:Class` from the file because they are managed automatically by the plugin.
 
 
