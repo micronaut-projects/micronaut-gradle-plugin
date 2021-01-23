@@ -19,6 +19,8 @@ import java.util.stream.Collectors;
 
 public class MicronautDockerfile extends Dockerfile implements DockerBuildOptions  {
 
+    private static final String ARGS_TO_REPLACE = "__ARGS__";
+
     @Input
     private final Property<String> baseImage;
     @Input
@@ -83,15 +85,23 @@ public class MicronautDockerfile extends Dockerfile implements DockerBuildOption
                 from(new Dockerfile.From(from != null ? from : "openjdk:15-alpine"));
                 setupResources(this);
                 exposePort(exposedPorts);
-                entryPoint(getArgs().map(strings -> {
-                    List<String> newList = new ArrayList<>(strings.size() + 3);
-                    newList.add("java");
-                    newList.addAll(strings);
-                    newList.add("-jar");
-                    newList.add("/home/app/application.jar");
-                    return newList;
-                }));
+                entryPoint("java", ARGS_TO_REPLACE, "-jar", "/home/app/application.jar");
         }
+    }
+
+    /**
+     * This is executed post project evaluation
+     */
+    void setupTaskPostEvaluate() {
+        List<Instruction> instructions = new ArrayList<>(getInstructions().get());
+        getInstructions().set(instructions.stream().map(i -> {
+            if (i instanceof EntryPointInstruction && i.getText().contains(ARGS_TO_REPLACE)) {
+                return new EntryPointInstruction(i.getText()
+                        .replace(i.getKeyword(), "")
+                        .replace(ARGS_TO_REPLACE, String.join(" ", getArgs().get())));
+            }
+            return i;
+        }).collect(Collectors.toList()));
     }
 
     /**
