@@ -96,6 +96,11 @@ class Application {
                 targetCompatibility = JavaVersion.toVersion('8')
             }
             
+            dockerfileNative {
+                args('-Xmx64m')
+                instruction \"\"\"HEALTHCHECK CMD curl -s localhost:8090/health | grep '"status":"UP"'\"\"\"
+            }
+            
         """
         testProjectDir.newFolder("src", "main", "java", "example")
         def resources = testProjectDir.newFolder("src", "main", "resources")
@@ -129,6 +134,7 @@ micronaut:
         name: test
 """
 
+
         def result = GradleRunner.create()
                 .withProjectDir(testProjectDir.root)
                 .withArguments('dockerBuildNative')
@@ -136,13 +142,23 @@ micronaut:
                 .build()
 
         def task = result.task(":dockerBuildNative")
+        def dockerFile = new File(testProjectDir.root, 'build/docker/DockerfileNative').readLines('UTF-8')
+
         expect:
+        dockerFile.first() == nativeImage
+        dockerFile.last() == """HEALTHCHECK CMD curl -s localhost:8090/health | grep '"status":"UP"'"""
+        dockerFile.find {s -> s.contains('-Xmx64m')}
+
+        and:
         result.output.contains("Successfully tagged hello-world:latest")
         result.output.contains("Writing resource-config.json file")
         task.outcome == TaskOutcome.SUCCESS
 
         where:
-        runtime << ["netty", "lambda", "jetty"]
+        runtime  | nativeImage
+        "netty"  | 'FROM ghcr.io/graalvm/graalvm-ce:java8-21.0.0 AS graalvm'
+        "lambda" | 'FROM amazonlinux:latest AS graalvm'
+        "jetty"  | 'FROM ghcr.io/graalvm/graalvm-ce:java8-21.0.0 AS graalvm'
     }
 
 
@@ -196,6 +212,7 @@ class Application {
                 .build()
 
         def task = result.task(":dockerBuildNative")
+
         expect:
         result.output.contains("Successfully tagged hello-world:latest")
         task.outcome == TaskOutcome.SUCCESS

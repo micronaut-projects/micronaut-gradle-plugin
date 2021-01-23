@@ -336,11 +336,11 @@ To add additional docker instructions to the generated Dockerfile, such as addin
 ```groovy
 dockerfile {
  args("-Xmx128m")
- instruction """HEALTHCHECK CMD curl -s localhost:8090/health | grep "status":"UP" """   
+ instruction """HEALTHCHECK CMD curl -s localhost:8090/health | grep '"status":"UP"' """   
 }
 dockerfileNative {
  args("-Xmx64m")
- instruction """HEALTHCHECK CMD curl -s localhost:8090/health | grep "status":"UP" """
+ instruction """HEALTHCHECK CMD curl -s localhost:8090/health | grep '"status":"UP"'"""
 }
 ```
 
