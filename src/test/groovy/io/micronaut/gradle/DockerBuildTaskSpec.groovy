@@ -145,7 +145,7 @@ micronaut:
         def dockerFile = new File(testProjectDir.root, 'build/docker/DockerfileNative').readLines('UTF-8')
 
         expect:
-        dockerFile.first() == nativeImage
+        dockerFile.first().startsWith(nativeImage)
         dockerFile.last() == """HEALTHCHECK CMD curl -s localhost:8090/health | grep '"status":"UP"'"""
         dockerFile.find {s -> s.contains('-Xmx64m')}
 
@@ -156,9 +156,9 @@ micronaut:
 
         where:
         runtime  | nativeImage
-        "netty"  | 'FROM ghcr.io/graalvm/graalvm-ce:java8-21.0.0 AS graalvm'
+        "netty"  | 'FROM ghcr.io/graalvm/graalvm-ce:java'
         "lambda" | 'FROM amazonlinux:latest AS graalvm'
-        "jetty"  | 'FROM ghcr.io/graalvm/graalvm-ce:java8-21.0.0 AS graalvm'
+        "jetty"  | 'FROM ghcr.io/graalvm/graalvm-ce:java'
     }
 
 
