@@ -1,28 +1,25 @@
 package io.micronaut.gradle.docker;
 
 import com.bmuschko.gradle.docker.tasks.image.Dockerfile;
-import io.micronaut.gradle.MicronautRuntime;
-import io.micronaut.gradle.graalvm.GraalUtil;
 import io.micronaut.gradle.graalvm.NativeImageTask;
-import org.gradle.api.BuildCancelledException;
 import org.gradle.api.JavaVersion;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
 import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.plugins.BasePlugin;
 import org.gradle.api.plugins.JavaApplication;
-import org.gradle.api.plugins.JavaPluginExtension;
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.Input;
+import org.gradle.api.tasks.StopActionException;
 import org.gradle.api.tasks.TaskAction;
-import org.gradle.api.tasks.TaskExecutionException;
 import org.gradle.internal.jvm.Jvm;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Specialization of {@link Dockerfile} for building native images.
@@ -31,7 +28,9 @@ import java.util.List;
  * @since 1.0.0
  */
 public class NativeImageDockerfile extends Dockerfile implements DockerBuildOptions {
-    private final NativeImageTask nativeImageTask;
+
+    private static final String NATIVE_IMAGE_EXEC_TO_REPLACE = "NATIVE_IMAGE_EXEC";
+    private static final String ARGS_TO_REPLACE = "__ARGS__";
 
     @Input
     private final Property<String> jdkVersion;
@@ -76,12 +75,6 @@ public class NativeImageDockerfile extends Dockerfile implements DockerBuildOpti
                                .convention(graalVersion.map(version -> "ghcr.io/graalvm/graalvm-ce:" + jdkVersion.get() + '-' + version ));
         this.baseImage = objects.property(String.class)
                                     .convention("null");
-        Task nit = project.getTasks().getByName("nativeImage");
-        if (nit instanceof NativeImageTask) {
-            this.nativeImageTask = (NativeImageTask) nit;
-        } else {
-            throw new IllegalStateException("No native image task present! Must be used in conjunction with a NativeImageTask.");
-        }
         this.args = objects.listProperty(String.class);
         this.exposedPorts = objects.listProperty(Integer.class);
         this.defaultCommand = objects.property(String.class).convention("none");
@@ -154,15 +147,11 @@ public class NativeImageDockerfile extends Dockerfile implements DockerBuildOpti
         return this.exposedPorts;
     }
 
-    @Override
-    @TaskAction
-    public void create() {
+    /**
+     * This sets up the commands as a template in the {@link Dockerfile} task
+     */
+    public void setupDockerfileInstructions() {
         DockerBuildStrategy buildStrategy = this.buildStrategy.getOrElse(DockerBuildStrategy.DEFAULT);
-        JavaApplication javaApplication = getProject().getExtensions().getByType(JavaApplication.class);
-        JavaPluginExtension javaPluginExtension = getProject().getExtensions().getByType(JavaPluginExtension.class);
-        if (javaPluginExtension.getTargetCompatibility().isJava12Compatible()) {
-            throw new RuntimeException("To build native images you must set the Java target byte code level to Java 11 or below");
-        }
         if (buildStrategy == DockerBuildStrategy.LAMBDA) {
             from(new From("amazonlinux:latest").withStage("graalvm"));
             environmentVariable("LANG", "en_US.UTF-8");
@@ -182,37 +171,12 @@ public class NativeImageDockerfile extends Dockerfile implements DockerBuildOpti
             runCommand("gu install native-image");
         }
         MicronautDockerfile.setupResources(this);
-        // clear out classpath
-        this.nativeImageTask.setClasspath(getProject().files());
-        // use hard coded image name
-        this.nativeImageTask.setImageName("application");
-        if (buildStrategy == DockerBuildStrategy.ORACLE_FUNCTION) {
-            javaApplication.getMainClass().set("com.fnproject.fn.runtime.EntryPoint");
-            this.nativeImageTask.setMain("com.fnproject.fn.runtime.EntryPoint");
-            this.nativeImageTask.args("--report-unsupported-elements-at-runtime");
-        } else if (buildStrategy == DockerBuildStrategy.LAMBDA) {
-            if (!javaApplication.getMainClass().isPresent()) {
-                javaApplication.getMainClass().set("io.micronaut.function.aws.runtime.MicronautLambdaRuntime");
-            }
-            if (!this.nativeImageTask.getMain().isPresent()) {
-                this.nativeImageTask.setMain("io.micronaut.function.aws.runtime.MicronautLambdaRuntime");
-            }
-        }
-        this.nativeImageTask.configure();
-        List<String> commandLine = this.nativeImageTask.getCommandLine();
-        commandLine.add("-cp");
-        commandLine.add("/home/app/libs/*.jar:/home/app/resources:/home/app/application.jar");
         String baseImage = this.baseImage.get();
         // why I have to do this horrible hack on the Gradle gods know
         if ("null".equalsIgnoreCase(baseImage)) {
             baseImage = null;
         }
-        // add --static if image is scratch
-        if (baseImage != null && baseImage.equalsIgnoreCase("scratch") && !commandLine.contains("--static")) {
-            commandLine.add("--static");
-        }
-        String nativeImageCommand = String.join(" ", commandLine);
-        runCommand(nativeImageCommand);
+        runCommand(NATIVE_IMAGE_EXEC_TO_REPLACE);
         switch (buildStrategy) {
             case ORACLE_FUNCTION:
                 if (baseImage == null) {
@@ -224,12 +188,7 @@ public class NativeImageDockerfile extends Dockerfile implements DockerBuildOpti
                 runCommand("groupadd -g 1000 fn && useradd --uid 1000 -g fn fn");
                 copyFile(new CopyFile("/home/app/application", "/function/func").withStage("graalvm"));
                 copyFile(new CopyFile("/function/runtime/lib/*", ".").withStage("fnfdk"));
-                entryPoint(args.map(strings -> {
-                    List<String> newList = new ArrayList<>(strings.size() + 1);
-                    newList.add("./func");
-                    newList.addAll(strings);
-                    return newList;
-                }));
+                entryPoint("./func", ARGS_TO_REPLACE);
                 String cmd = this.defaultCommand.get();
                 if ("none".equals(cmd)) {
                     super.defaultCommand("io.micronaut.oraclecloud.function.http.HttpFunction::handleRequest");
@@ -245,13 +204,7 @@ public class NativeImageDockerfile extends Dockerfile implements DockerBuildOpti
                 workingDir("/function");
                 runCommand("yum install -y zip");
                 copyFile(new CopyFile("/home/app/application", "/function/func").withStage("builder"));
-                String funcCmd = String.join(" ", args.map(strings -> {
-                    List<String> newList = new ArrayList<>(strings.size() + 1);
-                    newList.add("./func");
-                    newList.addAll(strings);
-                    newList.add("-Djava.library.path=$(pwd)");
-                    return newList;
-                }).get());
+                String funcCmd = String.join(" ", "./func", ARGS_TO_REPLACE, "-Djava.library.path=$(pwd)");
                 runCommand("echo \"#!/bin/sh\" >> bootstrap && echo \"set -euo pipefail\" >> bootstrap && echo \"" + funcCmd + "\" >> bootstrap");
                 runCommand("chmod 777 bootstrap");
                 runCommand("chmod 777 func");
@@ -268,15 +221,71 @@ public class NativeImageDockerfile extends Dockerfile implements DockerBuildOpti
                 }
                 exposePort(this.exposedPorts);
                 copyFile(new CopyFile("/home/app/application", "/app/application").withStage("graalvm"));
-                entryPoint(args.map(strings -> {
-                    List<String> newList = new ArrayList<>(strings.size() + 1);
-                    newList.add("/app/application");
-                    newList.addAll(strings);
-                    return newList;
-                }));
+                entryPoint("/app/application", ARGS_TO_REPLACE);
             break;
         }
-        super.create();
+    }
+
+    /**
+     * This is executed post project evaluation
+     */
+    void setupNativeImageTaskPostEvaluate() {
+        JavaApplication javaApplication = getProject().getExtensions().getByType(JavaApplication.class);
+        DockerBuildStrategy buildStrategy = this.buildStrategy.getOrElse(DockerBuildStrategy.DEFAULT);
+        Task nit = getProject().getTasks().findByName("nativeImage");
+        NativeImageTask nativeImageTask;
+        if (nit instanceof NativeImageTask) {
+            nativeImageTask = (NativeImageTask) nit;
+        } else {
+            throw new StopActionException("No native image task present! Must be used in conjunction with a NativeImageTask.");
+        }
+
+        // clear out classpath
+        nativeImageTask.setClasspath(getProject().files());
+        // use hard coded image name
+        nativeImageTask.setImageName("application");
+        if (buildStrategy == DockerBuildStrategy.ORACLE_FUNCTION) {
+            javaApplication.getMainClass().set("com.fnproject.fn.runtime.EntryPoint");
+            nativeImageTask.setMain("com.fnproject.fn.runtime.EntryPoint");
+            nativeImageTask.args("--report-unsupported-elements-at-runtime");
+        } else if (buildStrategy == DockerBuildStrategy.LAMBDA) {
+            if (!javaApplication.getMainClass().isPresent()) {
+                javaApplication.getMainClass().set("io.micronaut.function.aws.runtime.MicronautLambdaRuntime");
+            }
+            if (!nativeImageTask.getMain().isPresent()) {
+                nativeImageTask.setMain("io.micronaut.function.aws.runtime.MicronautLambdaRuntime");
+            }
+        } else if (!nativeImageTask.getMain().isPresent()) {
+            nativeImageTask.setMain(javaApplication.getMainClass().get());
+        }
+        nativeImageTask.configure();
+
+        List<String> commandLine = nativeImageTask.getCommandLine();
+        commandLine.add("-cp");
+        commandLine.add("/home/app/libs/*.jar:/home/app/resources:/home/app/application.jar");
+        // add --static if image is scratch
+        if (baseImage != null && baseImage.isPresent() && baseImage.get().equalsIgnoreCase("scratch") &&
+                !commandLine.contains("--static")) {
+            commandLine.add("--static");
+        }
+        String nativeImageCommand = String.join(" ", commandLine);
+        List<Instruction> instructions = new ArrayList<>(getInstructions().get());
+        getInstructions().set(instructions.stream().map(i -> {
+            if (i instanceof RunCommandInstruction && i.getText().contains(NATIVE_IMAGE_EXEC_TO_REPLACE)) {
+                return new RunCommandInstruction(nativeImageCommand);
+            }
+            else if (i instanceof EntryPointInstruction && i.getText().contains(ARGS_TO_REPLACE)) {
+                return new EntryPointInstruction(i.getText()
+                        .replace(i.getKeyword(), "")
+                        .replace(ARGS_TO_REPLACE, String.join(" ", args.get())));
+            }
+            else if (i instanceof RunCommandInstruction && i.getText().contains(ARGS_TO_REPLACE)) {
+                return new RunCommandInstruction(i.getText()
+                        .replace(i.getKeyword(), "")
+                        .replace(ARGS_TO_REPLACE, String.join(" ", args.get())));
+            }
+            return i;
+        }).collect(Collectors.toList()));
     }
 
     /**
