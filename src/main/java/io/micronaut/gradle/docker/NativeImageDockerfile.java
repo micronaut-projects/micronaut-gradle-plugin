@@ -213,7 +213,7 @@ public class NativeImageDockerfile extends Dockerfile implements DockerBuildOpti
             break;
             default:
                 if (baseImage == null) {
-                    baseImage = "frolvlad/alpine-glibc";
+                    baseImage = "frolvlad/alpine-glibc:alpine-3.12";
                 }
                 from(baseImage);
                 if (baseImage.contains("alpine-glibc")) {
