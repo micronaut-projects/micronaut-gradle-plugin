@@ -391,12 +391,16 @@ The available runtimes are:
 * `tomcat` - A Tomcat server runtime
 * `undertow` - An Undertow server runtime
 * `lambda` - Allows building the application into an AWS Lambda
-* `lambda_native` - Allows building the applciation into a native AWS Lambda with GraalVM
 * `oracle_function` - A Project.fn runtime for deploying Oracle Functions
 * `google_function` - A runtime for deploying Google Functions.
 * `azure_function` - A runtime for deploying Azure Functions
 
 The advantage of allowing your dependencies to be dictated by the runtime is that you can potentially take the same application and deploy it to any of the above runtimes without changes.
+
+#### Deploying to AWS Lambda as GraalVM native image
+
+If you are interested in deploying your Micronaut application to AWS Lambda using GraalVM you only need to set the runtime to `lambda` and execute `./gradlew buildNativeLambda`.
+This task will generate a GraalVM native image inside a Docker container and then it will create the file `build/libs/your-app.zip` file ready to be deployed to AWS Lambda using a custom runtime. See more information in [Micronaut AWS documentation](https://micronaut-projects.github.io/micronaut-aws/latest/guide/index.html#customRuntimes).
 
 ### Packaging application
 
