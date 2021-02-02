@@ -96,9 +96,12 @@ public class MicronautDockerfile extends Dockerfile implements DockerBuildOption
         List<Instruction> instructions = new ArrayList<>(getInstructions().get());
         getInstructions().set(instructions.stream().map(i -> {
             if (i instanceof EntryPointInstruction && i.getText().contains(ARGS_TO_REPLACE)) {
-                return new EntryPointInstruction(i.getText()
-                        .replace(i.getKeyword(), "")
-                        .replace(ARGS_TO_REPLACE, String.join(" ", getArgs().get())));
+                List<String> allArgs = new ArrayList<>();
+                allArgs.add("java");
+                allArgs.addAll(getArgs().get());
+                allArgs.add("-jar");
+                allArgs.add("/home/app/application.jar");
+                return new EntryPointInstruction(allArgs.toArray(new String[allArgs.size()]));
             }
             return i;
         }).collect(Collectors.toList()));

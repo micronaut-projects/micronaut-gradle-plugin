@@ -30,7 +30,9 @@ import java.util.stream.Collectors;
 public class NativeImageDockerfile extends Dockerfile implements DockerBuildOptions {
 
     private static final String NATIVE_IMAGE_EXEC_TO_REPLACE = "NATIVE_IMAGE_EXEC";
-    private static final String ARGS_TO_REPLACE = "__ARGS__";
+    private static final String LABMDA_ARGS_TO_REPLACE = "LAMBDA__ARGS__";
+    private static final String APPLICATION_ARGS_TO_REPLACE = "ORACLEFUNCT__ARGS__";
+    private static final String ORACLE_FUNCT_ARGS_TO_REPLACE = "APPLICATION__ARGS__";
 
     @Input
     private final Property<String> jdkVersion;
@@ -188,7 +190,7 @@ public class NativeImageDockerfile extends Dockerfile implements DockerBuildOpti
                 runCommand("groupadd -g 1000 fn && useradd --uid 1000 -g fn fn");
                 copyFile(new CopyFile("/home/app/application", "/function/func").withStage("graalvm"));
                 copyFile(new CopyFile("/function/runtime/lib/*", ".").withStage("fnfdk"));
-                entryPoint("./func", ARGS_TO_REPLACE);
+                entryPoint(ORACLE_FUNCT_ARGS_TO_REPLACE);
                 String cmd = this.defaultCommand.get();
                 if ("none".equals(cmd)) {
                     super.defaultCommand("io.micronaut.oraclecloud.function.http.HttpFunction::handleRequest");
@@ -204,7 +206,7 @@ public class NativeImageDockerfile extends Dockerfile implements DockerBuildOpti
                 workingDir("/function");
                 runCommand("yum install -y zip");
                 copyFile(new CopyFile("/home/app/application", "/function/func").withStage("builder"));
-                String funcCmd = String.join(" ", "./func", ARGS_TO_REPLACE, "-Djava.library.path=$(pwd)");
+                String funcCmd = String.join(" ", "./func", LABMDA_ARGS_TO_REPLACE, "-Djava.library.path=$(pwd)");
                 runCommand("echo \"#!/bin/sh\" >> bootstrap && echo \"set -euo pipefail\" >> bootstrap && echo \"" + funcCmd + "\" >> bootstrap");
                 runCommand("chmod 777 bootstrap");
                 runCommand("chmod 777 func");
@@ -221,7 +223,7 @@ public class NativeImageDockerfile extends Dockerfile implements DockerBuildOpti
                 }
                 exposePort(this.exposedPorts);
                 copyFile(new CopyFile("/home/app/application", "/app/application").withStage("graalvm"));
-                entryPoint("/app/application", ARGS_TO_REPLACE);
+                entryPoint(APPLICATION_ARGS_TO_REPLACE);
             break;
         }
     }
@@ -274,15 +276,21 @@ public class NativeImageDockerfile extends Dockerfile implements DockerBuildOpti
             if (i instanceof RunCommandInstruction && i.getText().contains(NATIVE_IMAGE_EXEC_TO_REPLACE)) {
                 return new RunCommandInstruction(nativeImageCommand);
             }
-            else if (i instanceof EntryPointInstruction && i.getText().contains(ARGS_TO_REPLACE)) {
-                return new EntryPointInstruction(i.getText()
-                        .replace(i.getKeyword(), "")
-                        .replace(ARGS_TO_REPLACE, String.join(" ", args.get())));
+            else if (i instanceof EntryPointInstruction && (i.getText().contains(ORACLE_FUNCT_ARGS_TO_REPLACE) || i.getText().contains(APPLICATION_ARGS_TO_REPLACE))) {
+                List<String> allArgs = new ArrayList<>();
+                if (i.getText().contains(ORACLE_FUNCT_ARGS_TO_REPLACE)) {
+                    allArgs.add("./func");
+                }
+                else if (i.getText().contains(APPLICATION_ARGS_TO_REPLACE)) {
+                    allArgs.add("/app/application");
+                }
+                allArgs.addAll(getArgs().get());
+                return new EntryPointInstruction(allArgs.toArray(new String[0]));
             }
-            else if (i instanceof RunCommandInstruction && i.getText().contains(ARGS_TO_REPLACE)) {
+            else if (i instanceof RunCommandInstruction && i.getText().contains(LABMDA_ARGS_TO_REPLACE)) {
                 return new RunCommandInstruction(i.getText()
                         .replace(i.getKeyword(), "")
-                        .replace(ARGS_TO_REPLACE, String.join(" ", args.get())));
+                        .replace(LABMDA_ARGS_TO_REPLACE, String.join(" ", args.get())));
             }
             return i;
         }).collect(Collectors.toList()));
