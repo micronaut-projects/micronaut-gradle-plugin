@@ -157,7 +157,7 @@ public class NativeImageDockerfile extends Dockerfile implements DockerBuildOpti
         if (buildStrategy == DockerBuildStrategy.LAMBDA) {
             from(new From("amazonlinux:latest").withStage("graalvm"));
             environmentVariable("LANG", "en_US.UTF-8");
-            runCommand("yum install -y gcc gcc-c++ libc6-dev  zlib1g-dev curl bash zlib zlib-devel zip tar gzip");
+            runCommand("yum install -y gcc gcc-c++ libc6-dev zlib1g-dev curl bash zlib zlib-devel zlib-static zip tar gzip");
             String jdkVersion = this.jdkVersion.get();
             String graalVersion = this.graalVersion.get();
             String fileName = "graalvm-ce-" + jdkVersion + "-linux-amd64-" + graalVersion + ".tar.gz";
@@ -215,12 +215,9 @@ public class NativeImageDockerfile extends Dockerfile implements DockerBuildOpti
             break;
             default:
                 if (baseImage == null) {
-                    baseImage = "frolvlad/alpine-glibc:alpine-3.12";
+                    baseImage = "gcr.io/distroless/cc-debian10";
                 }
                 from(baseImage);
-                if (baseImage.contains("alpine-glibc")) {
-                    runCommand("apk update && apk add libstdc++");
-                }
                 exposePort(this.exposedPorts);
                 copyFile(new CopyFile("/home/app/application", "/app/application").withStage("graalvm"));
                 entryPoint(APPLICATION_ARGS_TO_REPLACE);

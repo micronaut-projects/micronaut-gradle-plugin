@@ -105,6 +105,9 @@ public class NativeImageTask extends AbstractExecTask<NativeImageTask>
         String imageName = getImageName().get();
         args("-H:Name=" + imageName);
 
+        // to build a "mostly" static native image
+        args("-H:+StaticExecutableWithDynamicLibC");
+
         // Adds boolean flags to the command line
         booleanCmds.forEach((property, cmd) -> {
             if (property.getAsBoolean()) {
