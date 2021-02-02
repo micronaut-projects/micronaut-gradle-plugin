@@ -184,7 +184,7 @@ public class MicronautDockerPlugin implements Plugin<Project> {
             task.setDescription("Pushes a Docker Image");
             task.getImages().set(dockerBuildTask.flatMap(DockerBuildImage::getImages));
         });
-        if (f.exists()) {
+        if (!f.exists()) {
             return Optional.of((TaskProvider<MicronautDockerfile>) dockerFileTask);
         }
         return Optional.empty();
