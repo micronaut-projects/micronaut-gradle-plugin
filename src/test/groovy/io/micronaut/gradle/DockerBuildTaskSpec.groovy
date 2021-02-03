@@ -58,7 +58,7 @@ class Application {
         when:
         def result = GradleRunner.create()
                 .withProjectDir(testProjectDir.root)
-                .withArguments('dockerBuild')
+                .withArguments('dockerBuild', '-s')
                 .withPluginClasspath()
                 .build()
 
@@ -218,4 +218,90 @@ class Application {
         task.outcome == TaskOutcome.SUCCESS
     }
 
+    @Unroll
+    def "test construct dockerfile and dockerfileNative"() {
+        setup:
+        settingsFile << "rootProject.name = 'hello-world'"
+        buildFile << """
+            plugins {
+                id "io.micronaut.application"
+            }
+            
+            micronaut {
+                version "2.3.0"
+                runtime "$runtime"
+            }
+            
+            repositories {
+                jcenter()
+                mavenCentral()
+                maven { url "https://oss.jfrog.org/oss-snapshot-local" }
+            }
+            
+            nativeImage {
+                main = "other.Application"
+            }
+            
+            java {
+                sourceCompatibility = JavaVersion.toVersion('8')
+                targetCompatibility = JavaVersion.toVersion('8')
+            }
+            
+            dockerfile {
+                args('-Xmx64m')
+                baseImage('test_base_image')
+                instruction \"\"\"HEALTHCHECK CMD curl -s localhost:8090/health | grep '"status":"UP"'\"\"\"
+            }
+            dockerfileNative {
+                args('-Xmx64m')
+                baseImage('test_base_image')
+                instruction \"\"\"HEALTHCHECK CMD curl -s localhost:8090/health | grep '"status":"UP"'\"\"\"
+            }
+            
+            mainClassName="example.Application"
+        """
+        testProjectDir.newFolder("src", "main", "java", "other")
+        def javaFile = testProjectDir.newFile("src/main/java/other/Application.java")
+        javaFile.parentFile.mkdirs()
+        javaFile << """
+package other;
+
+class Application {
+    public static void main(String... args) {
+    
+    }
+}
+"""
+
+        def result = GradleRunner.create()
+                .withProjectDir(testProjectDir.root)
+                .withArguments('dockerfile', 'dockerfileNative')
+                .withPluginClasspath()
+                .build()
+
+        def dockerfileTask = result.task(":dockerfile")
+        def dockerfileNativeTask = result.task(":dockerfile")
+        def dockerFileNative = new File(testProjectDir.root, 'build/docker/DockerfileNative').readLines('UTF-8')
+        def dockerFile = new File(testProjectDir.root, 'build/docker/Dockerfile').readLines('UTF-8')
+
+        expect:
+        dockerfileTask.outcome == TaskOutcome.SUCCESS
+        dockerfileNativeTask.outcome == TaskOutcome.SUCCESS
+
+        and:
+        dockerFile.first() == ('FROM test_base_image')
+        dockerFile.last() == """HEALTHCHECK CMD curl -s localhost:8090/health | grep '"status":"UP"'"""
+        dockerFile.find {s -> s.contains('-Xmx64m')}
+
+        and:
+        dockerFileNative.find() { s -> s == 'FROM test_base_image' }
+        dockerFileNative.last() == """HEALTHCHECK CMD curl -s localhost:8090/health | grep '"status":"UP"'"""
+        dockerFileNative.find {s -> s.contains('-Xmx64m')}
+
+        where:
+        runtime  | nativeImage
+        "netty"  | 'FROM ghcr.io/graalvm/graalvm-ce:java'
+        "lambda" | 'FROM amazonlinux:latest AS graalvm'
+        "jetty"  | 'FROM ghcr.io/graalvm/graalvm-ce:java'
+    }
 }
