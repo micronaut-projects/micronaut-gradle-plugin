@@ -15,11 +15,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class MicronautDockerfile extends Dockerfile implements DockerBuildOptions  {
-
-    private static final String ARGS_TO_REPLACE = "__ARGS__";
 
     @Input
     private final Property<String> baseImage;
@@ -57,7 +54,7 @@ public class MicronautDockerfile extends Dockerfile implements DockerBuildOption
         return defaultCommand;
     }
 
-    public void setupDockerfileInstructions() {
+    private void setupInstructions() {
         DockerBuildStrategy buildStrategy = this.buildStrategy.getOrElse(DockerBuildStrategy.DEFAULT);
         JavaApplication javaApplication = getProject().getExtensions().getByType(JavaApplication.class);
         String from = getBaseImage().getOrNull();
@@ -78,33 +75,48 @@ public class MicronautDockerfile extends Dockerfile implements DockerBuildOption
                 } else {
                     super.defaultCommand(cmd);
                 }
-            break;
+                break;
             case LAMBDA:
                 javaApplication.getMainClass().set("io.micronaut.function.aws.runtime.MicronautLambdaRuntime");
             default:
                 from(new Dockerfile.From(from != null ? from : "openjdk:15-alpine"));
                 setupResources(this);
                 exposePort(exposedPorts);
-                entryPoint("java", ARGS_TO_REPLACE, "-jar", "/home/app/application.jar");
+                entryPoint(getArgs().map(strings -> {
+                    List<String> newList = new ArrayList<>(strings.size() + 3);
+                    newList.add("java");
+                    newList.addAll(strings);
+                    newList.add("-jar");
+                    newList.add("/home/app/application.jar");
+                    return newList;
+                }));
         }
+    }
+
+    /**
+     * The Dockerfile task requires a 'from' at least, but this
+     * will be replaced in setupTaskPostEvaluate where we also
+     * incorporate commands supplied by the build.gradle file (if required)
+     */
+    void setupDockerfileInstructions() {
+        from("placeholder");
     }
 
     /**
      * This is executed post project evaluation
      */
     void setupTaskPostEvaluate() {
-        List<Instruction> instructions = new ArrayList<>(getInstructions().get());
-        getInstructions().set(instructions.stream().map(i -> {
-            if (i instanceof EntryPointInstruction && i.getText().contains(ARGS_TO_REPLACE)) {
-                List<String> allArgs = new ArrayList<>();
-                allArgs.add("java");
-                allArgs.addAll(getArgs().get());
-                allArgs.add("-jar");
-                allArgs.add("/home/app/application.jar");
-                return new EntryPointInstruction(allArgs.toArray(new String[allArgs.size()]));
-            }
-            return i;
-        }).collect(Collectors.toList()));
+        // Get any custom instructions the user may or may not have entered, but ignoring our 'from' placeholder
+        List<Instruction> additionalInstructions = new ArrayList<>(getInstructions().get().subList(1, getInstructions().get().size()));
+        // Reset the instructions to empty
+        getInstructions().set(new ArrayList<>());
+
+        setupInstructions();
+
+        // Collect all the instructions and set onto the base Dockerfile task
+        List<Instruction> allInstructions = new ArrayList<>(getInstructions().get());
+        allInstructions.addAll(additionalInstructions);
+        getInstructions().set(allInstructions);
     }
 
     /**
