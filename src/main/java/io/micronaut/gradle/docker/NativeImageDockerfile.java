@@ -8,7 +8,6 @@ import org.gradle.api.Task;
 import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.plugins.BasePlugin;
 import org.gradle.api.plugins.JavaApplication;
-import org.gradle.api.plugins.JavaPluginExtension;
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.Input;
@@ -156,7 +155,7 @@ public class NativeImageDockerfile extends Dockerfile implements DockerBuildOpti
         if (buildStrategy == DockerBuildStrategy.LAMBDA) {
             from(new From("amazonlinux:latest").withStage("graalvm"));
             environmentVariable("LANG", "en_US.UTF-8");
-            runCommand("yum install -y gcc gcc-c++ libc6-dev  zlib1g-dev curl bash zlib zlib-devel zip tar gzip");
+            runCommand("yum install -y gcc gcc-c++ libc6-dev zlib1g-dev curl bash zlib zlib-devel zlib-static zip tar gzip");
             String jdkVersion = this.jdkVersion.get();
             String graalVersion = this.graalVersion.get();
             String fileName = "graalvm-ce-" + jdkVersion + "-linux-amd64-" + graalVersion + ".tar.gz";
@@ -192,22 +191,23 @@ public class NativeImageDockerfile extends Dockerfile implements DockerBuildOpti
         List<String> commandLine = nativeImageTask.getCommandLine();
         commandLine.add("-cp");
         commandLine.add("/home/app/libs/*.jar:/home/app/resources:/home/app/application.jar");
-        String baseImage = this.baseImage.get();
-        // why I have to do this horrible hack on the Gradle gods know
-        if ("null".equalsIgnoreCase(baseImage)) {
-            baseImage = null;
-        }
+
+        String baseImage = resolveBaseImageForBuildStrategy(buildStrategy);
+
         // add --static if image is scratch
-        if (baseImage != null && baseImage.equalsIgnoreCase("scratch") && !commandLine.contains("--static")) {
+        if (baseImage.equalsIgnoreCase("scratch") && !commandLine.contains("--static")) {
             commandLine.add("--static");
         }
+
+        // to build a "mostly" static native-image if image is distroless or amazonlinux
+        if ((baseImage.contains("distroless") || baseImage.contains("amazonlinux")) && !commandLine.contains("-H:+StaticExecutableWithDynamicLibC")) {
+            commandLine.add("-H:+StaticExecutableWithDynamicLibC");
+        }
+
         String nativeImageCommand = String.join(" ", commandLine);
         runCommand(nativeImageCommand);
         switch (buildStrategy) {
             case ORACLE_FUNCTION:
-                if (baseImage == null) {
-                    baseImage = "oraclelinux:7-slim";
-                }
                 from(new From("fnproject/fn-java-fdk:" + getProjectFnVersion()).withStage("fnfdk"));
                 from(baseImage);
                 workingDir("/function");
@@ -228,9 +228,6 @@ public class NativeImageDockerfile extends Dockerfile implements DockerBuildOpti
                 }
                 break;
             case LAMBDA:
-                if (baseImage == null) {
-                    baseImage = "amazonlinux:latest";
-                }
                 from(baseImage);
                 workingDir("/function");
                 runCommand("yum install -y zip");
@@ -249,13 +246,7 @@ public class NativeImageDockerfile extends Dockerfile implements DockerBuildOpti
                 entryPoint("/function/func");
                 break;
             default:
-                if (baseImage == null) {
-                    baseImage = "frolvlad/alpine-glibc:alpine-3.12";
-                }
                 from(baseImage);
-                if (baseImage.contains("alpine-glibc")) {
-                    runCommand("apk update && apk add libstdc++");
-                }
                 exposePort(this.exposedPorts);
                 copyFile(new CopyFile("/home/app/application", "/app/application").withStage("graalvm"));
                 entryPoint(args.map(strings -> {
@@ -332,5 +323,23 @@ public class NativeImageDockerfile extends Dockerfile implements DockerBuildOpti
             return "jre11-latest";
         }
         return "latest";
+    }
+
+    private String resolveBaseImageForBuildStrategy(DockerBuildStrategy buildStrategy) {
+        String baseImage = this.baseImage.get();
+        // why I have to do this horrible hack on the Gradle gods know
+        if ("null".equalsIgnoreCase(baseImage)) {
+            baseImage = null;
+        }
+
+        if (buildStrategy == DockerBuildStrategy.ORACLE_FUNCTION && baseImage == null) {
+            baseImage = "oraclelinux:7-slim";
+        } else if (buildStrategy == DockerBuildStrategy.LAMBDA && baseImage == null) {
+            baseImage = "amazonlinux:latest";
+        } else if (baseImage == null) {
+            baseImage = "gcr.io/distroless/cc-debian10";
+        }
+
+        return baseImage;
     }
 }
