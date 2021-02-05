@@ -1,9 +1,10 @@
 package io.micronaut.gradle.graalvm;
 
+import io.micronaut.gradle.MicronautApplicationPlugin;
 import io.micronaut.gradle.MicronautExtension;
+import io.micronaut.gradle.MicronautRuntime;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
-import org.gradle.api.Task;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.logging.LogLevel;
 import org.gradle.api.plugins.BasePlugin;
@@ -11,14 +12,16 @@ import org.gradle.api.plugins.JavaApplication;
 import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.plugins.JavaPluginConvention;
 import org.gradle.api.provider.ListProperty;
-import org.gradle.api.specs.Spec;
-import org.gradle.api.tasks.*;
+import org.gradle.api.tasks.SourceSet;
+import org.gradle.api.tasks.SourceSetContainer;
+import org.gradle.api.tasks.SourceSetOutput;
+import org.gradle.api.tasks.TaskContainer;
+import org.gradle.api.tasks.TaskProvider;
 import org.gradle.api.tasks.testing.Test;
 
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
 
 /**
  * Support for building GraalVM native images.
@@ -67,6 +70,10 @@ public class MicronautGraalPlugin implements Plugin<Project> {
         if (project.getPlugins().hasPlugin("application")) {
             TaskContainer tasks = project.getTasks();
             TaskProvider<NativeImageTask> nit = tasks.register("nativeImage", NativeImageTask.class, nativeImageTask -> {
+                MicronautRuntime mr = MicronautApplicationPlugin.resolveRuntime(project);
+                if (mr == MicronautRuntime.LAMBDA) {
+                    nativeImageTask.setMain("io.micronaut.function.aws.runtime.MicronautLambdaRuntime");
+                }
                 nativeImageTask.dependsOn(tasks.findByName("classes"));
                 nativeImageTask.setGroup(BasePlugin.BUILD_GROUP);
                 nativeImageTask.setDescription("Builds a GraalVM Native Image");
