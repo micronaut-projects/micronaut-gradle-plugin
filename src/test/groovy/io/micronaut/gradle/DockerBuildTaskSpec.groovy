@@ -1,11 +1,9 @@
 package io.micronaut.gradle
 
-
 import org.gradle.testkit.runner.GradleRunner
 import org.gradle.testkit.runner.TaskOutcome
 import org.junit.Rule
 import org.junit.rules.TemporaryFolder
-import spock.lang.IgnoreIf
 import spock.lang.Specification
 import spock.lang.Unroll
 
@@ -249,12 +247,12 @@ class Application {
             
             dockerfile {
                 args('-Xmx64m')
-                baseImage('test_base_image')
+                baseImage('test_base_image_jvm')
                 instruction \"\"\"HEALTHCHECK CMD curl -s localhost:8090/health | grep '"status":"UP"'\"\"\"
             }
             dockerfileNative {
                 args('-Xmx64m')
-                baseImage('test_base_image')
+                baseImage('test_base_image_docker')
                 instruction \"\"\"HEALTHCHECK CMD curl -s localhost:8090/health | grep '"status":"UP"'\"\"\"
             }
             
@@ -280,7 +278,7 @@ class Application {
                 .build()
 
         def dockerfileTask = result.task(":dockerfile")
-        def dockerfileNativeTask = result.task(":dockerfile")
+        def dockerfileNativeTask = result.task(":dockerfileNative")
         def dockerFileNative = new File(testProjectDir.root, 'build/docker/DockerfileNative').readLines('UTF-8')
         def dockerFile = new File(testProjectDir.root, 'build/docker/Dockerfile').readLines('UTF-8')
 
@@ -289,12 +287,12 @@ class Application {
         dockerfileNativeTask.outcome == TaskOutcome.SUCCESS
 
         and:
-        dockerFile.first() == ('FROM test_base_image')
+        dockerFile.first() == ('FROM test_base_image_jvm')
         dockerFile.last() == """HEALTHCHECK CMD curl -s localhost:8090/health | grep '"status":"UP"'"""
         dockerFile.find {s -> s.contains('-Xmx64m')}
 
         and:
-        dockerFileNative.find() { s -> s == 'FROM test_base_image' }
+        dockerFileNative.find() { s -> s == 'FROM test_base_image_docker' }
         dockerFileNative.last() == """HEALTHCHECK CMD curl -s localhost:8090/health | grep '"status":"UP"'"""
         dockerFileNative.find {s -> s.contains('-Xmx64m')}
 
