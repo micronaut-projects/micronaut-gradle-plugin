@@ -245,6 +245,26 @@ nativeImage {
 
 **IMPORTANT:** If you update an existing Micronaut application that contains the file `src/main/resources/META-INF/native-image/xxxxx/native-image.properties`, please make sure to delete the properties `-H:Name` and `-H:Class` from the file because they are managed automatically by the plugin.
 
+#### Build "mostly static" native images
+
+Since GraalVM 21.0 it is possible to create "mostly static" native images that can run in a _distroless_ docker image. You only need to configure the appropriate _baseImage_ and the plugin will automatically configure GraalVM:
+
+```groovy
+dockerfileNative {
+    baseImage('gcr.io/distroless/cc-debian10')
+}
+```
+
+In case you want to use another base image you need to set the appropriate GraalVM flag:
+
+
+```groovy
+dockerfileNative {
+    baseImage('...')
+    args('-H:+StaticExecutableWithDynamicLibC')
+}
+```
+
 
 ### Testing Native Images
 

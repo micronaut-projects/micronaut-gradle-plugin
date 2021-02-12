@@ -304,55 +304,7 @@ class Application {
     }
 
     @Unroll
-    void 'build mostly static native images when using distroless image for runtime=#runtime'() {
-        given:
-        settingsFile << "rootProject.name = 'hello-world'"
-        buildFile << """
-            plugins {
-                id "io.micronaut.application"
-            }
-
-            micronaut {
-                version "2.3.0"
-                runtime "$runtime"
-            }
-
-            repositories {
-                mavenCentral()
-            }
-
-            application {
-                mainClass.set("com.example.Application")
-            }
-
-            java {
-                sourceCompatibility = JavaVersion.toVersion('8')
-                targetCompatibility = JavaVersion.toVersion('8')
-            }
-        """
-
-        when:
-        def result = GradleRunner.create()
-            .withProjectDir(testProjectDir.root)
-            .withArguments('dockerfileNative')
-            .withPluginClasspath()
-            .build()
-
-        def dockerfileNativeTask = result.task(':dockerfileNative')
-        def dockerFileNative = new File(testProjectDir.root, 'build/docker/DockerfileNative').readLines('UTF-8')
-
-        then:
-        dockerfileNativeTask.outcome == TaskOutcome.SUCCESS
-
-        and:
-        dockerFileNative.find {s -> s.contains('-H:+StaticExecutableWithDynamicLibC')}
-
-        where:
-        runtime << ['netty', 'lambda']
-    }
-
-    @Unroll
-    void 'do not build mostly static native images when using another base image for runtime=#runtime'() {
+    void 'build mostly static native images when using distroless docker image for runtime=#runtime'() {
         given:
         settingsFile << "rootProject.name = 'hello-world'"
         buildFile << """
@@ -379,7 +331,7 @@ class Application {
             }
 
             dockerfileNative {
-                baseImage("frolvlad/alpine-glibc:alpine-3.12")
+                baseImage("gcr.io/distroless/cc-debian10")
             }
         """
 
@@ -397,9 +349,100 @@ class Application {
         dockerfileNativeTask.outcome == TaskOutcome.SUCCESS
 
         and:
-        dockerFileNative.find {s -> !s.contains('-H:+StaticExecutableWithDynamicLibC')}
+        dockerFileNative.find {s -> s.contains('FROM gcr.io/distroless/cc-debian10')}
+        dockerFileNative.find {s -> s.contains('-H:+StaticExecutableWithDynamicLibC')}
 
         where:
         runtime << ['netty', 'lambda']
+    }
+
+    void 'use alpine-glibc by default and do not build mostly static native images'() {
+        given:
+        settingsFile << "rootProject.name = 'hello-world'"
+        buildFile << """
+            plugins {
+                id "io.micronaut.application"
+            }
+
+            micronaut {
+                version "2.3.0"
+                runtime "netty"
+            }
+
+            repositories {
+                mavenCentral()
+            }
+
+            application {
+                mainClass.set("com.example.Application")
+            }
+
+            java {
+                sourceCompatibility = JavaVersion.toVersion('8')
+                targetCompatibility = JavaVersion.toVersion('8')
+            }
+        """
+
+        when:
+        def result = GradleRunner.create()
+            .withProjectDir(testProjectDir.root)
+            .withArguments('dockerfileNative')
+            .withPluginClasspath()
+            .build()
+
+        def dockerfileNativeTask = result.task(':dockerfileNative')
+        def dockerFileNative = new File(testProjectDir.root, 'build/docker/DockerfileNative').readLines('UTF-8')
+
+        then:
+        dockerfileNativeTask.outcome == TaskOutcome.SUCCESS
+
+        and:
+        dockerFileNative.find {s -> s.contains('FROM frolvlad/alpine-glibc:alpine-3.12')}
+        dockerFileNative.find {s -> !s.contains('-H:+StaticExecutableWithDynamicLibC')}
+    }
+
+    void 'do not use alpine-glibc for lambda runtime'() {
+        given:
+        settingsFile << "rootProject.name = 'hello-world'"
+        buildFile << """
+            plugins {
+                id "io.micronaut.application"
+            }
+
+            micronaut {
+                version "2.3.0"
+                runtime "lambda"
+            }
+
+            repositories {
+                mavenCentral()
+            }
+
+            application {
+                mainClass.set("com.example.Application")
+            }
+
+            java {
+                sourceCompatibility = JavaVersion.toVersion('8')
+                targetCompatibility = JavaVersion.toVersion('8')
+            }
+        """
+
+        when:
+        def result = GradleRunner.create()
+            .withProjectDir(testProjectDir.root)
+            .withArguments('dockerfileNative')
+            .withPluginClasspath()
+            .build()
+
+        def dockerfileNativeTask = result.task(':dockerfileNative')
+        def dockerFileNative = new File(testProjectDir.root, 'build/docker/DockerfileNative').readLines('UTF-8')
+
+        then:
+        dockerfileNativeTask.outcome == TaskOutcome.SUCCESS
+
+        and:
+        dockerFileNative.find {s -> !s.contains('FROM frolvlad/alpine-glibc:alpine-3.12')}
+        dockerFileNative.find {s -> !s.contains('-H:+StaticExecutableWithDynamicLibC')}
     }
 }
