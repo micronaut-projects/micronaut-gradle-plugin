@@ -33,7 +33,6 @@ class MicronautApplicationPluginSpec extends Specification {
             }
             
             repositories {
-                jcenter()
                 mavenCentral()
             }
             mainClassName="example.Application"
@@ -95,7 +94,6 @@ public class ExampleTest {
 //            }
 //
 //            repositories {
-//                jcenter()
 //                mavenCentral()
 //            }
 //

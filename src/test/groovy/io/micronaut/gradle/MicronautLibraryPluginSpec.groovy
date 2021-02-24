@@ -37,7 +37,6 @@ class MicronautLibraryPluginSpec extends Specification {
             }
             
             repositories {
-                jcenter()
                 mavenCentral()
             }
             
@@ -95,7 +94,6 @@ class FooTest {
             }
             
             repositories {
-                jcenter()
                 mavenCentral()
             }
             
@@ -169,7 +167,6 @@ class FooTest {
             }
             
             repositories {
-                jcenter()
                 mavenCentral()
             }
             
@@ -231,7 +228,6 @@ public class Foo {
             }
             
             repositories {
-                jcenter()
                 mavenCentral()
             }
             
@@ -295,7 +291,6 @@ class Foo {}
             }
             
             repositories {
-                jcenter()
                 mavenCentral()
             }
             
@@ -347,7 +342,6 @@ class Foo {}
             }
             
             repositories {
-                jcenter()
                 mavenCentral()
             }
             
@@ -405,7 +399,6 @@ class Foo {}
             }            
             
             repositories {
-                jcenter()
                 mavenCentral()
             }
             
@@ -460,7 +453,6 @@ class Foo {}
             }
             
             repositories {
-                jcenter()
                 mavenCentral()
             }
 
@@ -578,7 +570,6 @@ class Foo {
             }
             
             repositories {
-                jcenter()
                 mavenCentral()
             }
             
@@ -629,7 +620,6 @@ class Foo {}
             }
             
             repositories {
-                jcenter()
                 mavenCentral()
             }
             
