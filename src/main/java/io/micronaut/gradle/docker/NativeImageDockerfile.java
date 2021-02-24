@@ -199,8 +199,8 @@ public class NativeImageDockerfile extends Dockerfile implements DockerBuildOpti
             commandLine.add("--static");
         }
 
-        // to build a "mostly" static native-image if image is distroless or amazonlinux
-        if ((baseImage.contains("distroless") || baseImage.contains("amazonlinux")) && !commandLine.contains("-H:+StaticExecutableWithDynamicLibC")) {
+        // to build a "mostly" static native-image if image when using distroless
+        if (baseImage.contains("distroless") && !commandLine.contains("-H:+StaticExecutableWithDynamicLibC")) {
             commandLine.add("-H:+StaticExecutableWithDynamicLibC");
         }
 
@@ -247,6 +247,10 @@ public class NativeImageDockerfile extends Dockerfile implements DockerBuildOpti
                 break;
             default:
                 from(baseImage);
+                // mandatory dependency for alpine-glibc docker images
+                if (baseImage.contains("alpine-glibc")) {
+                    runCommand("apk update && apk add libstdc++");
+                }
                 exposePort(this.exposedPorts);
                 copyFile(new CopyFile("/home/app/application", "/app/application").withStage("graalvm"));
                 entryPoint(args.map(strings -> {
@@ -337,7 +341,7 @@ public class NativeImageDockerfile extends Dockerfile implements DockerBuildOpti
         } else if (buildStrategy == DockerBuildStrategy.LAMBDA && baseImage == null) {
             baseImage = "amazonlinux:latest";
         } else if (baseImage == null) {
-            baseImage = "gcr.io/distroless/cc-debian10";
+            baseImage = "frolvlad/alpine-glibc:alpine-3.12";
         }
 
         return baseImage;
