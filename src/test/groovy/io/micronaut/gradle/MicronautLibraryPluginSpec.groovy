@@ -29,7 +29,7 @@ class MicronautLibraryPluginSpec extends Specification {
             }
             
             micronaut {
-                version "2.0.3"
+                version "2.3.3"
                 testRuntime "junit"
                 processing {
                     incremental true
@@ -86,7 +86,7 @@ class FooTest {
             }
             
             micronaut {
-                version "2.0.3"
+                version "2.3.3"
                 testRuntime "junit"
                 processing {
                     incremental true
@@ -163,7 +163,7 @@ class FooTest {
             }
             
             micronaut {
-                version "2.0.0.RC2"
+                version "2.3.3"
             }
             
             repositories {
@@ -220,7 +220,7 @@ public class Foo {
             }
             
             micronaut {
-                version "2.0.0.RC2"
+                version "2.3.3"
                 
                 processing {
                     incremental true
@@ -283,7 +283,7 @@ class Foo {}
             }
             
             micronaut {
-                version "2.0.0.RC1"
+                version "2.3.3"
                 
                 processing {
                     incremental true
@@ -335,7 +335,7 @@ class Foo {}
             }
             
             micronaut {
-                version("2.0.3")
+                version("2.3.3")
                 processing {
                     incremental(true)
                 }
@@ -389,7 +389,7 @@ class Foo {}
                 }
             }            
             micronaut {
-                version("2.0.3")
+                version("2.3.3")
                 processing {
                     incremental(true)
                     sourceSets(
@@ -443,7 +443,7 @@ class Foo {}
                 }
             }            
             micronaut {
-                version "2.0.0.RC1"
+                version "2.3.3"
                 processing {
                     incremental true
                     sourceSets(
@@ -493,7 +493,7 @@ class Foo {}
             }
             
             micronaut {
-                version "2.0.0.RC2"
+                version "2.3.3"
             }
             
             repositories {
@@ -560,7 +560,7 @@ class Foo {
                 }
             }                    
             micronaut {
-                version "2.0.3"
+                version "2.3.3"
                 processing {
                     incremental true
                     sourceSets(
@@ -616,7 +616,7 @@ class Foo {}
             }
             
             micronaut {
-                version "2.0.0.RC1"
+                version "2.3.3"
             }
             
             repositories {
@@ -659,7 +659,7 @@ class Foo {}
             }
             
             micronaut {
-                version "2.0.0.RC2"
+                version "2.3.3"
             }
             
             repositories {
