@@ -29,7 +29,7 @@ class MicronautLibraryPluginSpec extends Specification {
             }
             
             micronaut {
-                version "2.0.3"
+                version "2.3.3"
                 testRuntime "junit"
                 processing {
                     incremental true
@@ -37,7 +37,6 @@ class MicronautLibraryPluginSpec extends Specification {
             }
             
             repositories {
-                jcenter()
                 mavenCentral()
             }
             
@@ -87,7 +86,7 @@ class FooTest {
             }
             
             micronaut {
-                version "2.0.3"
+                version "2.3.3"
                 testRuntime "junit"
                 processing {
                     incremental true
@@ -95,7 +94,6 @@ class FooTest {
             }
             
             repositories {
-                jcenter()
                 mavenCentral()
             }
             
@@ -165,11 +163,10 @@ class FooTest {
             }
             
             micronaut {
-                version "2.0.0.RC2"
+                version "2.3.3"
             }
             
             repositories {
-                jcenter()
                 mavenCentral()
             }
             
@@ -223,7 +220,7 @@ public class Foo {
             }
             
             micronaut {
-                version "2.0.0.RC2"
+                version "2.3.3"
                 
                 processing {
                     incremental true
@@ -231,7 +228,6 @@ public class Foo {
             }
             
             repositories {
-                jcenter()
                 mavenCentral()
             }
             
@@ -287,7 +283,7 @@ class Foo {}
             }
             
             micronaut {
-                version "2.0.0.RC1"
+                version "2.3.3"
                 
                 processing {
                     incremental true
@@ -295,7 +291,6 @@ class Foo {}
             }
             
             repositories {
-                jcenter()
                 mavenCentral()
             }
             
@@ -340,14 +335,13 @@ class Foo {}
             }
             
             micronaut {
-                version("2.0.3")
+                version("2.3.3")
                 processing {
                     incremental(true)
                 }
             }
             
             repositories {
-                jcenter()
                 mavenCentral()
             }
             
@@ -395,7 +389,7 @@ class Foo {}
                 }
             }            
             micronaut {
-                version("2.0.3")
+                version("2.3.3")
                 processing {
                     incremental(true)
                     sourceSets(
@@ -405,7 +399,6 @@ class Foo {}
             }            
             
             repositories {
-                jcenter()
                 mavenCentral()
             }
             
@@ -450,7 +443,7 @@ class Foo {}
                 }
             }            
             micronaut {
-                version "2.0.0.RC1"
+                version "2.3.3"
                 processing {
                     incremental true
                     sourceSets(
@@ -460,7 +453,6 @@ class Foo {}
             }
             
             repositories {
-                jcenter()
                 mavenCentral()
             }
 
@@ -501,7 +493,7 @@ class Foo {}
             }
             
             micronaut {
-                version "2.0.0.RC2"
+                version "2.3.3"
             }
             
             repositories {
@@ -568,7 +560,7 @@ class Foo {
                 }
             }                    
             micronaut {
-                version "2.0.3"
+                version "2.3.3"
                 processing {
                     incremental true
                     sourceSets(
@@ -578,7 +570,6 @@ class Foo {
             }
             
             repositories {
-                jcenter()
                 mavenCentral()
             }
             
@@ -625,11 +616,10 @@ class Foo {}
             }
             
             micronaut {
-                version "2.0.0.RC1"
+                version "2.3.3"
             }
             
             repositories {
-                jcenter()
                 mavenCentral()
             }
             
@@ -669,7 +659,7 @@ class Foo {}
             }
             
             micronaut {
-                version "2.0.0.RC2"
+                version "2.3.3"
             }
             
             repositories {

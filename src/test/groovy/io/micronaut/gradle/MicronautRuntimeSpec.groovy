@@ -28,15 +28,14 @@ class MicronautRuntimeSpec extends Specification {
             }
             
             micronaut {
-                version "2.1.0.BUILD-SNAPSHOT"
+                version "2.3.4-SNAPSHOT"
                 runtime "$runtime"
                 testRuntime "junit5"
             }
             
             repositories {
-                jcenter()
                 mavenCentral()
-                maven { url "https://oss.jfrog.org/oss-snapshot-local" }
+                maven { url "https://s01.oss.sonatype.org/content/repositories/snapshots" }
             }
             
             dependencies {

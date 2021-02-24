@@ -34,7 +34,6 @@ class NativeImageTaskSpec extends Specification {
             }
             
             repositories {
-                jcenter()
                 mavenCentral()
             }
             

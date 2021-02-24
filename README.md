@@ -358,7 +358,6 @@ version "0.1"
 group "com.example"
 
 repositories {
-    jcenter()
     mavenCentral()
 }
 
