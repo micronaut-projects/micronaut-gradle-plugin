@@ -28,11 +28,10 @@ class DockerBuildTaskSpec extends Specification {
             }
             
             micronaut {
-                version "2.0.1"
+                version "2.3.3"
             }
             
             repositories {
-                jcenter()
                 mavenCentral()
             }
             
@@ -76,14 +75,13 @@ class Application {
             }
             
             micronaut {
-                version "2.3.0-SNAPSHOT"
+                version "2.3.4-SNAPSHOT"
                 runtime "$runtime"
             }
             
             repositories {
-                jcenter()
                 mavenCentral()
-                maven { url "https://oss.jfrog.org/oss-snapshot-local" }
+                maven { url "https://s01.oss.sonatype.org/content/repositories/snapshots" }
             }
             
             
@@ -169,14 +167,13 @@ micronaut:
             }
             
             micronaut {
-                version "2.3.0-SNAPSHOT"
+                version "2.3.4-SNAPSHOT"
                 runtime "lambda"
             }
             
             repositories {
-                jcenter()
                 mavenCentral()
-                maven { url "https://oss.jfrog.org/oss-snapshot-local" }
+                maven { url "https://s01.oss.sonatype.org/content/repositories/snapshots" }
             }
             
             nativeImage {
@@ -231,9 +228,7 @@ class Application {
             }
             
             repositories {
-                jcenter()
                 mavenCentral()
-                maven { url "https://oss.jfrog.org/oss-snapshot-local" }
             }
             
             nativeImage {
@@ -314,6 +309,7 @@ class Application {
 
             micronaut {
                 version "2.3.0"
+
                 runtime "$runtime"
             }
 

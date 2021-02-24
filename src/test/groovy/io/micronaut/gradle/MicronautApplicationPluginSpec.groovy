@@ -27,13 +27,12 @@ class MicronautApplicationPluginSpec extends Specification {
             }
             
             micronaut {
-                version "2.0.1"
+                version "2.3.3"
                 runtime "netty"
                 testRuntime "junit5"
             }
             
             repositories {
-                jcenter()
                 mavenCentral()
             }
             mainClassName="example.Application"
@@ -89,13 +88,12 @@ public class ExampleTest {
 //            }
 //
 //            micronaut {
-//                version "2.0.1"
+//                version "2.3.3"
 //                runtime "netty"
 //                testRuntime "spock"
 //            }
 //
 //            repositories {
-//                jcenter()
 //                mavenCentral()
 //            }
 //
