@@ -264,6 +264,8 @@ public class MicronautLibraryPlugin implements Plugin<Project> {
                 final boolean isIncremental = processing.getIncremental().getOrElse(true);
                 final String group = processing.getGroup().getOrElse(p.getGroup().toString());
                 final String module = processing.getModule().getOrElse(p.getName());
+
+                compilerArgs.add("-parameters");
                 if (isIncremental) {
                     final List<String> annotations = processing.getAnnotations().getOrElse(Collections.emptyList());
                     compilerArgs.add("-Amicronaut.processing.incremental=true");
