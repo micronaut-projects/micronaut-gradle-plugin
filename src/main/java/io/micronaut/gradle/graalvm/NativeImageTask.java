@@ -53,6 +53,7 @@ public class NativeImageTask extends AbstractExecTask<NativeImageTask>
         this.isFallback = objectFactory.property(Boolean.class).convention(false);
         this.isVerbose = objectFactory.property(Boolean.class).convention(false);
         this.booleanCmds = new LinkedHashMap<>(3);
+        this.classpath = objectFactory.fileCollection();
         booleanCmds.put(isDebug::get, "-H:GenerateDebugInfo=1");
         booleanCmds.put(() -> !isFallback.get(), "--no-fallback");
         booleanCmds.put(isVerbose::get,  "--verbose");

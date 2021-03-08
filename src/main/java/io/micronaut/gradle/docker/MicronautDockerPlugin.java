@@ -9,6 +9,7 @@ import com.bmuschko.gradle.docker.tasks.image.DockerPushImage;
 import com.bmuschko.gradle.docker.tasks.image.Dockerfile;
 import io.micronaut.gradle.MicronautApplicationPlugin;
 import io.micronaut.gradle.MicronautRuntime;
+import io.micronaut.gradle.graalvm.NativeImageTask;
 import org.gradle.api.Action;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
@@ -77,6 +78,9 @@ public class MicronautDockerPlugin implements Plugin<Project> {
         });
 
 
+        tasks.create("internalDockerNativeImageTask", NativeImageTask.class, nativeImageTask -> {
+            nativeImageTask.setEnabled(false);
+        });
         TaskProvider<Task> buildLayersTask = tasks.register("buildLayers", task -> {
             task.dependsOn(runnerJar);
 
