@@ -155,6 +155,7 @@ public class NativeImageDockerfile extends Dockerfile implements DockerBuildOpti
             nativeImageTask.args(sourceTask.getArgs());
             nativeImageTask.getJvmArgs().set(sourceTask.getJvmArgs());
             nativeImageTask.getSystemProperties().set(sourceTask.getSystemProperties());
+            nativeImageTask.getMain().convention(sourceTask.getMain());
         } else {
             throw new StopActionException("No native image task present! Must be used in conjunction with a NativeImageTask.");
         }
