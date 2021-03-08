@@ -30,14 +30,13 @@ class NativeImageTestTaskSpec extends Specification {
             }
             
             micronaut {
-                version "2.3.4-SNAPSHOT"
+                version "2.3.4"
                 runtime "netty"
                 testRuntime "junit5"
             }
             
             repositories {
                 mavenCentral()
-                maven { url "https://s01.oss.sonatype.org/content/repositories/snapshots" }
             }
             
             dependencies {
