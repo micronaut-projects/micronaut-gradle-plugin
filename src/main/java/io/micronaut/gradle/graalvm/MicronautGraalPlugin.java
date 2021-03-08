@@ -5,16 +5,14 @@ import io.micronaut.gradle.MicronautExtension;
 import io.micronaut.gradle.MicronautRuntime;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
-import org.gradle.api.file.FileCollection;
+import org.gradle.api.Task;
 import org.gradle.api.logging.LogLevel;
 import org.gradle.api.plugins.BasePlugin;
 import org.gradle.api.plugins.JavaApplication;
-import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.plugins.JavaPluginConvention;
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.SourceSetContainer;
-import org.gradle.api.tasks.SourceSetOutput;
 import org.gradle.api.tasks.TaskContainer;
 import org.gradle.api.tasks.TaskProvider;
 import org.gradle.api.tasks.testing.Test;
@@ -37,7 +35,9 @@ public class MicronautGraalPlugin implements Plugin<Project> {
             if (extension.getEnableNativeImage().getOrElse(true)) {
                 p.getGradle().getTaskGraph().whenReady(taskGraph -> {
                     TaskContainer tasks = p.getTasks();
-                    boolean addGraalProcessor = taskGraph.hasTask(tasks.findByName("nativeImage")) || taskGraph.hasTask(tasks.findByName("dockerfileNative"));
+                    final Task nativeImage = tasks.findByName("nativeImage");
+                    final Task dockerfileNative = tasks.findByName("dockerfileNative");
+                    boolean addGraalProcessor = nativeImage != null && taskGraph.hasTask(nativeImage) || (dockerfileNative != null && taskGraph.hasTask(dockerfileNative));
                     if (addGraalProcessor) {
                         SourceSetContainer sourceSets = p.getConvention().getPlugin(JavaPluginConvention.class)
                                 .getSourceSets();
@@ -115,16 +115,6 @@ public class MicronautGraalPlugin implements Plugin<Project> {
                 if (!nativeImageTask.getImageName().isPresent()) {
                     nativeImageTask.setImageName(imageName);
                 }
-                FileCollection runtimeConfig = p
-                        .getConfigurations()
-                        .getByName(JavaPlugin.RUNTIME_CLASSPATH_CONFIGURATION_NAME);
-                SourceSetContainer sourceSets = project.getExtensions().getByType(SourceSetContainer.class);
-                SourceSet mainSourceSet = sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME);
-                final SourceSetOutput output = mainSourceSet.getOutput();
-                FileCollection outputDirs = output.getClassesDirs();
-                runtimeConfig = runtimeConfig.plus(outputDirs);
-                runtimeConfig = runtimeConfig.plus(project.files(output.getResourcesDir()));
-                nativeImageTask.setClasspath(runtimeConfig);
             }));
         }
     }

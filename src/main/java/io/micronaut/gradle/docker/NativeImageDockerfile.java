@@ -171,6 +171,8 @@ public class NativeImageDockerfile extends Dockerfile implements DockerBuildOpti
             runCommand("gu install native-image");
         }
         MicronautDockerfile.setupResources(this);
+        // use native-image from docker image
+        nativeImageTask.setExecutable("native-image");
         // clear out classpath
         nativeImageTask.setClasspath(getProject().files());
         // use hard coded image name

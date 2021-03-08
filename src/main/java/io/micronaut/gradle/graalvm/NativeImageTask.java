@@ -1,12 +1,13 @@
 package io.micronaut.gradle.graalvm;
 
+import org.gradle.api.Project;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.model.ObjectFactory;
+import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.MapProperty;
 import org.gradle.api.provider.Property;
-import org.gradle.api.tasks.AbstractExecTask;
-import org.gradle.api.tasks.OutputFile;
+import org.gradle.api.tasks.*;
 
 import javax.annotation.Nullable;
 import javax.inject.Inject;
@@ -37,7 +38,8 @@ public class NativeImageTask extends AbstractExecTask<NativeImageTask>
      */
     public NativeImageTask() {
         super(NativeImageTask.class);
-        setExecutable("native-image");
+        String nativeImageExecutable = findNativeImage("GRAALVM_HOME", "JAVA_HOME");
+        setExecutable(nativeImageExecutable);
         setWorkingDir(new File(getProject().getBuildDir(), "native-image"));
         ObjectFactory objectFactory = getObjectFactory();
         this.imageName = objectFactory.property(String.class)
@@ -54,6 +56,19 @@ public class NativeImageTask extends AbstractExecTask<NativeImageTask>
         booleanCmds.put(isDebug::get, "-H:GenerateDebugInfo=1");
         booleanCmds.put(() -> !isFallback.get(), "--no-fallback");
         booleanCmds.put(isVerbose::get,  "--verbose");
+    }
+
+    private String findNativeImage(String... envs) {
+        for (String env : envs) {
+            final String graalvmHome = System.getenv(env);
+            if (graalvmHome != null && graalvmHome.length() > 0) {
+                final File ni = new File(graalvmHome, "bin/native-image");
+                if (ni.exists()) {
+                    return ni.getAbsolutePath();
+                }
+            }
+        }
+        return "native-image";
     }
 
     @Override
@@ -86,12 +101,26 @@ public class NativeImageTask extends AbstractExecTask<NativeImageTask>
      */
     public void configure() {
         // set the classpath
+        final Project project = getProject();
+        FileCollection runtimeConfig = project
+                .getConfigurations()
+                .getByName(JavaPlugin.RUNTIME_CLASSPATH_CONFIGURATION_NAME);
+        SourceSetContainer sourceSets = project
+                .getExtensions()
+                .getByType(SourceSetContainer.class);
+        SourceSet mainSourceSet = sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME);
+        final SourceSetOutput output = mainSourceSet.getOutput();
+        FileCollection outputDirs = output.getClassesDirs();
+        runtimeConfig = runtimeConfig.plus(outputDirs);
+        runtimeConfig = runtimeConfig.plus(project.files(output.getResourcesDir()));
         FileCollection cp = getClasspath();
         if (cp != null) {
-            String classpath = cp.getAsPath();
-            if (classpath.length() > 0) {
-                args("-cp", classpath);
-            }
+            runtimeConfig = runtimeConfig.plus(cp);
+        }
+
+        String classpath = runtimeConfig.getAsPath();
+        if (classpath.length() > 0) {
+            args("-cp", classpath);
         }
 
         // set the main class
