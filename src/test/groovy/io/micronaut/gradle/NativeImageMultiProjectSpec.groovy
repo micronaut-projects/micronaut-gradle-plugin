@@ -9,7 +9,7 @@ import spock.lang.Requires
 import spock.lang.Specification
 
 @Requires({ GraalUtil.isGraalJVM() })
-class NativeImageTaskSpec extends Specification {
+class NativeImageMultiProjectSpec extends Specification {
     @Rule TemporaryFolder testProjectDir = new TemporaryFolder()
 
     File settingsFile
@@ -17,14 +17,18 @@ class NativeImageTaskSpec extends Specification {
 
     def setup() {
         settingsFile = testProjectDir.newFile('settings.gradle')
-        buildFile = testProjectDir.newFile('build.gradle')
-    }
+        settingsFile << '''
+rootProject.name="test-multi-project"
 
-    def "test build native image"() {
-        given:
-        settingsFile << "rootProject.name = 'hello-world'"
+include "one"
+include "two"
+
+'''
+        def projectFolder = testProjectDir.newFolder("two")
+        buildFile = testProjectDir.newFile('two/build.gradle')
         buildFile << """
             plugins {
+                id("com.github.johnrengelman.shadow") version "6.1.0"
                 id "io.micronaut.application"
             }
             
@@ -38,11 +42,13 @@ class NativeImageTaskSpec extends Specification {
             }
             
             
-            mainClassName="example.Application"
+            application {
+                mainClass.set("example.Application")
+            }
             
         """
-        testProjectDir.newFolder("src", "main", "java", "example")
-        def javaFile = testProjectDir.newFile("src/main/java/example/Application.java")
+
+        def javaFile = new File(projectFolder, "src/main/java/example/Application.java")
         javaFile.parentFile.mkdirs()
         javaFile << """
 package example;
@@ -55,15 +61,17 @@ class Application {
     }
 }
 """
+    }
 
+    void 'test build native image in subproject'() {
         when:
         def result = GradleRunner.create()
                 .withProjectDir(testProjectDir.root)
-                .withArguments('nativeImage')
+                .withArguments('two:nativeImage', '-i')
                 .withPluginClasspath()
                 .build()
 
-        def task = result.task(":nativeImage")
+        def task = result.task(":two:nativeImage")
         then:
         result.output.contains("Native Image written to")
         task.outcome == TaskOutcome.SUCCESS

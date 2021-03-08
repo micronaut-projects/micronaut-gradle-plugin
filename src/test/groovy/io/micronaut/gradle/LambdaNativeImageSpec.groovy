@@ -27,7 +27,7 @@ class LambdaNativeImageSpec extends Specification {
             }
             
             micronaut {
-                version "2.3.0"
+                version "2.3.4"
                 runtime "netty"
             }
             
@@ -72,7 +72,7 @@ class LambdaNativeImageSpec extends Specification {
             }
             
             micronaut {
-                version "2.3.0"
+                version "2.3.4"
                 runtime "netty"
             }
             

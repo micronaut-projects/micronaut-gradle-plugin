@@ -75,15 +75,13 @@ class Application {
             }
             
             micronaut {
-                version "2.3.4-SNAPSHOT"
+                version "2.3.4"
                 runtime "$runtime"
             }
             
             repositories {
                 mavenCentral()
-                maven { url "https://s01.oss.sonatype.org/content/repositories/snapshots" }
             }
-            
             
             mainClassName="example.Application"
             
@@ -167,13 +165,12 @@ micronaut:
             }
             
             micronaut {
-                version "2.3.4-SNAPSHOT"
+                version "2.3.4"
                 runtime "lambda"
             }
             
             repositories {
                 mavenCentral()
-                maven { url "https://s01.oss.sonatype.org/content/repositories/snapshots" }
             }
             
             nativeImage {
@@ -223,7 +220,7 @@ class Application {
             }
             
             micronaut {
-                version "2.3.0"
+                version "2.3.4"
                 runtime "$runtime"
             }
             
@@ -308,7 +305,7 @@ class Application {
             }
 
             micronaut {
-                version "2.3.0"
+                version "2.3.4"
 
                 runtime "$runtime"
             }
@@ -361,7 +358,7 @@ class Application {
             }
 
             micronaut {
-                version "2.3.0"
+                version "2.3.4"
                 runtime "netty"
             }
 
