@@ -12,12 +12,14 @@ import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.StopActionException;
+import org.gradle.api.tasks.TaskContainer;
 import org.gradle.internal.jvm.Jvm;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Specialization of {@link Dockerfile} for building native images.
@@ -145,10 +147,14 @@ public class NativeImageDockerfile extends Dockerfile implements DockerBuildOpti
     private void setupInstructions() {
         DockerBuildStrategy buildStrategy = this.buildStrategy.getOrElse(DockerBuildStrategy.DEFAULT);
         JavaApplication javaApplication = getProject().getExtensions().getByType(JavaApplication.class);
-        Task nit = getProject().getTasks().findByName("nativeImage");
-        NativeImageTask nativeImageTask;
+        final TaskContainer tasks = getProject().getTasks();
+        Task nit = tasks.findByName("nativeImage");
+        NativeImageTask nativeImageTask = (NativeImageTask) tasks.getByName("internalDockerNativeImageTask");
         if (nit instanceof NativeImageTask) {
-            nativeImageTask = (NativeImageTask) nit;
+            final NativeImageTask sourceTask = (NativeImageTask) nit;
+            nativeImageTask.args(sourceTask.getArgs());
+            nativeImageTask.getJvmArgs().set(sourceTask.getJvmArgs());
+            nativeImageTask.getSystemProperties().set(sourceTask.getSystemProperties());
         } else {
             throw new StopActionException("No native image task present! Must be used in conjunction with a NativeImageTask.");
         }
