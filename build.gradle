@@ -46,11 +46,11 @@ dependencies {
   implementation "com.bmuschko:gradle-docker-plugin:6.7.0"
   implementation "com.diffplug.gradle:goomph:3.28.2"
   implementation "com.github.jengelman.gradle.plugins:shadow:6.1.0"
-  compileOnly "org.jetbrains.kotlin:kotlin-allopen:1.4.30"
+  compileOnly "org.jetbrains.kotlin:kotlin-allopen:1.4.32"
   compileOnly "org.jetbrains.kotlin:kotlin-gradle-plugin:1.4.30"
 
 
-  optionalPluginDependencies("org.jetbrains.kotlin:kotlin-allopen:1.4.10")
+  optionalPluginDependencies("org.jetbrains.kotlin:kotlin-allopen:1.4.32")
   optionalPluginDependencies "org.jetbrains.kotlin:kotlin-gradle-plugin:1.4.30"
   testImplementation("org.jetbrains.kotlin:kotlin-allopen:1.4.10")
   testImplementation "org.jetbrains.kotlin:kotlin-gradle-plugin:1.4.10"
