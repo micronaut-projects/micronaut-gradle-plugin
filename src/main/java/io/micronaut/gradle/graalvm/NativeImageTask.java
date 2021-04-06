@@ -1,5 +1,6 @@
 package io.micronaut.gradle.graalvm;
 
+import org.apache.tools.ant.taskdefs.condition.Os;
 import org.gradle.api.Project;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.model.ObjectFactory;
@@ -8,6 +9,7 @@ import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.MapProperty;
 import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.*;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import javax.inject.Inject;
@@ -68,7 +70,8 @@ public class NativeImageTask extends AbstractExecTask<NativeImageTask>
             graalHome = System.getenv(graalHome);
             if (isNotBlank(graalHome)) {
                 try {
-                    return new File(graalHome, "bin/native-image").getCanonicalPath();
+                    final File f = getNativeImageExecutable(graalHome);
+                    return f.getCanonicalPath();
                 } catch (IOException e) {
                     // continue
                 }
@@ -78,10 +81,10 @@ public class NativeImageTask extends AbstractExecTask<NativeImageTask>
         if (isNotBlank(javaHome)) {
             javaHome = System.getenv(javaHome);
             if (isNotBlank(javaHome)) {
-                File ni = new File(javaHome, "bin/native-image");
-                if (ni.exists()) {
+                final File f = getNativeImageExecutable(javaHome);
+                if (f.exists()) {
                     try {
-                        return ni.getCanonicalPath();
+                        return f.getCanonicalPath();
                     } catch (IOException e) {
                         // continue
                     }
@@ -89,6 +92,17 @@ public class NativeImageTask extends AbstractExecTask<NativeImageTask>
             }
         }
         return "native-image";
+    }
+
+    @NotNull
+    private File getNativeImageExecutable(String javaHome) {
+        final File f;
+        if (Os.isFamily("windows")) {
+            f = new File(javaHome, "bin/native-image.exe");
+        } else {
+            f = new File(javaHome, "bin/native-image");
+        }
+        return f;
     }
 
     private boolean isNotBlank(String graalHome) {
