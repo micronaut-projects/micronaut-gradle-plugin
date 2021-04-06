@@ -59,7 +59,8 @@ public class MicronautDockerfile extends Dockerfile implements DockerBuildOption
             System.out.println("path.toUri() = " + path.toUri());
             dockerFile = new java.io.File(buildDir, "docker/Dockerfile");
         } catch (IOException e) {
-            throw new GradleException("Invalid Build directory: " + project.getBuildDir());
+            e.printStackTrace();
+            throw new GradleException("Invalid Build directory: " + project.getBuildDir() + ": " + e.getMessage());
         }
         try {
             final java.io.File canonicalFile = dockerFile.getCanonicalFile();
