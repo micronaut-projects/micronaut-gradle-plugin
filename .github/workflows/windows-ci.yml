@@ -28,9 +28,11 @@ jobs:
       - name: Install GraalVM
         run: Expand-Archive -path 'graal.zip' -destinationpath '.'
       - name: Install Native Image
-        run: graalvm-ce-java11-21.0.0.2\bin\gu.cmd install native-image
+        run: graalvm-ce-java11-${{ matrix.graalvm }}\bin\gu.cmd install native-image
       - name: Build with Gradle
         run: ./gradlew.bat check --no-daemon --continue
         env:
+          JAVA_HOME: graalvm-ce-java11-${{ matrix.graalvm }}\bin
+          GRAALVM_HOME: graalvm-ce-java11-${{ matrix.graalvm }}\bin
           TESTCONTAINERS_RYUK_DISABLED: true
 
