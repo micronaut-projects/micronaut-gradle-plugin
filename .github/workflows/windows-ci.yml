@@ -29,6 +29,8 @@ jobs:
         run: Expand-Archive -path 'graal.zip' -destinationpath 'C:\graalvm'
       - name: Install Native Image
         run: C:\graalvm\graalvm-ce-java11-${{ matrix.graalvm }}\bin\gu.cmd install native-image
+      - name: Verify Native Image
+        run: C:\graalvm\graalvm-ce-java11-${{ matrix.graalvm }}\bin\native-image --version
       - name: Set up Visual C Build Tools Workload for Visual Studio 2017 Build Tools
         run: |
           choco install visualstudio2017-workload-vctools
