@@ -14,6 +14,8 @@ import org.gradle.internal.jvm.Jvm;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -51,6 +53,10 @@ public class MicronautDockerfile extends Dockerfile implements DockerBuildOption
             System.out.println("File pathSeparator = " + java.io.File.pathSeparator);
             System.out.println("File separator = " + java.io.File.separator);
             System.out.println("buildDir = " + buildDir);
+            final Path path = buildDir.toPath().toRealPath();
+            System.out.println("Path = " + path);
+            System.out.println("path.getFileSystem() = " + path.getFileSystem());
+            System.out.println("path.toUri() = " + path.toUri());
             dockerFile = new java.io.File(buildDir, "docker/Dockerfile");
         } catch (IOException e) {
             throw new GradleException("Invalid Build directory: " + project.getBuildDir());
