@@ -61,24 +61,13 @@ public class NativeImageTask extends AbstractExecTask<NativeImageTask>
         booleanCmds.put(isVerbose::get,  "--verbose");
     }
 
-    private String findNativeImage(String... envs) {
-        for (String env : envs) {
-            final String graalvmHome = System.getenv(env);
-            System.out.println("env = " + env);
-            System.out.println("graalvmHome = " + graalvmHome);
-            if (graalvmHome != null && graalvmHome.length() > 0) {
-                File ni = new File(graalvmHome, "bin/native-image");
-                System.out.println("Checking Native Image = " + ni);
-                if (ni.exists()) {
-                    return ni.getAbsolutePath();
-                } else {
-                    ni = new File(graalvmHome, "bin/native-image.exe");
-                    if (ni.exists()) {
-                        return ni.getAbsolutePath();
-                    } else {
-                        System.out.println("Doesn't exist!");
-                    }
-                }
+    private String findNativeImage(String graalHome, String javaHome) {
+        if (graalHome != null && graalHome.length() > 0) {
+            return new File(graalHome, "bin/native-image").getAbsolutePath();
+        } else if (javaHome != null && javaHome.length() > 0) {
+            File ni = new File(javaHome, "bin/native-image");
+            if (ni.exists()) {
+                return ni.getAbsolutePath();
             }
         }
         return "native-image";
