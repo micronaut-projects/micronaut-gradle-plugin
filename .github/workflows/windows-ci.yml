@@ -12,7 +12,7 @@ jobs:
   build:
     if: github.repository != 'micronaut-projects/micronaut-project-template'
     runs-on: ubuntu-latest
-  strategy:
+    strategy:
       matrix:
         graalvm: ['21.0.0.java11']
     steps:
