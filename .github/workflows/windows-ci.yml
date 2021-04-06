@@ -1,4 +1,4 @@
-name: GraalVM CE CI
+name: Windows CI
 on:
   push:
     branches:
@@ -12,9 +12,9 @@ jobs:
   build:
     if: github.repository != 'micronaut-projects/micronaut-project-template'
     runs-on: ubuntu-latest
-    strategy:
+  strategy:
       matrix:
-        graalvm: ['21.0.0.java8', '21.0.0.java11']
+        graalvm: ['21.0.0.java11']
     steps:
       - uses: actions/checkout@v2
       - uses: actions/cache@v2.1.4
