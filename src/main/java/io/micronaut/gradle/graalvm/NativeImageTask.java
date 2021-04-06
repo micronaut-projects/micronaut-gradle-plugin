@@ -64,10 +64,15 @@ public class NativeImageTask extends AbstractExecTask<NativeImageTask>
     private String findNativeImage(String... envs) {
         for (String env : envs) {
             final String graalvmHome = System.getenv(env);
+            System.out.println("env = " + env);
+            System.out.println("graalvmHome = " + graalvmHome);
             if (graalvmHome != null && graalvmHome.length() > 0) {
                 final File ni = new File(graalvmHome, "bin/native-image");
+                System.out.println("Checking Native Image = " + ni);
                 if (ni.exists()) {
                     return ni.getAbsolutePath();
+                } else {
+                    System.out.println("Doesn't exist!");
                 }
             }
         }
