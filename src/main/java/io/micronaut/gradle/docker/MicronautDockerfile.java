@@ -51,7 +51,9 @@ public class MicronautDockerfile extends Dockerfile implements DockerBuildOption
         try {
             final java.io.File buildDir = project.getBuildDir().getCanonicalFile();
             System.out.println("File pathSeparator = " + java.io.File.pathSeparator);
+            System.out.println("File pathSeparator len = " + java.io.File.pathSeparator.length());
             System.out.println("File separator = " + java.io.File.separator);
+            System.out.println("File separator len = " + java.io.File.separator.length());
             System.out.println("buildDir = " + buildDir);
             final Path path = buildDir.toPath().toRealPath();
             System.out.println("Path = " + path);
