@@ -140,7 +140,7 @@ public class FooControllerTest {
 
         def result = GradleRunner.create()
                 .withProjectDir(testProjectDir.root)
-                .withArguments('testNativeImage')
+                .withArguments('testNativeImage', '--stacktrace')
                 .withPluginClasspath()
                 .build()
 
