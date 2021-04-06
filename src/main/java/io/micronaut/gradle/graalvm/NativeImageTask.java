@@ -62,15 +62,27 @@ public class NativeImageTask extends AbstractExecTask<NativeImageTask>
     }
 
     private String findNativeImage(String graalHome, String javaHome) {
-        if (graalHome != null && graalHome.length() > 0) {
-            return new File(graalHome, "bin/native-image").getAbsolutePath();
-        } else if (javaHome != null && javaHome.length() > 0) {
-            File ni = new File(javaHome, "bin/native-image");
-            if (ni.exists()) {
-                return ni.getAbsolutePath();
+        if (isNotBlank(graalHome)) {
+            graalHome = System.getenv(graalHome);
+            if (isNotBlank(graalHome)) {
+                return new File(graalHome, "bin/native-image").getAbsolutePath();
+            }
+        }
+
+        if (isNotBlank(javaHome)) {
+            javaHome = System.getenv(javaHome);
+            if (isNotBlank(javaHome)) {
+                File ni = new File(javaHome, "bin/native-image");
+                if (ni.exists()) {
+                    return ni.getAbsolutePath();
+                }
             }
         }
         return "native-image";
+    }
+
+    private boolean isNotBlank(String graalHome) {
+        return graalHome != null && graalHome.length() > 0;
     }
 
     @Override
