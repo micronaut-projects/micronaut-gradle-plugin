@@ -1,6 +1,7 @@
 package io.micronaut.gradle.docker;
 
 import com.bmuschko.gradle.docker.tasks.image.Dockerfile;
+import org.gradle.api.GradleException;
 import org.gradle.api.JavaVersion;
 import org.gradle.api.Project;
 import org.gradle.api.model.ObjectFactory;
@@ -11,6 +12,8 @@ import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.Input;
 import org.gradle.internal.jvm.Jvm;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -42,6 +45,14 @@ public class MicronautDockerfile extends Dockerfile implements DockerBuildOption
         this.args = objects.listProperty(String.class);
         this.exposedPorts = objects.listProperty(Integer.class)
                     .convention(Collections.singletonList(8080));
+        final java.io.File dockerFile = new java.io.File(project.getBuildFile(), "/docker/Dockerfile");
+        try {
+            final java.io.File canonicalFile = dockerFile.getCanonicalFile();
+            System.out.println("canonicalFile = " + canonicalFile);
+            this.getDestFile().set(canonicalFile);
+        } catch (IOException e) {
+            throw new GradleException("Invalid Target Dockerfile: " + dockerFile);
+        }
 
         doLast(task -> {
             java.io.File f = getDestFile().get().getAsFile();
