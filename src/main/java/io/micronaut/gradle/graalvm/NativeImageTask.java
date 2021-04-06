@@ -39,6 +39,8 @@ public class NativeImageTask extends AbstractExecTask<NativeImageTask>
     public NativeImageTask() {
         super(NativeImageTask.class);
         String nativeImageExecutable = findNativeImage("GRAALVM_HOME", "JAVA_HOME");
+
+        System.out.println("nativeImageExecutable = " + nativeImageExecutable);
         setExecutable(nativeImageExecutable);
         setWorkingDir(new File(getProject().getBuildDir(), "native-image"));
         ObjectFactory objectFactory = getObjectFactory();
