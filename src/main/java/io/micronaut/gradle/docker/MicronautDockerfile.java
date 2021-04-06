@@ -1,7 +1,6 @@
 package io.micronaut.gradle.docker;
 
 import com.bmuschko.gradle.docker.tasks.image.Dockerfile;
-import org.gradle.api.GradleException;
 import org.gradle.api.JavaVersion;
 import org.gradle.api.Project;
 import org.gradle.api.model.ObjectFactory;
@@ -12,10 +11,6 @@ import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.Input;
 import org.gradle.internal.jvm.Jvm;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -47,30 +42,6 @@ public class MicronautDockerfile extends Dockerfile implements DockerBuildOption
         this.args = objects.listProperty(String.class);
         this.exposedPorts = objects.listProperty(Integer.class)
                     .convention(Collections.singletonList(8080));
-        final java.io.File dockerFile;
-        try {
-            final java.io.File buildDir = project.getBuildDir().getCanonicalFile();
-            System.out.println("File pathSeparator = " + java.io.File.pathSeparator);
-            System.out.println("File pathSeparator len = " + java.io.File.pathSeparator.length());
-            System.out.println("File separator = " + java.io.File.separator);
-            System.out.println("File separator len = " + java.io.File.separator.length());
-            System.out.println("buildDir = " + buildDir);
-            final Path path = buildDir.toPath();
-            System.out.println("Path = " + path);
-            System.out.println("path.getFileSystem() = " + path.getFileSystem());
-            System.out.println("path.toUri() = " + path.toUri());
-            dockerFile = new java.io.File(buildDir, "docker/Dockerfile");
-        } catch (IOException e) {
-            e.printStackTrace();
-            throw new GradleException("Invalid Build directory: " + project.getBuildDir() + ": " + e.getMessage());
-        }
-        try {
-            final java.io.File canonicalFile = dockerFile.getCanonicalFile();
-            System.out.println("canonicalFile = " + canonicalFile);
-            this.getDestFile().set(canonicalFile);
-        } catch (IOException e) {
-            throw new GradleException("Invalid Target Dockerfile: " + dockerFile);
-        }
 
         doLast(task -> {
             java.io.File f = getDestFile().get().getAsFile();
@@ -95,9 +66,9 @@ public class MicronautDockerfile extends Dockerfile implements DockerBuildOption
                 javaApplication.getMainClass().set("com.fnproject.fn.runtime.EntryPoint");
                 from(new Dockerfile.From(from != null ? from : "fnproject/fn-java-fdk:" + getProjectFnVersion()));
                 workingDir("/function");
-                copyFile("build/layers/libs/*.jar", "/function/app/");
-                copyFile("build/layers/resources/*", "/function/app/");
-                copyFile("build/layers/application.jar", "/function/app/");
+                copyFile("layers/libs/*.jar", "/function/app/");
+                copyFile("layers/resources/*", "/function/app/");
+                copyFile("layers/application.jar", "/function/app/");
                 String cmd = this.defaultCommand.get();
                 if ("none".equals(cmd)) {
                     super.defaultCommand("io.micronaut.oraclecloud.function.http.HttpFunction::handleRequest");
@@ -200,8 +171,8 @@ public class MicronautDockerfile extends Dockerfile implements DockerBuildOption
 
     static void setupResources(Dockerfile task) {
         task.workingDir("/home/app");
-        task.copyFile("build/layers/libs", "/home/app/libs");
-        task.copyFile("build/layers/resources", "/home/app/resources");
-        task.copyFile("build/layers/application.jar", "/home/app/application.jar");
+        task.copyFile("layers/libs", "/home/app/libs");
+        task.copyFile("layers/resources", "/home/app/resources");
+        task.copyFile("layers/application.jar", "/home/app/application.jar");
     }
 }
