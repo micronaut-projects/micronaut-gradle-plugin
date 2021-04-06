@@ -12,6 +12,7 @@ import org.gradle.api.tasks.*;
 import javax.annotation.Nullable;
 import javax.inject.Inject;
 import java.io.File;
+import java.io.IOException;
 import java.util.*;
 import java.util.function.BooleanSupplier;
 
@@ -39,7 +40,9 @@ public class NativeImageTask extends AbstractExecTask<NativeImageTask>
     public NativeImageTask() {
         super(NativeImageTask.class);
         String nativeImageExecutable = findNativeImage("GRAALVM_HOME", "JAVA_HOME");
-
+        if (!new File(nativeImageExecutable).exists()) {
+            System.out.println("DOESN'T EXIST!! = " + nativeImageExecutable);
+        }
         setExecutable(nativeImageExecutable);
         setWorkingDir(new File(getProject().getBuildDir(), "native-image"));
         ObjectFactory objectFactory = getObjectFactory();
@@ -64,7 +67,11 @@ public class NativeImageTask extends AbstractExecTask<NativeImageTask>
         if (isNotBlank(graalHome)) {
             graalHome = System.getenv(graalHome);
             if (isNotBlank(graalHome)) {
-                return new File(graalHome, "bin/native-image").getAbsolutePath();
+                try {
+                    return new File(graalHome, "bin/native-image").getCanonicalPath();
+                } catch (IOException e) {
+                    // continue
+                }
             }
         }
 
@@ -73,7 +80,11 @@ public class NativeImageTask extends AbstractExecTask<NativeImageTask>
             if (isNotBlank(javaHome)) {
                 File ni = new File(javaHome, "bin/native-image");
                 if (ni.exists()) {
-                    return ni.getAbsolutePath();
+                    try {
+                        return ni.getCanonicalPath();
+                    } catch (IOException e) {
+                        // continue
+                    }
                 }
             }
         }
