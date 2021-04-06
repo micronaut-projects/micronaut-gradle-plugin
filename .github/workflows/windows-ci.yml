@@ -14,23 +14,23 @@ jobs:
     runs-on: windows-latest
     strategy:
       matrix:
-        graalvm: ['21.0.0.java11']
+        graalvm: ['21.0.0.2']
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v2.3.4
       - uses: actions/cache@v2.1.4
         with:
           path: ~/.gradle/caches
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
           restore-keys: |
             ${{ runner.os }}-gradle-
-      - name: Setup GraalVM CE
-        uses: DeLaGuardo/setup-graalvm@8bbfe44ef9c6f5c07e5af036a1bffd561c037d18
-        with:
-          graalvm-version: ${{ matrix.graalvm }}
+      - name: Download GraalVM
+        run: Invoke-RestMethod -Uri https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-${{ matrix.graalvm }}/graalvm-ce-java11-windows-amd64-${{ matrix.graalvm }}.zip -OutFile 'graal.zip'
+      - name: Install GraalVM
+        run: Expand-Archive -path 'graal.zip' -destinationpath '.'
       - name: Install Native Image
-        run: gu install native-image
+        run: graalvm-ce-java11-21.0.0.2\bin\gu.cmd install native-image
       - name: Build with Gradle
-        run: ./gradlew check --no-daemon --continue
+        run: ./gradlew.bat check --no-daemon --continue
         env:
           TESTCONTAINERS_RYUK_DISABLED: true
 
