@@ -32,7 +32,7 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew.bat check --no-daemon --continue
         env:
-          JAVA_HOME: graalvm-ce-java11-${{ matrix.graalvm }}\bin
-          GRAALVM_HOME: graalvm-ce-java11-${{ matrix.graalvm }}\bin
+          JAVA_HOME: graalvm-ce-java11-${{ matrix.graalvm }}
+          GRAALVM_HOME: graalvm-ce-java11-${{ matrix.graalvm }}
           TESTCONTAINERS_RYUK_DISABLED: true
 
