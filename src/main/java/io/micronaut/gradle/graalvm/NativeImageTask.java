@@ -71,7 +71,9 @@ public class NativeImageTask extends AbstractExecTask<NativeImageTask>
             if (isNotBlank(graalHome)) {
                 try {
                     final File f = getNativeImageExecutable(graalHome);
-                    return f.getCanonicalPath();
+                    if (f.exists()) {
+                        return f.getCanonicalPath();
+                    }
                 } catch (IOException e) {
                     // continue
                 }
@@ -99,10 +101,19 @@ public class NativeImageTask extends AbstractExecTask<NativeImageTask>
         final File f;
         if (Os.isFamily("windows")) {
             f = new File(javaHome, "bin/native-image.exe");
+            if (f.exists()) {
+                return f;
+            } else {
+                return new File(javaHome, "lib/svm/bin/native-image.exe");
+            }
         } else {
             f = new File(javaHome, "bin/native-image");
+            if (f.exists()) {
+                return f;
+            } else {
+                return new File(javaHome, "lib/svm/bin/native-image");
+            }
         }
-        return f;
     }
 
     private boolean isNotBlank(String graalHome) {
