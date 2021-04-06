@@ -26,9 +26,9 @@ jobs:
       - name: Download GraalVM
         run: Invoke-RestMethod -Uri https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-${{ matrix.graalvm }}/graalvm-ce-java11-windows-amd64-${{ matrix.graalvm }}.zip -OutFile 'graal.zip'
       - name: Install GraalVM
-        run: Expand-Archive -path 'graal.zip' -destinationpath '.'
+        run: Expand-Archive -path 'graal.zip' -destinationpath 'C:\graalvm'
       - name: Install Native Image
-        run: graalvm-ce-java11-${{ matrix.graalvm }}\bin\gu.cmd install native-image
+        run: C:\graalvm\graalvm-ce-java11-${{ matrix.graalvm }}\bin\gu.cmd install native-image
       - name: Set up Visual C Build Tools Workload for Visual Studio 2017 Build Tools
         run: |
           choco install visualstudio2017-workload-vctools
@@ -38,7 +38,7 @@ jobs:
           call "C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\VC\Auxiliary\Build\vcvars64.bat"
           ./gradlew.bat check --no-daemon --continue
         env:
-          JAVA_HOME: graalvm-ce-java11-${{ matrix.graalvm }}
-          GRAALVM_HOME: graalvm-ce-java11-${{ matrix.graalvm }}
+          JAVA_HOME: C:\graalvm\graalvm-ce-java11-${{ matrix.graalvm }}
+          GRAALVM_HOME: C:\graalvm\graalvm-ce-java11-${{ matrix.graalvm }}
           TESTCONTAINERS_RYUK_DISABLED: true
 
