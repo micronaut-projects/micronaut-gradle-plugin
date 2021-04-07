@@ -1,5 +1,6 @@
 package io.micronaut.gradle.graalvm;
 
+import org.apache.tools.ant.taskdefs.condition.Os;
 import org.gradle.api.Project;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.model.ObjectFactory;
@@ -8,10 +9,12 @@ import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.MapProperty;
 import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.*;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import javax.inject.Inject;
 import java.io.File;
+import java.io.IOException;
 import java.util.*;
 import java.util.function.BooleanSupplier;
 
@@ -39,6 +42,9 @@ public class NativeImageTask extends AbstractExecTask<NativeImageTask>
     public NativeImageTask() {
         super(NativeImageTask.class);
         String nativeImageExecutable = findNativeImage("GRAALVM_HOME", "JAVA_HOME");
+        if (!new File(nativeImageExecutable).exists()) {
+            System.out.println("DOESN'T EXIST!! = " + nativeImageExecutable);
+        }
         setExecutable(nativeImageExecutable);
         setWorkingDir(new File(getProject().getBuildDir(), "native-image"));
         ObjectFactory objectFactory = getObjectFactory();
@@ -59,17 +65,59 @@ public class NativeImageTask extends AbstractExecTask<NativeImageTask>
         booleanCmds.put(isVerbose::get,  "--verbose");
     }
 
-    private String findNativeImage(String... envs) {
-        for (String env : envs) {
-            final String graalvmHome = System.getenv(env);
-            if (graalvmHome != null && graalvmHome.length() > 0) {
-                final File ni = new File(graalvmHome, "bin/native-image");
-                if (ni.exists()) {
-                    return ni.getAbsolutePath();
+    private String findNativeImage(String graalHome, String javaHome) {
+        if (isNotBlank(graalHome)) {
+            graalHome = System.getenv(graalHome);
+            if (isNotBlank(graalHome)) {
+                try {
+                    final File f = getNativeImageExecutable(graalHome);
+                    if (f.exists()) {
+                        return f.getCanonicalPath();
+                    }
+                } catch (IOException e) {
+                    // continue
+                }
+            }
+        }
+
+        if (isNotBlank(javaHome)) {
+            javaHome = System.getenv(javaHome);
+            if (isNotBlank(javaHome)) {
+                final File f = getNativeImageExecutable(javaHome);
+                if (f.exists()) {
+                    try {
+                        return f.getCanonicalPath();
+                    } catch (IOException e) {
+                        // continue
+                    }
                 }
             }
         }
         return "native-image";
+    }
+
+    @NotNull
+    private File getNativeImageExecutable(String javaHome) {
+        final File f;
+        if (Os.isFamily("windows")) {
+            f = new File(javaHome, "bin/native-image.exe");
+            if (f.exists()) {
+                return f;
+            } else {
+                return new File(javaHome, "lib/svm/bin/native-image.exe");
+            }
+        } else {
+            f = new File(javaHome, "bin/native-image");
+            if (f.exists()) {
+                return f;
+            } else {
+                return new File(javaHome, "lib/svm/bin/native-image");
+            }
+        }
+    }
+
+    private boolean isNotBlank(String graalHome) {
+        return graalHome != null && graalHome.length() > 0;
     }
 
     @Override

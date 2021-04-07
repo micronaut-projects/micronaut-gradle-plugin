@@ -67,7 +67,7 @@ class Application {
         when:
         def result = GradleRunner.create()
                 .withProjectDir(testProjectDir.root)
-                .withArguments('two:nativeImage', '-i')
+                .withArguments('two:nativeImage', '-i', '--stacktrace')
                 .withPluginClasspath()
                 .build()
 

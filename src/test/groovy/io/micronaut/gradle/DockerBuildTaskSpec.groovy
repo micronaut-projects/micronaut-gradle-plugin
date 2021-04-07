@@ -4,9 +4,11 @@ import org.gradle.testkit.runner.GradleRunner
 import org.gradle.testkit.runner.TaskOutcome
 import org.junit.Rule
 import org.junit.rules.TemporaryFolder
+import spock.lang.IgnoreIf
 import spock.lang.Specification
 import spock.lang.Unroll
 
+@IgnoreIf({ os.windows })
 class DockerBuildTaskSpec extends Specification {
 
     @Rule TemporaryFolder testProjectDir = new TemporaryFolder()
