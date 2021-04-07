@@ -8,7 +8,7 @@ import org.junit.rules.TemporaryFolder
 import spock.lang.Requires
 import spock.lang.Specification
 
-@Requires({ GraalUtil.isGraalJVM() })
+@Requires({ GraalUtil.isGraalJVM() && !os.windows })
 class NativeImageTestTaskSpec extends Specification {
     @Rule TemporaryFolder testProjectDir = new TemporaryFolder()
 
