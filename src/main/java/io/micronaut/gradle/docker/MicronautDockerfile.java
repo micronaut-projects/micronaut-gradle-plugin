@@ -66,8 +66,9 @@ public class MicronautDockerfile extends Dockerfile implements DockerBuildOption
                 javaApplication.getMainClass().set("com.fnproject.fn.runtime.EntryPoint");
                 from(new Dockerfile.From(from != null ? from : "fnproject/fn-java-fdk:" + getProjectFnVersion()));
                 workingDir("/function");
+                runCommand("mkdir -p /function/app/resources");
                 copyFile("layers/libs/*.jar", "/function/app/");
-                copyFile("layers/resources/*", "/function/app/");
+                copyFile("layers/resources/*", "/function/app/resources/");
                 copyFile("layers/application.jar", "/function/app/");
                 String cmd = this.defaultCommand.get();
                 if ("none".equals(cmd)) {
