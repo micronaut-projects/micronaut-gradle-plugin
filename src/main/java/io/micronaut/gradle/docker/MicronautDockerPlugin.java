@@ -35,7 +35,6 @@ public class MicronautDockerPlugin implements Plugin<Project> {
         TaskContainer tasks = project.getTasks();
         ExtensionContainer extensions = project.getExtensions();
         extensions.create("docker", DockerExtension.class);
-        File applicationLayout = new File(project.getBuildDir(), "layers");
         TaskProvider<Jar> runnerJar = tasks.register("runnerJar", Jar.class, jar -> {
             jar.dependsOn(tasks.findByName("classes"));
             jar.getArchiveClassifier().set("runner");
@@ -83,7 +82,11 @@ public class MicronautDockerPlugin implements Plugin<Project> {
         });
         TaskProvider<Task> buildLayersTask = tasks.register("buildLayers", task -> {
             task.dependsOn(runnerJar);
+            task.setGroup(BasePlugin.BUILD_GROUP);
+            task.setDescription("Builds application layers for use in a Docker container");
 
+        });
+        buildLayersTask.configure((task -> {
             Configuration runtimeClasspath = project.getConfigurations()
                     .getByName(RUNTIME_CLASSPATH_CONFIGURATION_NAME);
             TaskOutputs jar = runnerJar.get().getOutputs();
@@ -101,10 +104,8 @@ public class MicronautDockerPlugin implements Plugin<Project> {
             inputs.files(jarFiles);
             inputs.files(resourcesDir);
 
-
+            File applicationLayout = new File(project.getBuildDir(), "layers");
             task.getOutputs().dir(applicationLayout);
-            task.setGroup(BasePlugin.BUILD_GROUP);
-            task.setDescription("Builds application layers for use in a Docker container");
 
             // NOTE: Has to be an anonymous inner class otherwise incremental build does not work
             // DO NOT REPLACE WITH LAMBDA
@@ -128,7 +129,7 @@ public class MicronautDockerPlugin implements Plugin<Project> {
                     );
                 }
             });
-        });
+        }));
 
         Task assemble = tasks.findByName("assemble");
         if (assemble != null) {
