@@ -1,5 +1,6 @@
 // First, apply the publishing plugin
 plugins {
+  id "idea"
   id "com.gradle.plugin-publish" version "0.12.0"
   id "java-gradle-plugin"
   id "maven-publish"
@@ -79,4 +80,9 @@ pluginBundle {
 java {
     sourceCompatibility = JavaVersion.toVersion('1.8')
     targetCompatibility = JavaVersion.toVersion('1.8')
+}
+
+idea.module {
+  downloadJavadoc = true
+  downloadSources = true
 }

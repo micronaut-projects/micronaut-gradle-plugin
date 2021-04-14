@@ -9,6 +9,7 @@ import com.bmuschko.gradle.docker.tasks.image.DockerPushImage;
 import com.bmuschko.gradle.docker.tasks.image.Dockerfile;
 import io.micronaut.gradle.MicronautApplicationPlugin;
 import io.micronaut.gradle.MicronautRuntime;
+import io.micronaut.gradle.docker.tasks.BuildLayersTask;
 import io.micronaut.gradle.graalvm.NativeImageTask;
 import org.gradle.api.Action;
 import org.gradle.api.Plugin;
@@ -19,13 +20,14 @@ import org.gradle.api.file.FileCollection;
 import org.gradle.api.plugins.BasePlugin;
 import org.gradle.api.plugins.ExtensionContainer;
 import org.gradle.api.plugins.JavaApplication;
-import org.gradle.api.plugins.JavaPlugin;
-import org.gradle.api.tasks.*;
+import org.gradle.api.tasks.SourceSet;
+import org.gradle.api.tasks.SourceSetContainer;
+import org.gradle.api.tasks.TaskContainer;
+import org.gradle.api.tasks.TaskProvider;
 import org.gradle.api.tasks.bundling.Jar;
 
 import java.io.File;
 import java.util.*;
-import java.util.Optional;
 
 import static org.gradle.api.plugins.JavaPlugin.RUNTIME_CLASSPATH_CONFIGURATION_NAME;
 
@@ -80,56 +82,16 @@ public class MicronautDockerPlugin implements Plugin<Project> {
         tasks.create("internalDockerNativeImageTask", NativeImageTask.class, nativeImageTask -> {
             nativeImageTask.setEnabled(false);
         });
-        TaskProvider<Task> buildLayersTask = tasks.register("buildLayers", task -> {
+        TaskProvider<BuildLayersTask> buildLayersTask = tasks.register("buildLayers", BuildLayersTask.class, task -> {
             task.dependsOn(runnerJar);
             task.setGroup(BasePlugin.BUILD_GROUP);
             task.setDescription("Builds application layers for use in a Docker container");
-
+            task.getLibsLayer().from(project.getConfigurations()
+                    .getByName(RUNTIME_CLASSPATH_CONFIGURATION_NAME));
+            task.getResourcesLayer().from(project.getExtensions().getByType(SourceSetContainer.class)
+                    .getByName(SourceSet.MAIN_SOURCE_SET_NAME).getOutput().getResourcesDir());
+            task.getAppLayer().from(runnerJar);
         });
-        buildLayersTask.configure((task -> {
-            Configuration runtimeClasspath = project.getConfigurations()
-                    .getByName(RUNTIME_CLASSPATH_CONFIGURATION_NAME);
-            TaskOutputs jar = runnerJar.get().getOutputs();
-            FileCollection jarFiles = jar.getFiles();
-            SourceSetContainer sourceSets = project
-                    .getExtensions().getByType(SourceSetContainer.class);
-
-            SourceSet mainSourceSet = sourceSets
-                    .getByName(SourceSet.MAIN_SOURCE_SET_NAME);
-
-            final File resourcesDir = mainSourceSet.getOutput().getResourcesDir();
-
-            TaskInputs inputs = task.getInputs();
-            inputs.files(runtimeClasspath);
-            inputs.files(jarFiles);
-            inputs.files(resourcesDir);
-
-            File applicationLayout = new File(project.getBuildDir(), "layers");
-            task.getOutputs().dir(applicationLayout);
-
-            // NOTE: Has to be an anonymous inner class otherwise incremental build does not work
-            // DO NOT REPLACE WITH LAMBDA
-            //noinspection Convert2Lambda
-            task.doLast(new Action<Task>() {
-                @Override
-                public void execute(Task t) {
-                    project.copy(copy ->
-                            copy.from(runtimeClasspath)
-                                    .into(new File(applicationLayout, "libs"))
-                    );
-                    project.copy(copy ->
-                            copy.from(jarFiles)
-                                    .into(applicationLayout)
-                                    .rename(s -> "application.jar")
-                    );
-                    project.mkdir(new File(applicationLayout, "resources"));
-                    project.copy(copy ->
-                            copy.from(resourcesDir)
-                                    .into(new File(applicationLayout, "resources"))
-                    );
-                }
-            });
-        }));
 
         Task assemble = tasks.findByName("assemble");
         if (assemble != null) {
@@ -159,7 +121,9 @@ public class MicronautDockerPlugin implements Plugin<Project> {
         });
     }
 
-    private Optional<TaskProvider<MicronautDockerfile>> configureDockerBuild(Project project, TaskContainer tasks, TaskProvider<Task> buildLayersTask) {
+    private Optional<TaskProvider<MicronautDockerfile>> configureDockerBuild(Project project,
+                                                                             TaskContainer tasks,
+                                                                             TaskProvider<BuildLayersTask> buildLayersTask) {
         File f = project.file("Dockerfile");
 
         TaskProvider<? extends Dockerfile> dockerFileTask;
@@ -181,14 +145,12 @@ public class MicronautDockerPlugin implements Plugin<Project> {
             task.dependsOn(buildLayersTask);
             task.setGroup(BasePlugin.BUILD_GROUP);
             task.setDescription("Builds a Docker Image");
-            task.getInputDir().set(project.getProjectDir());
             if (f.exists()) {
                 task.getDockerFile().set(f);
             } else {
                 task.getDockerFile()
                         .convention(dockerFileTask.flatMap(Dockerfile::getDestFile));
             }
-            task.getInputDir().set(project.getBuildDir());
             task.getImages().set(Collections.singletonList(project.getName()));
         });
 
@@ -206,7 +168,9 @@ public class MicronautDockerPlugin implements Plugin<Project> {
         return Optional.empty();
     }
 
-    private TaskProvider<NativeImageDockerfile> configureNativeDockerBuild(Project project, TaskContainer tasks, TaskProvider<Task> buildLayersTask) {
+    private TaskProvider<NativeImageDockerfile> configureNativeDockerBuild(Project project,
+                                                                           TaskContainer tasks,
+                                                                           TaskProvider<BuildLayersTask> buildLayersTask) {
         File f = project.file("DockerfileNative");
 
         TaskProvider<NativeImageDockerfile> dockerFileTask;
@@ -224,7 +188,6 @@ public class MicronautDockerPlugin implements Plugin<Project> {
         dockerBuildTask.configure(task -> {
             task.setGroup(BasePlugin.BUILD_GROUP);
             task.setDescription("Builds a Native Docker Image using GraalVM");
-            task.getInputDir().set(project.getBuildDir());
             if (f.exists()) {
                 task.getDockerFile().set(f);
             } else {
