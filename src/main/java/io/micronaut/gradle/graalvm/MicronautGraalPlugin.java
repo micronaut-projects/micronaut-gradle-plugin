@@ -6,6 +6,7 @@ import io.micronaut.gradle.MicronautRuntime;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
+import org.gradle.api.artifacts.DependencySet;
 import org.gradle.api.logging.LogLevel;
 import org.gradle.api.plugins.BasePlugin;
 import org.gradle.api.plugins.JavaApplication;
@@ -20,6 +21,7 @@ import org.gradle.api.tasks.testing.Test;
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Support for building GraalVM native images.
@@ -72,7 +74,13 @@ public class MicronautGraalPlugin implements Plugin<Project> {
             TaskProvider<NativeImageTask> nit = tasks.register("nativeImage", NativeImageTask.class, nativeImageTask -> {
                 MicronautRuntime mr = MicronautApplicationPlugin.resolveRuntime(project);
                 if (mr == MicronautRuntime.LAMBDA) {
-                    nativeImageTask.setMain("io.micronaut.function.aws.runtime.MicronautLambdaRuntime");
+                    DependencySet implementation = project.getConfigurations().getByName("implementation").getDependencies();
+                    boolean isAwsApp = implementation.stream()
+                            .noneMatch(dependency -> Objects.equals(dependency.getGroup(), "io.micronaut.aws") && dependency.getName().equals("micronaut-function-aws"));
+
+                    if (isAwsApp) {
+                        nativeImageTask.setMain("io.micronaut.function.aws.runtime.MicronautLambdaRuntime");
+                    }
                 }
                 nativeImageTask.dependsOn(tasks.findByName("classes"));
                 nativeImageTask.setGroup(BasePlugin.BUILD_GROUP);
