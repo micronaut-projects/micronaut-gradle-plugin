@@ -66,9 +66,10 @@ public class MicronautDockerfile extends Dockerfile implements DockerBuildOption
                 javaApplication.getMainClass().set("com.fnproject.fn.runtime.EntryPoint");
                 from(new Dockerfile.From(from != null ? from : "fnproject/fn-java-fdk:" + getProjectFnVersion()));
                 workingDir("/function");
-                copyFile("build/layers/libs/*.jar", "/function/app/");
-                copyFile("build/layers/resources/*", "/function/app/");
-                copyFile("build/layers/application.jar", "/function/app/");
+                runCommand("mkdir -p /function/app/resources");
+                copyFile("layers/libs/*.jar", "/function/app/");
+                copyFile("layers/resources/*", "/function/app/resources/");
+                copyFile("layers/application.jar", "/function/app/");
                 String cmd = this.defaultCommand.get();
                 if ("none".equals(cmd)) {
                     super.defaultCommand("io.micronaut.oraclecloud.function.http.HttpFunction::handleRequest");
@@ -79,7 +80,7 @@ public class MicronautDockerfile extends Dockerfile implements DockerBuildOption
             case LAMBDA:
                 javaApplication.getMainClass().set("io.micronaut.function.aws.runtime.MicronautLambdaRuntime");
             default:
-                from(new Dockerfile.From(from != null ? from : "openjdk:15-alpine"));
+                from(new Dockerfile.From(from != null ? from : "openjdk:16-alpine"));
                 setupResources(this);
                 exposePort(exposedPorts);
                 entryPoint(getArgs().map(strings -> {
@@ -171,8 +172,8 @@ public class MicronautDockerfile extends Dockerfile implements DockerBuildOption
 
     static void setupResources(Dockerfile task) {
         task.workingDir("/home/app");
-        task.copyFile("build/layers/libs", "/home/app/libs");
-        task.copyFile("build/layers/resources", "/home/app/resources");
-        task.copyFile("build/layers/application.jar", "/home/app/application.jar");
+        task.copyFile("layers/libs", "/home/app/libs");
+        task.copyFile("layers/resources", "/home/app/resources");
+        task.copyFile("layers/application.jar", "/home/app/application.jar");
     }
 }

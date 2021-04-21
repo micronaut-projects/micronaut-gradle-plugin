@@ -8,7 +8,7 @@ import org.junit.rules.TemporaryFolder
 import spock.lang.Requires
 import spock.lang.Specification
 
-@Requires({ GraalUtil.isGraalJVM() })
+@Requires({ GraalUtil.isGraalJVM() && !os.windows })
 class NativeImageTestTaskSpec extends Specification {
     @Rule TemporaryFolder testProjectDir = new TemporaryFolder()
 
@@ -140,7 +140,7 @@ public class FooControllerTest {
 
         def result = GradleRunner.create()
                 .withProjectDir(testProjectDir.root)
-                .withArguments('testNativeImage')
+                .withArguments('testNativeImage', '--stacktrace')
                 .withPluginClasspath()
                 .build()
 
