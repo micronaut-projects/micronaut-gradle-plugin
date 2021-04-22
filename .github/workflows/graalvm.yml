@@ -16,6 +16,13 @@ jobs:
       matrix:
         graalvm: ['21.1.0.java8', '21.1.0.java11']
     steps:
+      # https://github.com/actions/virtual-environments/issues/709
+      - name: Free disk space
+        run: |
+          sudo rm -rf "/usr/local/share/boost"
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+          sudo apt-get clean
+          df -h
       - uses: actions/checkout@v2
       - uses: actions/cache@v2.1.4
         with:
