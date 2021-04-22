@@ -137,7 +137,7 @@ public class NativeImageTask extends AbstractExecTask<NativeImageTask>
         if (!GraalUtil.isGraalJVM()) {
             throw new RuntimeException("A GraalVM SDK is required to build native images");
         }
-        configure();
+        configure(true);
         super.exec();
         System.out.println("Native Image written to: " + getNativeImageOutput());
     }
@@ -145,7 +145,7 @@ public class NativeImageTask extends AbstractExecTask<NativeImageTask>
     /**
      * Configure the task.
      */
-    public void configure() {
+    public void configure(boolean includeClasspath) {
         // set the classpath
         final Project project = getProject();
         FileCollection runtimeConfig = project
@@ -155,18 +155,21 @@ public class NativeImageTask extends AbstractExecTask<NativeImageTask>
                 .getExtensions()
                 .getByType(SourceSetContainer.class);
         SourceSet mainSourceSet = sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME);
-        final SourceSetOutput output = mainSourceSet.getOutput();
-        FileCollection outputDirs = output.getClassesDirs();
-        runtimeConfig = runtimeConfig.plus(outputDirs);
-        runtimeConfig = runtimeConfig.plus(project.files(output.getResourcesDir()));
-        FileCollection cp = getClasspath();
-        if (cp != null) {
-            runtimeConfig = runtimeConfig.plus(cp);
-        }
+        if (includeClasspath) {
 
-        String classpath = runtimeConfig.getAsPath();
-        if (classpath.length() > 0) {
-            args("-cp", classpath);
+            final SourceSetOutput output = mainSourceSet.getOutput();
+            FileCollection outputDirs = output.getClassesDirs();
+            runtimeConfig = runtimeConfig.plus(outputDirs);
+            runtimeConfig = runtimeConfig.plus(project.files(output.getResourcesDir()));
+            FileCollection cp = getClasspath();
+            if (cp != null) {
+                runtimeConfig = runtimeConfig.plus(cp);
+            }
+
+            String classpath = runtimeConfig.getAsPath();
+            if (classpath.length() > 0) {
+                args("-cp", classpath);
+            }
         }
 
         // set the main class

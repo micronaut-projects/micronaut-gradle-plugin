@@ -5,6 +5,7 @@ import io.micronaut.gradle.graalvm.NativeImageTask;
 import org.gradle.api.JavaVersion;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
+import org.gradle.api.internal.file.FileCollectionFactory;
 import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.plugins.BasePlugin;
 import org.gradle.api.plugins.JavaApplication;
@@ -12,14 +13,15 @@ import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.StopActionException;
+import org.gradle.api.tasks.TaskAction;
 import org.gradle.api.tasks.TaskContainer;
 import org.gradle.internal.jvm.Jvm;
 
 import javax.annotation.Nullable;
+import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Specialization of {@link Dockerfile} for building native images.
@@ -27,7 +29,7 @@ import java.util.Map;
  * @author gkrocher
  * @since 1.0.0
  */
-public class NativeImageDockerfile extends Dockerfile implements DockerBuildOptions {
+public abstract class NativeImageDockerfile extends Dockerfile implements DockerBuildOptions {
 
     @Input
     private final Property<String> jdkVersion;
@@ -79,6 +81,18 @@ public class NativeImageDockerfile extends Dockerfile implements DockerBuildOpti
             java.io.File f = getDestFile().get().getAsFile();
             System.out.println("Dockerfile written to: " + f.getAbsolutePath());
         });
+    }
+
+    /**
+     * @return The file factory
+     */
+    @Inject
+    protected abstract FileCollectionFactory getFileCollectionFactory();
+
+    @TaskAction
+    @Override
+    public void create() {
+        super.create();
     }
 
     /**
@@ -180,8 +194,7 @@ public class NativeImageDockerfile extends Dockerfile implements DockerBuildOpti
         MicronautDockerfile.setupResources(this);
         // use native-image from docker image
         nativeImageTask.setExecutable("native-image");
-        // clear out classpath
-        nativeImageTask.setClasspath(getProject().files());
+        System.out.println("nativeImageTask = " + nativeImageTask.getClasspath().getAsPath());
         // use hard coded image name
         nativeImageTask.setImageName("application");
         if (buildStrategy == DockerBuildStrategy.ORACLE_FUNCTION) {
@@ -196,7 +209,9 @@ public class NativeImageDockerfile extends Dockerfile implements DockerBuildOpti
                 nativeImageTask.setMain("io.micronaut.function.aws.runtime.MicronautLambdaRuntime");
             }
         }
-        nativeImageTask.configure();
+        nativeImageTask.configure(false);
+        // clear out classpath
+        nativeImageTask.setClasspath(getFileCollectionFactory().empty());
         List<String> commandLine = nativeImageTask.getCommandLine();
         commandLine.add("-cp");
         commandLine.add("/home/app/libs/*.jar:/home/app/resources:/home/app/application.jar");
