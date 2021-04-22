@@ -63,6 +63,9 @@ dependencies {
   testImplementation 'org.spockframework:spock-junit4:2.0-M5-groovy-2.5'
 }
 
+test {
+  useJUnitPlatform()
+}
 // The configuration example below shows the minimum required properties
 // configured to publish your plugin to the plugin portal
 pluginBundle {

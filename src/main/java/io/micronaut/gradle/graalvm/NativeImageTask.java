@@ -1,7 +1,12 @@
 package io.micronaut.gradle.graalvm;
 
 import org.apache.tools.ant.taskdefs.condition.Os;
+import org.gradle.api.Action;
 import org.gradle.api.Project;
+import org.gradle.api.Task;
+import org.gradle.api.artifacts.Configuration;
+import org.gradle.api.artifacts.DependencySet;
+import org.gradle.api.artifacts.ProjectDependency;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.plugins.JavaPlugin;
@@ -148,7 +153,7 @@ public class NativeImageTask extends AbstractExecTask<NativeImageTask>
     public void configure(boolean includeClasspath) {
         // set the classpath
         final Project project = getProject();
-        FileCollection runtimeConfig = project
+        Configuration runtimeConfig = project
                 .getConfigurations()
                 .getByName(JavaPlugin.RUNTIME_CLASSPATH_CONFIGURATION_NAME);
         SourceSetContainer sourceSets = project
@@ -158,15 +163,18 @@ public class NativeImageTask extends AbstractExecTask<NativeImageTask>
         if (includeClasspath) {
 
             final SourceSetOutput output = mainSourceSet.getOutput();
+
+            final Set<File> resolved = runtimeConfig.getResolvedConfiguration().getFiles();
+            FileCollection classpathCollection = project.files(resolved);
             FileCollection outputDirs = output.getClassesDirs();
-            runtimeConfig = runtimeConfig.plus(outputDirs);
-            runtimeConfig = runtimeConfig.plus(project.files(output.getResourcesDir()));
+            classpathCollection = classpathCollection.plus(outputDirs);
+            classpathCollection = classpathCollection.plus(project.files(output.getResourcesDir()));
             FileCollection cp = getClasspath();
             if (cp != null) {
-                runtimeConfig = runtimeConfig.plus(cp);
+                classpathCollection = classpathCollection.plus(cp);
             }
 
-            String classpath = runtimeConfig.getAsPath();
+            String classpath = classpathCollection.getAsPath();
             if (classpath.length() > 0) {
                 args("-cp", classpath);
             }
