@@ -194,7 +194,6 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
         MicronautDockerfile.setupResources(this);
         // use native-image from docker image
         nativeImageTask.setExecutable("native-image");
-        System.out.println("nativeImageTask = " + nativeImageTask.getClasspath().getAsPath());
         // use hard coded image name
         nativeImageTask.setImageName("application");
         if (buildStrategy == DockerBuildStrategy.ORACLE_FUNCTION) {
