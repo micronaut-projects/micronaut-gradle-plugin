@@ -42,20 +42,25 @@ tasks.withType(PluginUnderTestMetadata) {
   pluginClasspath.from(configurations.optionalPluginDependencies)
 }
 
+ext {
+  kotlinVersion = "1.4.30"
+}
+
 dependencies {
   implementation "com.bmuschko:gradle-docker-plugin:6.7.0"
   implementation "com.diffplug.gradle:goomph:3.28.2"
   implementation "com.github.jengelman.gradle.plugins:shadow:6.1.0"
-  compileOnly "org.jetbrains.kotlin:kotlin-allopen:1.4.30"
-  compileOnly "org.jetbrains.kotlin:kotlin-gradle-plugin:1.4.30"
+  compileOnly "org.jetbrains.kotlin:kotlin-allopen:$kotlinVersion"
+  compileOnly "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
 
 
   optionalPluginDependencies("org.jetbrains.kotlin:kotlin-allopen:1.4.10")
   optionalPluginDependencies "org.jetbrains.kotlin:kotlin-gradle-plugin:1.4.30"
-  testImplementation("org.jetbrains.kotlin:kotlin-allopen:1.4.10")
-  testImplementation "org.jetbrains.kotlin:kotlin-gradle-plugin:1.4.10"
+  testImplementation("org.jetbrains.kotlin:kotlin-allopen:$kotlinVersion")
+  testImplementation "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
   testImplementation("org.codehaus.groovy:groovy:3.0.7")
-  testImplementation("org.spockframework:spock-core:1.3-groovy-2.5")
+  testImplementation("org.spockframework:spock-core:2.0-M5-groovy-3.0")
+  testImplementation 'org.spockframework:spock-junit4:2.0-M5-groovy-2.5'
 }
 
 // The configuration example below shows the minimum required properties
