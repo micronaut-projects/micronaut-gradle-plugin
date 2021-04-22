@@ -63,13 +63,15 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
         this.jdkVersion = objects.property(String.class);
         this.requireGraalSdk = objects.property(Boolean.class).convention(true);
         JavaVersion javaVersion = Jvm.current().getJavaVersion();
-        if (javaVersion.isJava11Compatible()) {
+        if (javaVersion.isCompatibleWith(JavaVersion.toVersion(16))) {
+            jdkVersion.convention("java16");
+        } else if (javaVersion.isJava11Compatible()) {
             jdkVersion.convention("java11");
         } else {
             jdkVersion.convention("java8");
         }
         this.graalVersion = objects.property(String.class)
-                               .convention("21.0.0.2");
+                               .convention("21.1.0");
         this.graalImage = objects.property(String.class)
                                .convention(graalVersion.map(version -> "ghcr.io/graalvm/graalvm-ce:" + jdkVersion.get() + '-' + version ));
         this.baseImage = objects.property(String.class)
