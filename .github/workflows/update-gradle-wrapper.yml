@@ -1,7 +1,7 @@
 name: Update Gradle Wrapper
 on:
   schedule:
-    - cron: '0 0 * * MON'
+    - cron: '0 3 * * SAT'
 jobs:
   update-wrapper:
     if: github.repository == 'micronaut-projects/micronaut-project-template'
@@ -15,7 +15,7 @@ jobs:
           echo ::set-output name=latest_version::${latest}
           ./gradlew wrapper --gradle-version $latest
       - uses: gradle/wrapper-validation-action@v1
-      - uses: stefanzweifel/git-auto-commit-action@v4.9.1
+      - uses: stefanzweifel/git-auto-commit-action@v4.9.2
         with:
           commit_message: Upgrade Gradle Wrapper to ${{ steps.update.outputs.latest_version }}
           commit_user_name: micronaut-build
