@@ -14,8 +14,15 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        java: ['8', '11', '14']
+        java: ['8', '11', '15']
     steps:
+      # https://github.com/actions/virtual-environments/issues/709
+      - name: Free disk space
+        run: |
+          sudo rm -rf "/usr/local/share/boost"
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+          sudo apt-get clean
+          df -h
       - uses: actions/checkout@v2
       - uses: actions/cache@v2.1.4
         with:
@@ -24,11 +31,11 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
       - name: Set up JDK
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v2
         with:
+          distribution: 'adopt'
           java-version: ${{ matrix.java }}
       - name: Build with Gradle
         run: ./gradlew check --parallel --continue
         env:
           TESTCONTAINERS_RYUK_DISABLED: true
-
