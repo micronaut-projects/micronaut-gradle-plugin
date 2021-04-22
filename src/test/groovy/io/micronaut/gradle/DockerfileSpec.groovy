@@ -5,6 +5,7 @@ import org.gradle.testkit.runner.GradleRunner
 import org.gradle.testkit.runner.TaskOutcome
 import org.junit.Rule
 import org.junit.rules.TemporaryFolder
+import spock.lang.IgnoreIf
 import spock.lang.Requires
 import spock.lang.Specification
 
@@ -21,6 +22,7 @@ class DockerfileSpec extends Specification {
     }
 
     @Requires({ GraalUtil.isGraalJVM() })
+    @IgnoreIf({ os.isWindows() })
     void 'test build native docker file'() {
         given:
         settingsFile << "rootProject.name = 'hello-world'"

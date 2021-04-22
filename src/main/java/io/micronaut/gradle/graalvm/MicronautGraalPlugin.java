@@ -3,13 +3,15 @@ package io.micronaut.gradle.graalvm;
 import io.micronaut.gradle.MicronautApplicationPlugin;
 import io.micronaut.gradle.MicronautExtension;
 import io.micronaut.gradle.MicronautRuntime;
+import org.gradle.api.Action;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
-import org.gradle.api.artifacts.DependencySet;
+import org.gradle.api.artifacts.*;
 import org.gradle.api.logging.LogLevel;
 import org.gradle.api.plugins.BasePlugin;
 import org.gradle.api.plugins.JavaApplication;
+import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.plugins.JavaPluginConvention;
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.tasks.SourceSet;
@@ -30,6 +32,9 @@ import java.util.Objects;
  * @since 1.0.0
  */
 public class MicronautGraalPlugin implements Plugin<Project> {
+
+    private static final List<String> DEPENDENT_CONFIGURATIONS = Arrays.asList(JavaPlugin.API_CONFIGURATION_NAME, JavaPlugin.RUNTIME_ONLY_CONFIGURATION_NAME, JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME);
+
     @Override
     public void apply(Project project) {
         project.afterEvaluate(p -> {
@@ -85,6 +90,23 @@ public class MicronautGraalPlugin implements Plugin<Project> {
                 nativeImageTask.dependsOn(tasks.findByName("classes"));
                 nativeImageTask.setGroup(BasePlugin.BUILD_GROUP);
                 nativeImageTask.setDescription("Builds a GraalVM Native Image");
+                project
+                        .getConfigurations()
+                        .configureEach(configuration -> {
+                            if (DEPENDENT_CONFIGURATIONS.contains(configuration.getName())) {
+                                final DependencySet dependencies = configuration.getDependencies();
+                                for (Dependency dependency : dependencies) {
+                                    if (dependency instanceof ProjectDependency) {
+                                        final Project otherProject = ((ProjectDependency) dependency).getDependencyProject();
+                                        // ensure dependent projects are built first
+                                        final Task jarTask = otherProject.getTasks().findByName("jar");
+                                        if (jarTask != null) {
+                                            nativeImageTask.dependsOn(jarTask);
+                                        }
+                                    }
+                                }
+                            }
+                        });
             });
 
             tasks.withType(Test.class, (test ->

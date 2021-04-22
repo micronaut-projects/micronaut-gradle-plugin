@@ -5,15 +5,16 @@ import org.gradle.testkit.runner.GradleRunner
 import org.gradle.testkit.runner.TaskOutcome
 import org.junit.Rule
 import org.junit.rules.TemporaryFolder
+import spock.lang.IgnoreIf
 import spock.lang.Requires
 import spock.lang.Specification
 
 @Requires({ GraalUtil.isGraalJVM() })
+@IgnoreIf({ os.isWindows() })
 class NativeImageMultiProjectSpec extends Specification {
     @Rule TemporaryFolder testProjectDir = new TemporaryFolder()
 
     File settingsFile
-    File buildFile
 
     def setup() {
         settingsFile = testProjectDir.newFile('settings.gradle')
@@ -24,23 +25,42 @@ include "one"
 include "two"
 
 '''
-        def projectFolder = testProjectDir.newFolder("two")
-        buildFile = testProjectDir.newFile('two/build.gradle')
-        buildFile << """
+        def oneFolder = testProjectDir.newFolder("one")
+        def oneBuildFile = testProjectDir.newFile('one/build.gradle')
+        oneBuildFile << """
+            plugins {
+                id "io.micronaut.library"
+            }
+            
+            micronaut {
+                version "2.4.2"
+            }
+            
+            repositories {
+                mavenCentral()
+            }
+ 
+        """
+        def twoFolder = testProjectDir.newFolder("two")
+        def twoBuildFile = testProjectDir.newFile('two/build.gradle')
+        twoBuildFile << """
             plugins {
                 id("com.github.johnrengelman.shadow") version "6.1.0"
                 id "io.micronaut.application"
             }
             
             micronaut {
-                version "2.3.4"
-                runtime "netty"
+                version "2.4.2"
             }
             
             repositories {
                 mavenCentral()
             }
             
+            dependencies {
+                implementation project(":one")
+                implementation "io.micronaut:micronaut-runtime"
+            }
             
             application {
                 mainClass.set("example.Application")
@@ -48,16 +68,37 @@ include "two"
             
         """
 
-        def javaFile = new File(projectFolder, "src/main/java/example/Application.java")
+        def introspectedFile = new File(oneFolder, "src/main/java/other/Foo.java")
+        introspectedFile.parentFile.mkdirs()
+        introspectedFile << '''
+package other;
+
+import io.micronaut.core.annotation.*;
+
+@Introspected
+public class Foo {
+}
+'''
+        def javaFile = new File(twoFolder, "src/main/java/example/Application.java")
         javaFile.parentFile.mkdirs()
         javaFile << """
 package example;
 
 import io.micronaut.runtime.Micronaut;
+import io.micronaut.core.beans.*;
 
 class Application {
     public static void main(String... args) {
-        Micronaut.run(args);    
+        Micronaut.run(args);
+        try {
+            BeanIntrospection.getIntrospection(other.Foo.class);
+            System.out.println("Good!");
+            System.exit(0);
+        
+        } catch(Throwable e) {
+            System.out.println("Bad: " + e.getMessage());
+            System.exit(1);                    
+        }    
     }
 }
 """
@@ -72,8 +113,22 @@ class Application {
                 .build()
 
         def task = result.task(":two:nativeImage")
+        println result.output
         then:
         result.output.contains("Native Image written to")
         task.outcome == TaskOutcome.SUCCESS
+        new File("$testProjectDir.root/two/build/native-image/application").canExecute()
+
+
+
+        when:
+        def process = "$testProjectDir.root/two/build/native-image/application".execute()
+        def exitCode = process.waitFor()
+
+        def output = process.text
+
+        then:
+        output.contains("Good!")
+        exitCode == 0
     }
 }
