@@ -21,23 +21,23 @@ class NativeImageMultiProjectSpec extends Specification {
         settingsFile << '''
 rootProject.name="test-multi-project"
 
-include "one"
 include "two"
+include "one"
 
 '''
         def oneFolder = testProjectDir.newFolder("one")
         def oneBuildFile = testProjectDir.newFile('one/build.gradle')
         oneBuildFile << """
             plugins {
-                id "io.micronaut.library"
+                id "java-library"
             }
-            
-            micronaut {
-                version "2.4.2"
-            }
-            
+
             repositories {
                 mavenCentral()
+            }
+            
+            dependencies {
+                implementation("io.micronaut:micronaut-core:2.4.2")
             }
  
         """
@@ -91,8 +91,8 @@ class Application {
     public static void main(String... args) {
         Micronaut.run(args);
         try {
-            BeanIntrospection.getIntrospection(other.Foo.class);
-            System.out.println("Good!");
+            other.Foo foo = new other.Foo();
+            System.out.println("Good! " + foo);
             System.exit(0);
         
         } catch(Throwable e) {
