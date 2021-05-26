@@ -158,7 +158,7 @@ public class MicronautDockerPlugin implements Plugin<Project> {
         TaskProvider<DockerPushImage> pushDockerImage = tasks.register("dockerPush", DockerPushImage.class);
         pushDockerImage.configure(task -> {
             task.dependsOn(dockerBuildTask);
-            task.setGroup(BasePlugin.UPLOAD_GROUP);
+            task.setGroup("upload");
             task.setDescription("Pushes a Docker Image");
             task.getImages().set(dockerBuildTask.flatMap(DockerBuildImage::getImages));
         });
@@ -201,7 +201,7 @@ public class MicronautDockerPlugin implements Plugin<Project> {
         TaskProvider<DockerPushImage> pushDockerImage = tasks.register("dockerPushNative", DockerPushImage.class);
         pushDockerImage.configure(task -> {
             task.dependsOn(dockerBuildTask);
-            task.setGroup(BasePlugin.UPLOAD_GROUP);
+            task.setGroup("upload");
             task.setDescription("Pushes a Native Docker Image using GraalVM");
             task.getImages().set(dockerBuildTask.flatMap(DockerBuildImage::getImages));
         });

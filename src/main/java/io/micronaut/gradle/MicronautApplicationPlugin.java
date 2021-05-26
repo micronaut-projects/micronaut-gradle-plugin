@@ -51,14 +51,6 @@ public class MicronautApplicationPlugin extends MicronautLibraryPlugin {
             dependencyHandler.add(CONFIGURATION_DEVELOPMENT_ONLY, platform);
 
             MicronautRuntime micronautRuntime = resolveRuntime(p);
-            if (micronautRuntime == MicronautRuntime.ORACLE_FUNCTION) {
-                RepositoryHandler repositories = project.getRepositories();
-                repositories.add(
-                    repositories.maven(mavenArtifactRepository ->
-                            mavenArtifactRepository.setUrl("https://dl.bintray.com/fnproject/fnproject")
-                    )
-                );
-            }
             micronautRuntime.getDependencies().forEach((scope, dependencies) -> {
                 for (String dependency : dependencies) {
                     dependencyHandler.add(scope, dependency);

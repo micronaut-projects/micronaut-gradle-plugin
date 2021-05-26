@@ -1,7 +1,12 @@
 package io.micronaut.gradle.graalvm;
 
 import org.apache.tools.ant.taskdefs.condition.Os;
+import org.gradle.api.Action;
 import org.gradle.api.Project;
+import org.gradle.api.Task;
+import org.gradle.api.artifacts.Configuration;
+import org.gradle.api.artifacts.DependencySet;
+import org.gradle.api.artifacts.ProjectDependency;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.plugins.JavaPlugin;
@@ -42,9 +47,6 @@ public class NativeImageTask extends AbstractExecTask<NativeImageTask>
     public NativeImageTask() {
         super(NativeImageTask.class);
         String nativeImageExecutable = findNativeImage("GRAALVM_HOME", "JAVA_HOME");
-        if (!new File(nativeImageExecutable).exists()) {
-            System.out.println("DOESN'T EXIST!! = " + nativeImageExecutable);
-        }
         setExecutable(nativeImageExecutable);
         setWorkingDir(new File(getProject().getBuildDir(), "native-image"));
         ObjectFactory objectFactory = getObjectFactory();
@@ -140,7 +142,7 @@ public class NativeImageTask extends AbstractExecTask<NativeImageTask>
         if (!GraalUtil.isGraalJVM()) {
             throw new RuntimeException("A GraalVM SDK is required to build native images");
         }
-        configure();
+        configure(true);
         super.exec();
         System.out.println("Native Image written to: " + getNativeImageOutput());
     }
@@ -148,28 +150,34 @@ public class NativeImageTask extends AbstractExecTask<NativeImageTask>
     /**
      * Configure the task.
      */
-    public void configure() {
+    public void configure(boolean includeClasspath) {
         // set the classpath
         final Project project = getProject();
-        FileCollection runtimeConfig = project
+        Configuration runtimeConfig = project
                 .getConfigurations()
                 .getByName(JavaPlugin.RUNTIME_CLASSPATH_CONFIGURATION_NAME);
         SourceSetContainer sourceSets = project
                 .getExtensions()
                 .getByType(SourceSetContainer.class);
         SourceSet mainSourceSet = sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME);
-        final SourceSetOutput output = mainSourceSet.getOutput();
-        FileCollection outputDirs = output.getClassesDirs();
-        runtimeConfig = runtimeConfig.plus(outputDirs);
-        runtimeConfig = runtimeConfig.plus(project.files(output.getResourcesDir()));
-        FileCollection cp = getClasspath();
-        if (cp != null) {
-            runtimeConfig = runtimeConfig.plus(cp);
-        }
+        if (includeClasspath) {
 
-        String classpath = runtimeConfig.getAsPath();
-        if (classpath.length() > 0) {
-            args("-cp", classpath);
+            final SourceSetOutput output = mainSourceSet.getOutput();
+
+            final Set<File> resolved = runtimeConfig.getResolvedConfiguration().getFiles();
+            FileCollection classpathCollection = project.files(resolved);
+            FileCollection outputDirs = output.getClassesDirs();
+            classpathCollection = classpathCollection.plus(outputDirs);
+            classpathCollection = classpathCollection.plus(project.files(output.getResourcesDir()));
+            FileCollection cp = getClasspath();
+            if (cp != null) {
+                classpathCollection = classpathCollection.plus(cp);
+            }
+
+            String classpath = classpathCollection.getAsPath();
+            if (classpath.length() > 0) {
+                args("-cp", classpath);
+            }
         }
 
         // set the main class
