@@ -1,8 +1,10 @@
 package io.micronaut.gradle.docker;
 
 import com.bmuschko.gradle.docker.tasks.image.Dockerfile;
+import org.gradle.api.Action;
 import org.gradle.api.JavaVersion;
 import org.gradle.api.Project;
+import org.gradle.api.Task;
 import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.plugins.BasePlugin;
 import org.gradle.api.plugins.JavaApplication;
@@ -16,7 +18,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-public class MicronautDockerfile extends Dockerfile implements DockerBuildOptions  {
+public class MicronautDockerfile extends Dockerfile implements DockerBuildOptions {
 
     @Input
     private final Property<String> baseImage;
@@ -43,9 +45,13 @@ public class MicronautDockerfile extends Dockerfile implements DockerBuildOption
         this.exposedPorts = objects.listProperty(Integer.class)
                     .convention(Collections.singletonList(8080));
 
-        doLast(task -> {
-            java.io.File f = getDestFile().get().getAsFile();
-            System.out.println("Dockerfile written to: " + f.getAbsolutePath());
+        //noinspection Convert2Lambda
+        doLast(new Action<Task>() {
+            @Override
+            public void execute(Task task) {
+                java.io.File f = MicronautDockerfile.this.getDestFile().get().getAsFile();
+                System.out.println("Dockerfile written to: " + f.getAbsolutePath());
+            }
         });
     }
 
