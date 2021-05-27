@@ -17,6 +17,7 @@ import org.gradle.api.tasks.*;
 
 import java.io.File;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * A plugin for a Micronaut application. Applies the "application" plugin.
@@ -121,13 +122,26 @@ public class MicronautApplicationPlugin extends MicronautLibraryPlugin {
             // that allows it to shutdown on resources changes so a rebuild
             // can apply a restart to the application
             if (project.getGradle().getStartParameter().isContinuous()) {
-                Map<String, Object> sysProps = new LinkedHashMap<>();
-                sysProps.put("micronaut.io.watch.restart", true);
-                sysProps.put("micronaut.io.watch.enabled", true);
-                sysProps.put("micronaut.io.watch.paths", "src/main");
-                javaExec.systemProperties(
-                        sysProps
-                );
+                SourceSetContainer sourceSets = project.getConvention()
+                        .getPlugin(JavaPluginConvention.class)
+                        .getSourceSets();
+                SourceSet sourceSet = sourceSets.findByName("main");
+                if (sourceSet != null) {
+                    String watchPaths = sourceSet
+                            .getAllSource()
+                            .getSrcDirs()
+                            .stream()
+                            .map(File::getPath)
+                            .collect(Collectors.joining(","));
+
+                    Map<String, Object> sysProps = new LinkedHashMap<>();
+                    sysProps.put("micronaut.io.watch.restart", true);
+                    sysProps.put("micronaut.io.watch.enabled", true);
+                    sysProps.put("micronaut.io.watch.paths", watchPaths);
+                    javaExec.systemProperties(
+                            sysProps
+                    );
+                }
             }
         });
     }
