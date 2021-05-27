@@ -187,9 +187,9 @@ The most simple Kotlin build using a `build.gradle.kts` file looks like:
 
 ```kotlin
 plugins {
-    id("org.jetbrains.kotlin.jvm") version "1.3.72"
-    id("org.jetbrains.kotlin.kapt") version "1.3.72"
-    id("org.jetbrains.kotlin.plugin.allopen") version "1.3.72"    
+    id("org.jetbrains.kotlin.jvm") version "1.4.32"
+    id("org.jetbrains.kotlin.kapt") version "1.4.32"
+    id("org.jetbrains.kotlin.plugin.allopen") version "1.4.32"
     id("io.micronaut.application") version "{version}"
 }
 
@@ -206,8 +206,8 @@ micronaut {
 
 dependencies {
     implementation("io.micronaut:micronaut-http-server-netty")
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.3.72")
-    implementation("org.jetbrains.kotlin:kotlin-reflect:1.3.72")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.4.32")
+    implementation("org.jetbrains.kotlin:kotlin-reflect:1.4.32")
     runtimeOnly("ch.qos.logback:logback-classic")
     testImplementation("io.micronaut.test:micronaut-test-junit5")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
