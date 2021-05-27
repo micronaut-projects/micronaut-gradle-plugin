@@ -56,7 +56,7 @@ class BuildLayersSpec extends Specification {
 
         then:
         task.outcome == TaskOutcome.SUCCESS
-        new File(testProjectDir.root, "build-custom/layers").exists()
-        !new File(testProjectDir.root, "build/layers").exists()
+        new File(testProjectDir.root, "build-custom/docker/layers").exists()
+        !new File(testProjectDir.root, "build/docker/layers").exists()
     }
 }

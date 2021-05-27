@@ -2,6 +2,7 @@ package io.micronaut.gradle.docker;
 
 import com.bmuschko.gradle.docker.tasks.image.Dockerfile;
 import io.micronaut.gradle.graalvm.NativeImageTask;
+import org.gradle.api.Action;
 import org.gradle.api.JavaVersion;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
@@ -77,9 +78,14 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
         this.args = objects.listProperty(String.class);
         this.exposedPorts = objects.listProperty(Integer.class);
         this.defaultCommand = objects.property(String.class).convention("none");
-        doLast(task -> {
-            java.io.File f = getDestFile().get().getAsFile();
-            System.out.println("Dockerfile written to: " + f.getAbsolutePath());
+
+        //noinspection Convert2Lambda
+        doLast(new Action<Task>() {
+            @Override
+            public void execute(Task task) {
+                java.io.File f = NativeImageDockerfile.this.getDestFile().get().getAsFile();
+                System.out.println("Dockerfile written to: " + f.getAbsolutePath());
+            }
         });
     }
 
