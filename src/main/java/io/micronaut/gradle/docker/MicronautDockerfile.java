@@ -88,6 +88,7 @@ public class MicronautDockerfile extends Dockerfile implements DockerBuildOption
             default:
                 from(new Dockerfile.From(from != null ? from : "openjdk:16-alpine"));
                 setupResources(this);
+                runCommand("addgroup app && adduser -G app app -D && chown -R app:app /home/app");
                 exposePort(exposedPorts);
                 entryPoint(getArgs().map(strings -> {
                     List<String> newList = new ArrayList<>(strings.size() + 3);
