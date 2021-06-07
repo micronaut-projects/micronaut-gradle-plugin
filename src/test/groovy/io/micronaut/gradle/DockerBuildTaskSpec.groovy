@@ -5,6 +5,7 @@ import org.gradle.testkit.runner.TaskOutcome
 import org.junit.Rule
 import org.junit.rules.TemporaryFolder
 import spock.lang.IgnoreIf
+import spock.lang.Issue
 import spock.lang.Specification
 import spock.lang.Unroll
 
@@ -439,5 +440,54 @@ class Application {
         and:
         dockerFileNative.find {s -> !s.contains('FROM frolvlad/alpine-glibc:alpine-3.12')}
         dockerFileNative.find {s -> !s.contains('-H:+StaticExecutableWithDynamicLibC')}
+    }
+
+    @Issue('https://github.com/micronaut-projects/micronaut-gradle-plugin/issues/161')
+    void 'create group and user for running the application instead of using root'() {
+        given:
+        settingsFile << "rootProject.name = 'hello-world'"
+        buildFile << """
+            plugins {
+                id "io.micronaut.application"
+            }
+
+            micronaut {
+                version "2.3.3"
+            }
+
+            repositories {
+                mavenCentral()
+            }
+
+            mainClassName="example.Application"
+
+        """
+        testProjectDir.newFolder("src", "main", "java", "example")
+        def javaFile = testProjectDir.newFile("src/main/java/example/Application.java")
+        javaFile.parentFile.mkdirs()
+        javaFile << """
+package example;
+
+class Application {
+    public static void main(String... args) {
+
+    }
+}
+"""
+
+        when:
+        def result = GradleRunner.create()
+            .withProjectDir(testProjectDir.root)
+            .withArguments('dockerfile', '-s')
+            .withPluginClasspath()
+            .build()
+
+        then:
+        def dockerfileTask = result.task(":dockerfile")
+        dockerfileTask.outcome == TaskOutcome.SUCCESS
+
+        and:
+        def dockerfile = new File(testProjectDir.root, 'build/docker/Dockerfile').readLines('UTF-8')
+        dockerfile.find { it.contains('addgroup app && adduser -G app app -D && chown -R app:app /home/app') }
     }
 }
