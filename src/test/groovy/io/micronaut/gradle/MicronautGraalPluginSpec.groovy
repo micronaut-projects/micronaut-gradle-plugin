@@ -63,16 +63,16 @@ class Application {
         when:
         def result = GradleRunner.create()
             .withProjectDir(testProjectDir.root)
-            .withArguments('classes', '-i', '--stacktrace')
+            .withArguments('generateResourceConfigFile', '-i', '--stacktrace')
             .withPluginClasspath()
             .build()
 
         then:
-        def task = result.task(":classes")
-        task.outcome == TaskOutcome.SUCCESS
+        result.task(":classes").outcome == TaskOutcome.SUCCESS
+        result.task(":generateResourceConfigFile").outcome == TaskOutcome.SUCCESS
 
         and:
-        def resourceConfigFile = new File(testProjectDir.root, 'build/classes/java/main/META-INF/native-image/example.micronaut/hello-world/resource-config.json')
+        def resourceConfigFile = new File(testProjectDir.root, 'build/generated/resources/graalvm/resource-config.json')
         def resourceConfigJson = new JsonSlurper().parse(resourceConfigFile)
 
         resourceConfigJson.resources.pattern.any { it == "\\Qapplication.yml\\E" }
