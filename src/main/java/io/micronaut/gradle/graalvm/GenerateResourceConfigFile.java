@@ -15,9 +15,7 @@
  */
 package io.micronaut.gradle.graalvm;
 
-import com.bmuschko.gradle.docker.shaded.com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
-import com.bmuschko.gradle.docker.shaded.com.fasterxml.jackson.databind.ObjectMapper;
-import com.bmuschko.gradle.docker.shaded.com.fasterxml.jackson.databind.ObjectWriter;
+import io.micronaut.gradle.graalvm.internal.ResourceConfigJsonWriter;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.GradleException;
 import org.gradle.api.file.ConfigurableFileCollection;
@@ -30,6 +28,7 @@ import org.gradle.api.tasks.PathSensitivity;
 import org.gradle.api.tasks.TaskAction;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -37,7 +36,6 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -48,7 +46,6 @@ import java.util.stream.Collectors;
 public abstract class GenerateResourceConfigFile extends DefaultTask {
 
     private static final String META_INF = "META-INF";
-    private static final String RESOURCES = "resources";
     private static final String PATTERN = "pattern";
     private static final String RESOURCE_CONFIG_JSON = "resource-config.json";
     private static final List<String> EXCLUDED_META_INF_DIRECTORIES = Arrays.asList("native-image", "services");
@@ -105,8 +102,7 @@ public abstract class GenerateResourceConfigFile extends DefaultTask {
             Files.createDirectories(outputDirectory);
             File resourceConfigFile = outputDirectory.resolve(RESOURCE_CONFIG_JSON).toFile();
             System.out.println("Generating " + resourceConfigFile.getAbsolutePath());
-            ObjectWriter writer = new ObjectMapper().writer(new DefaultPrettyPrinter());
-            writer.writeValue(resourceConfigFile, Collections.singletonMap(RESOURCES, resourceList));
+            ResourceConfigJsonWriter.generateJsonFile(resourceList, new FileOutputStream(resourceConfigFile));
 
         } catch (IOException e) {
             throw new GradleException("There was an error generating GraalVM resource-config.json file", e);
@@ -155,14 +151,10 @@ public abstract class GenerateResourceConfigFile extends DefaultTask {
     }
 
     private static Map<String, String> mapToGraalResource(String resourceName) {
-        Map<String, String> result = new HashMap<>();
-
         if (resourceName.contains("*")) {
-            result.put(PATTERN, resourceName);
+            return Collections.singletonMap(PATTERN, resourceName);
         } else {
-            result.put(PATTERN, "\\Q" + resourceName + "\\E");
+            return Collections.singletonMap(PATTERN, "\\Q" + resourceName + "\\E");
         }
-
-        return result;
     }
 }
