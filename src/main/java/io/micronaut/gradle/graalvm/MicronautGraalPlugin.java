@@ -9,7 +9,6 @@ import org.gradle.api.Task;
 import org.gradle.api.artifacts.Dependency;
 import org.gradle.api.artifacts.DependencySet;
 import org.gradle.api.artifacts.ProjectDependency;
-import org.gradle.api.file.DirectoryProperty;
 import org.gradle.api.logging.LogLevel;
 import org.gradle.api.plugins.BasePlugin;
 import org.gradle.api.plugins.JavaApplication;
@@ -138,13 +137,9 @@ public class MicronautGraalPlugin implements Plugin<Project> {
             })));
 
             TaskProvider<GenerateResourceConfigFile> generateResourceConfig = configureResourcesFileGeneration(project, tasks);
-            tasks.withType(NativeImageTask.class).configureEach(nativeImage -> {
-                // This isn't great. Ideally the configuration file directories should be an input
-                // of the native image task directly, not something we patch
-                DirectoryProperty outputDirectory = generateResourceConfig.get().getOutputDirectory();
-                nativeImage.getInputs().files(generateResourceConfig);
-                nativeImage.args("-H:ConfigurationFileDirectories="+outputDirectory.get().getAsFile().getAbsolutePath());
-            });
+            tasks.withType(NativeImageTask.class).configureEach(nativeImage ->
+                    nativeImage.getConfigDirectories().from(generateResourceConfig)
+            );
 
             project.afterEvaluate(p -> p.getTasks().withType(NativeImageTask.class, nativeImageTask -> {
                 if (!nativeImageTask.getName().equals("internalDockerNativeImageTask")) {
