@@ -128,7 +128,7 @@ plugins {
 }
 ```
 
-The [Micronaut graalvm plugin](https://plugins.gradle.org/plugin/io.micronaut.graalvm) is applied automatically by the
+The [Micronaut GraalVM plugin](https://plugins.gradle.org/plugin/io.micronaut.graalvm) is applied automatically by the
 [Micronaut application plugin](https://github.com/micronaut-projects/micronaut-gradle-plugin#micronaut-application-plugin) (see below)
 and it provides tasks to generate a GraalVM native image and also creates the GraalVM `resource-config.json` automatically
 with all the resources from the application.
