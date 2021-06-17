@@ -241,6 +241,7 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
                     List<String> newList = new ArrayList<>(strings.size() + 1);
                     newList.add("./func");
                     newList.addAll(strings);
+                    newList.add("-Djava.library.path=/function");
                     return newList;
                 }));
                 String cmd = this.defaultCommand.get();
