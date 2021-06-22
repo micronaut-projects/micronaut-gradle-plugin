@@ -34,6 +34,10 @@ gradlePlugin {
       id = 'io.micronaut.application'
       implementationClass = 'io.micronaut.gradle.MicronautApplicationPlugin'
     }
+    graalPlugin {
+      id = 'io.micronaut.graalvm'
+      implementationClass = 'io.micronaut.gradle.graalvm.MicronautGraalPlugin'
+    }
   }
 }
 configurations {
@@ -81,6 +85,9 @@ pluginBundle {
     }
     applicationPlugin {
       displayName = 'Micronaut Application Plugin'
+    }
+    graalPlugin {
+      displayName = 'Micronaut GraalVM Plugin'
     }
   }
 }

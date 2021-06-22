@@ -6,7 +6,9 @@ import io.micronaut.gradle.MicronautRuntime;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
-import org.gradle.api.artifacts.*;
+import org.gradle.api.artifacts.Dependency;
+import org.gradle.api.artifacts.DependencySet;
+import org.gradle.api.artifacts.ProjectDependency;
 import org.gradle.api.logging.LogLevel;
 import org.gradle.api.plugins.BasePlugin;
 import org.gradle.api.plugins.JavaApplication;
@@ -29,6 +31,7 @@ import java.util.Objects;
  * Support for building GraalVM native images.
  *
  * @author graemerocher
+ * @author Iván López
  * @since 1.0.0
  */
 public class MicronautGraalPlugin implements Plugin<Project> {
@@ -90,8 +93,6 @@ public class MicronautGraalPlugin implements Plugin<Project> {
                 nativeImageTask.dependsOn(tasks.findByName("classes"));
                 nativeImageTask.setGroup(BasePlugin.BUILD_GROUP);
                 nativeImageTask.setDescription("Builds a GraalVM Native Image");
-
-
             });
 
             project.afterEvaluate(p -> p
@@ -135,6 +136,10 @@ public class MicronautGraalPlugin implements Plugin<Project> {
                     nativeImageTestTask.setDescription("Runs tests against a native image build of the server. Requires the server to allow the port to configurable with 'micronaut.server.port'.");
             })));
 
+            TaskProvider<GenerateResourceConfigFile> generateResourceConfig = configureResourcesFileGeneration(project, tasks);
+            tasks.withType(NativeImageTask.class).configureEach(nativeImage ->
+                    nativeImage.getConfigDirectories().from(generateResourceConfig)
+            );
 
             project.afterEvaluate(p -> p.getTasks().withType(NativeImageTask.class, nativeImageTask -> {
                 if (!nativeImageTask.getName().equals("internalDockerNativeImageTask")) {
@@ -152,5 +157,18 @@ public class MicronautGraalPlugin implements Plugin<Project> {
                 }
             }));
         }
+    }
+
+    private TaskProvider<GenerateResourceConfigFile> configureResourcesFileGeneration(Project project, TaskContainer tasks) {
+        return tasks.register("generateResourceConfigFile", GenerateResourceConfigFile.class, generator -> {
+            SourceSetContainer sourceSets = project.getConvention()
+                    .getPlugin(JavaPluginConvention.class)
+                    .getSourceSets();
+            SourceSet sourceSet = sourceSets.findByName(SourceSet.MAIN_SOURCE_SET_NAME);
+            if (sourceSet != null) {
+                generator.getResourceDirectories().from(sourceSet.getResources().getSourceDirectories());
+                generator.getMixedContentsDirectories().from(sourceSet.getOutput().getClassesDirs());
+            }
+        });
     }
 }
