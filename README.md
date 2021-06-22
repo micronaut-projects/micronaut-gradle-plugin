@@ -119,6 +119,21 @@ dependencies {
 }
 ```
 
+
+## Micronaut GraalVM Plugin
+
+```groovy
+plugins {
+  id "io.micronaut.graalvm" version "{version}"
+}
+```
+
+The [Micronaut GraalVM plugin](https://plugins.gradle.org/plugin/io.micronaut.graalvm) is applied automatically by the
+[Micronaut application plugin](https://github.com/micronaut-projects/micronaut-gradle-plugin#micronaut-application-plugin) (see below)
+and it provides tasks to generate a GraalVM native image and also creates the GraalVM `resource-config.json` automatically
+with all the resources from the application.
+
+
 ## Micronaut Application Plugin
 
 ```groovy
@@ -438,7 +453,7 @@ You can add Gradle Shadow plugin so when running `./gradlew assemble` a runnable
 ```groovy
 plugins {
     ...
-    id "com.github.johnrengelman.shadow" version "6.0.0"
+    id "com.github.johnrengelman.shadow" version "7.0.0"
     ...
 }
 ```

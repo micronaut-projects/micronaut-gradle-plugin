@@ -1,27 +1,38 @@
 package io.micronaut.gradle.graalvm;
 
 import org.apache.tools.ant.taskdefs.condition.Os;
-import org.gradle.api.Action;
 import org.gradle.api.Project;
-import org.gradle.api.Task;
 import org.gradle.api.artifacts.Configuration;
-import org.gradle.api.artifacts.DependencySet;
-import org.gradle.api.artifacts.ProjectDependency;
+import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.MapProperty;
 import org.gradle.api.provider.Property;
-import org.gradle.api.tasks.*;
+import org.gradle.api.tasks.AbstractExecTask;
+import org.gradle.api.tasks.InputFiles;
+import org.gradle.api.tasks.OutputFile;
+import org.gradle.api.tasks.PathSensitive;
+import org.gradle.api.tasks.PathSensitivity;
+import org.gradle.api.tasks.SourceSet;
+import org.gradle.api.tasks.SourceSetContainer;
+import org.gradle.api.tasks.SourceSetOutput;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import javax.inject.Inject;
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.BooleanSupplier;
+import java.util.stream.Collectors;
 
 /**
  * A gradle task for building a native image.
@@ -40,6 +51,7 @@ public class NativeImageTask extends AbstractExecTask<NativeImageTask>
     private final Property<Boolean> isFallback;
     private final Property<Boolean> isVerbose;
     private final Map<BooleanSupplier, String> booleanCmds;
+    private final ConfigurableFileCollection configDirectories;
 
     /**
      * Default constructor.
@@ -62,6 +74,7 @@ public class NativeImageTask extends AbstractExecTask<NativeImageTask>
         this.isVerbose = objectFactory.property(Boolean.class).convention(false);
         this.booleanCmds = new LinkedHashMap<>(3);
         this.classpath = objectFactory.fileCollection();
+        this.configDirectories = objectFactory.fileCollection();
         booleanCmds.put(isDebug::get, "-H:GenerateDebugInfo=1");
         booleanCmds.put(() -> !isFallback.get(), "--no-fallback");
         booleanCmds.put(isVerbose::get,  "--verbose");
@@ -137,6 +150,12 @@ public class NativeImageTask extends AbstractExecTask<NativeImageTask>
         return new File(getWorkingDir(), imageName.get());
     }
 
+    @InputFiles
+    @PathSensitive(PathSensitivity.RELATIVE)
+    public ConfigurableFileCollection getConfigDirectories() {
+        return configDirectories;
+    }
+
     @Override
     protected void exec() {
         if (!GraalUtil.isGraalJVM()) {
@@ -191,6 +210,13 @@ public class NativeImageTask extends AbstractExecTask<NativeImageTask>
         String imageName = getImageName().get();
         args("-H:Name=" + imageName);
 
+        Set<File> configurationDirectories = getConfigDirectories().getFiles();
+        if (!configurationDirectories.isEmpty()) {
+            String configPath = configurationDirectories.stream()
+                    .map(File::getAbsolutePath)
+                    .collect(Collectors.joining(","));
+            args("-H:ConfigurationFileDirectories=" + configPath);
+        }
         // Adds boolean flags to the command line
         booleanCmds.forEach((property, cmd) -> {
             if (property.getAsBoolean()) {
