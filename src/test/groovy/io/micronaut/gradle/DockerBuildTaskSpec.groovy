@@ -488,6 +488,7 @@ class Application {
 
         and:
         def dockerfile = new File(testProjectDir.root, 'build/docker/Dockerfile').readLines('UTF-8')
-        dockerfile.find { it.contains('addgroup app && adduser -G app app -D && chown -R app:app /home/app') }
+        dockerfile.find { it.contains('test -e /usr/sbin/groupadd && groupadd -r app && adduser -g app app && chown -R app:app /home/app || true') }
+        dockerfile.find { it.contains('test -e /usr/sbin/addgroup && addgroup app && adduser -G app app -D && chown -R app:app /home/app || true') }
     }
 }
