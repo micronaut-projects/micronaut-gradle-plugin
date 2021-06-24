@@ -1,7 +1,6 @@
 package io.micronaut.gradle;
 
 import com.github.jengelman.gradle.plugins.shadow.ShadowPlugin;
-import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar;
 import io.micronaut.gradle.docker.MicronautDockerPlugin;
 import io.micronaut.gradle.graalvm.GraalUtil;
 import org.apache.tools.ant.taskdefs.condition.Os;
@@ -9,14 +8,23 @@ import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.Dependency;
 import org.gradle.api.artifacts.dsl.DependencyHandler;
-import org.gradle.api.artifacts.dsl.RepositoryHandler;
 import org.gradle.api.file.SourceDirectorySet;
-import org.gradle.api.plugins.*;
+import org.gradle.api.plugins.JavaApplication;
+import org.gradle.api.plugins.JavaPluginConvention;
+import org.gradle.api.plugins.PluginContainer;
 import org.gradle.api.provider.Property;
-import org.gradle.api.tasks.*;
+import org.gradle.api.tasks.JavaExec;
+import org.gradle.api.tasks.SourceSet;
+import org.gradle.api.tasks.SourceSetContainer;
+import org.gradle.api.tasks.SourceSetOutput;
+import org.gradle.api.tasks.TaskContainer;
 
 import java.io.File;
-import java.util.*;
+import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -177,12 +185,14 @@ public class MicronautApplicationPlugin extends MicronautLibraryPlugin {
     }
 
     public static MicronautRuntime resolveRuntime(Project p) {
-        MicronautExtension ext = p.getExtensions().getByType(MicronautExtension.class);
+        MicronautExtension ext = p.getExtensions().findByType(MicronautExtension.class);
         Object o = p.findProperty("micronaut.runtime");
 
         MicronautRuntime micronautRuntime;
         if (o != null) {
             micronautRuntime = MicronautRuntime.valueOf(o.toString().toUpperCase(Locale.ENGLISH));
+        } else if (ext == null) {
+            micronautRuntime = MicronautRuntime.NONE;
         } else {
             micronautRuntime = ext.getRuntime().getOrElse(MicronautRuntime.NONE);
         }
