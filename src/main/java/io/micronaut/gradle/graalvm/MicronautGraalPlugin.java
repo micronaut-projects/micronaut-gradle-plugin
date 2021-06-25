@@ -41,8 +41,8 @@ public class MicronautGraalPlugin implements Plugin<Project> {
     @Override
     public void apply(Project project) {
         project.afterEvaluate(p -> {
-            MicronautExtension extension = p.getExtensions().getByType(MicronautExtension.class);
-            if (extension.getEnableNativeImage().getOrElse(true)) {
+            MicronautExtension extension = p.getExtensions().findByType(MicronautExtension.class);
+            if (extension != null && extension.getEnableNativeImage().getOrElse(true)) {
                 p.getGradle().getTaskGraph().whenReady(taskGraph -> {
                     TaskContainer tasks = p.getTasks();
                     final Task nativeImage = tasks.findByName("nativeImage");
@@ -77,7 +77,7 @@ public class MicronautGraalPlugin implements Plugin<Project> {
             }
         });
 
-        if (project.getPlugins().hasPlugin("application")) {
+        project.getPluginManager().withPlugin("application", plugin -> {
             TaskContainer tasks = project.getTasks();
             TaskProvider<NativeImageTask> nit = tasks.register("nativeImage", NativeImageTask.class, nativeImageTask -> {
                 MicronautRuntime mr = MicronautApplicationPlugin.resolveRuntime(project);
@@ -143,8 +143,10 @@ public class MicronautGraalPlugin implements Plugin<Project> {
 
             project.afterEvaluate(p -> p.getTasks().withType(NativeImageTask.class, nativeImageTask -> {
                 if (!nativeImageTask.getName().equals("internalDockerNativeImageTask")) {
-                    MicronautExtension extension = project.getExtensions().getByType(MicronautExtension.class);
-                    nativeImageTask.setEnabled(extension.getEnableNativeImage().getOrElse(false));
+                    MicronautExtension extension = project.getExtensions().findByType(MicronautExtension.class);
+                    if (extension != null) {
+                        nativeImageTask.setEnabled(extension.getEnableNativeImage().getOrElse(false));
+                    }
                     JavaApplication javaApplication = p.getExtensions().getByType(JavaApplication.class);
                     String mainClassName = javaApplication.getMainClass().getOrNull();
                     String imageName = p.getName();
@@ -156,7 +158,7 @@ public class MicronautGraalPlugin implements Plugin<Project> {
                     }
                 }
             }));
-        }
+        });
     }
 
     private TaskProvider<GenerateResourceConfigFile> configureResourcesFileGeneration(Project project, TaskContainer tasks) {
