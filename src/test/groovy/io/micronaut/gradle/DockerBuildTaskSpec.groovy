@@ -143,7 +143,8 @@ micronaut:
 
         expect:
         dockerFile.first().startsWith(nativeImage)
-        dockerFile.last() == """HEALTHCHECK CMD curl -s localhost:8090/health | grep '"status":"UP"'"""
+        dockerFile.find {s -> s == """HEALTHCHECK CMD curl -s localhost:8090/health | grep '"status":"UP"'""" }
+        dockerFile.last().contains('ENTRYPOINT')
         dockerFile.find {s -> s.contains('-Xmx64m')}
 
         and:
@@ -283,12 +284,14 @@ class Application {
 
         and:
         dockerFile.first() == ('FROM test_base_image_jvm')
-        dockerFile.last() == """HEALTHCHECK CMD curl -s localhost:8090/health | grep '"status":"UP"'"""
+        dockerFile.find { s -> s == """HEALTHCHECK CMD curl -s localhost:8090/health | grep '"status":"UP"'""" }
+        dockerFile.last().contains('ENTRYPOINT')
         dockerFile.find {s -> s.contains('-Xmx64m')}
 
         and:
         dockerFileNative.find() { s -> s == 'FROM test_base_image_docker' }
-        dockerFileNative.last() == """HEALTHCHECK CMD curl -s localhost:8090/health | grep '"status":"UP"'"""
+        dockerFileNative.find { s -> s == """HEALTHCHECK CMD curl -s localhost:8090/health | grep '"status":"UP"'""" }
+        dockerFile.last().contains('ENTRYPOINT')
         dockerFileNative.find {s -> s.contains('-Xmx64m')}
 
         where:
@@ -488,7 +491,5 @@ class Application {
 
         and:
         def dockerfile = new File(testProjectDir.root, 'build/docker/Dockerfile').readLines('UTF-8')
-        dockerfile.find { it.contains('test -e /usr/sbin/groupadd && groupadd -r app && adduser -g app app && chown -R app:app /home/app || true') }
-        dockerfile.find { it.contains('test -e /usr/sbin/addgroup && addgroup app && adduser -G app app -D && chown -R app:app /home/app || true') }
     }
 }

@@ -60,7 +60,7 @@ public class MicronautDockerfile extends Dockerfile implements DockerBuildOption
         return defaultCommand;
     }
 
-    private void setupInstructions() {
+    private void setupInstructions(List<Instruction> additionalInstructions) {
         DockerBuildStrategy buildStrategy = this.buildStrategy.getOrElse(DockerBuildStrategy.DEFAULT);
         JavaApplication javaApplication = getProject().getExtensions().getByType(JavaApplication.class);
         String from = getBaseImage().getOrNull();
@@ -88,9 +88,8 @@ public class MicronautDockerfile extends Dockerfile implements DockerBuildOption
             default:
                 from(new Dockerfile.From(from != null ? from : "openjdk:16-alpine"));
                 setupResources(this);
-                runCommand("test -e /usr/sbin/groupadd && groupadd -r app && adduser -g app app && chown -R app:app /home/app || true");
-                runCommand("test -e /usr/sbin/addgroup && addgroup app && adduser -G app app -D && chown -R app:app /home/app || true");
                 exposePort(exposedPorts);
+                getInstructions().addAll(additionalInstructions);
                 entryPoint(getArgs().map(strings -> {
                     List<String> newList = new ArrayList<>(strings.size() + 3);
                     newList.add("java");
@@ -119,13 +118,7 @@ public class MicronautDockerfile extends Dockerfile implements DockerBuildOption
         List<Instruction> additionalInstructions = new ArrayList<>(getInstructions().get().subList(1, getInstructions().get().size()));
         // Reset the instructions to empty
         getInstructions().set(new ArrayList<>());
-
-        setupInstructions();
-
-        // Collect all the instructions and set onto the base Dockerfile task
-        List<Instruction> allInstructions = new ArrayList<>(getInstructions().get());
-        allInstructions.addAll(additionalInstructions);
-        getInstructions().set(allInstructions);
+        setupInstructions(additionalInstructions);
     }
 
     /**
