@@ -158,7 +158,7 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
         return this.exposedPorts;
     }
 
-    private void setupInstructions() {
+    private void setupInstructions(List<Instruction> additionalInstructions) {
         DockerBuildStrategy buildStrategy = this.buildStrategy.getOrElse(DockerBuildStrategy.DEFAULT);
         JavaApplication javaApplication = getProject().getExtensions().getByType(JavaApplication.class);
         final TaskContainer tasks = getProject().getTasks();
@@ -267,6 +267,7 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
                 runCommand("chmod 777 bootstrap");
                 runCommand("chmod 777 func");
                 runCommand("zip -j function.zip bootstrap func");
+                getInstructions().addAll(additionalInstructions);
                 entryPoint("/function/func");
                 break;
             default:
@@ -276,6 +277,7 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
                     runCommand("apk update && apk add libstdc++");
                 }
                 exposePort(this.exposedPorts);
+                getInstructions().addAll(additionalInstructions);
                 copyFile(new CopyFile("/home/app/application", "/app/application").withStage("graalvm"));
                 entryPoint(args.map(strings -> {
                     List<String> newList = new ArrayList<>(strings.size() + 1);
@@ -304,13 +306,7 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
         List<Instruction> additionalInstructions = new ArrayList<>(getInstructions().get().subList(1, getInstructions().get().size()));
         // Reset the instructions to empty
         getInstructions().set(new ArrayList<>());
-
-        setupInstructions();
-
-        // Collect all the instructions and set onto the base Dockerfile task
-        List<Instruction> allInstructions = new ArrayList<>(getInstructions().get());
-        allInstructions.addAll(additionalInstructions);
-        getInstructions().set(allInstructions);
+        setupInstructions(additionalInstructions);
     }
 
     /**

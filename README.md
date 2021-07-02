@@ -367,7 +367,7 @@ dockerfileNative {
 
 The above configuration uses a max heap setting of 128m for Java and 64m for native image for the application. 
 
-To add additional docker instructions to the generated Dockerfile, such as adding a HEALTHCHECK, you can do the following 
+To add additional docker instructions to the generated Dockerfile, such as adding a HEALTHCHECK, you can do the following. The additional instructions will be added at the end of the `Dockerfile` just before the `ENTRYPOINT`.
 ```groovy
 dockerfile {
  args("-Xmx128m")
