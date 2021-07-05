@@ -15,7 +15,8 @@ plugins {
 // so you should probably use JCenter for dependency resolution in your own
 // project.
 repositories {
-  jcenter()
+  mavenCentral()
+  gradlePluginPortal()
 }
 
 // Unless overridden in the pluginBundle config DSL, the project version will
@@ -47,24 +48,18 @@ tasks.withType(PluginUnderTestMetadata) {
   pluginClasspath.from(configurations.optionalPluginDependencies)
 }
 
-ext {
-  kotlinVersion = "1.4.32"
-}
-
 dependencies {
-  implementation "com.bmuschko:gradle-docker-plugin:6.7.0"
-  implementation "com.diffplug.gradle:goomph:3.29.1"
-  implementation "com.github.jengelman.gradle.plugins:shadow:6.1.0"
-  compileOnly "org.jetbrains.kotlin:kotlin-allopen:$kotlinVersion"
-  compileOnly "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
+  implementation libs.dockerPlugin
+  implementation libs.diffplugPlugin
+  implementation libs.shadowPlugin
+  compileOnly libs.bundles.optionalPlugins
 
-  optionalPluginDependencies("org.jetbrains.kotlin:kotlin-allopen:$kotlinVersion")
-  optionalPluginDependencies "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
-  testImplementation("org.jetbrains.kotlin:kotlin-allopen:$kotlinVersion")
-  testImplementation "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
-  testImplementation("org.codehaus.groovy:groovy:3.0.8")
-  testImplementation("org.spockframework:spock-core:2.0-groovy-3.0")
-  testImplementation 'org.spockframework:spock-junit4:2.0-groovy-3.0'
+  optionalPluginDependencies libs.bundles.optionalPlugins
+
+  testImplementation libs.bundles.optionalPlugins
+  testImplementation libs.groovy.core
+  testImplementation libs.spock.core
+  testImplementation libs.spock.junit4
 }
 
 test {
@@ -92,8 +87,9 @@ pluginBundle {
 }
 
 java {
-    sourceCompatibility = JavaVersion.toVersion('1.8')
-    targetCompatibility = JavaVersion.toVersion('1.8')
+    toolchain {
+      languageVersion.set(JavaLanguageVersion.of(8))
+    }
 }
 
 idea.module {

@@ -1,1 +1,3 @@
 rootProject.name = 'micronaut-gradle-plugin'
+
+enableFeaturePreview("VERSION_CATALOGS")

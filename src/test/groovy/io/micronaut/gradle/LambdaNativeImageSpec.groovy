@@ -1,23 +1,10 @@
 package io.micronaut.gradle
 
-import org.gradle.testkit.runner.GradleRunner
+
 import org.gradle.testkit.runner.TaskOutcome
-import org.junit.Rule
-import org.junit.rules.TemporaryFolder
 import spock.lang.Issue
-import spock.lang.Specification
 
-class LambdaNativeImageSpec extends Specification {
-
-    @Rule TemporaryFolder testProjectDir = new TemporaryFolder()
-
-    File settingsFile
-    File buildFile
-
-    def setup() {
-        settingsFile = testProjectDir.newFile('settings.gradle')
-        buildFile = testProjectDir.newFile('build.gradle')
-    }
+class LambdaNativeImageSpec extends AbstractGradleBuildSpec {
 
     void 'mainclass is set correctly for an application deployed as GraalVM and Lambda'() {
         given:
@@ -47,11 +34,7 @@ class LambdaNativeImageSpec extends Specification {
         """
 
         when:
-        def result = GradleRunner.create()
-            .withProjectDir(testProjectDir.root)
-            .withArguments('dockerfileNative', '-Pmicronaut.runtime=lambda')
-            .withPluginClasspath()
-            .build()
+        def result = build('dockerfileNative', '-Pmicronaut.runtime=lambda')
 
         def dockerfileNativeTask = result.task(':dockerfileNative')
         def dockerFileNative = new File(testProjectDir.root, 'build/docker/DockerfileNative').readLines('UTF-8')
@@ -96,11 +79,7 @@ class LambdaNativeImageSpec extends Specification {
         """
 
         when:
-        def result = GradleRunner.create()
-            .withProjectDir(testProjectDir.root)
-            .withArguments('dockerfileNative')
-            .withPluginClasspath()
-            .build()
+        def result = build('dockerfileNative')
 
         def dockerfileNativeTask = result.task(':dockerfileNative')
         def dockerFileNative = new File(testProjectDir.root, 'build/docker/DockerfileNative').readLines('UTF-8')
@@ -151,11 +130,7 @@ class LambdaNativeImageSpec extends Specification {
         """
 
         when:
-        def result = GradleRunner.create()
-            .withProjectDir(testProjectDir.root)
-            .withArguments('dockerfileNative', '-Pmicronaut.runtime=lambda')
-            .withPluginClasspath()
-            .build()
+        def result = build('dockerfileNative', '-Pmicronaut.runtime=lambda')
 
         def dockerfileNativeTask = result.task(':dockerfileNative')
         def dockerFileNative = new File(testProjectDir.root, 'build/docker/DockerfileNative').readLines('UTF-8')

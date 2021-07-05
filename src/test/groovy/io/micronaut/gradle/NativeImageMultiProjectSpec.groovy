@@ -1,20 +1,13 @@
 package io.micronaut.gradle
 
 import io.micronaut.gradle.graalvm.GraalUtil
-import org.gradle.testkit.runner.GradleRunner
 import org.gradle.testkit.runner.TaskOutcome
-import org.junit.Rule
-import org.junit.rules.TemporaryFolder
 import spock.lang.IgnoreIf
 import spock.lang.Requires
-import spock.lang.Specification
 
 @Requires({ GraalUtil.isGraalJVM() })
 @IgnoreIf({ os.isWindows() })
-class NativeImageMultiProjectSpec extends Specification {
-    @Rule TemporaryFolder testProjectDir = new TemporaryFolder()
-
-    File settingsFile
+class NativeImageMultiProjectSpec extends AbstractGradleBuildSpec {
 
     def setup() {
         settingsFile = testProjectDir.newFile('settings.gradle')
@@ -106,11 +99,7 @@ class Application {
 
     void 'test build native image in subproject'() {
         when:
-        def result = GradleRunner.create()
-                .withProjectDir(testProjectDir.root)
-                .withArguments('two:nativeImage', '-i', '--stacktrace')
-                .withPluginClasspath()
-                .build()
+        def result = build('two:nativeImage', '-i', '--stacktrace')
 
         def task = result.task(":two:nativeImage")
         println result.output

@@ -1,25 +1,12 @@
 package io.micronaut.gradle
 
 import io.micronaut.gradle.graalvm.GraalUtil
-import org.gradle.testkit.runner.GradleRunner
 import org.gradle.testkit.runner.TaskOutcome
-import org.junit.Rule
-import org.junit.rules.TemporaryFolder
 import spock.lang.IgnoreIf
 import spock.lang.Requires
-import spock.lang.Specification
 
 @Requires({ GraalUtil.isGraalJVM() })
-class NativeImageTaskSpec extends Specification {
-    @Rule TemporaryFolder testProjectDir = new TemporaryFolder()
-
-    File settingsFile
-    File buildFile
-
-    def setup() {
-        settingsFile = testProjectDir.newFile('settings.gradle')
-        buildFile = testProjectDir.newFile('build.gradle')
-    }
+class NativeImageTaskSpec extends AbstractGradleBuildSpec {
 
     @IgnoreIf({ os.isWindows() })
     def "test build native image"() {
@@ -59,11 +46,7 @@ class Application {
 """
 
         when:
-        def result = GradleRunner.create()
-                .withProjectDir(testProjectDir.root)
-                .withArguments('nativeImage')
-                .withPluginClasspath()
-                .build()
+        def result = build('nativeImage')
 
         def task = result.task(":nativeImage")
         then:
@@ -111,11 +94,7 @@ class Application {
 """
 
         when:
-        def result = GradleRunner.create()
-                .withProjectDir(testProjectDir.root)
-                .withArguments('nativeImage', '-i', '--stacktrace')
-                .withPluginClasspath()
-                .build()
+        def result = build('nativeImage', '-i', '--stacktrace')
 
         def task = result.task(":nativeImage")
         then:
