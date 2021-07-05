@@ -1,22 +1,9 @@
 package io.micronaut.gradle
 
-import org.gradle.testkit.runner.GradleRunner
+
 import org.gradle.testkit.runner.TaskOutcome
-import org.junit.Rule
-import org.junit.rules.TemporaryFolder
-import spock.lang.Specification
 
-class BuildLayersSpec extends Specification {
-
-    @Rule TemporaryFolder testProjectDir = new TemporaryFolder()
-
-    File settingsFile
-    File buildFile
-
-    def setup() {
-        settingsFile = testProjectDir.newFile('settings.gradle')
-        buildFile = testProjectDir.newFile('build.gradle')
-    }
+class BuildLayersSpec extends AbstractGradleBuildSpec {
 
     void 'test build layers with custom build directory'() {
         given:
@@ -46,11 +33,7 @@ class BuildLayersSpec extends Specification {
         """
 
         when:
-        def result = GradleRunner.create()
-                .withProjectDir(testProjectDir.root)
-                .withArguments('buildLayers')
-                .withPluginClasspath()
-                .build()
+        def result = build('buildLayers')
 
         def task = result.task(":buildLayers")
 

@@ -1,26 +1,13 @@
 package io.micronaut.gradle
 
-import org.gradle.testkit.runner.GradleRunner
+
 import org.gradle.testkit.runner.TaskOutcome
-import org.junit.Rule
-import org.junit.rules.TemporaryFolder
 import spock.lang.IgnoreIf
 import spock.lang.Issue
-import spock.lang.Specification
 import spock.lang.Unroll
 
 @IgnoreIf({ os.windows })
-class DockerBuildTaskSpec extends Specification {
-
-    @Rule TemporaryFolder testProjectDir = new TemporaryFolder()
-
-    File settingsFile
-    File buildFile
-
-    def setup() {
-        settingsFile = testProjectDir.newFile('settings.gradle')
-        buildFile = testProjectDir.newFile('build.gradle')
-    }
+class DockerBuildTaskSpec extends AbstractGradleBuildSpec {
 
     def "test build docker image"() {
         given:
@@ -56,11 +43,7 @@ class Application {
 """
 
         when:
-        def result = GradleRunner.create()
-                .withProjectDir(testProjectDir.root)
-                .withArguments('dockerBuild', '-s')
-                .withPluginClasspath()
-                .build()
+        def result = build('dockerBuild', '-s')
 
         def task = result.task(":dockerBuild")
         then:
@@ -132,11 +115,7 @@ micronaut:
 """
 
 
-        def result = GradleRunner.create()
-                .withProjectDir(testProjectDir.root)
-                .withArguments('dockerBuildNative')
-                .withPluginClasspath()
-                .build()
+        def result = build('dockerBuildNative')
 
         def task = result.task(":dockerBuildNative")
         def dockerFile = new File(testProjectDir.root, 'build/docker/DockerfileNative').readLines('UTF-8')
@@ -201,11 +180,7 @@ class Application {
 }
 """
 
-        def result = GradleRunner.create()
-                .withProjectDir(testProjectDir.root)
-                .withArguments('dockerBuildNative')
-                .withPluginClasspath()
-                .build()
+        def result = build('dockerBuildNative')
 
         def task = result.task(":dockerBuildNative")
 
@@ -267,11 +242,7 @@ class Application {
 }
 """
 
-        def result = GradleRunner.create()
-                .withProjectDir(testProjectDir.root)
-                .withArguments('dockerfile', 'dockerfileNative')
-                .withPluginClasspath()
-                .build()
+        def result = build('dockerfile', 'dockerfileNative')
 
         def dockerfileTask = result.task(":dockerfile")
         def dockerfileNativeTask = result.task(":dockerfileNative")
@@ -335,11 +306,7 @@ class Application {
         """
 
         when:
-        def result = GradleRunner.create()
-            .withProjectDir(testProjectDir.root)
-            .withArguments('dockerfileNative')
-            .withPluginClasspath()
-            .build()
+        def result = build('dockerfileNative')
 
         def dockerfileNativeTask = result.task(':dockerfileNative')
         def dockerFileNative = new File(testProjectDir.root, 'build/docker/DockerfileNative').readLines('UTF-8')
@@ -383,11 +350,7 @@ class Application {
         """
 
         when:
-        def result = GradleRunner.create()
-            .withProjectDir(testProjectDir.root)
-            .withArguments('dockerfileNative')
-            .withPluginClasspath()
-            .build()
+        def result = build('dockerfileNative')
 
         def dockerfileNativeTask = result.task(':dockerfileNative')
         def dockerFileNative = new File(testProjectDir.root, 'build/docker/DockerfileNative').readLines('UTF-8')
@@ -428,11 +391,7 @@ class Application {
         """
 
         when:
-        def result = GradleRunner.create()
-            .withProjectDir(testProjectDir.root)
-            .withArguments('dockerfileNative')
-            .withPluginClasspath()
-            .build()
+        def result = build('dockerfileNative')
 
         def dockerfileNativeTask = result.task(':dockerfileNative')
         def dockerFileNative = new File(testProjectDir.root, 'build/docker/DockerfileNative').readLines('UTF-8')
@@ -479,11 +438,7 @@ class Application {
 """
 
         when:
-        def result = GradleRunner.create()
-            .withProjectDir(testProjectDir.root)
-            .withArguments('dockerfile', '-s')
-            .withPluginClasspath()
-            .build()
+        def result = build('dockerfile', '-s')
 
         then:
         def dockerfileTask = result.task(":dockerfile")

@@ -2,35 +2,17 @@ package io.micronaut.gradle
 
 import groovy.json.JsonSlurper
 import io.micronaut.gradle.graalvm.GraalUtil
-import org.gradle.testkit.runner.GradleRunner
 import org.gradle.testkit.runner.TaskOutcome
-import org.junit.Rule
-import org.junit.rules.TemporaryFolder
 import spock.lang.Requires
-import spock.lang.Specification
 
-class MicronautGraalPluginSpec extends Specification {
-
-    @Rule TemporaryFolder testProjectDir = new TemporaryFolder()
-
-    File settingsFile
-    File buildFile
-
-    def setup() {
-        settingsFile = testProjectDir.newFile('settings.gradle')
-        buildFile = testProjectDir.newFile('build.gradle')
-    }
+class MicronautGraalPluginSpec extends AbstractGradleBuildSpec {
 
     void 'generate GraalVM resource-config.json with OpenAPI and resources included'() {
         given:
         withSwaggerMicronautApplication()
 
         when:
-        def result = GradleRunner.create()
-            .withProjectDir(testProjectDir.root)
-            .withArguments('generateResourceConfigFile', '-i', '--stacktrace')
-            .withPluginClasspath()
-            .build()
+        def result = build('generateResourceConfigFile', '-i', '--stacktrace')
 
         then:
         result.task(":classes").outcome == TaskOutcome.SUCCESS
@@ -50,11 +32,7 @@ class MicronautGraalPluginSpec extends Specification {
         withSwaggerApplication()
 
         when:
-        def result = GradleRunner.create()
-            .withProjectDir(testProjectDir.root)
-            .withArguments('generateResourceConfigFile', '-i', '--stacktrace')
-            .withPluginClasspath()
-            .build()
+        def result = build('generateResourceConfigFile', '-i', '--stacktrace')
 
         then:
         result.task(":classes").outcome == TaskOutcome.SUCCESS
@@ -75,11 +53,7 @@ class MicronautGraalPluginSpec extends Specification {
         withSwaggerMicronautApplication()
 
         when:
-        def result = GradleRunner.create()
-                .withProjectDir(testProjectDir.root)
-                .withArguments('nativeImage', '-i', '--stacktrace')
-                .withPluginClasspath()
-                .build()
+        def result = build('nativeImage', '-i', '--stacktrace')
 
         then:
         result.task(":classes").outcome == TaskOutcome.SUCCESS
@@ -96,11 +70,7 @@ class MicronautGraalPluginSpec extends Specification {
         withSwaggerApplication()
 
         when:
-        def result = GradleRunner.create()
-                .withProjectDir(testProjectDir.root)
-                .withArguments('nativeImage', '-i', '--stacktrace')
-                .withPluginClasspath()
-                .build()
+        def result = build('nativeImage', '-i', '--stacktrace')
 
         then:
         result.task(":classes").outcome == TaskOutcome.SUCCESS
