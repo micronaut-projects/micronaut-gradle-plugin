@@ -52,6 +52,7 @@ dependencies {
   implementation libs.dockerPlugin
   implementation libs.diffplugPlugin
   implementation libs.shadowPlugin
+  compileOnly libs.graalvmPlugin
   compileOnly libs.bundles.optionalPlugins
 
   optionalPluginDependencies libs.bundles.optionalPlugins

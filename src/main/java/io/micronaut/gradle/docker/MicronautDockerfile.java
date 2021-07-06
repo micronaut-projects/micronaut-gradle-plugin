@@ -11,6 +11,7 @@ import org.gradle.api.plugins.JavaApplication;
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.Input;
+import org.gradle.api.tasks.TaskAction;
 import org.gradle.internal.jvm.Jvm;
 
 import java.util.ArrayList;
@@ -31,7 +32,6 @@ public class MicronautDockerfile extends Dockerfile implements DockerBuildOption
     @Input
     private final Property<String> defaultCommand;
 
-
     public MicronautDockerfile() {
         Project project = getProject();
         setGroup(BasePlugin.BUILD_GROUP);
@@ -44,20 +44,18 @@ public class MicronautDockerfile extends Dockerfile implements DockerBuildOption
         this.args = objects.listProperty(String.class);
         this.exposedPorts = objects.listProperty(Integer.class)
                     .convention(Collections.singletonList(8080));
-
-        //noinspection Convert2Lambda
-        doLast(new Action<Task>() {
-            @Override
-            public void execute(Task task) {
-                java.io.File f = MicronautDockerfile.this.getDestFile().get().getAsFile();
-                System.out.println("Dockerfile written to: " + f.getAbsolutePath());
-            }
-        });
     }
 
     @Override
     public Property<String> getDefaultCommand() {
         return defaultCommand;
+    }
+
+    @TaskAction
+    @Override
+    public void create() {
+        super.create();
+        System.out.println("Dockerfile written to: " + getDestFile().get().getAsFile().getAbsolutePath());
     }
 
     private void setupInstructions(List<Instruction> additionalInstructions) {

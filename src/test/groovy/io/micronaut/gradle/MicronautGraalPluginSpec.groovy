@@ -12,19 +12,19 @@ class MicronautGraalPluginSpec extends AbstractGradleBuildSpec {
         withSwaggerMicronautApplication()
 
         when:
-        def result = build('generateResourceConfigFile', '-i', '--stacktrace')
+        def result = build('generateResourcesConfigFile', '-i', '--stacktrace')
 
         then:
         result.task(":classes").outcome == TaskOutcome.SUCCESS
-        result.task(":generateResourceConfigFile").outcome == TaskOutcome.SUCCESS
+        result.task(":generateResourcesConfigFile").outcome == TaskOutcome.SUCCESS
 
         and:
-        def resourceConfigFile = new File(testProjectDir.root, 'build/generated/resources/graalvm/resource-config.json')
+        def resourceConfigFile = new File(testProjectDir.root, 'build/native/generated/generateResourcesConfigFile/resource-config.json')
         def resourceConfigJson = new JsonSlurper().parse(resourceConfigFile)
 
-        resourceConfigJson.resources.pattern.any { it == "\\Qapplication.yml\\E" }
-        resourceConfigJson.resources.pattern.any { it == "\\QMETA-INF/swagger/app-0.0.yml\\E" }
-        resourceConfigJson.resources.pattern.any { it == "\\QMETA-INF/swagger/views/swagger-ui/index.html\\E" }
+        resourceConfigJson.resources.includes.pattern.any { it == "\\Qapplication.yml\\E" }
+        resourceConfigJson.resources.includes.pattern.any { it == "\\QMETA-INF/swagger/app-0.0.yml\\E" }
+        resourceConfigJson.resources.includes.pattern.any { it == "\\QMETA-INF/swagger/views/swagger-ui/index.html\\E" }
     }
 
     void 'generate GraalVM resource-config.json with OpenAPI and resources included without the Micronaut Application plugin'() {
@@ -32,19 +32,19 @@ class MicronautGraalPluginSpec extends AbstractGradleBuildSpec {
         withSwaggerApplication()
 
         when:
-        def result = build('generateResourceConfigFile', '-i', '--stacktrace')
+        def result = build('generateResourcesConfigFile', '-i', '--stacktrace')
 
         then:
         result.task(":classes").outcome == TaskOutcome.SUCCESS
-        result.task(":generateResourceConfigFile").outcome == TaskOutcome.SUCCESS
+        result.task(":generateResourcesConfigFile").outcome == TaskOutcome.SUCCESS
 
         and:
-        def resourceConfigFile = new File(testProjectDir.root, 'build/generated/resources/graalvm/resource-config.json')
+        def resourceConfigFile = new File(testProjectDir.root, 'build/native/generated/generateResourcesConfigFile/resource-config.json')
         def resourceConfigJson = new JsonSlurper().parse(resourceConfigFile)
 
-        resourceConfigJson.resources.pattern.any { it == "\\Qapplication.yml\\E" }
-        resourceConfigJson.resources.pattern.any { it == "\\QMETA-INF/swagger/app-0.0.yml\\E" }
-        resourceConfigJson.resources.pattern.any { it == "\\QMETA-INF/swagger/views/swagger-ui/index.html\\E" }
+        resourceConfigJson.resources.includes.pattern.any { it == "\\Qapplication.yml\\E" }
+        resourceConfigJson.resources.includes.pattern.any { it == "\\QMETA-INF/swagger/app-0.0.yml\\E" }
+        resourceConfigJson.resources.includes.pattern.any { it == "\\QMETA-INF/swagger/views/swagger-ui/index.html\\E" }
     }
 
     @Requires({ GraalUtil.isGraalJVM() && !os.windows })
@@ -57,7 +57,7 @@ class MicronautGraalPluginSpec extends AbstractGradleBuildSpec {
 
         then:
         result.task(":classes").outcome == TaskOutcome.SUCCESS
-        result.task(":generateResourceConfigFile").outcome == TaskOutcome.SUCCESS
+        result.task(":generateResourcesConfigFile").outcome == TaskOutcome.SUCCESS
         result.task(":nativeImage").outcome == TaskOutcome.SUCCESS
 
         and:
@@ -74,7 +74,7 @@ class MicronautGraalPluginSpec extends AbstractGradleBuildSpec {
 
         then:
         result.task(":classes").outcome == TaskOutcome.SUCCESS
-        result.task(":generateResourceConfigFile").outcome == TaskOutcome.SUCCESS
+        result.task(":generateResourcesConfigFile").outcome == TaskOutcome.SUCCESS
         result.task(":nativeImage").outcome == TaskOutcome.SUCCESS
 
         and:

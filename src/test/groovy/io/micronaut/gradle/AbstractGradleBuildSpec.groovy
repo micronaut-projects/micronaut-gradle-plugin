@@ -14,7 +14,9 @@ abstract class AbstractGradleBuildSpec extends Specification {
     File kotlinBuildFile
 
     // This can be used during development to add statements like includeBuild
-    final List<String> postSettingsStatements = []
+    final List<String> postSettingsStatements = [
+            "        includeBuild('${new File(".gradle/checkouts/native-build-tools/native-gradle-plugin").absolutePath}')"
+    ]
 
     def setup() {
         settingsFile = testProjectDir.newFile('settings.gradle')
@@ -35,7 +37,10 @@ abstract class AbstractGradleBuildSpec extends Specification {
         prepareBuild()
         GradleRunner.create()
                 .withProjectDir(testProjectDir.root)
-                .withArguments(args)
+                .withArguments(["--no-watch-fs", *args])
+                .forwardStdOutput(System.out.newWriter())
+                .forwardStdError(System.err.newWriter())
+                .withDebug(true)
                 .withPluginClasspath()
                 .build()
     }

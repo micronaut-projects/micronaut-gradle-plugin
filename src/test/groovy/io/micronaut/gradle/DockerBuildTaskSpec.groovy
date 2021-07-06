@@ -128,7 +128,7 @@ micronaut:
 
         and:
         result.output.contains("Successfully tagged hello-world:latest")
-        result.output.contains("Writing resource-config.json file")
+        result.output.contains("Resources configuration written into")
         task.outcome == TaskOutcome.SUCCESS
 
         where:
@@ -156,8 +156,8 @@ micronaut:
                 mavenCentral()
             }
             
-            nativeImage {
-                main = "other.Application"
+            nativeBuild {
+                mainClass =  "other.Application"
             }
             
             java {
@@ -207,8 +207,8 @@ class Application {
                 mavenCentral()
             }
             
-            nativeImage {
-                main = "other.Application"
+            nativeBuild {
+                mainClass =  "other.Application"
             }
             
             java {
