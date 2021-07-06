@@ -19,9 +19,7 @@ class BuildLayersSpec extends AbstractGradleBuildSpec {
                 testRuntime "junit5"
             }
             
-            repositories {
-                mavenCentral()
-            }
+            $repositoriesBlock
             
             dependencies {
                 runtimeOnly("ch.qos.logback:logback-classic")

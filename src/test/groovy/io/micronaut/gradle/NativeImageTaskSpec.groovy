@@ -1,11 +1,11 @@
 package io.micronaut.gradle
 
-import io.micronaut.gradle.graalvm.GraalUtil
+
 import org.gradle.testkit.runner.TaskOutcome
 import spock.lang.IgnoreIf
 import spock.lang.Requires
 
-@Requires({ GraalUtil.isGraalJVM() })
+@Requires({ AbstractGradleBuildSpec.graalVmAvailable })
 class NativeImageTaskSpec extends AbstractGradleBuildSpec {
 
     @IgnoreIf({ os.isWindows() })
@@ -22,9 +22,7 @@ class NativeImageTaskSpec extends AbstractGradleBuildSpec {
                 runtime "netty"
             }
             
-            repositories {
-                mavenCentral()
-            }
+            $repositoriesBlock
             
             
             mainClassName="example.Application"
@@ -46,9 +44,9 @@ class Application {
 """
 
         when:
-        def result = build('nativeImage')
+        def result = build('nativeCompile')
 
-        def task = result.task(":nativeImage")
+        def task = result.task(":nativeCompile")
         then:
         result.output.contains("Native Image written to")
         task.outcome == TaskOutcome.SUCCESS
@@ -67,15 +65,17 @@ class Application {
                 runtime "netty"
             }
             
-            repositories {
-                mavenCentral()
-            }
-            
-            
+            $repositoriesBlock
+                        
             mainClassName="example.Application"
-            nativeImage {
-                imageName("basic-app")
-                args('-Dfoo=bar')
+
+            graalvmNative {
+                binaries {
+                    main {
+                        imageName = "basic-app"
+                        buildArgs('-Dfoo=bar')
+                    }
+                }
             }            
         """
         testProjectDir.newFolder("src", "main", "java", "example")
@@ -94,9 +94,9 @@ class Application {
 """
 
         when:
-        def result = build('nativeImage', '-i', '--stacktrace')
+        def result = build('nativeCompile', '-i', '--stacktrace')
 
-        def task = result.task(":nativeImage")
+        def task = result.task(":nativeCompile")
         then:
         result.output.contains("Native Image written to")
         result.output.contains("[basic-app:")

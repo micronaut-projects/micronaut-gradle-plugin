@@ -3,29 +3,31 @@ package io.micronaut.gradle.graalvm;
 import io.micronaut.gradle.MicronautApplicationPlugin;
 import io.micronaut.gradle.MicronautExtension;
 import io.micronaut.gradle.MicronautRuntime;
+import org.graalvm.buildtools.gradle.NativeImagePlugin;
+import org.graalvm.buildtools.gradle.dsl.GraalVMExtension;
+import org.graalvm.buildtools.gradle.tasks.BuildNativeImageTask;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
-import org.gradle.api.Task;
-import org.gradle.api.artifacts.Dependency;
 import org.gradle.api.artifacts.DependencySet;
-import org.gradle.api.artifacts.ProjectDependency;
-import org.gradle.api.logging.LogLevel;
-import org.gradle.api.plugins.BasePlugin;
-import org.gradle.api.plugins.JavaApplication;
-import org.gradle.api.plugins.JavaPlugin;
+import org.gradle.api.file.RegularFile;
 import org.gradle.api.plugins.JavaPluginConvention;
 import org.gradle.api.provider.ListProperty;
+import org.gradle.api.provider.Provider;
+import org.gradle.api.tasks.InputFile;
+import org.gradle.api.tasks.PathSensitive;
+import org.gradle.api.tasks.PathSensitivity;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.SourceSetContainer;
 import org.gradle.api.tasks.TaskContainer;
-import org.gradle.api.tasks.TaskProvider;
 import org.gradle.api.tasks.testing.Test;
-import org.gradle.jvm.tasks.Jar;
+import org.gradle.process.CommandLineArgumentProvider;
 
-import java.io.File;
 import java.util.Arrays;
-import java.util.List;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Support for building GraalVM native images.
@@ -36,50 +38,22 @@ import java.util.Objects;
  */
 public class MicronautGraalPlugin implements Plugin<Project> {
 
-    private static final List<String> DEPENDENT_CONFIGURATIONS = Arrays.asList(JavaPlugin.API_CONFIGURATION_NAME, JavaPlugin.RUNTIME_ONLY_CONFIGURATION_NAME, JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME);
+    private static final Set<String> SOURCE_SETS = Collections.unmodifiableSet(new HashSet<>(Arrays.asList("main", "test")));
 
     @Override
     public void apply(Project project) {
-        project.afterEvaluate(p -> {
-            MicronautExtension extension = p.getExtensions().findByType(MicronautExtension.class);
-            if (extension != null && extension.getEnableNativeImage().getOrElse(true)) {
-                p.getGradle().getTaskGraph().whenReady(taskGraph -> {
-                    TaskContainer tasks = p.getTasks();
-                    final Task nativeImage = tasks.findByName("nativeImage");
-                    final Task dockerfileNative = tasks.findByName("dockerfileNative");
-                    boolean addGraalProcessor = nativeImage != null && taskGraph.hasTask(nativeImage) || (dockerfileNative != null && taskGraph.hasTask(dockerfileNative));
-                    if (addGraalProcessor) {
-                        SourceSetContainer sourceSets = p.getConvention().getPlugin(JavaPluginConvention.class)
-                                .getSourceSets();
-                        for (String sourceSetName : Arrays.asList("main", "test")) {
-                            SourceSet sourceSet = sourceSets.findByName(sourceSetName);
-                            if (sourceSet != null) {
-                                p.getDependencies().add(
-                                        sourceSet.getAnnotationProcessorConfigurationName(),
-                                        "io.micronaut:micronaut-graal"
-                                );
-                            }
-                        }
-                        ListProperty<SourceSet> additionalSourceSets = extension.getProcessing().getAdditionalSourceSets();
-                        if (additionalSourceSets.isPresent()) {
-                            List<SourceSet> sourceSetList = additionalSourceSets.get();
-                            for (SourceSet sourceSet : sourceSetList) {
-                                p.getDependencies().add(
-                                        sourceSet.getAnnotationProcessorConfigurationName(),
-                                        "io.micronaut:micronaut-graal"
-                                );
-                            }
-                        }
-                    }
-                });
-
-
-            }
+        project.getPluginManager().apply(NativeImagePlugin.class);
+        project.getPluginManager().withPlugin("io.micronaut.library", plugin -> {
+            MicronautExtension extension = project.getExtensions().findByType(MicronautExtension.class);
+            configureMicronautLibrary(project, extension);
         });
-
+        GraalVMExtension graal = project.getExtensions().findByType(GraalVMExtension.class);
+        graal.getBinaries().configureEach(options ->
+                options.resources(rsrc -> rsrc.autodetection(inf -> inf.getEnabled().convention(true)))
+        );
         project.getPluginManager().withPlugin("application", plugin -> {
             TaskContainer tasks = project.getTasks();
-            TaskProvider<NativeImageTask> nit = tasks.register("nativeImage", NativeImageTask.class, nativeImageTask -> {
+            tasks.withType(BuildNativeImageTask.class).named("nativeCompile", nativeImageTask -> {
                 MicronautRuntime mr = MicronautApplicationPlugin.resolveRuntime(project);
                 if (mr == MicronautRuntime.LAMBDA) {
                     DependencySet implementation = project.getConfigurations().getByName("implementation").getDependencies();
@@ -87,90 +61,76 @@ public class MicronautGraalPlugin implements Plugin<Project> {
                             .noneMatch(dependency -> Objects.equals(dependency.getGroup(), "io.micronaut.aws") && dependency.getName().equals("micronaut-function-aws"));
 
                     if (isAwsApp) {
-                        nativeImageTask.setMain("io.micronaut.function.aws.runtime.MicronautLambdaRuntime");
+                        nativeImageTask.getOptions().get().getMainClass().set("io.micronaut.function.aws.runtime.MicronautLambdaRuntime");
                     }
                 }
-                nativeImageTask.dependsOn(tasks.findByName("classes"));
-                nativeImageTask.setGroup(BasePlugin.BUILD_GROUP);
-                nativeImageTask.setDescription("Builds a GraalVM Native Image");
             });
 
-            project.afterEvaluate(p -> p
-                    .getConfigurations()
-                    .configureEach(configuration -> {
-                        if (DEPENDENT_CONFIGURATIONS.contains(configuration.getName())) {
-                            final DependencySet dependencies = configuration.getDependencies();
-                            for (Dependency dependency : dependencies) {
-                                if (dependency instanceof ProjectDependency) {
-                                    final Project otherProject = ((ProjectDependency) dependency).getDependencyProject();
-                                    otherProject.getTasks().withType(Jar.class, jar -> {
-                                        if (jar.getName().equals("jar")) {
-                                            nit.configure(nativeImageTask -> nativeImageTask.dependsOn(jar));
-                                        }
-                                    });
-                                }
-                            }
-                        }
-                    }));
-
-            tasks.withType(Test.class, (test ->
-                tasks.register(test.getName() + "NativeImage", nativeImageTestTask -> {
-                    nativeImageTestTask.doLast((t) -> {
-                        NativeImageTask nativeImage = nit.get();
-                        File file = nativeImage.getNativeImageOutput();
-                        test.systemProperty("micronaut.test.server.executable", file.getAbsolutePath());
-                    });
-                    boolean enabled = test.isEnabled() && GraalUtil.isGraalJVM();
-                    nativeImageTestTask.onlyIf(task -> {
-                        boolean isGraal = GraalUtil.isGraalJVM();
-                        if (!isGraal) {
-                            project.getLogger().log(LogLevel.INFO, "Skipping testNativeImage because the configured JDK is not a GraalVM JDK");
-                        }
-                        return isGraal;
-                    });
-                    if (enabled) {
-                        nativeImageTestTask.dependsOn(nit);
-                        test.mustRunAfter(nativeImageTestTask);
-                        nativeImageTestTask.finalizedBy(test);
-                    }
-                    nativeImageTestTask.setDescription("Runs tests against a native image build of the server. Requires the server to allow the port to configurable with 'micronaut.server.port'.");
-            })));
-
-            TaskProvider<GenerateResourceConfigFile> generateResourceConfig = configureResourcesFileGeneration(project, tasks);
-            tasks.withType(NativeImageTask.class).configureEach(nativeImage ->
-                    nativeImage.getConfigDirectories().from(generateResourceConfig)
-            );
-
-            project.afterEvaluate(p -> p.getTasks().withType(NativeImageTask.class, nativeImageTask -> {
-                if (!nativeImageTask.getName().equals("internalDockerNativeImageTask")) {
-                    MicronautExtension extension = project.getExtensions().findByType(MicronautExtension.class);
-                    if (extension != null) {
-                        nativeImageTask.setEnabled(extension.getEnableNativeImage().getOrElse(false));
-                    }
-                    JavaApplication javaApplication = p.getExtensions().getByType(JavaApplication.class);
-                    String mainClassName = javaApplication.getMainClass().getOrNull();
-                    String imageName = p.getName();
-                    if (mainClassName != null && !nativeImageTask.getMain().isPresent()) {
-                        nativeImageTask.setMain(mainClassName);
-                    }
-                    if (!nativeImageTask.getImageName().isPresent()) {
-                        nativeImageTask.setImageName(imageName);
-                    }
-                }
+            // We use `afterEvaluate` here in order to preserve laziness of task configuration
+            // and because there is no API to allow reacting to registration of tasks.
+            project.afterEvaluate(p -> tasks.withType(Test.class).getCollectionSchema().getElements().forEach(element -> {
+                String testName = element.getName();
+                registerTestAgainstNativeImageTask(project, tasks, testName);
             }));
         });
     }
 
-    private TaskProvider<GenerateResourceConfigFile> configureResourcesFileGeneration(Project project, TaskContainer tasks) {
-        return tasks.register("generateResourceConfigFile", GenerateResourceConfigFile.class, generator -> {
-            SourceSetContainer sourceSets = project.getConvention()
-                    .getPlugin(JavaPluginConvention.class)
-                    .getSourceSets();
-            SourceSet sourceSet = sourceSets.findByName(SourceSet.MAIN_SOURCE_SET_NAME);
-            if (sourceSet != null) {
-                generator.getResourceDirectories().from(sourceSet.getResources().getSourceDirectories());
-                generator.getMixedContentsDirectories().from(sourceSet.getOutput().getClassesDirs());
+    /**
+     * For each `Test` task, we register a new `testNativeImage` task which tests _against_ the native image
+     * server. Note that this is different from the `nativeTest` task that the GraalVM Gradle plugin provides,
+     * as the latter executes all tests _within_ the native image.
+     */
+    private void registerTestAgainstNativeImageTask(Project project, TaskContainer tasks, String testName) {
+        tasks.register(testName + "NativeImage", Test.class, nativeImageTestTask -> {
+            Test testTask = (Test) tasks.getByName(testName);
+            nativeImageTestTask.setClasspath(testTask.getClasspath());
+            nativeImageTestTask.getJavaLauncher().set(testTask.getJavaLauncher());
+            BuildNativeImageTask nativeBuild = (BuildNativeImageTask) tasks.findByName("nativeCompile");
+            nativeImageTestTask.setForkEvery(testTask.getForkEvery());
+            nativeImageTestTask.setTestClassesDirs(testTask.getTestClassesDirs());
+            nativeImageTestTask.getJvmArgumentProviders().add(new CommandLineArgumentProvider() {
+                @InputFile
+                @PathSensitive(PathSensitivity.RELATIVE)
+                Provider<RegularFile> getInputFile() {
+                    return nativeBuild.getOutputFile();
+                }
+
+                @Override
+                public Iterable<String> asArguments() {
+                    return Collections.singleton(
+                            "-Dmicronaut.test.server.executable=" + getInputFile().get().getAsFile().getAbsolutePath()
+                    );
+                }
+            });
+            nativeImageTestTask.setDescription("Runs tests against a native image build of the server. Requires the server to allow the port to configurable with 'micronaut.server.port'.");
+        });
+    }
+
+    private static void configureMicronautLibrary(Project project, MicronautExtension extension) {
+        SourceSetContainer sourceSets = project
+                .getConvention()
+                .getPlugin(JavaPluginConvention.class)
+                .getSourceSets();
+        project.afterEvaluate(unused -> {
+            ListProperty<SourceSet> sets = extension.getProcessing().getAdditionalSourceSets();
+            if (sets.isPresent()) {
+                addGraalVMAnnotationProcessorDependency(project, sets.get());
             }
         });
+
+        addGraalVMAnnotationProcessorDependency(project,
+                sourceSets.stream()
+                        .filter(sourceSet -> SOURCE_SETS.contains(sourceSet.getName()))
+                        .collect(Collectors.toList())
+        );
+    }
+
+    private static void addGraalVMAnnotationProcessorDependency(Project project, Iterable<SourceSet> sourceSets) {
+        for (SourceSet sourceSet : sourceSets) {
+            project.getDependencies().add(
+                    sourceSet.getAnnotationProcessorConfigurationName(),
+                    "io.micronaut:micronaut-graal"
+            );
+        }
     }
 }

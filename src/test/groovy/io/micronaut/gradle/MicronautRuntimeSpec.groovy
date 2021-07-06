@@ -21,8 +21,9 @@ class MicronautRuntimeSpec extends AbstractGradleBuildSpec {
                 testRuntime "junit5"
             }
             
+            $repositoriesBlock
+            
             repositories {
-                mavenCentral()
                 maven { url "https://s01.oss.sonatype.org/content/repositories/snapshots" }
             }
             

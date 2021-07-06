@@ -22,9 +22,7 @@ class MicronautLibraryPluginSpec extends AbstractGradleBuildSpec {
                 }
             }
             
-            repositories {
-                mavenCentral()
-            }
+            $repositoriesBlock
             
             test {
                 useJUnitPlatform {
@@ -74,9 +72,7 @@ class FooTest {
                 }
             }
             
-            repositories {
-                mavenCentral()
-            }
+            $repositoriesBlock
             
             dependencies {
                 annotationProcessor 'org.projectlombok:lombok:1.18.12'
@@ -143,9 +139,7 @@ class FooTest {
                 version "2.3.3"
             }
             
-            repositories {
-                mavenCentral()
-            }
+            $repositoriesBlock
             
             dependencies {
                 implementation("io.micronaut.jaxrs:micronaut-jaxrs-server")
@@ -200,9 +194,7 @@ public class Foo {
                 }
             }
             
-            repositories {
-                mavenCentral()
-            }
+            $repositoriesBlock
             
             dependencies {
                 annotationProcessor "io.micronaut.configuration:micronaut-openapi"
@@ -258,9 +250,7 @@ class Foo {}
                 }
             }
             
-            repositories {
-                mavenCentral()
-            }
+            $repositoriesBlock
             
         """
         testProjectDir.newFolder("src", "main", "java", "example")
@@ -305,9 +295,7 @@ class Foo {}
                 }
             }
             
-            repositories {
-                mavenCentral()
-            }
+            ${getRepositoriesBlock('kotlin')}
             
         """
         testProjectDir.newFolder("src", "main", "kotlin", "example")
@@ -358,9 +346,7 @@ class Foo {}
                 }
             }            
             
-            repositories {
-                mavenCentral()
-            }
+            ${getRepositoriesBlock('kotlin')}
             
         """
         testProjectDir.newFolder("src", "custom", "kotlin", "example")
@@ -407,9 +393,7 @@ class Foo {}
                 }
             }
             
-            repositories {
-                mavenCentral()
-            }
+            $repositoriesBlock
 
             
         """
@@ -447,9 +431,7 @@ class Foo {}
                 version "2.3.3"
             }
             
-            repositories {
-                mavenCentral()
-            }
+            $repositoriesBlock
             
             dependencies {
                 testImplementation("io.micronaut.test:micronaut-test-junit5")
@@ -516,9 +498,7 @@ class Foo {
                 }                
             }
             
-            repositories {
-                mavenCentral()
-            }
+            $repositoriesBlock
             
             dependencies {
                 customImplementation("org.codehaus.groovy:groovy")
@@ -562,9 +542,7 @@ class Foo {}
                 version "2.3.3"
             }
             
-            repositories {
-                mavenCentral()
-            }
+            $repositoriesBlock
             
         """
         testProjectDir.newFolder("src", "main", "groovy", "example")
@@ -601,9 +579,7 @@ class Foo {}
                 version "2.3.3"
             }
             
-            repositories {
-                mavenCentral()
-            }
+            $repositoriesBlock
             
             dependencies {
                 compileOnly "io.micronaut.configuration:micronaut-openapi"

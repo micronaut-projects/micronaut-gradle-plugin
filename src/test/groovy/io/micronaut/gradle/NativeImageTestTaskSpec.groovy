@@ -1,10 +1,10 @@
 package io.micronaut.gradle
 
-import io.micronaut.gradle.graalvm.GraalUtil
+
 import org.gradle.testkit.runner.TaskOutcome
 import spock.lang.Requires
 
-@Requires({ GraalUtil.isGraalJVM() && !os.windows })
+@Requires({ AbstractGradleBuildSpec.graalVmAvailable && !os.windows })
 class NativeImageTestTaskSpec extends AbstractGradleBuildSpec {
 
     def "test execute tests against native image"() {
@@ -22,9 +22,7 @@ class NativeImageTestTaskSpec extends AbstractGradleBuildSpec {
                 testRuntime "junit5"
             }
             
-            repositories {
-                mavenCentral()
-            }
+            $repositoriesBlock
             
             dependencies {
                 runtimeOnly("org.slf4j:slf4j-simple")

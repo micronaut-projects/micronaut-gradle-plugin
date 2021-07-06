@@ -1,26 +1,45 @@
 package io.micronaut.gradle
 
-import org.gradle.internal.jvm.Jvm
+import io.micronaut.gradle.graalvm.GraalUtil
 import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.GradleRunner
 import org.junit.Rule
 import org.junit.rules.TemporaryFolder
 import spock.lang.Specification
+import spock.util.environment.Jvm
 
 abstract class AbstractGradleBuildSpec extends Specification {
-    @Rule TemporaryFolder testProjectDir = new TemporaryFolder()
+    static boolean isGraalVmAvailable() {
+        return GraalUtil.isGraalJVM() || System.getenv("GRAALVM_HOME")
+    }
+
+    @Rule
+    TemporaryFolder testProjectDir = new TemporaryFolder()
 
     File settingsFile
     File buildFile
     File kotlinBuildFile
 
     // This can be used during development to add statements like includeBuild
-    final List<String> postSettingsStatements = []
+    final List<String> postSettingsStatements = [
+    ]
 
     def setup() {
         settingsFile = testProjectDir.newFile('settings.gradle')
         buildFile = testProjectDir.newFile('build.gradle')
         kotlinBuildFile = testProjectDir.newFile('build.gradle.kts')
+    }
+
+    def getRepositoriesBlock(String dsl = 'groovy') {
+        String notation = dsl == 'groovy'
+                ? 'url = "https://raw.githubusercontent.com/graalvm/native-build-tools/snapshots/"'
+                : 'url = uri("https://raw.githubusercontent.com/graalvm/native-build-tools/snapshots/")'
+        """repositories {
+    mavenCentral()
+    maven {
+        $notation
+    }
+}"""
     }
 
     private void prepareBuild() {
@@ -34,17 +53,23 @@ abstract class AbstractGradleBuildSpec extends Specification {
 
     BuildResult build(String... args) {
         prepareBuild()
-        List<String> allArgs = []
+        def runner = GradleRunner.create()
         if (Jvm.current.java16Compatible) {
-            allArgs.addAll([
-                    '--illegal-access=permit',
-                    '--add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED'
-            ])
+            if (Jvm.current.java16Compatible) {
+                runner = runner.withJvmArguments(
+                        '--illegal-access=permit',
+                        '--add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED'
+                )
+            }
         }
-        Collections.addAll(allArgs, args)
-        GradleRunner.create()
-                .withProjectDir(testProjectDir.root)
-                .withArguments(allArgs)
+        runner.withProjectDir(testProjectDir.root)
+                .withArguments(["--no-watch-fs",
+                                "-Porg.gradle.java.installations.auto-download=false",
+                                "-Porg.gradle.java.installations.auto-detect=false",
+                                "-Porg.gradle.java.installations.fromEnv=GRAALVM_HOME",
+                                *args])
+                .forwardStdOutput(System.out.newWriter())
+                .forwardStdError(System.err.newWriter())
                 .withPluginClasspath()
                 .build()
     }

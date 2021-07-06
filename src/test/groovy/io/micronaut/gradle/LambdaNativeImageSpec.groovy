@@ -3,7 +3,9 @@ package io.micronaut.gradle
 
 import org.gradle.testkit.runner.TaskOutcome
 import spock.lang.Issue
+import spock.lang.Requires
 
+@Requires({ AbstractGradleBuildSpec.graalVmAvailable })
 class LambdaNativeImageSpec extends AbstractGradleBuildSpec {
 
     void 'mainclass is set correctly for an application deployed as GraalVM and Lambda'() {
@@ -19,17 +21,15 @@ class LambdaNativeImageSpec extends AbstractGradleBuildSpec {
                 runtime "netty"
             }
             
-            repositories {
-                mavenCentral()
-            }
+            $repositoriesBlock
             
             application {
                 mainClass.set("com.example.Application")
             }
             
             java {
-                sourceCompatibility = JavaVersion.toVersion('8')
-                targetCompatibility = JavaVersion.toVersion('8')
+                sourceCompatibility = JavaVersion.toVersion('11')
+                targetCompatibility = JavaVersion.toVersion('11')
             }
         """
 
@@ -60,21 +60,23 @@ class LambdaNativeImageSpec extends AbstractGradleBuildSpec {
                 runtime "netty"
             }
             
-            repositories {
-                mavenCentral()
-            }
+            $repositoriesBlock
             
             application {
                 mainClass.set("com.example.Application")
             }
             
             java {
-                sourceCompatibility = JavaVersion.toVersion('8')
-                targetCompatibility = JavaVersion.toVersion('8')
+                sourceCompatibility = JavaVersion.toVersion('11')
+                targetCompatibility = JavaVersion.toVersion('11')
             }
             
-            nativeImage {
-                main("my.own.main.class")
+            graalvmNative {
+                binaries {
+                    main {
+                        mainClass.set("my.own.main.class")
+                    }
+                }
             }
         """
 
@@ -106,9 +108,7 @@ class LambdaNativeImageSpec extends AbstractGradleBuildSpec {
                 runtime "netty"
             }
 
-            repositories {
-                mavenCentral()
-            }
+            $repositoriesBlock
 
             dependencies {
                 implementation("io.micronaut:micronaut-validation")
@@ -124,8 +124,8 @@ class LambdaNativeImageSpec extends AbstractGradleBuildSpec {
             }
 
             java {
-                sourceCompatibility = JavaVersion.toVersion('8')
-                targetCompatibility = JavaVersion.toVersion('8')
+                sourceCompatibility = JavaVersion.toVersion('11')
+                targetCompatibility = JavaVersion.toVersion('11')
             }
         """
 

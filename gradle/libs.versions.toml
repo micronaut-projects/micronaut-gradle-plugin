@@ -5,18 +5,20 @@ diffplug = "3.29.1"
 shadow = "6.1.0"
 groovy = "3.0.8"
 spock = "2.0-groovy-3.0"
+graalvmPgin = "0.9.5-SNAPSHOT"
 
 [libraries]
-dockerPlugin = { module = "com.bmuschko:gradle-docker-plugin", version.ref = "docker" }
-diffplugPlugin = { module = "com.diffplug.gradle:goomph", version.ref = "diffplug" }
-shadowPlugin = { module = "com.github.jengelman.gradle.plugins:shadow", version.ref = "shadow" }
+dockerPgin = { module = "com.bmuschko:gradle-docker-plugin", version.ref = "docker" }
+diffplugPgin = { module = "com.diffplug.gradle:goomph", version.ref = "diffplug" }
+shadowPgin = { module = "com.github.jengelman.gradle.plugins:shadow", version.ref = "shadow" }
+graalvmPgin = { module = "org.graalvm.buildtools:native-gradle-plugin", version.ref = "graalvmPgin" }
 
 kotlin-allopen = { module = "org.jetbrains.kotlin:kotlin-allopen", version.ref = "kotlin" }
-kotlin-gradlePlugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
+kotlin-gradlePgin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 
 groovy-core = { module = "org.codehaus.groovy:groovy", version.ref = "groovy" }
 spock-core = { module = "org.spockframework:spock-core", version.ref = "spock" }
 spock-junit4 = { module = "org.spockframework:spock-junit4", version.ref = "spock" }
 
 [bundles]
-optionalPlugins = [ "kotlin-allopen", "kotlin-gradlePlugin" ]
+optionalPlugins = [ "kotlin-allopen", "kotlin-gradlePgin", "graalvmPgin" ]

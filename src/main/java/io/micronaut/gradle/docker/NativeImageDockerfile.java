@@ -1,26 +1,46 @@
 package io.micronaut.gradle.docker;
 
 import com.bmuschko.gradle.docker.tasks.image.Dockerfile;
-import io.micronaut.gradle.graalvm.NativeImageTask;
+import org.graalvm.buildtools.gradle.NativeImagePlugin;
+import org.graalvm.buildtools.gradle.dsl.NativeImageOptions;
+import org.graalvm.buildtools.gradle.dsl.NativeResourcesOptions;
+import org.graalvm.buildtools.gradle.internal.BaseNativeImageOptions;
+import org.graalvm.buildtools.gradle.internal.NativeImageCommandLineProvider;
+import org.graalvm.buildtools.gradle.tasks.BuildNativeImageTask;
 import org.gradle.api.Action;
 import org.gradle.api.JavaVersion;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
+import org.gradle.api.file.ConfigurableFileCollection;
+import org.gradle.api.file.Directory;
+import org.gradle.api.file.ProjectLayout;
+import org.gradle.api.internal.file.FileOperations;
 import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.plugins.BasePlugin;
 import org.gradle.api.plugins.JavaApplication;
+import org.gradle.api.plugins.JavaPluginExtension;
 import org.gradle.api.provider.ListProperty;
+import org.gradle.api.provider.MapProperty;
 import org.gradle.api.provider.Property;
+import org.gradle.api.provider.Provider;
+import org.gradle.api.provider.ProviderFactory;
 import org.gradle.api.tasks.Input;
-import org.gradle.api.tasks.StopActionException;
+import org.gradle.api.tasks.Nested;
+import org.gradle.api.tasks.Optional;
 import org.gradle.api.tasks.TaskAction;
-import org.gradle.api.tasks.TaskContainer;
 import org.gradle.internal.jvm.Jvm;
+import org.gradle.jvm.toolchain.JavaLanguageVersion;
+import org.gradle.jvm.toolchain.JavaLauncher;
+import org.gradle.jvm.toolchain.JavaToolchainService;
+import org.jetbrains.annotations.NotNull;
 
-import javax.annotation.Nullable;
+import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Specialization of {@link Dockerfile} for building native images.
@@ -30,56 +50,253 @@ import java.util.List;
  */
 public abstract class NativeImageDockerfile extends Dockerfile implements DockerBuildOptions {
 
-    @Input
-    private final Property<String> jdkVersion;
-    @Input
-    private final Property<String> graalVersion;
-    @Input
-    private final Property<String> graalImage;
-    @Input
-    @Nullable
-    private final Property<String> baseImage;
-    @Input
-    private final ListProperty<String> args;
-    @Input
-    private final ListProperty<Integer> exposedPorts;
-    @Input
-    private final Property<Boolean> requireGraalSdk;
-    @Input
-    private final Property<DockerBuildStrategy> buildStrategy;
-    @Input
-    private final Property<String> defaultCommand;
+    private static final List<Integer> SUPPORTED_JAVA_VERSIONS = Collections.unmodifiableList(
+            // keep those in descending order
+            Arrays.asList(16, 11, 8)
+    );
 
+    /**
+     * @return The JDK version to use with native image. Defaults to the toolchain version, or the current Java version.
+     */
+    @Input
+    public abstract Property<String> getJdkVersion();
+
+    /**
+     * @return The Graal version to use.
+     */
+    @Input
+    public abstract Property<String> getGraalVersion();
+
+    /**
+     * @return the GraalVM docker image to use
+     */
+    @Input
+    public abstract Property<String> getGraalImage();
+
+    /**
+     * @return The base image to use
+     */
+    @Input
+    @Optional
+    public abstract Property<String> getBaseImage();
+
+    /**
+     * @return The arguments to pass to the native image executable when starting up in the docker container.
+     */
+    @Input
+    public abstract ListProperty<String> getArgs();
+
+    @Input
+    public abstract ListProperty<Integer> getExposedPorts();
+
+    /**
+     * @return Whether a Graal SDK is required (defaults to 'true').
+     */
+    @Input
+    public abstract Property<Boolean> getRequireGraalSdk();
+
+    /**
+     * @return The build strategy
+     */
+    @Input
+    public abstract Property<DockerBuildStrategy> getBuildStrategy();
+
+    @Nested
+    public abstract Property<NativeImageOptions> getNativeImageOptions();
+
+    @Inject
+    public abstract JavaToolchainService getJavaToolchainService();
+
+    @Input
+    @Optional
+    public abstract Property<String> getDefaultCommand();
+
+    @Inject
+    protected abstract ProviderFactory getProviders();
+
+    @Inject
+    protected abstract ObjectFactory getObjects();
+
+    @Inject
+    protected abstract ProjectLayout getLayout();
+
+    @Inject
+    protected abstract FileOperations getFileOperations();
 
     public NativeImageDockerfile() {
         Project project = getProject();
+        JavaPluginExtension javaExtension = (JavaPluginExtension) project.getExtensions().getByName("java");
         setGroup(BasePlugin.BUILD_GROUP);
         setDescription("Builds a Docker File for Native Image");
         getDestFile().set(project.getLayout().getBuildDirectory().file("docker/DockerfileNative"));
-        ObjectFactory objects = project.getObjects();
-        this.buildStrategy = objects.property(DockerBuildStrategy.class)
-                                        .convention(DockerBuildStrategy.DEFAULT);
-        this.jdkVersion = objects.property(String.class);
-        this.requireGraalSdk = objects.property(Boolean.class).convention(true);
-        JavaVersion javaVersion = Jvm.current().getJavaVersion();
-        if (javaVersion == null) {
-            jdkVersion.convention("java11");
-        } else if (javaVersion.isCompatibleWith(JavaVersion.toVersion(16))) {
-            jdkVersion.convention("java16");
-        } else if (javaVersion.isJava11Compatible()) {
-            jdkVersion.convention("java11");
-        } else {
-            jdkVersion.convention("java8");
-        }
-        this.graalVersion = objects.property(String.class)
-                               .convention("21.2.0");
-        this.graalImage = objects.property(String.class)
-                               .convention(graalVersion.map(version -> "ghcr.io/graalvm/graalvm-ce:" + jdkVersion.get() + '-' + version ));
-        this.baseImage = objects.property(String.class)
-                                    .convention("null");
-        this.args = objects.listProperty(String.class);
-        this.exposedPorts = objects.listProperty(Integer.class);
-        this.defaultCommand = objects.property(String.class).convention("none");
+        getBuildStrategy().convention(DockerBuildStrategy.DEFAULT);
+        getRequireGraalSdk().convention(true);
+        getJdkVersion().convention(
+                javaExtension.getToolchain()
+                        .getLanguageVersion()
+                        .map(JavaLanguageVersion::asInt)
+                        .orElse(project.getProviders().provider(() -> Integer.valueOf(Jvm.current().getJavaVersion().getMajorVersion())))
+                        .map(NativeImageDockerfile::toSupportedJavaVersion)
+                        .map(v -> "java" + v)
+        );
+        getGraalVersion().convention("21.1.0");
+        getGraalImage().convention(getGraalVersion().zip(getJdkVersion(), NativeImageDockerfile::toGraalVMBaseImageName));
+        getNativeImageOptions().convention(project
+                .getTasks()
+                .named(NativeImagePlugin.NATIVE_COMPILE_TASK_NAME, BuildNativeImageTask.class)
+                .map(bniT -> {
+                    NativeImageOptions delegate = bniT.getOptions().get();
+                    return new NativeImageOptions() {
+                        @Override
+                        public String getName() {
+                            return delegate.getName();
+                        }
+
+                        @Override
+                        public Property<String> getImageName() {
+                            return delegate.getImageName();
+                        }
+
+                        @Override
+                        public Property<String> getMainClass() {
+                            return delegate.getMainClass();
+                        }
+
+                        @Override
+                        public ListProperty<String> getBuildArgs() {
+                            return delegate.getBuildArgs();
+                        }
+
+                        @Override
+                        public MapProperty<String, Object> getSystemProperties() {
+                            return delegate.getSystemProperties();
+                        }
+
+                        @Override
+                        public ConfigurableFileCollection getClasspath() {
+                            return delegate.getClasspath();
+                        }
+
+                        @Override
+                        public ListProperty<String> getJvmArgs() {
+                            return delegate.getJvmArgs();
+                        }
+
+                        @Override
+                        public ListProperty<String> getRuntimeArgs() {
+                            return delegate.getRuntimeArgs();
+                        }
+
+                        @Override
+                        public Property<Boolean> getDebug() {
+                            return delegate.getDebug();
+                        }
+
+                        @Override
+                        public Property<Boolean> getFallback() {
+                            return delegate.getFallback();
+                        }
+
+                        @Override
+                        public Property<Boolean> getVerbose() {
+                            return delegate.getVerbose();
+                        }
+
+                        @Override
+                        public Property<Boolean> getAgent() {
+                            return delegate.getAgent();
+                        }
+
+                        @Override
+                        public Property<Boolean> getSharedLibrary() {
+                            return delegate.getSharedLibrary();
+                        }
+
+                        @Override
+                        @Optional
+                        public Property<JavaLauncher> getJavaLauncher() {
+                            // The native image docker file generator does NOT require
+                            // GraalVM nor will it use the java launcher so we make
+                            // the property optional
+                            return getObjects().property(JavaLauncher.class);
+                        }
+
+                        @Override
+                        public ConfigurableFileCollection getConfigurationFileDirectories() {
+                            return delegate.getConfigurationFileDirectories();
+                        }
+
+                        @Override
+                        public NativeResourcesOptions getResources() {
+                            return delegate.getResources();
+                        }
+
+                        @Override
+                        public void resources(Action<? super NativeResourcesOptions> spec) {
+                            delegate.resources(spec);
+                        }
+
+                        @Override
+                        public NativeImageOptions buildArgs(Object... buildArgs) {
+                            delegate.buildArgs(buildArgs);
+                            return this;
+                        }
+
+                        @Override
+                        public NativeImageOptions buildArgs(Iterable<?> buildArgs) {
+                            delegate.buildArgs(buildArgs);
+                            return this;
+                        }
+
+                        @Override
+                        public NativeImageOptions systemProperties(Map<String, ?> properties) {
+                            delegate.systemProperties(properties);
+                            return this;
+                        }
+
+                        @Override
+                        public NativeImageOptions systemProperty(String name, Object value) {
+                            delegate.systemProperty(name, value);
+                            return this;
+                        }
+
+                        @Override
+                        public NativeImageOptions classpath(Object... paths) {
+                            delegate.classpath(paths);
+                            return this;
+                        }
+
+                        @Override
+                        public NativeImageOptions jvmArgs(Object... arguments) {
+                            delegate.jvmArgs(arguments);
+                            return this;
+                        }
+
+                        @Override
+                        public NativeImageOptions jvmArgs(Iterable<?> arguments) {
+                            delegate.jvmArgs(arguments);
+                            return this;
+                        }
+
+                        @Override
+                        public NativeImageOptions runtimeArgs(Object... arguments) {
+                            delegate.runtimeArgs(arguments);
+                            return this;
+                        }
+
+                        @Override
+                        public NativeImageOptions runtimeArgs(Iterable<?> arguments) {
+                            delegate.runtimeArgs(arguments);
+                            return this;
+                        }
+
+                        @Override
+                        public Property<Boolean> getUseFatJar() {
+                            return delegate.getUseFatJar();
+                        }
+                    };
+                })
+        );
 
         //noinspection Convert2Lambda
         doLast(new Action<Task>() {
@@ -91,96 +308,38 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
         });
     }
 
+    private static String toGraalVMBaseImageName(String graalVersion, String jdkVersion) {
+        return "ghcr.io/graalvm/graalvm-ce:" + jdkVersion + '-' + graalVersion;
+    }
+
+    private static int toSupportedJavaVersion(int version) {
+        for (Integer javaVersion : SUPPORTED_JAVA_VERSIONS) {
+            if (version >= javaVersion) {
+                return javaVersion;
+            }
+        }
+        return SUPPORTED_JAVA_VERSIONS.stream().reduce((x, y) -> y).orElse(8);
+    }
+
     @TaskAction
     @Override
     public void create() {
         super.create();
     }
 
-    /**
-     *
-     * @return Whether a Graal SDK is required (defaults to 'true').
-     */
-    public Property<Boolean> getRequireGraalSdk() {
-        return requireGraalSdk;
+    private Provider<Directory> getConfigurationFilesDirectory() {
+        return getLayout().getBuildDirectory().dir("docker/config-dirs");
     }
 
-    /**
-     * @return The JDK version to use with native image.
-     */
-    public Property<String> getJdkVersion() {
-        return jdkVersion;
-    }
-
-    /**
-     * @return The build startegy
-     */
-    public Property<DockerBuildStrategy> getBuildStrategy() {
-        return buildStrategy;
-    }
-
-    /**
-     * @return The arguments to pass to the native image executable when starting up in the docker container.
-     */
-    @Override
-    public ListProperty<String> getArgs() {
-        return args;
-    }
-
-    /**
-     * @return the GraalVM docker image to use
-     */
-    public Property<String> getGraalImage() {
-        return graalImage;
-    }
-
-    /**
-     * @return The Graal version to use.
-     */
-    public Property<String> getGraalVersion() {
-        return graalVersion;
-    }
-
-    /**
-     * @return The base image to use
-     */
-    @Override
-    @Nullable
-    public Property<String> getBaseImage() {
-        return baseImage;
-    }
-
-    @Override
-    public Property<String> getDefaultCommand() {
-        return this.defaultCommand;
-    }
-
-    @Override
-    public ListProperty<Integer> getExposedPorts() {
-        return this.exposedPorts;
-    }
-
+    // Everything done in this method MUST be lazy, so use providers as much as possible
     private void setupInstructions(List<Instruction> additionalInstructions) {
-        DockerBuildStrategy buildStrategy = this.buildStrategy.getOrElse(DockerBuildStrategy.DEFAULT);
-        JavaApplication javaApplication = getProject().getExtensions().getByType(JavaApplication.class);
-        final TaskContainer tasks = getProject().getTasks();
-        Task nit = tasks.findByName("nativeImage");
-        NativeImageTask nativeImageTask = (NativeImageTask) tasks.getByName("internalDockerNativeImageTask");
-        if (nit instanceof NativeImageTask) {
-            final NativeImageTask sourceTask = (NativeImageTask) nit;
-            nativeImageTask.args(sourceTask.getArgs());
-            nativeImageTask.getJvmArgs().set(sourceTask.getJvmArgs());
-            nativeImageTask.getSystemProperties().set(sourceTask.getSystemProperties());
-            nativeImageTask.getMain().convention(sourceTask.getMain());
-        } else {
-            throw new StopActionException("No native image task present! Must be used in conjunction with a NativeImageTask.");
-        }
+        DockerBuildStrategy buildStrategy = getBuildStrategy().get();
         if (buildStrategy == DockerBuildStrategy.LAMBDA) {
             from(new From("amazonlinux:latest").withStage("graalvm"));
             environmentVariable("LANG", "en_US.UTF-8");
             runCommand("yum install -y gcc gcc-c++ libc6-dev zlib1g-dev curl bash zlib zlib-devel zlib-static zip tar gzip");
-            String jdkVersion = this.jdkVersion.get();
-            String graalVersion = this.graalVersion.get();
+            String jdkVersion = getJdkVersion().get();
+            String graalVersion = getGraalVersion().get();
             String fileName = "graalvm-ce-" + jdkVersion + "-linux-amd64-" + graalVersion + ".tar.gz";
             runCommand("curl -4 -L https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-" + graalVersion + "/" + fileName + " -o /tmp/" + fileName);
             runCommand("tar -zxf /tmp/" + fileName + " -C /tmp && mv /tmp/graalvm-ce-" + jdkVersion + "-" + graalVersion + " /usr/lib/graalvm");
@@ -190,74 +349,50 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
             environmentVariable("PATH", "/usr/lib/graalvm/bin:${PATH}");
             from(new From("graalvm").withStage("builder"));
         } else {
-            from(new From(graalImage.get()).withStage("graalvm"));
+            from(new From(getGraalImage().get()).withStage("graalvm"));
             runCommand("gu install native-image");
         }
+
         MicronautDockerfile.setupResources(this);
-        // use native-image from docker image
-        nativeImageTask.setExecutable("native-image");
-        // use hard coded image name
-        nativeImageTask.setImageName("application");
-        if (buildStrategy == DockerBuildStrategy.ORACLE_FUNCTION) {
-            javaApplication.getMainClass().set("com.fnproject.fn.runtime.EntryPoint");
-            nativeImageTask.setMain("com.fnproject.fn.runtime.EntryPoint");
-            nativeImageTask.args("--report-unsupported-elements-at-runtime");
-        } else if (buildStrategy == DockerBuildStrategy.LAMBDA) {
-            if (!javaApplication.getMainClass().isPresent()) {
-                javaApplication.getMainClass().set("io.micronaut.function.aws.runtime.MicronautLambdaRuntime");
-            }
-            if (!nativeImageTask.getMain().isPresent()) {
-                nativeImageTask.setMain("io.micronaut.function.aws.runtime.MicronautLambdaRuntime");
-            }
-        }
-        nativeImageTask.configure(false);
-        // clear out classpath
-        nativeImageTask.setClasspath(getProject().files());
-        List<String> commandLine = nativeImageTask.getCommandLine();
-        commandLine.add("-cp");
-        commandLine.add("/home/app/libs/*.jar:/home/app/resources:/home/app/application.jar");
-
-        String baseImage = resolveBaseImageForBuildStrategy(buildStrategy);
-
-        // add --static if image is scratch
-        if (baseImage.equalsIgnoreCase("scratch") && !commandLine.contains("--static")) {
-            commandLine.add("--static");
-        }
-
-        // to build a "mostly" static native-image if image when using distroless
-        if (baseImage.contains("distroless") && !commandLine.contains("-H:+StaticExecutableWithDynamicLibC")) {
-            commandLine.add("-H:+StaticExecutableWithDynamicLibC");
-        }
-
-        String nativeImageCommand = String.join(" ", commandLine);
-        runCommand(nativeImageCommand);
+        Property<String> executable = getObjects().property(String.class);
+        executable.set("application");
+        BaseImageForBuildStrategyResolver imageResolver = new BaseImageForBuildStrategyResolver(buildStrategy);
+        runCommand("mkdir /home/app/config-dirs");
+        Provider<From> baseImageProvider = getProviders().provider(() -> new From(imageResolver.get()));
+        getInstructions().addAll(getNativeImageOptions().map(options ->
+                options.getConfigurationFileDirectories()
+                        .getFiles()
+                        .stream()
+                        .map(this::toCopyResourceDirectoryInstruction)
+                        .collect(Collectors.toList())
+        ));
+        runCommand(getProviders().provider(() -> String.join(" ", buildActualCommandLine(executable, buildStrategy, imageResolver))));
         switch (buildStrategy) {
             case ORACLE_FUNCTION:
                 from(new From("fnproject/fn-java-fdk:" + getProjectFnVersion()).withStage("fnfdk"));
-                from(baseImage);
+                from(baseImageProvider);
                 workingDir("/function");
                 copyFile(new CopyFile("/home/app/application", "/function/func").withStage("graalvm"));
                 copyFile(new CopyFile("/function/runtime/lib/*", ".").withStage("fnfdk"));
-                entryPoint(args.map(strings -> {
+                entryPoint(getArgs().map(strings -> {
                     List<String> newList = new ArrayList<>(strings.size() + 1);
                     newList.add("./func");
                     newList.addAll(strings);
                     newList.add("-Djava.library.path=/function");
                     return newList;
                 }));
-                String cmd = this.defaultCommand.get();
-                if ("none".equals(cmd)) {
-                    super.defaultCommand("io.micronaut.oraclecloud.function.http.HttpFunction::handleRequest");
+                if (getDefaultCommand().isPresent()) {
+                    defaultCommand(getDefaultCommand().get());
                 } else {
-                    super.defaultCommand(cmd);
+                    defaultCommand("io.micronaut.oraclecloud.function.http.HttpFunction::handleRequest");
                 }
                 break;
             case LAMBDA:
-                from(baseImage);
+                from(baseImageProvider);
                 workingDir("/function");
                 runCommand("yum install -y zip");
                 copyFile(new CopyFile("/home/app/application", "/function/func").withStage("builder"));
-                String funcCmd = String.join(" ", args.map(strings -> {
+                String funcCmd = String.join(" ", getArgs().map(strings -> {
                     List<String> newList = new ArrayList<>(strings.size() + 1);
                     newList.add("./func");
                     newList.addAll(strings);
@@ -272,15 +407,18 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
                 entryPoint("/function/func");
                 break;
             default:
-                from(baseImage);
+                from(baseImageProvider);
                 // mandatory dependency for alpine-glibc docker images
-                if (baseImage.contains("alpine-glibc")) {
-                    runCommand("apk update && apk add libstdc++");
-                }
-                exposePort(this.exposedPorts);
+                runCommand(getProviders().provider(() -> {
+                    if (baseImageProvider.get().getImage().contains("alpine-glibc")) {
+                        return "apk update && apk add libstdc++";
+                    }
+                    return "";
+                }));
+                exposePort(getExposedPorts());
                 getInstructions().addAll(additionalInstructions);
                 copyFile(new CopyFile("/home/app/application", "/app/application").withStage("graalvm"));
-                entryPoint(args.map(strings -> {
+                entryPoint(getArgs().map(strings -> {
                     List<String> newList = new ArrayList<>(strings.size() + 1);
                     newList.add("/app/application");
                     newList.addAll(strings);
@@ -290,21 +428,90 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
         }
     }
 
+    private CopyFileInstruction toCopyResourceDirectoryInstruction(java.io.File resourceDirectory) {
+        return new CopyFileInstruction(new CopyFile("config-dirs/" + resourceDirectory.getName(), "/home/app/config-dirs/" + resourceDirectory.getName()));
+    }
+
+    protected List<String> buildActualCommandLine(Provider<String> executable, DockerBuildStrategy buildStrategy, BaseImageForBuildStrategyResolver imageResolver) {
+        NativeImageOptions options = newNativeImageOptions("actualDockerOptions");
+        prepareNativeImageOptions(options);
+        if (buildStrategy == DockerBuildStrategy.ORACLE_FUNCTION) {
+            options.getMainClass().set("com.fnproject.fn.runtime.EntryPoint");
+            options.getBuildArgs().add("--report-unsupported-elements-at-runtime");
+        } else if (buildStrategy == DockerBuildStrategy.LAMBDA) {
+            JavaApplication javaApplication = getProject().getExtensions().getByType(JavaApplication.class);
+            if (!javaApplication.getMainClass().isPresent()) {
+                options.getMainClass().set("io.micronaut.function.aws.runtime.MicronautLambdaRuntime");
+            }
+            if (!options.getMainClass().isPresent()) {
+                options.getMainClass().set("io.micronaut.function.aws.runtime.MicronautLambdaRuntime");
+            }
+        }
+        List<String> commandLine = new ArrayList<>();
+        commandLine.add("native-image");
+        commandLine.addAll(new NativeImageCommandLineProvider(
+                getProviders().provider(() -> options),
+                getProviders().provider(() -> false),
+                executable,
+                getObjects().property(String.class),
+                getObjects().fileProperty()
+        ).asArguments());
+
+        String baseImage = imageResolver.get();
+
+        // add --static if image is scratch
+        if (baseImage.equalsIgnoreCase("scratch") && !commandLine.contains("--static")) {
+            commandLine.add("--static");
+        }
+
+        // to build a "mostly" static native-image if image when using distroless
+        if (baseImage.contains("distroless") && !commandLine.contains("-H:+StaticExecutableWithDynamicLibC")) {
+            commandLine.add("-H:+StaticExecutableWithDynamicLibC");
+        }
+        return commandLine;
+    }
+
     /**
-     * The Dockerfile task requires a 'from' at least, but this
-     * will be replaced in setupTaskPostEvaluate where we also
-     * incorporate commands supplied by the build.gradle file (if required)
+     * Builds a new concrete list of native image options from the configuration
+     * options. We don't use the actual options because we don't want to mutate
+     * them.
      */
-    void setupDockerfileInstructions() {
-        from("placeholder");
+    private void prepareNativeImageOptions(NativeImageOptions options) {
+        Property<NativeImageOptions> originalOptions = getNativeImageOptions();
+        options.getBuildArgs().set(originalOptions.flatMap(NativeImageOptions::getBuildArgs));
+        options.getJvmArgs().set(originalOptions.flatMap(NativeImageOptions::getJvmArgs));
+        options.getMainClass().set(originalOptions.flatMap(NativeImageOptions::getMainClass));
+        options.getVerbose().set(originalOptions.flatMap(NativeImageOptions::getVerbose));
+        options.getFallback().set(originalOptions.flatMap(NativeImageOptions::getFallback));
+        options.getSystemProperties().set(originalOptions.flatMap(NativeImageOptions::getSystemProperties));
+        Provider<List<String>> remappedConfigDirectories = originalOptions.map(orig -> orig.getConfigurationFileDirectories()
+                .getFiles()
+                .stream()
+                .map(f -> "/home/app/config-dirs/" + f.getName())
+                .collect(Collectors.toList())
+        );
+        options.getConfigurationFileDirectories().setFrom(
+                remappedConfigDirectories
+        );
+        options.getClasspath().from("/home/app/libs/*.jar", "/home/app/resources:/home/app/application.jar");
+        options.getImageName().set("application");
+    }
+
+    @NotNull
+    private NativeImageOptions newNativeImageOptions(String name) {
+        return getObjects().newInstance(BaseNativeImageOptions.class,
+                name,
+                getObjects(),
+                getProviders(),
+                getJavaToolchainService(),
+                "application");
     }
 
     /**
      * This is executed post project evaluation
      */
     void setupNativeImageTaskPostEvaluate() {
-        // Get any custom instructions the user may or may not have entered, but ignoring our 'from' placeholder
-        List<Instruction> additionalInstructions = new ArrayList<>(getInstructions().get().subList(1, getInstructions().get().size()));
+        List<Instruction> additionalInstructions = new ArrayList<>(getInstructions().get());
         // Reset the instructions to empty
         getInstructions().set(new ArrayList<>());
         setupInstructions(additionalInstructions);
@@ -312,32 +519,33 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
 
     /**
      * Adds additional args to pass to the native image executable.
+     *
      * @param args The args
      * @return This instance.
      */
     @Override
     public NativeImageDockerfile args(String... args) {
-        this.args.addAll(args);
+        this.getArgs().addAll(args);
         return this;
     }
 
     @Override
     public NativeImageDockerfile baseImage(String imageName) {
         if (imageName != null) {
-            this.baseImage.set(imageName);
+            this.getBaseImage().set(imageName);
         }
         return this;
     }
 
     @Override
     public DockerBuildOptions exportPorts(Integer... ports) {
-        this.exposedPorts.set(Arrays.asList(ports));
+        this.getExposedPorts().set(Arrays.asList(ports));
         return this;
     }
 
     public NativeImageDockerfile graalImage(String imageName) {
         if (imageName != null) {
-            this.graalImage.set(imageName);
+            this.getGraalImage().set(imageName);
         }
         return this;
     }
@@ -350,19 +558,35 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
         return "latest";
     }
 
-    private String resolveBaseImageForBuildStrategy(DockerBuildStrategy buildStrategy) {
-        String baseImage = this.baseImage.get();
-        // why I have to do this horrible hack on the Gradle gods know
-        if ("null".equalsIgnoreCase(baseImage)) {
-            baseImage = null;
+    private class BaseImageForBuildStrategyResolver {
+        private final DockerBuildStrategy strategy;
+        private String resolved;
+
+        private BaseImageForBuildStrategyResolver(DockerBuildStrategy strategy) {
+            this.strategy = strategy;
         }
 
-        if (buildStrategy == DockerBuildStrategy.LAMBDA && baseImage == null) {
-            baseImage = "amazonlinux:latest";
-        } else if (baseImage == null) {
-            baseImage = "frolvlad/alpine-glibc:alpine-3.12";
+        public String get() {
+            if (resolved == null) {
+                resolved = resolve();
+            }
+            return resolved;
         }
 
-        return baseImage;
+        private String resolve() {
+            String baseImage = getBaseImage().getOrNull();
+
+            if (strategy == DockerBuildStrategy.ORACLE_FUNCTION && baseImage == null) {
+                baseImage = "busybox:glibc";
+            } else if (strategy == DockerBuildStrategy.LAMBDA && baseImage == null) {
+                baseImage = "amazonlinux:latest";
+            } else if (baseImage == null) {
+                baseImage = "frolvlad/alpine-glibc:alpine-3.12";
+            }
+
+            return baseImage;
+        }
     }
+
+
 }

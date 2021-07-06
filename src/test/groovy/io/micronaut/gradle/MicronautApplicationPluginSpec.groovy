@@ -19,9 +19,7 @@ class MicronautApplicationPluginSpec extends AbstractGradleBuildSpec {
                 testRuntime "junit5"
             }
             
-            repositories {
-                mavenCentral()
-            }
+            $repositoriesBlock
             mainClassName="example.Application"
         """
         testProjectDir.newFolder("src", "test", "java", "example")

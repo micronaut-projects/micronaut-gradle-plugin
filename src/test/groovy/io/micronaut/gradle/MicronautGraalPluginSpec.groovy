@@ -1,7 +1,6 @@
 package io.micronaut.gradle
 
 import groovy.json.JsonSlurper
-import io.micronaut.gradle.graalvm.GraalUtil
 import org.gradle.testkit.runner.TaskOutcome
 import spock.lang.Requires
 
@@ -12,19 +11,19 @@ class MicronautGraalPluginSpec extends AbstractGradleBuildSpec {
         withSwaggerMicronautApplication()
 
         when:
-        def result = build('generateResourceConfigFile', '-i', '--stacktrace')
+        def result = build('generateResourcesConfigFile', '-i', '--stacktrace')
 
         then:
         result.task(":classes").outcome == TaskOutcome.SUCCESS
-        result.task(":generateResourceConfigFile").outcome == TaskOutcome.SUCCESS
+        result.task(":generateResourcesConfigFile").outcome == TaskOutcome.SUCCESS
 
         and:
-        def resourceConfigFile = new File(testProjectDir.root, 'build/generated/resources/graalvm/resource-config.json')
+        def resourceConfigFile = new File(testProjectDir.root, 'build/native/generated/generateResourcesConfigFile/resource-config.json')
         def resourceConfigJson = new JsonSlurper().parse(resourceConfigFile)
 
-        resourceConfigJson.resources.pattern.any { it == "\\Qapplication.yml\\E" }
-        resourceConfigJson.resources.pattern.any { it == "\\QMETA-INF/swagger/app-0.0.yml\\E" }
-        resourceConfigJson.resources.pattern.any { it == "\\QMETA-INF/swagger/views/swagger-ui/index.html\\E" }
+        resourceConfigJson.resources.includes.pattern.any { it == "\\Qapplication.yml\\E" }
+        resourceConfigJson.resources.includes.pattern.any { it == "\\QMETA-INF/swagger/app-0.0.yml\\E" }
+        resourceConfigJson.resources.includes.pattern.any { it == "\\QMETA-INF/swagger/views/swagger-ui/index.html\\E" }
     }
 
     void 'generate GraalVM resource-config.json with OpenAPI and resources included without the Micronaut Application plugin'() {
@@ -32,53 +31,53 @@ class MicronautGraalPluginSpec extends AbstractGradleBuildSpec {
         withSwaggerApplication()
 
         when:
-        def result = build('generateResourceConfigFile', '-i', '--stacktrace')
+        def result = build('generateResourcesConfigFile', '-i', '--stacktrace')
 
         then:
         result.task(":classes").outcome == TaskOutcome.SUCCESS
-        result.task(":generateResourceConfigFile").outcome == TaskOutcome.SUCCESS
+        result.task(":generateResourcesConfigFile").outcome == TaskOutcome.SUCCESS
 
         and:
-        def resourceConfigFile = new File(testProjectDir.root, 'build/generated/resources/graalvm/resource-config.json')
+        def resourceConfigFile = new File(testProjectDir.root, 'build/native/generated/generateResourcesConfigFile/resource-config.json')
         def resourceConfigJson = new JsonSlurper().parse(resourceConfigFile)
 
-        resourceConfigJson.resources.pattern.any { it == "\\Qapplication.yml\\E" }
-        resourceConfigJson.resources.pattern.any { it == "\\QMETA-INF/swagger/app-0.0.yml\\E" }
-        resourceConfigJson.resources.pattern.any { it == "\\QMETA-INF/swagger/views/swagger-ui/index.html\\E" }
+        resourceConfigJson.resources.includes.pattern.any { it == "\\Qapplication.yml\\E" }
+        resourceConfigJson.resources.includes.pattern.any { it == "\\QMETA-INF/swagger/app-0.0.yml\\E" }
+        resourceConfigJson.resources.includes.pattern.any { it == "\\QMETA-INF/swagger/views/swagger-ui/index.html\\E" }
     }
 
-    @Requires({ GraalUtil.isGraalJVM() && !os.windows })
+    @Requires({ AbstractGradleBuildSpec.graalVmAvailable && !os.windows })
     void 'native-image is called with the generated JSON file directory (Micronaut Application)'() {
         given:
         withSwaggerMicronautApplication()
 
         when:
-        def result = build('nativeImage', '-i', '--stacktrace')
+        def result = build('nativeCompile', '-i', '--stacktrace')
 
         then:
         result.task(":classes").outcome == TaskOutcome.SUCCESS
-        result.task(":generateResourceConfigFile").outcome == TaskOutcome.SUCCESS
-        result.task(":nativeImage").outcome == TaskOutcome.SUCCESS
+        result.task(":generateResourcesConfigFile").outcome == TaskOutcome.SUCCESS
+        result.task(":nativeCompile").outcome == TaskOutcome.SUCCESS
 
         and:
-        result.output.contains("-H:ConfigurationFileDirectories=${new File(testProjectDir.root, 'build/generated/resources/graalvm').absolutePath}")
+        result.output.contains("-H:ConfigurationFileDirectories=${new File(testProjectDir.root, 'build/native/generated/generateResourcesConfigFile').absolutePath}")
     }
 
-    @Requires({ GraalUtil.isGraalJVM() && !os.windows })
+    @Requires({ AbstractGradleBuildSpec.graalVmAvailable && !os.windows })
     void 'native-image is called with the generated JSON file directory (regular Application)'() {
         given:
         withSwaggerApplication()
 
         when:
-        def result = build('nativeImage', '-i', '--stacktrace')
+        def result = build('nativeCompile', '-i', '--stacktrace')
 
         then:
         result.task(":classes").outcome == TaskOutcome.SUCCESS
-        result.task(":generateResourceConfigFile").outcome == TaskOutcome.SUCCESS
-        result.task(":nativeImage").outcome == TaskOutcome.SUCCESS
+        result.task(":generateResourcesConfigFile").outcome == TaskOutcome.SUCCESS
+        result.task(":nativeCompile").outcome == TaskOutcome.SUCCESS
 
         and:
-        result.output.contains("-H:ConfigurationFileDirectories=${new File(testProjectDir.root, 'build/generated/resources/graalvm').absolutePath}")
+        result.output.contains("-H:ConfigurationFileDirectories=${new File(testProjectDir.root, 'build/native/generated/generateResourcesConfigFile').absolutePath}")
     }
 
     private void withSwaggerMicronautApplication() {
@@ -98,9 +97,7 @@ class MicronautGraalPluginSpec extends AbstractGradleBuildSpec {
             micronaut {
                 version "2.5.4"
             }
-            repositories {
-                mavenCentral()
-            }
+            $repositoriesBlock
             group = "example.micronaut"
             mainClassName="example.Application"
         """
@@ -143,9 +140,7 @@ class Application {
                 implementation("io.swagger.core.v3:swagger-annotations")
             }
             
-            repositories {
-                mavenCentral()
-            }
+            $repositoriesBlock
             group = "example.micronaut"
             mainClassName="example.Application"
         """

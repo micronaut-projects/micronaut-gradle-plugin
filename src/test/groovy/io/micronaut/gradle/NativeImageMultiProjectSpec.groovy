@@ -1,16 +1,15 @@
 package io.micronaut.gradle
 
-import io.micronaut.gradle.graalvm.GraalUtil
+
 import org.gradle.testkit.runner.TaskOutcome
 import spock.lang.IgnoreIf
 import spock.lang.Requires
 
-@Requires({ GraalUtil.isGraalJVM() })
+@Requires({ AbstractGradleBuildSpec.graalVmAvailable })
 @IgnoreIf({ os.isWindows() })
 class NativeImageMultiProjectSpec extends AbstractGradleBuildSpec {
 
     def setup() {
-        settingsFile = testProjectDir.newFile('settings.gradle')
         settingsFile << '''
 rootProject.name="test-multi-project"
 
@@ -25,9 +24,7 @@ include "one"
                 id "java-library"
             }
 
-            repositories {
-                mavenCentral()
-            }
+            $repositoriesBlock
             
             dependencies {
                 implementation("io.micronaut:micronaut-core:2.4.2")
@@ -46,9 +43,7 @@ include "one"
                 version "2.4.2"
             }
             
-            repositories {
-                mavenCentral()
-            }
+            $repositoriesBlock
             
             dependencies {
                 implementation project(":one")
@@ -99,19 +94,19 @@ class Application {
 
     void 'test build native image in subproject'() {
         when:
-        def result = build('two:nativeImage', '-i', '--stacktrace')
+        def result = build('javaToolchains', 'two:nativeCompile', '-i', '--stacktrace')
 
-        def task = result.task(":two:nativeImage")
+        def task = result.task(":two:nativeCompile")
         println result.output
+        def binary = new File("$testProjectDir.root/two/build/native/nativeCompile/two")
+
         then:
         result.output.contains("Native Image written to")
         task.outcome == TaskOutcome.SUCCESS
-        new File("$testProjectDir.root/two/build/native-image/application").canExecute()
-
-
+        binary.canExecute()
 
         when:
-        def process = "$testProjectDir.root/two/build/native-image/application".execute()
+        def process = binary.absolutePath.execute()
         def exitCode = process.waitFor()
 
         def output = process.text
