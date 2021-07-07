@@ -1,22 +1,9 @@
 package io.micronaut.gradle
 
-import org.gradle.testkit.runner.GradleRunner
+
 import org.gradle.testkit.runner.TaskOutcome
-import org.junit.Rule
-import org.junit.rules.TemporaryFolder
-import spock.lang.Specification
 
-class MicronautApplicationPluginSpec extends Specification {
-
-    @Rule TemporaryFolder testProjectDir = new TemporaryFolder()
-
-    File settingsFile
-    File buildFile
-
-    def setup() {
-        settingsFile = testProjectDir.newFile('settings.gradle')
-        buildFile = testProjectDir.newFile('build.gradle')
-    }
+class MicronautApplicationPluginSpec extends AbstractGradleBuildSpec {
 
     def "test junit 5 test runtime"() {
         given:
@@ -65,11 +52,7 @@ public class ExampleTest {
 """
 
         when:
-        def result = GradleRunner.create()
-                .withProjectDir(testProjectDir.root)
-                .withArguments('test')
-                .withPluginClasspath()
-                .build()
+        def result = build('test')
 
         def task = result.task(":test")
         println result.output

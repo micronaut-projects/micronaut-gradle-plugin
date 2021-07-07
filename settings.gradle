@@ -1,1 +1,19 @@
+pluginManagement {
+    includeBuild "git-helper"
+}
+
+plugins {
+    id 'io.micronaut.build.git-helper'
+}
+
 rootProject.name = 'micronaut-gradle-plugin'
+
+enableFeaturePreview("VERSION_CATALOGS")
+
+includedGitRepositories {
+    repo {
+        url = "https://github.com/melix/native-build-tools.git"
+        directory = "native-gradle-plugin"
+        branch = 'cc/resources-generation'
+    }
+}

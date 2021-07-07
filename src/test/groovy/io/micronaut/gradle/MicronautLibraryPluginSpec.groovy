@@ -1,24 +1,9 @@
 package io.micronaut.gradle
 
-import org.gradle.testkit.runner.GradleRunner
+
 import org.gradle.testkit.runner.TaskOutcome
-import org.junit.Rule
-import org.junit.rules.TemporaryFolder
-import spock.lang.Specification
 
-class MicronautLibraryPluginSpec extends Specification {
-
-    @Rule TemporaryFolder testProjectDir = new TemporaryFolder()
-
-    File settingsFile
-    File buildFile
-    File kotlinBuildFile
-
-    def setup() {
-        settingsFile = testProjectDir.newFile('settings.gradle')
-        buildFile = testProjectDir.newFile('build.gradle')
-        kotlinBuildFile = testProjectDir.newFile('build.gradle.kts')
-    }
+class MicronautLibraryPluginSpec extends AbstractGradleBuildSpec {
 
     def "test JUnit 5 platform excludes work"() {
         given:
@@ -67,11 +52,7 @@ class FooTest {
 """
 
         when:
-        def result = GradleRunner.create()
-                .withProjectDir(testProjectDir.root)
-                .withArguments('test')
-                .withPluginClasspath()
-                .build()
+        def result = build('test')
 
         then:
         result.task(":test").outcome == TaskOutcome.SUCCESS
@@ -143,11 +124,7 @@ class FooTest {
 """
 
         when:
-        def result = GradleRunner.create()
-                .withProjectDir(testProjectDir.root)
-                .withArguments('test')
-                .withPluginClasspath()
-                .build()
+        def result = build('test')
 
         then:
         result.task(":test").outcome == TaskOutcome.SUCCESS
@@ -196,11 +173,7 @@ public class Foo {
 """
 
         when:
-        def result = GradleRunner.create()
-                .withProjectDir(testProjectDir.root)
-                .withArguments('assemble', "--stacktrace")
-                .withPluginClasspath()
-                .build()
+        def result = build('assemble', "--stacktrace")
 
         then:
         result.task(":assemble").outcome == TaskOutcome.SUCCESS
@@ -258,11 +231,7 @@ class Foo {}
 """
 
         when:
-        def result = GradleRunner.create()
-                .withProjectDir(testProjectDir.root)
-                .withArguments('assemble')
-                .withPluginClasspath()
-                .build()
+        def result = build('assemble')
 
         then:
         result.task(":assemble").outcome == TaskOutcome.SUCCESS
@@ -306,11 +275,7 @@ class Foo {}
 """
 
         when:
-        def result = GradleRunner.create()
-                .withProjectDir(testProjectDir.root)
-                .withArguments('assemble')
-                .withPluginClasspath()
-                .build()
+        def result = build('assemble')
 
         then:
         result.task(":assemble").outcome == TaskOutcome.SUCCESS
@@ -357,12 +322,7 @@ class Foo {}
 """
 
         when:
-        def result = GradleRunner.create()
-                .withProjectDir(testProjectDir.root)
-                .withArguments('assemble')
-                .withPluginClasspath()
-
-                .build()
+        def result = build('assemble')
 
         println result.output
         then:
@@ -414,12 +374,7 @@ class Foo {}
 """
 
         when:
-        def result = GradleRunner.create()
-                .withProjectDir(testProjectDir.root)
-                .withArguments('compileCustomKotlin')
-                .withPluginClasspath()
-
-                .build()
+        def result = build('compileCustomKotlin')
 
         println result.output
         then:
@@ -469,11 +424,7 @@ class Foo {}
 """
 
         when:
-        def result = GradleRunner.create()
-                .withProjectDir(testProjectDir.root)
-                .withArguments('compileCustomJava')
-                .withPluginClasspath()
-                .build()
+        def result = build('compileCustomJava')
 
         then:
         result.task(":compileCustomJava").outcome == TaskOutcome.SUCCESS
@@ -532,11 +483,7 @@ class Foo {
 """
 
         when:
-        def result = GradleRunner.create()
-                .withProjectDir(testProjectDir.root)
-                .withArguments('test')
-                .withPluginClasspath()
-                .build()
+        def result = build('test')
 
         then:
         result.task(":test").outcome == TaskOutcome.SUCCESS
@@ -588,11 +535,7 @@ class Foo {}
 """
 
         when:
-        def result = GradleRunner.create()
-                .withProjectDir(testProjectDir.root)
-                .withArguments('compileCustomGroovy')
-                .withPluginClasspath()
-                .build()
+        def result = build('compileCustomGroovy')
 
         then:
         result.task(":compileCustomGroovy").outcome == TaskOutcome.SUCCESS
@@ -635,11 +578,7 @@ class Foo {}
 """
 
         when:
-        def result = GradleRunner.create()
-                .withProjectDir(testProjectDir.root)
-                .withArguments('assemble')
-                .withPluginClasspath()
-                .build()
+        def result = build('assemble')
 
         then:
         result.task(":assemble").outcome == TaskOutcome.SUCCESS
@@ -693,11 +632,7 @@ class Foo {}
 """
 
         when:
-        def result = GradleRunner.create()
-                .withProjectDir(testProjectDir.root)
-                .withArguments('assemble')
-                .withPluginClasspath()
-                .build()
+        def result = build('assemble')
 
         then:
         result.task(":assemble").outcome == TaskOutcome.SUCCESS

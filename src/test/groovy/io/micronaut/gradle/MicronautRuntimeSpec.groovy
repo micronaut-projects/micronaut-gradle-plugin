@@ -1,22 +1,10 @@
 package io.micronaut.gradle
 
-import org.gradle.testkit.runner.GradleRunner
+
 import org.gradle.testkit.runner.TaskOutcome
-import org.junit.Rule
-import org.junit.rules.TemporaryFolder
-import spock.lang.Specification
 import spock.lang.Unroll
 
-class MicronautRuntimeSpec extends Specification {
-    @Rule TemporaryFolder testProjectDir = new TemporaryFolder()
-
-    File settingsFile
-    File buildFile
-
-    def setup() {
-        settingsFile = testProjectDir.newFile('settings.gradle')
-        buildFile = testProjectDir.newFile('build.gradle')
-    }
+class MicronautRuntimeSpec extends AbstractGradleBuildSpec {
 
     @Unroll
     def "test execute tests for application for runtime: #runtime"() {
@@ -91,11 +79,7 @@ public class FooControllerTest {
 }
 """
 
-        def result = GradleRunner.create()
-                .withProjectDir(testProjectDir.root)
-                .withArguments('testClasses')
-                .withPluginClasspath()
-                .build()
+        def result = build('testClasses')
 
         def task = result.task(":testClasses")
         expect:
