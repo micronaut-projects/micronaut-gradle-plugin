@@ -11,7 +11,7 @@ public final class GraalUtil {
      * @return Return whether the JVM in use a GraalVM JVM.
      */
     public static boolean isGraalJVM() {
-        return isGraal("jvmci.Compiler", "java.vendor.version");
+        return isGraal("jvmci.Compiler", "java.vendor.version", "java.vendor");
     }
 
     private static boolean isGraal(String... props) {
