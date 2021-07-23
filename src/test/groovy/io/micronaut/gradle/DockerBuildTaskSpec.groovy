@@ -6,10 +6,12 @@ import org.junit.Rule
 import org.junit.rules.TemporaryFolder
 import spock.lang.IgnoreIf
 import spock.lang.Issue
+import spock.lang.Requires
 import spock.lang.Specification
 import spock.lang.Unroll
 
 @IgnoreIf({ os.windows })
+@Requires({ jvm.isJava11Compatible() })
 class DockerBuildTaskSpec extends Specification {
 
     @Rule TemporaryFolder testProjectDir = new TemporaryFolder()
