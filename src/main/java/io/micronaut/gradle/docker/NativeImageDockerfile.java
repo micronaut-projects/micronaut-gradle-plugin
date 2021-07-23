@@ -234,7 +234,6 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
                 from(new From("fnproject/fn-java-fdk:" + getProjectFnVersion()).withStage("fnfdk"));
                 from(baseImage);
                 workingDir("/function");
-                runCommand("groupadd -g 1000 fn && useradd --uid 1000 -g fn fn");
                 copyFile(new CopyFile("/home/app/application", "/function/func").withStage("graalvm"));
                 copyFile(new CopyFile("/function/runtime/lib/*", ".").withStage("fnfdk"));
                 entryPoint(args.map(strings -> {
@@ -361,7 +360,7 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
         }
 
         if (buildStrategy == DockerBuildStrategy.ORACLE_FUNCTION && baseImage == null) {
-            baseImage = "oraclelinux:7-slim";
+            baseImage = "busybox:glibc";
         } else if (buildStrategy == DockerBuildStrategy.LAMBDA && baseImage == null) {
             baseImage = "amazonlinux:latest";
         } else if (baseImage == null) {
