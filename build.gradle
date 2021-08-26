@@ -58,9 +58,8 @@ dependencies {
   compileOnly "org.jetbrains.kotlin:kotlin-allopen:$kotlinVersion"
   compileOnly "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
 
-
-  optionalPluginDependencies("org.jetbrains.kotlin:kotlin-allopen:1.4.32")
-  optionalPluginDependencies "org.jetbrains.kotlin:kotlin-gradle-plugin:1.4.32"
+  optionalPluginDependencies("org.jetbrains.kotlin:kotlin-allopen:$kotlinVersion")
+  optionalPluginDependencies "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
   testImplementation("org.jetbrains.kotlin:kotlin-allopen:$kotlinVersion")
   testImplementation "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
   testImplementation("org.codehaus.groovy:groovy:3.0.8")
