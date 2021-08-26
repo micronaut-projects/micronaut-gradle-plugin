@@ -48,7 +48,7 @@ tasks.withType(PluginUnderTestMetadata) {
 }
 
 ext {
-  kotlinVersion = "1.4.32"
+  kotlinVersion = "1.5.30"
 }
 
 dependencies {
