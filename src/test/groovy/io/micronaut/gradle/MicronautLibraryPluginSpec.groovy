@@ -1,10 +1,14 @@
 package io.micronaut.gradle
 
+import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.GradleRunner
 import org.gradle.testkit.runner.TaskOutcome
+import org.gradle.testkit.runner.internal.DefaultGradleRunner
 import org.junit.Rule
 import org.junit.rules.TemporaryFolder
+import spock.lang.IgnoreIf
 import spock.lang.Specification
+import spock.util.environment.Jvm
 
 class MicronautLibraryPluginSpec extends Specification {
 
@@ -55,7 +59,6 @@ package example;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-
 @org.junit.jupiter.api.Tag("someTag")
 class FooTest {
     
@@ -67,11 +70,7 @@ class FooTest {
 """
 
         when:
-        def result = GradleRunner.create()
-                .withProjectDir(testProjectDir.root)
-                .withArguments('test')
-                .withPluginClasspath()
-                .build()
+        def result = runGradle('test')
 
         then:
         result.task(":test").outcome == TaskOutcome.SUCCESS
@@ -143,11 +142,7 @@ class FooTest {
 """
 
         when:
-        def result = GradleRunner.create()
-                .withProjectDir(testProjectDir.root)
-                .withArguments('test')
-                .withPluginClasspath()
-                .build()
+        def result = runGradle('test')
 
         then:
         result.task(":test").outcome == TaskOutcome.SUCCESS
@@ -196,11 +191,7 @@ public class Foo {
 """
 
         when:
-        def result = GradleRunner.create()
-                .withProjectDir(testProjectDir.root)
-                .withArguments('assemble', "--stacktrace")
-                .withPluginClasspath()
-                .build()
+        def result = runGradle('assemble', "--stacktrace")
 
         then:
         result.task(":assemble").outcome == TaskOutcome.SUCCESS
@@ -246,7 +237,6 @@ package example;
 import io.swagger.v3.oas.annotations.*;
 import io.swagger.v3.oas.annotations.info.*;
 
-
 @javax.inject.Singleton
 @OpenAPIDefinition(
     info = @Info(
@@ -258,11 +248,7 @@ class Foo {}
 """
 
         when:
-        def result = GradleRunner.create()
-                .withProjectDir(testProjectDir.root)
-                .withArguments('assemble')
-                .withPluginClasspath()
-                .build()
+        def result = runGradle('assemble')
 
         then:
         result.task(":assemble").outcome == TaskOutcome.SUCCESS
@@ -306,11 +292,7 @@ class Foo {}
 """
 
         when:
-        def result = GradleRunner.create()
-                .withProjectDir(testProjectDir.root)
-                .withArguments('assemble')
-                .withPluginClasspath()
-                .build()
+        def result = runGradle('assemble')
 
         then:
         result.task(":assemble").outcome == TaskOutcome.SUCCESS
@@ -321,7 +303,7 @@ class Foo {}
         ).exists()
     }
 
-
+    @IgnoreIf({ jvm.java16Compatible }) // https://youtrack.jetbrains.com/issue/KT-45545
     def "test apply defaults for micronaut-library and kotlin with kotlin DSL"() {
         given:
         settingsFile << "rootProject.name = 'hello-world'"
@@ -357,12 +339,7 @@ class Foo {}
 """
 
         when:
-        def result = GradleRunner.create()
-                .withProjectDir(testProjectDir.root)
-                .withArguments('assemble')
-                .withPluginClasspath()
-
-                .build()
+        def result = runGradle('assemble')
 
         println result.output
         then:
@@ -370,6 +347,7 @@ class Foo {}
         result.output.contains("Creating bean classes for 1 type elements")
     }
 
+    @IgnoreIf({ jvm.java16Compatible }) // https://youtrack.jetbrains.com/issue/KT-45545
     def "test custom sourceSet for micronaut-library and kotlin with kotlin DSL"() {
         given:
         settingsFile << "rootProject.name = 'hello-world'"
@@ -414,12 +392,7 @@ class Foo {}
 """
 
         when:
-        def result = GradleRunner.create()
-                .withProjectDir(testProjectDir.root)
-                .withArguments('compileCustomKotlin')
-                .withPluginClasspath()
-
-                .build()
+        def result = runGradle('compileCustomKotlin')
 
         println result.output
         then:
@@ -469,11 +442,7 @@ class Foo {}
 """
 
         when:
-        def result = GradleRunner.create()
-                .withProjectDir(testProjectDir.root)
-                .withArguments('compileCustomJava')
-                .withPluginClasspath()
-                .build()
+        def result = runGradle('compileCustomJava')
 
         then:
         result.task(":compileCustomJava").outcome == TaskOutcome.SUCCESS
@@ -532,11 +501,7 @@ class Foo {
 """
 
         when:
-        def result = GradleRunner.create()
-                .withProjectDir(testProjectDir.root)
-                .withArguments('test')
-                .withPluginClasspath()
-                .build()
+        def result = runGradle('test')
 
         then:
         result.task(":test").outcome == TaskOutcome.SUCCESS
@@ -588,11 +553,7 @@ class Foo {}
 """
 
         when:
-        def result = GradleRunner.create()
-                .withProjectDir(testProjectDir.root)
-                .withArguments('compileCustomGroovy')
-                .withPluginClasspath()
-                .build()
+        def result = runGradle('compileCustomGroovy')
 
         then:
         result.task(":compileCustomGroovy").outcome == TaskOutcome.SUCCESS
@@ -635,11 +596,7 @@ class Foo {}
 """
 
         when:
-        def result = GradleRunner.create()
-                .withProjectDir(testProjectDir.root)
-                .withArguments('assemble')
-                .withPluginClasspath()
-                .build()
+        def result = runGradle('assemble')
 
         then:
         result.task(":assemble").outcome == TaskOutcome.SUCCESS
@@ -681,7 +638,6 @@ package example
 import io.swagger.v3.oas.annotations.*
 import io.swagger.v3.oas.annotations.info.*
 
-
 @javax.inject.Singleton
 @OpenAPIDefinition(
     info = @Info(
@@ -693,11 +649,7 @@ class Foo {}
 """
 
         when:
-        def result = GradleRunner.create()
-                .withProjectDir(testProjectDir.root)
-                .withArguments('assemble')
-                .withPluginClasspath()
-                .build()
+        def result = runGradle('assemble')
 
         then:
         result.task(":assemble").outcome == TaskOutcome.SUCCESS
@@ -706,5 +658,19 @@ class Foo {}
                 'build/classes/groovy/main/example/$FooDefinition.class'
         ).exists()
         result.output.contains("Generating OpenAPI Documentation")
+    }
+
+    private BuildResult runGradle(String... args) {
+        DefaultGradleRunner runner = ((DefaultGradleRunner) GradleRunner.create())
+        if (Jvm.current.java16Compatible) {
+            runner.withJvmArguments(
+                    '--illegal-access=permit',
+                    '--add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED'
+            )
+        }
+        runner.withProjectDir(testProjectDir.root)
+              .withArguments(args)
+              .withPluginClasspath()
+              .build()
     }
 }

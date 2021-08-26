@@ -18,7 +18,6 @@ import org.gradle.api.tasks.PathSensitivity;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.SourceSetContainer;
 import org.gradle.api.tasks.SourceSetOutput;
-import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import javax.inject.Inject;
@@ -111,7 +110,6 @@ public class NativeImageTask extends AbstractExecTask<NativeImageTask>
         return "native-image";
     }
 
-    @NotNull
     private File getNativeImageExecutable(String javaHome) {
         final File f;
         if (Os.isFamily("windows")) {

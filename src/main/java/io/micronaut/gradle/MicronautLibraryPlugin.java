@@ -21,7 +21,6 @@ import org.gradle.api.tasks.TaskContainer;
 import org.gradle.api.tasks.compile.GroovyCompile;
 import org.gradle.api.tasks.compile.JavaCompile;
 import org.gradle.api.tasks.testing.Test;
-import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.util.*;
@@ -340,7 +339,6 @@ public class MicronautLibraryPlugin implements Plugin<Project> {
         }
     }
 
-    @NotNull
     private Optional<File> getGroovySrcDir(SourceSet groovySourceSet) {
         Optional<File> groovySrc = groovySourceSet.getAllJava().getSrcDirs()
                     .stream().filter(f -> f.getName().endsWith("groovy"))

@@ -71,6 +71,7 @@ class Application {
     }
 
     @Unroll
+    @Requires({ jvm.java11 }) // no NI images for JDK 16
     def "test build docker native image for runtime #runtime"() {
         given:
         settingsFile << "rootProject.name = 'hello-world'"
@@ -133,7 +134,6 @@ micronaut:
         name: test
 """
 
-
         def result = GradleRunner.create()
                 .withProjectDir(testProjectDir.root)
                 .withArguments('dockerBuildNative')
@@ -160,7 +160,6 @@ micronaut:
         "lambda" | 'FROM amazonlinux:latest AS graalvm'
         "jetty"  | 'FROM ghcr.io/graalvm/graalvm-ce:java'
     }
-
 
     def "test build docker native image for lambda with custom main"() {
         given:
