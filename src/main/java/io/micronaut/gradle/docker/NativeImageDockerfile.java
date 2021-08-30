@@ -357,9 +357,7 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
             baseImage = null;
         }
 
-        if (buildStrategy == DockerBuildStrategy.ORACLE_FUNCTION && baseImage == null) {
-            baseImage = "busybox:glibc";
-        } else if (buildStrategy == DockerBuildStrategy.LAMBDA && baseImage == null) {
+        if (buildStrategy == DockerBuildStrategy.LAMBDA && baseImage == null) {
             baseImage = "amazonlinux:latest";
         } else if (baseImage == null) {
             baseImage = "frolvlad/alpine-glibc:alpine-3.12";
