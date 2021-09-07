@@ -2,6 +2,7 @@ package io.micronaut.gradle.docker;
 
 import com.bmuschko.gradle.docker.tasks.image.Dockerfile;
 import io.micronaut.gradle.graalvm.NativeImageTask;
+import java.util.Collections;
 import org.gradle.api.Action;
 import org.gradle.api.JavaVersion;
 import org.gradle.api.Project;
@@ -49,6 +50,8 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
     private final Property<DockerBuildStrategy> buildStrategy;
     @Input
     private final Property<String> defaultCommand;
+    @Input
+    private final ListProperty<String> customEntrypoint;
 
 
     public NativeImageDockerfile() {
@@ -58,7 +61,7 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
         getDestFile().set(project.getLayout().getBuildDirectory().file("docker/DockerfileNative"));
         ObjectFactory objects = project.getObjects();
         this.buildStrategy = objects.property(DockerBuildStrategy.class)
-                                        .convention(DockerBuildStrategy.DEFAULT);
+                               .convention(DockerBuildStrategy.DEFAULT);
         this.jdkVersion = objects.property(String.class);
         this.requireGraalSdk = objects.property(Boolean.class).convention(true);
         JavaVersion javaVersion = Jvm.current().getJavaVersion();
@@ -76,10 +79,12 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
         this.graalImage = objects.property(String.class)
                                .convention(graalVersion.map(version -> "ghcr.io/graalvm/graalvm-ce:" + jdkVersion.get() + '-' + version ));
         this.baseImage = objects.property(String.class)
-                                    .convention("null");
+                               .convention("null");
         this.args = objects.listProperty(String.class);
         this.exposedPorts = objects.listProperty(Integer.class);
         this.defaultCommand = objects.property(String.class).convention("none");
+        this.customEntrypoint = objects.listProperty(String.class)
+                               .convention(Collections.emptyList());
 
         //noinspection Convert2Lambda
         doLast(new Action<Task>() {
@@ -158,6 +163,11 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
     @Override
     public ListProperty<Integer> getExposedPorts() {
         return this.exposedPorts;
+    }
+
+    @Override
+    public ListProperty<String> getCustomEntrypoint() {
+        return customEntrypoint;
     }
 
     private void setupInstructions(List<Instruction> additionalInstructions) {
@@ -280,12 +290,16 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
                 exposePort(this.exposedPorts);
                 getInstructions().addAll(additionalInstructions);
                 copyFile(new CopyFile("/home/app/application", "/app/application").withStage("graalvm"));
-                entryPoint(args.map(strings -> {
-                    List<String> newList = new ArrayList<>(strings.size() + 1);
-                    newList.add("/app/application");
-                    newList.addAll(strings);
-                    return newList;
-                }));
+                if (getCustomEntrypoint().get().size() > 0) {
+                    entryPoint(getCustomEntrypoint());
+                } else {
+                    entryPoint(getArgs().map(strings -> {
+                        List<String> newList = new ArrayList<>(strings.size() + 1);
+                        newList.add("/app/application");
+                        newList.addAll(strings);
+                        return newList;
+                    }));
+                }
                 break;
         }
     }
@@ -332,6 +346,12 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
     @Override
     public DockerBuildOptions exportPorts(Integer... ports) {
         this.exposedPorts.set(Arrays.asList(ports));
+        return this;
+    }
+
+    @Override
+    public DockerBuildOptions customEntrypoint(String... customEntrypoint) {
+        this.customEntrypoint.addAll(Arrays.asList(customEntrypoint));
         return this;
     }
 

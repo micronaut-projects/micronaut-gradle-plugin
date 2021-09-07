@@ -292,7 +292,7 @@ class Application {
         and:
         dockerFileNative.find() { s -> s == 'FROM test_base_image_docker' }
         dockerFileNative.find { s -> s == """HEALTHCHECK CMD curl -s localhost:8090/health | grep '"status":"UP"'""" }
-        dockerFile.last().contains('ENTRYPOINT')
+        dockerFileNative.last().contains('ENTRYPOINT')
         dockerFileNative.find {s -> s.contains('-Xmx64m')}
 
         where:
@@ -300,6 +300,85 @@ class Application {
         "netty"  | 'FROM ghcr.io/graalvm/graalvm-ce:java'
         "lambda" | 'FROM amazonlinux:latest AS graalvm'
         "jetty"  | 'FROM ghcr.io/graalvm/graalvm-ce:java'
+    }
+
+    def "test construct dockerfile and dockerfileNative custom entrypoint"() {
+        setup:
+        settingsFile << "rootProject.name = 'hello-world'"
+        buildFile << """
+            plugins {
+                id "io.micronaut.application"
+            }
+            
+            micronaut {
+                version "2.3.4"
+            }
+            
+            repositories {
+                mavenCentral()
+            }
+            
+            nativeImage {
+                main = "other.Application"
+            }
+            
+            java {
+                sourceCompatibility = JavaVersion.toVersion('8')
+                targetCompatibility = JavaVersion.toVersion('8')
+            }
+            
+            dockerfile {
+                args('-Xmx64m')
+                baseImage('test_base_image_jvm')
+                instruction \"\"\"HEALTHCHECK CMD curl -s localhost:8090/health | grep '"status":"UP"'\"\"\"
+                customEntrypoint = ["./entrypoint.sh"]
+            }
+            dockerfileNative {
+                args('-Xmx64m')
+                baseImage('test_base_image_docker')
+                instruction \"\"\"HEALTHCHECK CMD curl -s localhost:8090/health | grep '"status":"UP"'\"\"\"
+                customEntrypoint = ["./entrypoint.sh"]
+            }
+            
+            mainClassName="example.Application"
+        """
+        testProjectDir.newFolder("src", "main", "java", "other")
+        def javaFile = testProjectDir.newFile("src/main/java/other/Application.java")
+        javaFile.parentFile.mkdirs()
+        javaFile << """
+package other;
+
+class Application {
+    public static void main(String... args) {
+    
+    }
+}
+"""
+
+        def result = GradleRunner.create()
+            .withProjectDir(testProjectDir.root)
+            .withArguments('dockerfile', 'dockerfileNative')
+            .withPluginClasspath()
+            .build()
+
+        def dockerfileTask = result.task(":dockerfile")
+        def dockerfileNativeTask = result.task(":dockerfileNative")
+        def dockerFileNative = new File(testProjectDir.root, 'build/docker/DockerfileNative').readLines('UTF-8')
+        def dockerFile = new File(testProjectDir.root, 'build/docker/Dockerfile').readLines('UTF-8')
+
+        expect:
+        dockerfileTask.outcome == TaskOutcome.SUCCESS
+        dockerfileNativeTask.outcome == TaskOutcome.SUCCESS
+
+        and:
+        dockerFile.first() == ('FROM test_base_image_jvm')
+        dockerFile.find { s -> s == """HEALTHCHECK CMD curl -s localhost:8090/health | grep '"status":"UP"'""" }
+        dockerFile.last().contains('ENTRYPOINT ["./entrypoint.sh"]')
+
+        and:
+        dockerFileNative.find() { s -> s == 'FROM test_base_image_docker' }
+        dockerFileNative.find { s -> s == """HEALTHCHECK CMD curl -s localhost:8090/health | grep '"status":"UP"'""" }
+        dockerFileNative.last().contains('ENTRYPOINT ["./entrypoint.sh"]')
     }
 
     @Unroll

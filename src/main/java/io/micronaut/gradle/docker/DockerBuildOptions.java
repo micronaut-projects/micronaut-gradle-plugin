@@ -4,8 +4,6 @@ import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.Input;
 
-import javax.annotation.Nullable;
-
 /**
  * Build options for Docker.
  *
@@ -38,6 +36,12 @@ public interface DockerBuildOptions {
     ListProperty<Integer> getExposedPorts();
 
     /**
+     * @return The entry point command to run
+     */
+    @Input
+    ListProperty<String> getCustomEntrypoint();
+
+    /**
      * Arguments for the entrypoint.
      * @param args The arguments
      * @return This
@@ -56,4 +60,10 @@ public interface DockerBuildOptions {
      * @return The ports
      */
     DockerBuildOptions exportPorts(Integer... ports);
+
+    /**
+     * @param customEntrypoint The entry point command to run
+     * @return This
+     */
+    DockerBuildOptions customEntrypoint(String... customEntrypoint);
 }
