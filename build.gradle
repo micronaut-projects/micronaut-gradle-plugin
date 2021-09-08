@@ -15,10 +15,6 @@ plugins {
 // so you should probably use JCenter for dependency resolution in your own
 // project.
 repositories {
-    maven {
-        name = "GraalVM Snapshots"
-        url = "https://raw.githubusercontent.com/melix/native-build-tools/snapshots/"
-    }
     mavenCentral()
     gradlePluginPortal()
 }
@@ -53,10 +49,10 @@ tasks.withType(PluginUnderTestMetadata) {
 }
 
 dependencies {
-    implementation libs.dockerPgin
-    implementation libs.diffplugPgin
-    implementation libs.shadowPgin
-    compileOnly libs.graalvmPgin
+    implementation libs.dockerPlug
+    implementation libs.diffplugPlug
+    implementation libs.shadowPlug
+    compileOnly libs.graalvmPlug
     compileOnly libs.bundles.optionalPlugins
 
     optionalPluginDependencies libs.bundles.optionalPlugins

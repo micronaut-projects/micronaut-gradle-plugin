@@ -31,14 +31,8 @@ abstract class AbstractGradleBuildSpec extends Specification {
     }
 
     def getRepositoriesBlock(String dsl = 'groovy') {
-        String notation = dsl == 'groovy'
-                ? 'url = "https://raw.githubusercontent.com/graalvm/native-build-tools/snapshots/"'
-                : 'url = uri("https://raw.githubusercontent.com/graalvm/native-build-tools/snapshots/")'
         """repositories {
     mavenCentral()
-    maven {
-        $notation
-    }
 }"""
     }
 
