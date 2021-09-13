@@ -10,6 +10,7 @@ import com.bmuschko.gradle.docker.tasks.image.Dockerfile;
 import io.micronaut.gradle.MicronautApplicationPlugin;
 import io.micronaut.gradle.MicronautRuntime;
 import io.micronaut.gradle.docker.tasks.BuildLayersTask;
+import io.micronaut.gradle.graalvm.GenerateResourceConfigFile;
 import io.micronaut.gradle.graalvm.NativeImageTask;
 import org.gradle.api.Action;
 import org.gradle.api.Plugin;
@@ -90,6 +91,8 @@ public class MicronautDockerPlugin implements Plugin<Project> {
                     .getByName(RUNTIME_CLASSPATH_CONFIGURATION_NAME));
             task.getResourcesLayer().from(project.getExtensions().getByType(SourceSetContainer.class)
                     .getByName(SourceSet.MAIN_SOURCE_SET_NAME).getOutput().getResourcesDir());
+            // workaround for #246
+            task.getResourcesLayer().from(tasks.withType(GenerateResourceConfigFile.class));
             task.getAppLayer().from(runnerJar);
         });
 

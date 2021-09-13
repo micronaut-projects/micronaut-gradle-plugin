@@ -20,7 +20,10 @@ import org.gradle.internal.jvm.Jvm;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Specialization of {@link Dockerfile} for building native images.
@@ -58,7 +61,7 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
         getDestFile().set(project.getLayout().getBuildDirectory().file("docker/DockerfileNative"));
         ObjectFactory objects = project.getObjects();
         this.buildStrategy = objects.property(DockerBuildStrategy.class)
-                                        .convention(DockerBuildStrategy.DEFAULT);
+                .convention(DockerBuildStrategy.DEFAULT);
         this.jdkVersion = objects.property(String.class);
         this.requireGraalSdk = objects.property(Boolean.class).convention(true);
         JavaVersion javaVersion = Jvm.current().getJavaVersion();
@@ -72,11 +75,11 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
             jdkVersion.convention("java8");
         }
         this.graalVersion = objects.property(String.class)
-                               .convention("21.2.0");
+                .convention("21.2.0");
         this.graalImage = objects.property(String.class)
-                               .convention(graalVersion.map(version -> "ghcr.io/graalvm/graalvm-ce:" + jdkVersion.get() + '-' + version ));
+                .convention(graalVersion.map(version -> "ghcr.io/graalvm/graalvm-ce:" + jdkVersion.get() + '-' + version));
         this.baseImage = objects.property(String.class)
-                                    .convention("null");
+                .convention("null");
         this.args = objects.listProperty(String.class);
         this.exposedPorts = objects.listProperty(Integer.class);
         this.defaultCommand = objects.property(String.class).convention("none");
@@ -98,7 +101,6 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
     }
 
     /**
-     *
      * @return Whether a Graal SDK is required (defaults to 'true').
      */
     public Property<Boolean> getRequireGraalSdk() {
@@ -166,9 +168,12 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
         final TaskContainer tasks = getProject().getTasks();
         Task nit = tasks.findByName("nativeImage");
         NativeImageTask nativeImageTask = (NativeImageTask) tasks.getByName("internalDockerNativeImageTask");
+        Set<java.io.File> configDirs = Collections.emptySet();
         if (nit instanceof NativeImageTask) {
             final NativeImageTask sourceTask = (NativeImageTask) nit;
-            nativeImageTask.args(sourceTask.getArgs());
+            configDirs = sourceTask.getConfigDirectories().getFiles();
+            List<String> args = sourceTask.getArgs();
+            nativeImageTask.args(args);
             nativeImageTask.getJvmArgs().set(sourceTask.getJvmArgs());
             nativeImageTask.getSystemProperties().set(sourceTask.getSystemProperties());
             nativeImageTask.getMain().convention(sourceTask.getMain());
@@ -213,7 +218,21 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
         nativeImageTask.configure(false);
         // clear out classpath
         nativeImageTask.setClasspath(getProject().files());
-        List<String> commandLine = nativeImageTask.getCommandLine();
+        Set<java.io.File> finalConfigDirs = configDirs;
+        List<String> commandLine = nativeImageTask.getCommandLine()
+                .stream()
+                .map(line -> {
+                    for (java.io.File configDir : finalConfigDirs) {
+                        String srcDir = configDir.getAbsolutePath();
+                        if (line.contains(srcDir)) {
+                            // This is a quick and dirty fix for #246 which is going to be removed
+                            // once we use the official GraalVM plugin
+                            return line.replace(srcDir, "/home/app/resources");
+                        }
+                    }
+                    return line;
+                })
+                .collect(Collectors.toList());
         commandLine.add("-cp");
         commandLine.add("/home/app/libs/*.jar:/home/app/resources:/home/app/application.jar");
 
@@ -312,6 +331,7 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
 
     /**
      * Adds additional args to pass to the native image executable.
+     *
      * @param args The args
      * @return This instance.
      */
