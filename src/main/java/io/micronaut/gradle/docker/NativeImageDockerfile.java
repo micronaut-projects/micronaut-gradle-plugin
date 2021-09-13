@@ -139,7 +139,7 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
                         .map(NativeImageDockerfile::toSupportedJavaVersion)
                         .map(v -> "java" + v)
         );
-        getGraalVersion().convention("21.1.0");
+        getGraalVersion().convention("21.2.0");
         getGraalImage().convention(getGraalVersion().zip(getJdkVersion(), NativeImageDockerfile::toGraalVMBaseImageName));
         getNativeImageOptions().convention(project
                 .getTasks()
@@ -543,13 +543,6 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
         return this;
     }
 
-    public NativeImageDockerfile graalImage(String imageName) {
-        if (imageName != null) {
-            this.getGraalImage().set(imageName);
-        }
-        return this;
-    }
-
     private String getProjectFnVersion() {
         JavaVersion javaVersion = Jvm.current().getJavaVersion();
         if (javaVersion != null && javaVersion.isJava11Compatible()) {
@@ -576,9 +569,7 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
         private String resolve() {
             String baseImage = getBaseImage().getOrNull();
 
-            if (strategy == DockerBuildStrategy.ORACLE_FUNCTION && baseImage == null) {
-                baseImage = "busybox:glibc";
-            } else if (strategy == DockerBuildStrategy.LAMBDA && baseImage == null) {
+            if (strategy == DockerBuildStrategy.LAMBDA && baseImage == null) {
                 baseImage = "amazonlinux:latest";
             } else if (baseImage == null) {
                 baseImage = "frolvlad/alpine-glibc:alpine-3.12";
