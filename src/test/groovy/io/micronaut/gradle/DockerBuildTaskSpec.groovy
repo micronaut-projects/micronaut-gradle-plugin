@@ -331,13 +331,13 @@ class Application {
                 args('-Xmx64m')
                 baseImage('test_base_image_jvm')
                 instruction \"\"\"HEALTHCHECK CMD curl -s localhost:8090/health | grep '"status":"UP"'\"\"\"
-                customEntrypoint = ["./entrypoint.sh"]
+                entryPoint('./entrypoint.sh')
             }
             dockerfileNative {
                 args('-Xmx64m')
                 baseImage('test_base_image_docker')
                 instruction \"\"\"HEALTHCHECK CMD curl -s localhost:8090/health | grep '"status":"UP"'\"\"\"
-                customEntrypoint = ["./entrypoint.sh"]
+                entryPoint('./entrypoint.sh')
             }
             
             mainClassName="example.Application"
@@ -373,12 +373,12 @@ class Application {
         and:
         dockerFile.first() == ('FROM test_base_image_jvm')
         dockerFile.find { s -> s == """HEALTHCHECK CMD curl -s localhost:8090/health | grep '"status":"UP"'""" }
-        dockerFile.last().contains('ENTRYPOINT ["./entrypoint.sh"]')
+        dockerFile.find { s -> s == 'ENTRYPOINT ["./entrypoint.sh"]'}
 
         and:
         dockerFileNative.find() { s -> s == 'FROM test_base_image_docker' }
         dockerFileNative.find { s -> s == """HEALTHCHECK CMD curl -s localhost:8090/health | grep '"status":"UP"'""" }
-        dockerFileNative.last().contains('ENTRYPOINT ["./entrypoint.sh"]')
+        dockerFileNative.find { s -> s == 'ENTRYPOINT ["./entrypoint.sh"]'}
     }
 
     @Unroll

@@ -30,8 +30,7 @@ public class MicronautDockerfile extends Dockerfile implements DockerBuildOption
     private final Property<DockerBuildStrategy> buildStrategy;
     @Input
     private final Property<String> defaultCommand;
-    @Input
-    private final ListProperty<String> customEntrypoint;
+
 
     public MicronautDockerfile() {
         Project project = getProject();
@@ -45,8 +44,6 @@ public class MicronautDockerfile extends Dockerfile implements DockerBuildOption
         this.args = objects.listProperty(String.class);
         this.exposedPorts = objects.listProperty(Integer.class)
                     .convention(Collections.singletonList(8080));
-        this.customEntrypoint = objects.listProperty(String.class)
-                    .convention(Collections.emptyList());
 
         //noinspection Convert2Lambda
         doLast(new Action<Task>() {
@@ -93,9 +90,7 @@ public class MicronautDockerfile extends Dockerfile implements DockerBuildOption
                 setupResources(this);
                 exposePort(exposedPorts);
                 getInstructions().addAll(additionalInstructions);
-                if (getCustomEntrypoint().get().size() > 0) {
-                    entryPoint(getCustomEntrypoint());
-                } else {
+                if (getInstructions().get().stream().noneMatch(instruction -> instruction.getKeyword().equals(EntryPointInstruction.KEYWORD))) {
                     entryPoint(getArgs().map(strings -> {
                         List<String> newList = new ArrayList<>(strings.size() + 3);
                         newList.add("java");
@@ -151,11 +146,6 @@ public class MicronautDockerfile extends Dockerfile implements DockerBuildOption
     }
 
     @Override
-    public ListProperty<String> getCustomEntrypoint() {
-        return customEntrypoint;
-    }
-
-    @Override
     public DockerBuildOptions args(String... args) {
         this.args.addAll(args);
         return this;
@@ -172,12 +162,6 @@ public class MicronautDockerfile extends Dockerfile implements DockerBuildOption
     @Override
     public DockerBuildOptions exportPorts(Integer... ports) {
         this.exposedPorts.set(Arrays.asList(ports));
-        return this;
-    }
-
-    @Override
-    public DockerBuildOptions customEntrypoint(String... customEntrypoint) {
-        this.customEntrypoint.addAll(Arrays.asList(customEntrypoint));
         return this;
     }
 
