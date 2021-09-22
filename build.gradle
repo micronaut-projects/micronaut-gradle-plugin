@@ -62,7 +62,7 @@ dependencies {
   optionalPluginDependencies "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
   testImplementation("org.jetbrains.kotlin:kotlin-allopen:$kotlinVersion")
   testImplementation "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
-  testImplementation("org.codehaus.groovy:groovy:3.0.8")
+  testImplementation("org.codehaus.groovy:groovy:3.0.9")
   testImplementation("org.spockframework:spock-core:2.0-groovy-3.0")
   testImplementation 'org.spockframework:spock-junit4:2.0-groovy-3.0'
 }
