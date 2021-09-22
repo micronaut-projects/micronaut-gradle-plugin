@@ -30,6 +30,7 @@ public class BuildLayersTask extends DefaultTask {
 
     @TaskAction
     public void action() {
+        getProject().delete(getProject().files(outputDir));
         // Create folders if case there are no resources/libs in project
         Provider<RegularFile> libsDir = outputDir.file("libs");
         getProject().mkdir(libsDir);
