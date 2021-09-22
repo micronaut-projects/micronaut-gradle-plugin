@@ -100,3 +100,7 @@ idea.module {
   downloadJavadoc = true
   downloadSources = true
 }
+
+tasks.register("dependencyUpdates") {
+  description = "Placeholder task for compatibility with other Micronaut builds"
+}
