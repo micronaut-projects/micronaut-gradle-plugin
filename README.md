@@ -312,7 +312,7 @@ To build a regular Java application into a Docker container that is ready to be 
 $ ./gradlew dockerBuild
 ``` 
 
-The default uses an OpenJDK 14 slim base image, however you can easily switch the base image to use by using the `baseImage` property of the `dockerfile` task:
+The default uses an `openjdk:16-alpine` base image, however you can easily switch the base image to use by using the `baseImage` property of the `dockerfile` task:
 
 ```groovy
 dockerfile {
