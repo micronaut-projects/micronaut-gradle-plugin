@@ -1,28 +1,15 @@
 package io.micronaut.gradle
 
-import org.gradle.testkit.runner.GradleRunner
+
 import org.gradle.testkit.runner.TaskOutcome
-import org.junit.Rule
-import org.junit.rules.TemporaryFolder
 import spock.lang.IgnoreIf
 import spock.lang.Issue
 import spock.lang.Requires
-import spock.lang.Specification
 import spock.lang.Unroll
 
 @IgnoreIf({ os.windows })
 @Requires({ jvm.isJava11Compatible() })
-class DockerBuildTaskSpec extends Specification {
-
-    @Rule TemporaryFolder testProjectDir = new TemporaryFolder()
-
-    File settingsFile
-    File buildFile
-
-    def setup() {
-        settingsFile = testProjectDir.newFile('settings.gradle')
-        buildFile = testProjectDir.newFile('build.gradle')
-    }
+class DockerBuildTaskSpec extends AbstractGradleBuildSpec {
 
     def "test build docker image"() {
         given:
@@ -36,11 +23,8 @@ class DockerBuildTaskSpec extends Specification {
                 version "2.3.3"
             }
             
-            repositories {
-                mavenCentral()
-            }
-            
-            
+            $repositoriesBlock
+
             mainClassName="example.Application"
             
         """
@@ -58,11 +42,7 @@ class Application {
 """
 
         when:
-        def result = GradleRunner.create()
-                .withProjectDir(testProjectDir.root)
-                .withArguments('dockerBuild', '-s')
-                .withPluginClasspath()
-                .build()
+        def result = build('dockerBuild', '-s')
 
         def task = result.task(":dockerBuild")
         then:
@@ -70,6 +50,7 @@ class Application {
         task.outcome == TaskOutcome.SUCCESS
     }
 
+    @Requires({ AbstractGradleBuildSpec.graalVmAvailable })
     @Unroll
     @Requires({ jvm.java11 }) // no NI images for JDK 16
     def "test build docker native image for runtime #runtime"() {
@@ -85,15 +66,13 @@ class Application {
                 runtime "$runtime"
             }
             
-            repositories {
-                mavenCentral()
-            }
+            $repositoriesBlock
             
             mainClassName="example.Application"
             
             java {
-                sourceCompatibility = JavaVersion.toVersion('8')
-                targetCompatibility = JavaVersion.toVersion('8')
+                sourceCompatibility = JavaVersion.toVersion('11')
+                targetCompatibility = JavaVersion.toVersion('11')
             }
             
             dockerfileNative {
@@ -134,24 +113,21 @@ micronaut:
         name: test
 """
 
-        def result = GradleRunner.create()
-                .withProjectDir(testProjectDir.root)
-                .withArguments('dockerBuildNative')
-                .withPluginClasspath()
-                .build()
+
+        def result = build('dockerBuildNative')
 
         def task = result.task(":dockerBuildNative")
         def dockerFile = new File(testProjectDir.root, 'build/docker/DockerfileNative').readLines('UTF-8')
 
         expect:
         dockerFile.first().startsWith(nativeImage)
-        dockerFile.find {s -> s == """HEALTHCHECK CMD curl -s localhost:8090/health | grep '"status":"UP"'""" }
+        dockerFile.find { s -> s == """HEALTHCHECK CMD curl -s localhost:8090/health | grep '"status":"UP"'""" }
         dockerFile.last().contains('ENTRYPOINT')
-        dockerFile.find {s -> s.contains('-Xmx64m')}
+        dockerFile.find { s -> s.contains('-Xmx64m') }
 
         and:
         result.output.contains("Successfully tagged hello-world:latest")
-        result.output.contains("Writing resource-config.json file")
+        result.output.contains("Resources configuration written into")
         task.outcome == TaskOutcome.SUCCESS
 
         where:
@@ -161,6 +137,7 @@ micronaut:
         "jetty"  | 'FROM ghcr.io/graalvm/graalvm-ce:java'
     }
 
+    @Requires({ AbstractGradleBuildSpec.graalVmAvailable })
     def "test build docker native image for lambda with custom main"() {
         given:
         settingsFile << "rootProject.name = 'hello-world'"
@@ -174,17 +151,19 @@ micronaut:
                 runtime "lambda"
             }
             
-            repositories {
-                mavenCentral()
-            }
+            $repositoriesBlock
             
-            nativeImage {
-                main = "other.Application"
+            graalvmNative {
+                binaries {
+                    main {
+                        mainClass =  "other.Application"
+                    }
+                }
             }
             
             java {
-                sourceCompatibility = JavaVersion.toVersion('8')
-                targetCompatibility = JavaVersion.toVersion('8')
+                sourceCompatibility = JavaVersion.toVersion('11')
+                targetCompatibility = JavaVersion.toVersion('11')
             }
             
             mainClassName="example.Application"
@@ -202,11 +181,7 @@ class Application {
 }
 """
 
-        def result = GradleRunner.create()
-                .withProjectDir(testProjectDir.root)
-                .withArguments('dockerBuildNative')
-                .withPluginClasspath()
-                .build()
+        def result = build('dockerBuildNative')
 
         def task = result.task(":dockerBuildNative")
 
@@ -229,17 +204,19 @@ class Application {
                 runtime "$runtime"
             }
             
-            repositories {
-                mavenCentral()
-            }
+            $repositoriesBlock
             
-            nativeImage {
-                main = "other.Application"
+            graalvmNative {
+                binaries {
+                    main {
+                        mainClass =  "other.Application"
+                    }
+                }
             }
-            
+                    
             java {
-                sourceCompatibility = JavaVersion.toVersion('8')
-                targetCompatibility = JavaVersion.toVersion('8')
+                sourceCompatibility = JavaVersion.toVersion('11')
+                targetCompatibility = JavaVersion.toVersion('11')
             }
             
             dockerfile {
@@ -268,11 +245,7 @@ class Application {
 }
 """
 
-        def result = GradleRunner.create()
-                .withProjectDir(testProjectDir.root)
-                .withArguments('dockerfile', 'dockerfileNative')
-                .withPluginClasspath()
-                .build()
+        def result = build('dockerfile', 'dockerfileNative')
 
         def dockerfileTask = result.task(":dockerfile")
         def dockerfileNativeTask = result.task(":dockerfileNative")
@@ -287,7 +260,7 @@ class Application {
         dockerFile.first() == ('FROM test_base_image_jvm')
         dockerFile.find { s -> s == """HEALTHCHECK CMD curl -s localhost:8090/health | grep '"status":"UP"'""" }
         dockerFile.last().contains('ENTRYPOINT')
-        dockerFile.find {s -> s.contains('-Xmx64m')}
+        dockerFile.find { s -> s.contains('-Xmx64m') }
 
         and:
         dockerFileNative.find() { s -> s == 'FROM test_base_image_docker' }
@@ -302,6 +275,7 @@ class Application {
         "jetty"  | 'FROM ghcr.io/graalvm/graalvm-ce:java'
     }
 
+    @Requires({ AbstractGradleBuildSpec.graalVmAvailable })
     def "test construct dockerfile and dockerfileNative custom entrypoint"() {
         setup:
         settingsFile << "rootProject.name = 'hello-world'"
@@ -314,12 +288,14 @@ class Application {
                 version "2.3.4"
             }
             
-            repositories {
-                mavenCentral()
-            }
+            $repositoriesBlock
             
-            nativeImage {
-                main = "other.Application"
+            graalvmNative {
+                binaries {
+                    main {
+                        mainClass = "other.Application"
+                    }
+                }
             }
             
             java {
@@ -355,11 +331,7 @@ class Application {
 }
 """
 
-        def result = GradleRunner.create()
-            .withProjectDir(testProjectDir.root)
-            .withArguments('dockerfile', 'dockerfileNative')
-            .withPluginClasspath()
-            .build()
+        def result = build('dockerfile', 'dockerfileNative')
 
         def dockerfileTask = result.task(":dockerfile")
         def dockerfileNativeTask = result.task(":dockerfileNative")
@@ -382,6 +354,7 @@ class Application {
     }
 
     @Unroll
+    @Requires({ AbstractGradleBuildSpec.graalVmAvailable })
     void 'build mostly static native images when using distroless docker image for runtime=#runtime'() {
         given:
         settingsFile << "rootProject.name = 'hello-world'"
@@ -396,17 +369,15 @@ class Application {
                 runtime "$runtime"
             }
 
-            repositories {
-                mavenCentral()
-            }
+            $repositoriesBlock
 
             application {
                 mainClass.set("com.example.Application")
             }
 
             java {
-                sourceCompatibility = JavaVersion.toVersion('8')
-                targetCompatibility = JavaVersion.toVersion('8')
+                sourceCompatibility = JavaVersion.toVersion('11')
+                targetCompatibility = JavaVersion.toVersion('11')
             }
 
             dockerfileNative {
@@ -415,11 +386,7 @@ class Application {
         """
 
         when:
-        def result = GradleRunner.create()
-            .withProjectDir(testProjectDir.root)
-            .withArguments('dockerfileNative')
-            .withPluginClasspath()
-            .build()
+        def result = build('dockerfileNative')
 
         def dockerfileNativeTask = result.task(':dockerfileNative')
         def dockerFileNative = new File(testProjectDir.root, 'build/docker/DockerfileNative').readLines('UTF-8')
@@ -428,13 +395,14 @@ class Application {
         dockerfileNativeTask.outcome == TaskOutcome.SUCCESS
 
         and:
-        dockerFileNative.find {s -> s.contains('FROM gcr.io/distroless/cc-debian10')}
-        dockerFileNative.find {s -> s.contains('-H:+StaticExecutableWithDynamicLibC')}
+        dockerFileNative.find { s -> s.contains('FROM gcr.io/distroless/cc-debian10') }
+        dockerFileNative.find { s -> s.contains('-H:+StaticExecutableWithDynamicLibC') }
 
         where:
         runtime << ['netty', 'lambda']
     }
 
+    @Requires({ AbstractGradleBuildSpec.graalVmAvailable })
     void 'use alpine-glibc by default and do not build mostly static native images'() {
         given:
         settingsFile << "rootProject.name = 'hello-world'"
@@ -448,26 +416,20 @@ class Application {
                 runtime "netty"
             }
 
-            repositories {
-                mavenCentral()
-            }
+            $repositoriesBlock
 
             application {
                 mainClass.set("com.example.Application")
             }
 
             java {
-                sourceCompatibility = JavaVersion.toVersion('8')
-                targetCompatibility = JavaVersion.toVersion('8')
+                sourceCompatibility = JavaVersion.toVersion('11')
+                targetCompatibility = JavaVersion.toVersion('11')
             }
         """
 
         when:
-        def result = GradleRunner.create()
-            .withProjectDir(testProjectDir.root)
-            .withArguments('dockerfileNative')
-            .withPluginClasspath()
-            .build()
+        def result = build('dockerfileNative')
 
         def dockerfileNativeTask = result.task(':dockerfileNative')
         def dockerFileNative = new File(testProjectDir.root, 'build/docker/DockerfileNative').readLines('UTF-8')
@@ -476,8 +438,8 @@ class Application {
         dockerfileNativeTask.outcome == TaskOutcome.SUCCESS
 
         and:
-        dockerFileNative.find {s -> s.contains('FROM frolvlad/alpine-glibc:alpine-3.12')}
-        dockerFileNative.find {s -> !s.contains('-H:+StaticExecutableWithDynamicLibC')}
+        dockerFileNative.find { s -> s.contains('FROM frolvlad/alpine-glibc:alpine-3.12') }
+        dockerFileNative.find { s -> !s.contains('-H:+StaticExecutableWithDynamicLibC') }
     }
 
     void 'do not use alpine-glibc for lambda runtime'() {
@@ -493,26 +455,20 @@ class Application {
                 runtime "lambda"
             }
 
-            repositories {
-                mavenCentral()
-            }
+            $repositoriesBlock
 
             application {
                 mainClass.set("com.example.Application")
             }
 
             java {
-                sourceCompatibility = JavaVersion.toVersion('8')
-                targetCompatibility = JavaVersion.toVersion('8')
+                sourceCompatibility = JavaVersion.toVersion('11')
+                targetCompatibility = JavaVersion.toVersion('11')
             }
         """
 
         when:
-        def result = GradleRunner.create()
-            .withProjectDir(testProjectDir.root)
-            .withArguments('dockerfileNative')
-            .withPluginClasspath()
-            .build()
+        def result = build('dockerfileNative')
 
         def dockerfileNativeTask = result.task(':dockerfileNative')
         def dockerFileNative = new File(testProjectDir.root, 'build/docker/DockerfileNative').readLines('UTF-8')
@@ -521,8 +477,8 @@ class Application {
         dockerfileNativeTask.outcome == TaskOutcome.SUCCESS
 
         and:
-        dockerFileNative.find {s -> !s.contains('FROM frolvlad/alpine-glibc:alpine-3.12')}
-        dockerFileNative.find {s -> !s.contains('-H:+StaticExecutableWithDynamicLibC')}
+        dockerFileNative.find { s -> !s.contains('FROM frolvlad/alpine-glibc:alpine-3.12') }
+        dockerFileNative.find { s -> !s.contains('-H:+StaticExecutableWithDynamicLibC') }
     }
 
     @Issue('https://github.com/micronaut-projects/micronaut-gradle-plugin/issues/161')
@@ -538,9 +494,7 @@ class Application {
                 version "2.3.3"
             }
 
-            repositories {
-                mavenCentral()
-            }
+            $repositoriesBlock
 
             mainClassName="example.Application"
 
@@ -559,11 +513,7 @@ class Application {
 """
 
         when:
-        def result = GradleRunner.create()
-            .withProjectDir(testProjectDir.root)
-            .withArguments('dockerfile', '-s')
-            .withPluginClasspath()
-            .build()
+        def result = build('dockerfile', '-s')
 
         then:
         def dockerfileTask = result.task(":dockerfile")

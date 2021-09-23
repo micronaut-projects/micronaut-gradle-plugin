@@ -5,7 +5,7 @@ plugins {
     id "java-gradle-plugin"
     id "maven-publish"
     id "groovy"
-    id "com.adarshr.test-logger" version "3.0.0"
+    id "com.adarshr.test-logger"
     // Apply other plugins here, e.g. the kotlin plugin for a plugin written in Kotlin
     // or the groovy plugin if the plugin uses Groovy
 }
@@ -15,7 +15,8 @@ plugins {
 // so you should probably use JCenter for dependency resolution in your own
 // project.
 repositories {
-    jcenter()
+    mavenCentral()
+    gradlePluginPortal()
 }
 
 // Unless overridden in the pluginBundle config DSL, the project version will
@@ -47,24 +48,19 @@ tasks.withType(PluginUnderTestMetadata) {
     pluginClasspath.from(configurations.optionalPluginDependencies)
 }
 
-ext {
-    kotlinVersion = "1.4.32"
-}
-
 dependencies {
-    implementation "com.bmuschko:gradle-docker-plugin:6.7.0"
-    implementation "com.diffplug.gradle:goomph:3.32.2"
-    implementation "com.github.jengelman.gradle.plugins:shadow:6.1.0"
-    compileOnly "org.jetbrains.kotlin:kotlin-allopen:$kotlinVersion"
-    compileOnly "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
+    implementation libs.dockerPlug
+    implementation libs.diffplugPlug
+    implementation libs.shadowPlug
+    implementation libs.graalvmPlug
+    compileOnly libs.bundles.optionalPlugins
 
-    optionalPluginDependencies("org.jetbrains.kotlin:kotlin-allopen:$kotlinVersion")
-    optionalPluginDependencies "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
-    testImplementation("org.jetbrains.kotlin:kotlin-allopen:$kotlinVersion")
-    testImplementation "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
-    testImplementation("org.codehaus.groovy:groovy:3.0.9")
-    testImplementation("org.spockframework:spock-core:2.0-groovy-3.0")
-    testImplementation 'org.spockframework:spock-junit4:2.0-groovy-3.0'
+    optionalPluginDependencies libs.bundles.optionalPlugins
+
+    testImplementation libs.bundles.optionalPlugins
+    testImplementation libs.groovy.core
+    testImplementation libs.spock.core
+    testImplementation libs.spock.junit4
 }
 
 test {
@@ -92,8 +88,16 @@ pluginBundle {
 }
 
 java {
-    sourceCompatibility = JavaVersion.toVersion('1.8')
-    targetCompatibility = JavaVersion.toVersion('1.8')
+    toolchain {
+      languageVersion.set(JavaLanguageVersion.of(8))
+    }
+}
+
+tasks.withType(Test).configureEach {
+    javaLauncher.set(javaToolchains.launcherFor {
+        languageVersion.set(JavaLanguageVersion.of(11))
+    })
+    inputs.property("GRAALVM_HOME", providers.environmentVariable('GRAALVM_HOME').forUseAtConfigurationTime().getOrElse(""))
 }
 
 idea.module {
