@@ -88,14 +88,16 @@ public class MicronautDockerfile extends Dockerfile implements DockerBuildOption
                 setupResources(this);
                 exposePort(exposedPorts);
                 getInstructions().addAll(additionalInstructions);
-                entryPoint(getArgs().map(strings -> {
-                    List<String> newList = new ArrayList<>(strings.size() + 3);
-                    newList.add("java");
-                    newList.addAll(strings);
-                    newList.add("-jar");
-                    newList.add("/home/app/application.jar");
-                    return newList;
-                }));
+                if (getInstructions().get().stream().noneMatch(instruction -> instruction.getKeyword().equals(EntryPointInstruction.KEYWORD))) {
+                    entryPoint(getArgs().map(strings -> {
+                        List<String> newList = new ArrayList<>(strings.size() + 3);
+                        newList.add("java");
+                        newList.addAll(strings);
+                        newList.add("-jar");
+                        newList.add("/home/app/application.jar");
+                        return newList;
+                    }));
+                }
         }
     }
 

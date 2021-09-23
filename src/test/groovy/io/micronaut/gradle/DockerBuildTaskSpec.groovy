@@ -265,8 +265,8 @@ class Application {
         and:
         dockerFileNative.find() { s -> s == 'FROM test_base_image_docker' }
         dockerFileNative.find { s -> s == """HEALTHCHECK CMD curl -s localhost:8090/health | grep '"status":"UP"'""" }
-        dockerFile.last().contains('ENTRYPOINT')
-        dockerFileNative.find { s -> s.contains('-Xmx64m') }
+        dockerFileNative.last().contains('ENTRYPOINT')
+        dockerFileNative.find {s -> s.contains('-Xmx64m')}
 
         where:
         runtime  | nativeImage
@@ -276,7 +276,85 @@ class Application {
     }
 
     @Requires({ AbstractGradleBuildSpec.graalVmAvailable })
+    def "test construct dockerfile and dockerfileNative custom entrypoint"() {
+        setup:
+        settingsFile << "rootProject.name = 'hello-world'"
+        buildFile << """
+            plugins {
+                id "io.micronaut.application"
+            }
+            
+            micronaut {
+                version "2.3.4"
+            }
+            
+            $repositoriesBlock
+            
+            graalvmNative {
+                binaries {
+                    main {
+                        mainClass = "other.Application"
+                    }
+                }
+            }
+            
+            java {
+                sourceCompatibility = JavaVersion.toVersion('8')
+                targetCompatibility = JavaVersion.toVersion('8')
+            }
+            
+            dockerfile {
+                args('-Xmx64m')
+                baseImage('test_base_image_jvm')
+                instruction \"\"\"HEALTHCHECK CMD curl -s localhost:8090/health | grep '"status":"UP"'\"\"\"
+                entryPoint('./entrypoint.sh')
+            }
+            dockerfileNative {
+                args('-Xmx64m')
+                baseImage('test_base_image_docker')
+                instruction \"\"\"HEALTHCHECK CMD curl -s localhost:8090/health | grep '"status":"UP"'\"\"\"
+                entryPoint('./entrypoint.sh')
+            }
+            
+            mainClassName="example.Application"
+        """
+        testProjectDir.newFolder("src", "main", "java", "other")
+        def javaFile = testProjectDir.newFile("src/main/java/other/Application.java")
+        javaFile.parentFile.mkdirs()
+        javaFile << """
+package other;
+
+class Application {
+    public static void main(String... args) {
+    
+    }
+}
+"""
+
+        def result = build('dockerfile', 'dockerfileNative')
+
+        def dockerfileTask = result.task(":dockerfile")
+        def dockerfileNativeTask = result.task(":dockerfileNative")
+        def dockerFileNative = new File(testProjectDir.root, 'build/docker/DockerfileNative').readLines('UTF-8')
+        def dockerFile = new File(testProjectDir.root, 'build/docker/Dockerfile').readLines('UTF-8')
+
+        expect:
+        dockerfileTask.outcome == TaskOutcome.SUCCESS
+        dockerfileNativeTask.outcome == TaskOutcome.SUCCESS
+
+        and:
+        dockerFile.first() == ('FROM test_base_image_jvm')
+        dockerFile.find { s -> s == """HEALTHCHECK CMD curl -s localhost:8090/health | grep '"status":"UP"'""" }
+        dockerFile.find { s -> s == 'ENTRYPOINT ["./entrypoint.sh"]'}
+
+        and:
+        dockerFileNative.find() { s -> s == 'FROM test_base_image_docker' }
+        dockerFileNative.find { s -> s == """HEALTHCHECK CMD curl -s localhost:8090/health | grep '"status":"UP"'""" }
+        dockerFileNative.find { s -> s == 'ENTRYPOINT ["./entrypoint.sh"]'}
+    }
+
     @Unroll
+    @Requires({ AbstractGradleBuildSpec.graalVmAvailable })
     void 'build mostly static native images when using distroless docker image for runtime=#runtime'() {
         given:
         settingsFile << "rootProject.name = 'hello-world'"

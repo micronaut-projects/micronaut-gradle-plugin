@@ -1,7 +1,7 @@
 // First, apply the publishing plugin
 plugins {
     id "idea"
-    id "com.gradle.plugin-publish" version "0.15.0"
+    id "com.gradle.plugin-publish" version "0.16.0"
     id "java-gradle-plugin"
     id "maven-publish"
     id "groovy"
@@ -97,9 +97,26 @@ tasks.withType(Test).configureEach {
     javaLauncher.set(javaToolchains.launcherFor {
         languageVersion.set(JavaLanguageVersion.of(11))
     })
+    inputs.property("GRAALVM_HOME", providers.environmentVariable('GRAALVM_HOME').forUseAtConfigurationTime().getOrElse(""))
 }
 
 idea.module {
-  downloadJavadoc = true
-  downloadSources = true
+    downloadJavadoc = true
+    downloadSources = true
+}
+
+['dependencyUpdates', 'publishToSonatype', 'docs'].each { name ->
+    tasks.register(name) {
+        description = "Placeholder task for compatibility with other Micronaut builds"
+    }
+}
+
+tasks.named("docs") {
+    def outputDir = layout.buildDirectory.dir("docs")
+    outputs.dir(outputDir)
+    doLast {
+        def docsDir = outputDir.get().asFile
+        docsDir.mkdirs()
+        new File(docsDir, "index.html") << "TBA"
+    }
 }

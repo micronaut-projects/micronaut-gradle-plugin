@@ -21,13 +21,13 @@ jobs:
       matrix:
         java: ['java11']
     steps:
-      # https://github.com/actions/virtual-environments/issues/709
+       # https://github.com/actions/virtual-environments/issues/709
       - name: Free disk space
         run: |
-          sudo rm -rf "/usr/local/share/boost"
-          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
-          sudo apt-get clean
-          df -h
+         sudo rm -rf "/usr/local/share/boost"
+         sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+         sudo apt-get clean
+         df -h    
       - uses: actions/checkout@v2
       - uses: actions/cache@v2.1.6
         with:
@@ -51,7 +51,8 @@ jobs:
             ./gradlew check --continue --no-daemon
           fi
         env:
-          TESTCONTAINERS_RYUK_DISABLED: true
+           TESTCONTAINERS_RYUK_DISABLED: true
+           GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GRADLE_ENTERPRISE_ACCESS_KEY }}
       - name: Publish Test Report
         if: always()
         uses: mikepenz/action-junit-report@v2
