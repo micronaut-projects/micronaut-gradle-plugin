@@ -1,28 +1,10 @@
 package io.micronaut.gradle
 
-import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.GradleRunner
 import org.gradle.testkit.runner.TaskOutcome
-import org.gradle.testkit.runner.internal.DefaultGradleRunner
-import org.junit.Rule
-import org.junit.rules.TemporaryFolder
 import spock.lang.IgnoreIf
-import spock.lang.Specification
-import spock.util.environment.Jvm
 
-class MicronautLibraryPluginSpec extends Specification {
-
-    @Rule TemporaryFolder testProjectDir = new TemporaryFolder()
-
-    File settingsFile
-    File buildFile
-    File kotlinBuildFile
-
-    def setup() {
-        settingsFile = testProjectDir.newFile('settings.gradle')
-        buildFile = testProjectDir.newFile('build.gradle')
-        kotlinBuildFile = testProjectDir.newFile('build.gradle.kts')
-    }
+class MicronautLibraryPluginSpec extends AbstractGradleBuildSpec {
 
     def "test JUnit 5 platform excludes work"() {
         given:
@@ -40,9 +22,7 @@ class MicronautLibraryPluginSpec extends Specification {
                 }
             }
             
-            repositories {
-                mavenCentral()
-            }
+            $repositoriesBlock
             
             test {
                 useJUnitPlatform {
@@ -70,7 +50,7 @@ class FooTest {
 """
 
         when:
-        def result = runGradle('test')
+        def result = build('test')
 
         then:
         result.task(":test").outcome == TaskOutcome.SUCCESS
@@ -92,9 +72,7 @@ class FooTest {
                 }
             }
             
-            repositories {
-                mavenCentral()
-            }
+            $repositoriesBlock
             
             dependencies {
                 annotationProcessor 'org.projectlombok:lombok:1.18.12'
@@ -142,7 +120,7 @@ class FooTest {
 """
 
         when:
-        def result = runGradle('test')
+        def result = build('test')
 
         then:
         result.task(":test").outcome == TaskOutcome.SUCCESS
@@ -161,9 +139,7 @@ class FooTest {
                 version "2.3.3"
             }
             
-            repositories {
-                mavenCentral()
-            }
+            $repositoriesBlock
             
             dependencies {
                 implementation("io.micronaut.jaxrs:micronaut-jaxrs-server")
@@ -191,7 +167,7 @@ public class Foo {
 """
 
         when:
-        def result = runGradle('assemble', "--stacktrace")
+        def result = build('assemble', "--stacktrace")
 
         then:
         result.task(":assemble").outcome == TaskOutcome.SUCCESS
@@ -218,9 +194,7 @@ public class Foo {
                 }
             }
             
-            repositories {
-                mavenCentral()
-            }
+            $repositoriesBlock
             
             dependencies {
                 annotationProcessor "io.micronaut.configuration:micronaut-openapi"
@@ -248,7 +222,7 @@ class Foo {}
 """
 
         when:
-        def result = runGradle('assemble')
+        def result = build('assemble')
 
         then:
         result.task(":assemble").outcome == TaskOutcome.SUCCESS
@@ -276,9 +250,7 @@ class Foo {}
                 }
             }
             
-            repositories {
-                mavenCentral()
-            }
+            $repositoriesBlock
             
         """
         testProjectDir.newFolder("src", "main", "java", "example")
@@ -292,7 +264,7 @@ class Foo {}
 """
 
         when:
-        def result = runGradle('assemble')
+        def result = build('assemble')
 
         then:
         result.task(":assemble").outcome == TaskOutcome.SUCCESS
@@ -323,9 +295,7 @@ class Foo {}
                 }
             }
             
-            repositories {
-                mavenCentral()
-            }
+            ${getRepositoriesBlock('kotlin')}
             
         """
         testProjectDir.newFolder("src", "main", "kotlin", "example")
@@ -339,7 +309,7 @@ class Foo {}
 """
 
         when:
-        def result = runGradle('assemble')
+        def result = build('assemble')
 
         println result.output
         then:
@@ -376,9 +346,7 @@ class Foo {}
                 }
             }            
             
-            repositories {
-                mavenCentral()
-            }
+            ${getRepositoriesBlock('kotlin')}
             
         """
         testProjectDir.newFolder("src", "custom", "kotlin", "example")
@@ -392,7 +360,7 @@ class Foo {}
 """
 
         when:
-        def result = runGradle('compileCustomKotlin')
+        def result = build('compileCustomKotlin')
 
         println result.output
         then:
@@ -425,9 +393,7 @@ class Foo {}
                 }
             }
             
-            repositories {
-                mavenCentral()
-            }
+            $repositoriesBlock
 
             
         """
@@ -442,7 +408,7 @@ class Foo {}
 """
 
         when:
-        def result = runGradle('compileCustomJava')
+        def result = build('compileCustomJava')
 
         then:
         result.task(":compileCustomJava").outcome == TaskOutcome.SUCCESS
@@ -465,9 +431,7 @@ class Foo {}
                 version "2.3.3"
             }
             
-            repositories {
-                mavenCentral()
-            }
+            $repositoriesBlock
             
             dependencies {
                 testImplementation("io.micronaut.test:micronaut-test-junit5")
@@ -501,7 +465,7 @@ class Foo {
 """
 
         when:
-        def result = runGradle('test')
+        def result = build('test')
 
         then:
         result.task(":test").outcome == TaskOutcome.SUCCESS
@@ -534,9 +498,7 @@ class Foo {
                 }                
             }
             
-            repositories {
-                mavenCentral()
-            }
+            $repositoriesBlock
             
             dependencies {
                 customImplementation("org.codehaus.groovy:groovy")
@@ -553,7 +515,7 @@ class Foo {}
 """
 
         when:
-        def result = runGradle('compileCustomGroovy')
+        def result = build('compileCustomGroovy')
 
         then:
         result.task(":compileCustomGroovy").outcome == TaskOutcome.SUCCESS
@@ -580,9 +542,7 @@ class Foo {}
                 version "2.3.3"
             }
             
-            repositories {
-                mavenCentral()
-            }
+            $repositoriesBlock
             
         """
         testProjectDir.newFolder("src", "main", "groovy", "example")
@@ -596,7 +556,7 @@ class Foo {}
 """
 
         when:
-        def result = runGradle('assemble')
+        def result = build('assemble')
 
         then:
         result.task(":assemble").outcome == TaskOutcome.SUCCESS
@@ -619,9 +579,7 @@ class Foo {}
                 version "2.3.3"
             }
             
-            repositories {
-                mavenCentral()
-            }
+            $repositoriesBlock
             
             dependencies {
                 compileOnly "io.micronaut.configuration:micronaut-openapi"
@@ -649,7 +607,7 @@ class Foo {}
 """
 
         when:
-        def result = runGradle('assemble')
+        def result = build('assemble')
 
         then:
         result.task(":assemble").outcome == TaskOutcome.SUCCESS
@@ -658,19 +616,5 @@ class Foo {}
                 'build/classes/groovy/main/example/$FooDefinition.class'
         ).exists()
         result.output.contains("Generating OpenAPI Documentation")
-    }
-
-    private BuildResult runGradle(String... args) {
-        DefaultGradleRunner runner = ((DefaultGradleRunner) GradleRunner.create())
-        if (Jvm.current.java16Compatible) {
-            runner.withJvmArguments(
-                    '--illegal-access=permit',
-                    '--add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED'
-            )
-        }
-        runner.withProjectDir(testProjectDir.root)
-              .withArguments(args)
-              .withPluginClasspath()
-              .build()
     }
 }

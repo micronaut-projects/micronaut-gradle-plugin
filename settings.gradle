@@ -1,1 +1,14 @@
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        mavenCentral()
+    }
+}
+
+plugins {
+    id 'io.micronaut.build.shared.settings' version '4.1.3'
+}
+
 rootProject.name = 'micronaut-gradle-plugin'
+
+enableFeaturePreview("VERSION_CATALOGS")

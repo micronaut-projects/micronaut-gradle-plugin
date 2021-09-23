@@ -1,0 +1,24 @@
+[versions]
+kotlin = "1.4.32"
+docker = "6.7.0"
+diffplug = "3.29.1"
+shadow = "6.1.0"
+groovy = "3.0.8"
+spock = "2.0-groovy-3.0"
+graalvmPlug = "0.9.5"
+
+[libraries]
+dockerPlug = { module = "com.bmuschko:gradle-docker-plugin", version.ref = "docker" }
+diffplugPlug = { module = "com.diffplug.gradle:goomph", version.ref = "diffplug" }
+shadowPlug = { module = "com.github.jengelman.gradle.plugins:shadow", version.ref = "shadow" }
+graalvmPlug = { module = "org.graalvm.buildtools:native-gradle-plugin", version.ref = "graalvmPlug" }
+
+kotlin-allopen = { module = "org.jetbrains.kotlin:kotlin-allopen", version.ref = "kotlin" }
+kotlin-gradlePlug = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
+
+groovy-core = { module = "org.codehaus.groovy:groovy", version.ref = "groovy" }
+spock-core = { module = "org.spockframework:spock-core", version.ref = "spock" }
+spock-junit4 = { module = "org.spockframework:spock-junit4", version.ref = "spock" }
+
+[bundles]
+optionalPlugins = [ "kotlin-allopen", "kotlin-gradlePlug", "graalvmPlug" ]

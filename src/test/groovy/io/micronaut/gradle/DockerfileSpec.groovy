@@ -1,27 +1,12 @@
 package io.micronaut.gradle
 
-import io.micronaut.gradle.graalvm.GraalUtil
-import org.gradle.testkit.runner.GradleRunner
+
 import org.gradle.testkit.runner.TaskOutcome
-import org.junit.Rule
-import org.junit.rules.TemporaryFolder
 import spock.lang.IgnoreIf
 import spock.lang.Requires
-import spock.lang.Specification
 
-class DockerfileSpec extends Specification {
-
-    @Rule TemporaryFolder testProjectDir = new TemporaryFolder()
-
-    File settingsFile
-    File buildFile
-
-    def setup() {
-        settingsFile = testProjectDir.newFile('settings.gradle')
-        buildFile = testProjectDir.newFile('build.gradle')
-    }
-
-    @Requires({ GraalUtil.isGraalJVM() })
+class DockerfileSpec extends AbstractGradleBuildSpec {
+    @Requires({ AbstractGradleBuildSpec.graalVmAvailable })
     @IgnoreIf({ os.isWindows() })
     void 'test build native docker file'() {
         given:
@@ -37,9 +22,7 @@ class DockerfileSpec extends Specification {
                 testRuntime "junit5"
             }
             
-            repositories {
-                mavenCentral()
-            }
+            $repositoriesBlock
             
             dependencies {
                 runtimeOnly("ch.qos.logback:logback-classic")
@@ -50,11 +33,7 @@ class DockerfileSpec extends Specification {
         """
 
         when:
-        def result = GradleRunner.create()
-                .withProjectDir(testProjectDir.root)
-                .withArguments('dockerfileNative')
-                .withPluginClasspath()
-                .build()
+        def result = build('javaToolchains', 'dockerfileNative')
 
         def task = result.task(":dockerfileNative")
         println(result.output)

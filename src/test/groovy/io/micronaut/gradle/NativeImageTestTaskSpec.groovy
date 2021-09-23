@@ -1,24 +1,11 @@
 package io.micronaut.gradle
 
-import io.micronaut.gradle.graalvm.GraalUtil
-import org.gradle.testkit.runner.GradleRunner
+
 import org.gradle.testkit.runner.TaskOutcome
-import org.junit.Rule
-import org.junit.rules.TemporaryFolder
 import spock.lang.Requires
-import spock.lang.Specification
 
-@Requires({ GraalUtil.isGraalJVM() && !os.windows })
-class NativeImageTestTaskSpec extends Specification {
-    @Rule TemporaryFolder testProjectDir = new TemporaryFolder()
-
-    File settingsFile
-    File buildFile
-
-    def setup() {
-        settingsFile = testProjectDir.newFile('settings.gradle')
-        buildFile = testProjectDir.newFile('build.gradle')
-    }
+@Requires({ AbstractGradleBuildSpec.graalVmAvailable && !os.windows })
+class NativeImageTestTaskSpec extends AbstractGradleBuildSpec {
 
     def "test execute tests against native image"() {
         given:
@@ -35,9 +22,7 @@ class NativeImageTestTaskSpec extends Specification {
                 testRuntime "junit5"
             }
             
-            repositories {
-                mavenCentral()
-            }
+            $repositoriesBlock
             
             dependencies {
                 runtimeOnly("org.slf4j:slf4j-simple")
@@ -138,11 +123,7 @@ public class FooControllerTest {
 }
 """
 
-        def result = GradleRunner.create()
-                .withProjectDir(testProjectDir.root)
-                .withArguments('testNativeImage', '--stacktrace')
-                .withPluginClasspath()
-                .build()
+        def result = build('testNativeImage', '--stacktrace')
 
         def task = result.task(":testNativeImage")
         expect:

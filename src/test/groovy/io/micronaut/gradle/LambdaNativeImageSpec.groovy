@@ -1,23 +1,12 @@
 package io.micronaut.gradle
 
-import org.gradle.testkit.runner.GradleRunner
+
 import org.gradle.testkit.runner.TaskOutcome
-import org.junit.Rule
-import org.junit.rules.TemporaryFolder
 import spock.lang.Issue
-import spock.lang.Specification
+import spock.lang.Requires
 
-class LambdaNativeImageSpec extends Specification {
-
-    @Rule TemporaryFolder testProjectDir = new TemporaryFolder()
-
-    File settingsFile
-    File buildFile
-
-    def setup() {
-        settingsFile = testProjectDir.newFile('settings.gradle')
-        buildFile = testProjectDir.newFile('build.gradle')
-    }
+@Requires({ AbstractGradleBuildSpec.graalVmAvailable })
+class LambdaNativeImageSpec extends AbstractGradleBuildSpec {
 
     void 'mainclass is set correctly for an application deployed as GraalVM and Lambda'() {
         given:
@@ -32,26 +21,20 @@ class LambdaNativeImageSpec extends Specification {
                 runtime "netty"
             }
             
-            repositories {
-                mavenCentral()
-            }
+            $repositoriesBlock
             
             application {
                 mainClass.set("com.example.Application")
             }
             
             java {
-                sourceCompatibility = JavaVersion.toVersion('8')
-                targetCompatibility = JavaVersion.toVersion('8')
+                sourceCompatibility = JavaVersion.toVersion('11')
+                targetCompatibility = JavaVersion.toVersion('11')
             }
         """
 
         when:
-        def result = GradleRunner.create()
-            .withProjectDir(testProjectDir.root)
-            .withArguments('dockerfileNative', '-Pmicronaut.runtime=lambda')
-            .withPluginClasspath()
-            .build()
+        def result = build('dockerfileNative', '-Pmicronaut.runtime=lambda')
 
         def dockerfileNativeTask = result.task(':dockerfileNative')
         def dockerFileNative = new File(testProjectDir.root, 'build/docker/DockerfileNative').readLines('UTF-8')
@@ -77,30 +60,28 @@ class LambdaNativeImageSpec extends Specification {
                 runtime "netty"
             }
             
-            repositories {
-                mavenCentral()
-            }
+            $repositoriesBlock
             
             application {
                 mainClass.set("com.example.Application")
             }
             
             java {
-                sourceCompatibility = JavaVersion.toVersion('8')
-                targetCompatibility = JavaVersion.toVersion('8')
+                sourceCompatibility = JavaVersion.toVersion('11')
+                targetCompatibility = JavaVersion.toVersion('11')
             }
             
-            nativeImage {
-                main("my.own.main.class")
+            graalvmNative {
+                binaries {
+                    main {
+                        mainClass.set("my.own.main.class")
+                    }
+                }
             }
         """
 
         when:
-        def result = GradleRunner.create()
-            .withProjectDir(testProjectDir.root)
-            .withArguments('dockerfileNative')
-            .withPluginClasspath()
-            .build()
+        def result = build('dockerfileNative')
 
         def dockerfileNativeTask = result.task(':dockerfileNative')
         def dockerFileNative = new File(testProjectDir.root, 'build/docker/DockerfileNative').readLines('UTF-8')
@@ -127,9 +108,7 @@ class LambdaNativeImageSpec extends Specification {
                 runtime "netty"
             }
 
-            repositories {
-                mavenCentral()
-            }
+            $repositoriesBlock
 
             dependencies {
                 implementation("io.micronaut:micronaut-validation")
@@ -145,17 +124,13 @@ class LambdaNativeImageSpec extends Specification {
             }
 
             java {
-                sourceCompatibility = JavaVersion.toVersion('8')
-                targetCompatibility = JavaVersion.toVersion('8')
+                sourceCompatibility = JavaVersion.toVersion('11')
+                targetCompatibility = JavaVersion.toVersion('11')
             }
         """
 
         when:
-        def result = GradleRunner.create()
-            .withProjectDir(testProjectDir.root)
-            .withArguments('dockerfileNative', '-Pmicronaut.runtime=lambda')
-            .withPluginClasspath()
-            .build()
+        def result = build('dockerfileNative', '-Pmicronaut.runtime=lambda')
 
         def dockerfileNativeTask = result.task(':dockerfileNative')
         def dockerFileNative = new File(testProjectDir.root, 'build/docker/DockerfileNative').readLines('UTF-8')
