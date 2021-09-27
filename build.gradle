@@ -101,7 +101,7 @@ idea.module {
     downloadSources = true
 }
 
-['dependencyUpdates', 'publishToSonatype', 'docs'].each { name ->
+['dependencyUpdates', 'publishToSonatype', 'docs', 'useLatestVersions'].each { name ->
     tasks.register(name) {
         description = "Placeholder task for compatibility with other Micronaut builds"
     }
