@@ -1,8 +1,8 @@
 package io.micronaut.gradle;
 
-import io.micronaut.gradle.graalvm.GraalUtil;
+import io.micronaut.gradle.aot.AOTExtension;
+import io.micronaut.gradle.aot.MicronautAotPlugin;
 import org.gradle.api.Action;
-import org.gradle.api.Project;
 import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.provider.Property;
 
@@ -25,6 +25,7 @@ public class MicronautExtension {
     private final Property<Boolean> enableNativeImage;
     private final Property<MicronautRuntime> runtime;
     private final Property<MicronautTestRuntime> testRuntime;
+    private final AOTExtension aotExtension;
 
     @Inject
     public MicronautExtension(ObjectFactory objectFactory) {
@@ -36,6 +37,15 @@ public class MicronautExtension {
                                     .convention(MicronautRuntime.NONE);
         this.testRuntime = objectFactory.property(MicronautTestRuntime.class)
                                         .convention(MicronautTestRuntime.NONE);
+        this.aotExtension = objectFactory.newInstance(AOTExtension.class);
+        configureAotDefaults();
+    }
+
+    private void configureAotDefaults() {
+        aotExtension.getVersion().convention(MicronautAotPlugin.DEFAULT_AOT_VERSION);
+        aotExtension.getSealEnvironment().convention(true);
+        aotExtension.getOptimizeServiceLoading().convention(true);
+        aotExtension.getReplaceLogbackXml().convention(false);
     }
 
     /**
@@ -153,6 +163,23 @@ public class MicronautExtension {
     public MicronautExtension processing(Action<AnnotationProcessing> processingAction) {
         processingAction.execute(this.getProcessing());
         return this;
+    }
+
+    /**
+     * Allows configuring the AOT extension
+     * @return the AOT extension
+     */
+    public AOTExtension getAot() {
+        return aotExtension;
+    }
+
+    /**
+     * Allows configuring the AOT extension
+     *
+     * @param spec the configuration block
+     */
+    public void aot(Action<? super AOTExtension> spec) {
+        spec.execute(aotExtension);
     }
 
     static Map<String, List<String>> mapOf(Object... values) {

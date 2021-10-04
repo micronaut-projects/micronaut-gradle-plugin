@@ -16,6 +16,13 @@ plugins {
 repositories {
     mavenCentral()
     gradlePluginPortal()
+    maven {
+        url = uri("https://s01.oss.sonatype.org/content/repositories/snapshots/")
+        content {
+            includeGroup("io.micronaut")
+            includeGroup("io.micronaut.aot")
+        }
+    }
 }
 
 // Unless overridden in the pluginBundle config DSL, the project version will
@@ -38,6 +45,10 @@ gradlePlugin {
             id = 'io.micronaut.graalvm'
             implementationClass = 'io.micronaut.gradle.graalvm.MicronautGraalPlugin'
         }
+        aotPlugin {
+            id = 'io.micronaut.aot'
+            implementationClass = 'io.micronaut.gradle.aot.MicronautAotPlugin'
+        }
     }
 }
 configurations {
@@ -52,6 +63,9 @@ dependencies {
     implementation libs.diffplugPlug
     implementation libs.shadowPlug
     implementation libs.graalvmPlug
+    implementation libs.micronaut.aot.api
+    implementation libs.micronaut.aot.core
+    implementation libs.micronaut.aot.cli
     compileOnly libs.bundles.optionalPlugins
 
     optionalPluginDependencies libs.bundles.optionalPlugins
@@ -82,6 +96,9 @@ pluginBundle {
         }
         graalPlugin {
             displayName = 'Micronaut GraalVM Plugin'
+        }
+        aotPlugin {
+            displayName = 'Micronaut AOT Plugin'
         }
     }
 }

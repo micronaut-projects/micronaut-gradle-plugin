@@ -6,6 +6,8 @@ shadow = "7.1.0"
 groovy = "3.0.9"
 spock = "2.0-groovy-3.0"
 graalvmPlug = "0.9.7.1"
+micronaut = "3.2.0-SNAPSHOT"
+micronaut-aot = "1.0.0-SNAPSHOT"
 
 [libraries]
 dockerPlug = { module = "com.bmuschko:gradle-docker-plugin", version.ref = "docker" }
@@ -19,6 +21,10 @@ kotlin-gradlePlug = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", vers
 groovy-core = { module = "org.codehaus.groovy:groovy", version.ref = "groovy" }
 spock-core = { module = "org.spockframework:spock-core", version.ref = "spock" }
 spock-junit4 = { module = "org.spockframework:spock-junit4", version.ref = "spock" }
+
+micronaut-aot-api = { module = "io.micronaut.aot:micronaut-aot-api", version.ref = "micronaut-aot" }
+micronaut-aot-core = { module = "io.micronaut.aot:micronaut-aot-core", version.ref = "micronaut-aot" }
+micronaut-aot-cli = { module = "io.micronaut.aot:micronaut-aot-cli", version.ref = "micronaut-aot" }
 
 [bundles]
 optionalPlugins = [ "kotlin-allopen", "kotlin-gradlePlug", "graalvmPlug" ]

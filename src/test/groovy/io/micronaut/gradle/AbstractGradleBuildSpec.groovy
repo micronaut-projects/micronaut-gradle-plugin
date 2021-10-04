@@ -8,6 +8,10 @@ import org.junit.rules.TemporaryFolder
 import spock.lang.Specification
 import spock.util.environment.Jvm
 
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.StandardCopyOption
+
 abstract class AbstractGradleBuildSpec extends Specification {
     static boolean isGraalVmAvailable() {
         return GraalUtil.isGraalJVM() || System.getenv("GRAALVM_HOME")
@@ -28,6 +32,26 @@ abstract class AbstractGradleBuildSpec extends Specification {
         settingsFile = testProjectDir.newFile('settings.gradle')
         buildFile = testProjectDir.newFile('build.gradle')
         kotlinBuildFile = testProjectDir.newFile('build.gradle.kts')
+    }
+
+    protected void withSample(String name) {
+        File sampleDir = new File("samples/$name").canonicalFile
+        copySample(sampleDir.toPath(), testProjectDir.root.toPath())
+    }
+
+    private static void copySample(Path from, Path into) {
+        Files.walk(from).forEach(sourcePath -> {
+            Path target = into.resolve(from.relativize(sourcePath))
+            if (Files.isDirectory(sourcePath)) {
+                Files.createDirectories(target)
+            } else {
+                Files.copy(sourcePath, target, StandardCopyOption.REPLACE_EXISTING)
+            }
+        })
+    }
+
+    File file(String relativePath) {
+        testProjectDir.root.toPath().resolve(relativePath).toFile()
     }
 
     def getRepositoriesBlock(String dsl = 'groovy') {
