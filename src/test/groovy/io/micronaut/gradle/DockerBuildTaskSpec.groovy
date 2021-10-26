@@ -156,9 +156,9 @@ micronaut:
 
         where:
         runtime  | nativeImage
-        "netty"  | 'FROM ghcr.io/graalvm/graalvm-ce:java'
+        "netty"  | 'FROM ghcr.io/graalvm/native-image:java'
         "lambda" | 'FROM amazonlinux:latest AS graalvm'
-        "jetty"  | 'FROM ghcr.io/graalvm/graalvm-ce:java'
+        "jetty"  | 'FROM ghcr.io/graalvm/native-image:java'
     }
 
     def "test build docker native image for lambda with custom main"() {
@@ -297,9 +297,9 @@ class Application {
 
         where:
         runtime  | nativeImage
-        "netty"  | 'FROM ghcr.io/graalvm/graalvm-ce:java'
+        "netty"  | 'FROM ghcr.io/graalvm/native-image:java'
         "lambda" | 'FROM amazonlinux:latest AS graalvm'
-        "jetty"  | 'FROM ghcr.io/graalvm/graalvm-ce:java'
+        "jetty"  | 'FROM ghcr.io/graalvm/native-image:java'
     }
 
     def "test construct dockerfile and dockerfileNative custom entrypoint"() {

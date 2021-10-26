@@ -72,12 +72,13 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
         } else if (javaVersion.isJava11Compatible()) {
             jdkVersion.convention("java11");
         } else {
-            jdkVersion.convention("java8");
+            getLogger().warn("Current Java version is Java 8 but it's unsupported by native-image. Falling back to Java 11 to build a native image.");
+            jdkVersion.convention("java11");
         }
         this.graalVersion = objects.property(String.class)
                 .convention("21.3.0");
         this.graalImage = objects.property(String.class)
-                .convention(graalVersion.map(version -> "ghcr.io/graalvm/graalvm-ce:" + jdkVersion.get() + '-' + version));
+                .convention(graalVersion.map(version -> "ghcr.io/graalvm/native-image:" + jdkVersion.get() + '-' + version));
         this.baseImage = objects.property(String.class)
                 .convention("null");
         this.args = objects.listProperty(String.class);
@@ -196,7 +197,6 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
             from(new From("graalvm").withStage("builder"));
         } else {
             from(new From(graalImage.get()).withStage("graalvm"));
-            runCommand("gu install native-image");
         }
         MicronautDockerfile.setupResources(this);
         // use native-image from docker image
