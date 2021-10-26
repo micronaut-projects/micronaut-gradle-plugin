@@ -132,9 +132,9 @@ micronaut:
 
         where:
         runtime  | nativeImage
-        "netty"  | 'FROM ghcr.io/graalvm/graalvm-ce:java'
+        "netty"  | 'FROM ghcr.io/graalvm/native-image:java'
         "lambda" | 'FROM amazonlinux:latest AS graalvm'
-        "jetty"  | 'FROM ghcr.io/graalvm/graalvm-ce:java'
+        "jetty"  | 'FROM ghcr.io/graalvm/native-image:java'
     }
 
     @Requires({ AbstractGradleBuildSpec.graalVmAvailable })
@@ -270,9 +270,9 @@ class Application {
 
         where:
         runtime  | nativeImage
-        "netty"  | 'FROM ghcr.io/graalvm/graalvm-ce:java'
+        "netty"  | 'FROM ghcr.io/graalvm/native-image:java'
         "lambda" | 'FROM amazonlinux:latest AS graalvm'
-        "jetty"  | 'FROM ghcr.io/graalvm/graalvm-ce:java'
+        "jetty"  | 'FROM ghcr.io/graalvm/native-image:java'
     }
 
     @Requires({ AbstractGradleBuildSpec.graalVmAvailable })
