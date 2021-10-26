@@ -139,7 +139,7 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
                         .map(NativeImageDockerfile::toSupportedJavaVersion)
                         .map(v -> "java" + v)
         );
-        getGraalVersion().convention("21.2.0");
+        getGraalVersion().convention("21.3.0");
         getGraalImage().convention(getGraalVersion().zip(getJdkVersion(), NativeImageDockerfile::toGraalVMBaseImageName));
         getNativeImageOptions().convention(project
                 .getTasks()
@@ -309,7 +309,7 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
     }
 
     private static String toGraalVMBaseImageName(String graalVersion, String jdkVersion) {
-        return "ghcr.io/graalvm/graalvm-ce:" + jdkVersion + '-' + graalVersion;
+        return "ghcr.io/graalvm/native-image:" + jdkVersion + '-' + graalVersion;
     }
 
     private static int toSupportedJavaVersion(int version) {
@@ -350,7 +350,6 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
             from(new From("graalvm").withStage("builder"));
         } else {
             from(new From(getGraalImage().get()).withStage("graalvm"));
-            runCommand("gu install native-image");
         }
 
         MicronautDockerfile.setupResources(this);
