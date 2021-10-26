@@ -1284,12 +1284,12 @@ micronaut {
 
 [NOTE]
 ====
-The `additionalModules` property can be used to declare {testresources-guide}[Micronaut Test Resources] modules. However, it might be necessary to add more libraries on the test resources classpath. For example, you may need to add additional JDBC drivers. For this, you can use the `testresources` configuration:
+The `additionalModules` property can be used to declare {testresources-guide}[Micronaut Test Resources] modules. However, it might be necessary to add more libraries on the test resources classpath. For example, you may need to add additional JDBC drivers. For this, you can use the `testResourcesService` configuration:
 [source,groovy]
 ----
 dependencies {
     // declare an additional dependency on test resources classpath
-    testresources "my:jdbc-driver:1.0"
+    testResourcesService "my:jdbc-driver:1.0"
 }
 ----
 ====
@@ -1361,7 +1361,7 @@ plugins {
 }
 
 dependencies {
-    testresources project(':shared-testresources')           // <2>
+    testResourcesService project(':shared-testresources')           // <2>
 }
 ----
 

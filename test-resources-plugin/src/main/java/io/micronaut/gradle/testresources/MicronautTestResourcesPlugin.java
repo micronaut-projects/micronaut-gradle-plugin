@@ -63,7 +63,7 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
     public static final String START_TEST_RESOURCES_SERVICE_INTERNAL = "internalStartTestResourcesService";
     public static final String STOP_TEST_RESOURCES_SERVICE = "stopTestResourcesService";
     public static final String GROUP = "Micronaut Test Resources";
-    public static final String TESTRESOURCES_CONFIGURATION = "testresources";
+    public static final String TESTRESOURCES_CONFIGURATION = "testResourcesService";
     public static final String TESTRESOURCES_ELEMENTS_CONFIGURATION = "testresourcesSettingsElements";
     public static final String MICRONAUT_TEST_RESOURCES_USAGE = "micronaut.test.resources";
 
@@ -321,7 +321,14 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
     }
 
     private static Configuration createTestResourcesServerConfiguration(Project project) {
+        // Legacy configuration was only used in 3.5.0 so it's relatively safe
+        Configuration legacyConf = project.getConfigurations().create("testresources", conf -> {
+            conf.setCanBeConsumed(false);
+            conf.setCanBeResolved(false);
+            conf.setDescription("[deprecated] Please use " + MicronautTestResourcesPlugin.TESTRESOURCES_CONFIGURATION + " instead.");
+        });
         return project.getConfigurations().create(TESTRESOURCES_CONFIGURATION, conf -> {
+            conf.extendsFrom(legacyConf);
             conf.setDescription("Dependencies for the Micronaut test resources service");
             conf.setCanBeConsumed(false);
             conf.setCanBeResolved(true);
