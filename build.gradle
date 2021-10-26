@@ -6,8 +6,7 @@ plugins {
     id "maven-publish"
     id "groovy"
     id "com.adarshr.test-logger"
-    // Apply other plugins here, e.g. the kotlin plugin for a plugin written in Kotlin
-    // or the groovy plugin if the plugin uses Groovy
+    id "io.micronaut.internal.build.documented"
 }
 
 // If your plugin has any external java dependencies, Gradle will attempt to
@@ -105,18 +104,8 @@ idea.module {
     downloadSources = true
 }
 
-['dependencyUpdates', 'publishToSonatype', 'docs', 'useLatestVersions'].each { name ->
+['dependencyUpdates', 'publishToSonatype', 'useLatestVersions'].each { name ->
     tasks.register(name) {
         description = "Placeholder task for compatibility with other Micronaut builds"
-    }
-}
-
-tasks.named("docs") {
-    def outputDir = layout.buildDirectory.dir("docs")
-    outputs.dir(outputDir)
-    doLast {
-        def docsDir = outputDir.get().asFile
-        docsDir.mkdirs()
-        new File(docsDir, "index.html") << "TBA"
     }
 }

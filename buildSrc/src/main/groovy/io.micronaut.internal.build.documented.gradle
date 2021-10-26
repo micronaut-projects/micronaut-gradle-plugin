@@ -1,0 +1,43 @@
+import org.asciidoctor.gradle.jvm.AsciidoctorTask
+
+plugins {
+    id "org.asciidoctor.jvm.convert"
+}
+
+asciidoctorj {
+    attributes 'source-highlighter' : 'highlight.js',
+            'highlightjsdir'        : 'highlight',
+            'toc'                   : 'left',
+            'reproducible'          : '',
+            'nofooter'              : ''
+}
+
+def asciidoctor = tasks.named("asciidoctor", AsciidoctorTask)
+
+asciidoctor.configure {
+    outputDir = layout.buildDirectory.dir("asciidoc").get().asFile
+    resources {
+        from("src/docs/asciidoc/highlight") {
+            into("highlight")
+        }
+        from("src/docs/asciidoc/css") {
+            into("css")
+        }
+        from("src/docs/asciidoc/js") {
+            into("js")
+        }
+    }
+}
+
+def themer = tasks.register("asciidocThemer", io.micronaut.internal.build.docs.Themer) {
+    template = layout.projectDirectory.file("src/docs/asciidoc/template/template.html")
+    asciidocHtml.fileProvider(asciidoctor.map {
+        it.outputDir
+    })
+    outputDirectory = layout.buildDirectory.dir("docs")
+}
+
+tasks.register("docs") {
+    description = "Generates the plugin documentation"
+    dependsOn(themer)
+}
