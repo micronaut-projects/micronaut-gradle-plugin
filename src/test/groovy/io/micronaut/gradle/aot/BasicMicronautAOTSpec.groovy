@@ -6,7 +6,7 @@ class BasicMicronautAOTSpec extends AbstractAOTPluginSpec {
         withSample("aot/basic-app")
 
         when:
-        def result = build "prepare${runtime.capitalize()}Optimizations"
+        def result = build "prepare${runtime.capitalize()}Optimizations", "-i"
 
         and: "configuration file is generated"
         hasAOTConfiguration(runtime) {

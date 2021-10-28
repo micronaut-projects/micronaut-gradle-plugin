@@ -85,6 +85,7 @@ public abstract class MicronautAotOptimizerTask extends DefaultTask implements O
                 args.add(getConfigurationFile().getAsFile().get().getAbsolutePath());
             }
             spec.args(args);
+            getLogger().info("Running AOT optimizer with parameters: {}", args);
         });
         if (javaexec.getExitValue() != 0) {
             throw new GradleException("AOT analysis failed");
