@@ -29,20 +29,26 @@ import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.ConfigurationContainer;
 import org.gradle.api.attributes.Attribute;
 import org.gradle.api.attributes.AttributeContainer;
+import org.gradle.api.distribution.DistributionContainer;
+import org.gradle.api.distribution.plugins.DistributionPlugin;
 import org.gradle.api.file.ArchiveOperations;
+import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.file.Directory;
 import org.gradle.api.file.FileCopyDetails;
 import org.gradle.api.file.RegularFile;
 import org.gradle.api.file.RelativePath;
+import org.gradle.api.logging.Logger;
+import org.gradle.api.plugins.ApplicationPluginConvention;
 import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.provider.ProviderFactory;
 import org.gradle.api.tasks.JavaExec;
 import org.gradle.api.tasks.TaskContainer;
 import org.gradle.api.tasks.TaskProvider;
+import org.gradle.api.tasks.application.CreateStartScripts;
 import org.gradle.api.tasks.bundling.Jar;
 import org.jetbrains.annotations.NotNull;
-import org.gradle.api.logging.Logger;
+
 import javax.inject.Inject;
 import java.io.File;
 import java.io.IOException;
@@ -62,6 +68,7 @@ public abstract class MicronautAotPlugin implements Plugin<Project> {
 
     public static final String DEFAULT_AOT_VERSION = "1.0.0-SNAPSHOT";
     public static final String OPTIMIZED_BINARY_NAME = "optimized";
+    public static final String OPTIMIZED_DIST_NAME = "optimized";
     public static final String MAIN_BINARY_NAME = "main";
 
     static final List<String> TYPES_TO_CHECK = Collections.unmodifiableList(Arrays.asList(
@@ -109,15 +116,40 @@ public abstract class MicronautAotPlugin implements Plugin<Project> {
         registerJavaExecOptimizedRun(project, tasks, prepareJit);
 
         TaskProvider<MicronautAotOptimizerTask> prepareNative = registerPrepareOptimizationTask(project, optimizerRuntimeClasspath, applicationClasspath, tasks, aotExtension, OptimizerIO.TargetRuntime.NATIVE);
-        project.getPlugins().withType(NativeImagePlugin.class, p -> {
-            GraalVMExtension graalVMExtension = project.getExtensions().getByType(GraalVMExtension.class);
-            NamedDomainObjectContainer<NativeImageOptions> binaries = graalVMExtension.getBinaries();
-            binaries.create(OPTIMIZED_BINARY_NAME, binary -> {
-                NativeImageOptions main = binaries.getByName(MAIN_BINARY_NAME);
-                binary.getMainClass().set(main.getMainClass());
-                binary.getClasspath().from(main.getClasspath());
-                binary.getClasspath().from(prepareNative.map(MicronautAotOptimizerTask::getGeneratedClassesDirectory));
-            });
+        project.getPlugins().withType(NativeImagePlugin.class, p -> registerOptimizedBinary(project, prepareNative));
+    }
+
+    private void registerOptimizedDistribution(Project project,
+                                               TaskProvider<Jar> optimizedJar) {
+        DistributionContainer distributions = project.getExtensions().getByType(DistributionContainer.class);
+        ApplicationPluginConvention appConvention = project.getConvention().getPlugin(ApplicationPluginConvention.class);
+        ConfigurableFileCollection classpath = project.getObjects().fileCollection();
+        classpath.from(optimizedJar);
+        classpath.from(project.getConfigurations().getByName(JavaPlugin.RUNTIME_CLASSPATH_CONFIGURATION_NAME));
+        TaskProvider<CreateStartScripts> startScripts = project.getTasks().register("create" + capitalize(OPTIMIZED_DIST_NAME) + "StartScripts", CreateStartScripts.class, task -> {
+            JavaExec runTask = project.getTasks().named("run", JavaExec.class).get();
+            task.setDescription("Creates OS specific scripts to run the AOT optimized application as a JVM application.");
+            task.setClasspath(classpath);
+            task.getMainClass().set(runTask.getMainClass());
+            task.getConventionMapping().map("applicationName", appConvention::getApplicationName);
+            task.getConventionMapping().map("outputDir", () -> new File(project.getBuildDir(), "optimizedScripts"));
+            task.getConventionMapping().map("executableDir", appConvention::getExecutableDir);
+            task.getConventionMapping().map("defaultJvmOpts", appConvention::getApplicationDefaultJvmArgs);
+        });
+        distributions.register(OPTIMIZED_DIST_NAME, dist -> dist.contents(contents -> {
+            contents.into("bin", spec -> spec.from(startScripts));
+            contents.into("lib", spec -> spec.from(classpath));
+        }));
+    }
+
+    private void registerOptimizedBinary(Project project, TaskProvider<MicronautAotOptimizerTask> prepareNative) {
+        GraalVMExtension graalVMExtension = project.getExtensions().getByType(GraalVMExtension.class);
+        NamedDomainObjectContainer<NativeImageOptions> binaries = graalVMExtension.getBinaries();
+        binaries.create(OPTIMIZED_BINARY_NAME, binary -> {
+            NativeImageOptions main = binaries.getByName(MAIN_BINARY_NAME);
+            binary.getMainClass().set(main.getMainClass());
+            binary.getClasspath().from(main.getClasspath());
+            binary.getClasspath().from(prepareNative.map(MicronautAotOptimizerTask::getGeneratedClassesDirectory));
         });
     }
 
@@ -126,9 +158,9 @@ public abstract class MicronautAotPlugin implements Plugin<Project> {
                                                                 TaskProvider<MicronautAotOptimizerTask> prepareJit) {
         TaskProvider<Jar> mainJar = tasks.named("jar", Jar.class);
         TaskProvider<MergeServiceFiles> mergeTask = tasks.register("mergeServiceFilesForOptimizedJar", MergeServiceFiles.class, task -> {
-           task.getInputFiles().from(mainJar.map(jar -> getArchiveOperations().zipTree(jar.getArchiveFile().get().getAsFile())));
-           task.getInputFiles().from(prepareJit.flatMap(MicronautAotOptimizerTask::getGeneratedClassesDirectory));
-           task.getOutputDirectory().convention(project.getLayout().getBuildDirectory().dir("generated/aot/service-files"));
+            task.getInputFiles().from(mainJar.map(jar -> getArchiveOperations().zipTree(jar.getArchiveFile().get().getAsFile())));
+            task.getInputFiles().from(prepareJit.flatMap(MicronautAotOptimizerTask::getGeneratedClassesDirectory));
+            task.getOutputDirectory().convention(project.getLayout().getBuildDirectory().dir("generated/aot/service-files"));
         });
         TaskProvider<Jar> jarTask = tasks.register("optimizedJar", Jar.class, jar -> {
             jar.getInputs().file(prepareJit.map(MicronautAotOptimizerTask::getGeneratedOutputResourceFilter));
@@ -142,6 +174,7 @@ public abstract class MicronautAotPlugin implements Plugin<Project> {
             jar.from(prepareJit.map(MicronautAotOptimizerTask::getGeneratedClassesDirectory), spec -> spec.exclude("META-INF/services/**"));
             jar.from(mergeTask);
         });
+        project.getPlugins().withType(DistributionPlugin.class, p -> registerOptimizedDistribution(project, jarTask));
         return tasks.register("optimizedRun", JavaExec.class, task -> {
             ProviderFactory providers = project.getProviders();
             JavaExec runTask = tasks.named("run", JavaExec.class).get();
