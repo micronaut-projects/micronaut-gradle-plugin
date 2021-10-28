@@ -39,39 +39,41 @@ Template projects are available via https://micronaut.io/launch/[Micronaut Launc
 
 To get started you can use the Micronaut CLI:
 
-```bash
+[source, bash]
+----
 $ mn create-app demo --lang java
 $ mn create-app demo --lang groovy
 $ mn create-app demo --lang kotlin
-```
+----
 
 Or if you don't have it installed via `curl`:
 
-```bash
+[source, bash]
+----
 # for Java
 $ curl https://launch.micronaut.io/demo.zip?lang=java -o demo.zip && unzip demo.zip -d demo && cd demo
 # for Groovy
 $ curl https://launch.micronaut.io/demo.zip?lang=groovy -o demo.zip && unzip demo.zip -d demo && cd demo
 # for Kotlin
 $ curl https://launch.micronaut.io/demo.zip?lang=kotlin -o demo.zip && unzip demo.zip -d demo && cd demo
-```
+----
 
 == Micronaut Library Plugin
 
 .Applying the plugin
-[subs="verbatim,attributes", role="multi-language-sample"]
-```groovy
+[source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
+----
 plugins {
   id 'io.micronaut.library' version '{gradle-project-version}'
 }
-```
+----
 
-[subs="verbatim,attributes", role="multi-language-sample"]
-```kotlin
+[source, kotlin, subs="verbatim,attributes", role="multi-language-sample"]
+----
 plugins {
   id("io.micronaut.library") version "{gradle-project-version}"
 }
-```
+----
 
 The https://plugins.gradle.org/plugin/io.micronaut.library[Micronaut library plugin] applies the following modifications to the build:
 
@@ -84,25 +86,25 @@ The `micronaut` DSL can be used to configure how this behaves.
 The minimum requirement is to set the Micronaut version to use. This can be done by setting `micronautVersion` in `gradle.properties` or as follows in `build.gradle(.kts)`:
 
 .Selecting the Micronaut version
-[subs="verbatim,attributes", role="multi-language-sample"]
-```groovy
+[source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
+----
 micronaut {
     version "{micronaut-version}"
 }
-```
+----
 
-[subs="verbatim,attributes", role="multi-language-sample"]
-```kotlin
+[source, kotlin, subs="verbatim,attributes", role="multi-language-sample"]
+----
 micronaut {
     version.set("{micronaut-version}")
 }
-```
+----
 
 Complete example with the default settings:
 
 .Micronaut configuration options
-[subs="verbatim,attributes", role="multi-language-sample"]
-```groovy
+[source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
+----
 micronaut {
     version "{micronaut-version}"
     processing {
@@ -127,10 +129,10 @@ micronaut {
         )
     }
 }
-```
+----
 
-[subs="verbatim,attributes", role="multi-language-sample"]
-```kotlin
+[source, kotlin, subs="verbatim,attributes", role="multi-language-sample"]
+----
 micronaut {
     version.set("{micronaut-version}")
     processing {
@@ -155,7 +157,7 @@ micronaut {
         )
     }
 }
-```
+----
 
 NOTE: The Micronaut Library plugin also supports Groovy and Kotlin sources.
 
@@ -164,31 +166,31 @@ NOTE: The Micronaut Library plugin also supports Groovy and Kotlin sources.
 For Kotlin, the Kotlin `jvm` and `kapt` plugins must be configured:
 
 .Configuring Kotlin support
-[subs="verbatim,attributes", role="multi-language-sample"]
-```groovy
+[source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
+----
 plugins {
     id "org.jetbrains.kotlin.jvm" version "{kotlin-version}"
     id "org.jetbrains.kotlin.kapt" version "{kotlin-version}"
     id "io.micronaut.library" version "{gradle-project-version}"
 }
-```
+----
 
-[subs="verbatim,attributes", role="multi-language-sample"]
-```kotlin
+[source, kotlin, subs="verbatim,attributes", role="multi-language-sample"]
+----
 plugins {
     id("org.jetbrains.kotlin.jvm") version "{kotlin-version}"
     id("org.jetbrains.kotlin.kapt") version "{kotlin-version}"
     id("io.micronaut.library") version "{gradle-project-version}"
 }
-```
+----
 
 === Minimal Build
 
 With the `io.micronaut.library` plugin applied a minimal build to get started writing a library for Micronaut that written in Java and is tested with JUnit 5 looks like:
 
 .A minimal build file
-[subs="verbatim,attributes", role="multi-language-sample"]
-```groovy
+[source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
+----
 plugins {
     id 'io.micronaut.library' version '{gradle-project-version}'
 }
@@ -208,10 +210,10 @@ dependencies {
     testImplementation("io.micronaut.test:micronaut-test-junit5")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
 }
-```
+----
 
-[subs="verbatim,attributes", role="multi-language-sample"]
-```kotlin
+[source, kotlin, subs="verbatim,attributes", role="multi-language-sample"]
+----
 plugins {
     id("io.micronaut.library") version "{gradle-project-version}"
 }
@@ -231,24 +233,24 @@ dependencies {
     testImplementation("io.micronaut.test:micronaut-test-junit5")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
 }
-```
+----
 
 == Micronaut Application Plugin
 
 .Applying the Micronaut Application plugin
-[subs="verbatim,attributes", role="multi-language-sample"]
-```groovy
+[source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
+----
 plugins {
   id "io.micronaut.application" version "{gradle-project-version}"
 }
-```
+----
 
-[subs="verbatim,attributes", role="multi-language-sample"]
-```kotlin
+[source, kotlin, subs="verbatim,attributes", role="multi-language-sample"]
+----
 plugins {
   id("io.micronaut.application") version "{gradle-project-version}"
 }
-```
+----
 
 The https://plugins.gradle.org/plugin/io.micronaut.application[Micronaut application plugin] extends the Micronaut Library plugin and adds the following customizations:
 
@@ -263,23 +265,24 @@ The following additional tasks are provided by this plugin:
 * `dockerBuild` - Builds a Docker Image using the https://github.com/bmuschko/gradle-docker-plugin[Docker Gradle plugin]
 * `dockerfileNative` - Builds a Docker File for for GraalVM Native Image
 * `dockerBuildNative` - Builds a Native Docker Image using GraalVM Native Image
-* `nativeImage` - Builds a GraalVM Native Image
+* `nativeCompile` - Builds a GraalVM Native Image
 * `testNativeImage` (since 1.1.0) - Builds a GraalVM Native Image, starts the native server and runs tests against the server
 * `dockerPush` - Pushes a Docker Image to configured container registry
 * `dockerPushNative` - Pushes a Docker Image built with GraalVM Native Image to configured container registry
 
 To run an application with continuous build use the `run` task with the `-t` parameter:
 
-```bash
+[source, bash]
+----
 $ ./gradlew run -t
-```
+----
 
 === Minimal Build
 
 With the `io.micronaut.application` plugin applied a minimal build to get started with a Micronaut server application that is written in Java and tested with JUnit 5 looks like:
 
-[subs="verbatim,attributes", role="multi-language-sample"]
-```groovy
+[source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
+----
 plugins {
     id 'io.micronaut.application' version '{gradle-project-version}'
 }
@@ -305,10 +308,10 @@ dependencies {
 application {
     mainClass = "example.Application"
 }
-```
+----
 
-[subs="verbatim,attributes", role="multi-language-sample"]
-```kotlin
+[source, kotlin, subs="verbatim,attributes", role="multi-language-sample"]
+----
 plugins {
     id("io.micronaut.application") version "{gradle-project-version}"
 }
@@ -334,14 +337,14 @@ dependencies {
 application {
     mainClass.set("example.Application")
 }
-```
+----
 
 === Kotlin Support
 
 The most simple Kotlin build using a `build.gradle(.kts)` file looks like:
 
-[subs="verbatim,attributes", role="multi-language-sample"]
-```groovy
+[source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
+----
 plugins {
     id "org.jetbrains.kotlin.jvm" version "{kotlin-version}"
     id "org.jetbrains.kotlin.kapt" version "{kotlin-version}"
@@ -372,10 +375,10 @@ dependencies {
 application {
     mainClass = "example.ApplicationKt"
 }
-```
+----
 
-[subs="verbatim,attributes", role="multi-language-sample"]
-```kotlin
+[source, kotlin, subs="verbatim,attributes", role="multi-language-sample"]
+----
 plugins {
     id("org.jetbrains.kotlin.jvm") version "{kotlin-version}"
     id("org.jetbrains.kotlin.kapt") version "{kotlin-version}"
@@ -406,7 +409,7 @@ dependencies {
 application {
     mainClass.set("example.ApplicationKt")
 }
-```
+----
 
 [[native-image]]
 === GraalVM Native Image
@@ -426,33 +429,43 @@ If you have several GraalVM installations available, or that you want to disable
 - setup an environment variable named `GRAALVM_HOME` pointing to your GraalVM installation
 - edit your `gradle.properties` file to add the following options:
 
-```
+[source, subs="verbatim"]
+----
 # Disable Gradle automatic download of Java SDKs
 org.gradle.java.installations.auto-download=false
 # Disable auto-detection of Java installations
 org.gradle.java.installations.auto-detect=false
-# Setup explicitly that the Java version to use should be the one from the GRAALVM_HOME environment variable
-org.gradle.java.installations.fromEnv=GRAALVM_HOME
-```
+# Setup explicitly that the Java version to use should be the one from the JAVA_HOME environment variable
+org.gradle.java.installations.fromEnv=JAVA_HOME
+----
+
+Alternatively you can pass those options from the command line:
+
+[source, bash]
+----
+./gradlew -Porg.gradle.java.installations.auto-download=false -Porg.gradle.java.installations.auto-detect=false -Porg.gradle.java.installations.fromEnv=JAVA_HOME build
+----
 
 You can build a native image by running the following task:
 
-```bash
+[source, bash]
+----
 $ ./gradlew nativeCompile
-```
+----
 
 And you can run it by calling the following task:
 
-```bash
+[source, bash]
+----
 $ ./gradlew nativeRun
-```
+----
 
 You can tweak the native image options by configuring the `graalvmNative` extension as explained in the {native-gradle-plugin}[plugin documentation].
 
 For example you can add options to the main image by doing:
 
-[subs="verbatim,attributes", role="multi-language-sample"]
-```groovy
+[source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
+----
 graalvmNative {
     binaries {
         main {
@@ -461,10 +474,10 @@ graalvmNative {
         }
     }
 }
-```
+----
 
-[subs="verbatim,attributes", role="multi-language-sample"]
-```kotlin
+[source, kotlin, subs="verbatim,attributes", role="multi-language-sample"]
+----
 graalvmNative {
     binaries {
         named("main") {
@@ -473,7 +486,7 @@ graalvmNative {
         }
     }
 }
-```
+----
 
 IMPORTANT: If you update an existing Micronaut application that contains the file `src/main/resources/META-INF/native-image/xxxxx/native-image.properties`, please make sure to delete the properties `-H:Name` and `-H:Class` from the file because they are managed automatically by the plugin.
 
@@ -481,37 +494,37 @@ IMPORTANT: If you update an existing Micronaut application that contains the fil
 
 Since GraalVM 21.0 it is possible to create "mostly static" native images that can run in a _distroless_ docker image. You only need to configure the appropriate _baseImage_ and the plugin will automatically configure GraalVM:
 
-[subs="verbatim,attributes", role="multi-language-sample"]
-```groovy
+[source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
+----
 tasks.named('dockerfileNative') {
     baseImage('gcr.io/distroless/cc-debian10')
 }
-```
+----
 
-[subs="verbatim,attributes", role="multi-language-sample"]
-```kotlin
+[source, kotlin, subs="verbatim,attributes", role="multi-language-sample"]
+----
 tasks.named<io.micronaut.gradle.docker.NativeImageDockerfile>("dockerfileNative") {
     baseImage("gcr.io/distroless/cc-debian10")
 }
-```
+----
 
 In case you want to use another base image you need to set the appropriate GraalVM flag:
 
-[subs="verbatim,attributes", role="multi-language-sample"]
-```groovy
+[source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
+----
 tasks.named('dockerfileNative') {
     baseImage(...)
     args('-H:+StaticExecutableWithDynamicLibC')
 }
-```
+----
 
-[subs="verbatim,attributes", role="multi-language-sample"]
-```kotlin
+[source, kotlin, subs="verbatim,attributes", role="multi-language-sample"]
+----
 tasks.named<io.micronaut.gradle.docker.NativeImageDockerfile>("dockerfileNative") {
     baseImage(...)
     args("-H:+StaticExecutableWithDynamicLibC")
 }
-```
+----
 
 === Testing Native Images
 
@@ -523,9 +536,10 @@ IMPORTANT: This feature only works in combination with `micronaut-test-core` ver
 
 Using this task will replace the regular embedded server used for tests with the natively built executable:
 
-```bash
+[source, bash]
+----
 ./gradlew testNativeImage
-```
+----
 
 It is important to note that there are some limitations to this approach in that the native server is no longer "embedded" in the test. This has the following implications:
 
@@ -542,48 +556,51 @@ Applications are built as layered JARs using the `buildLayers` task ensuring opt
 
 To build a regular Java application into a Docker container that is ready to be deployed and exposes ports `8080` you can simply do:
 
-```bash
+[source, bash]
+----
 $ ./gradlew dockerBuild
-```
+----
 
 The default uses an `{default-docker-image}` base image, however you can easily switch the base image to use by using the `baseImage` property of the `dockerfile` task:
 
-[subs="verbatim,attributes", role="multi-language-sample"]
-```groovy
+[source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
+----
 tasks.named("dockerfile") {
   baseImage = "oracle/graalvm-ce:20.3.0-java11"
 }
-```
+----
 
-[subs="verbatim,attributes", role="multi-language-sample"]
-```kotlin
+[source, kotlin, subs="verbatim,attributes", role="multi-language-sample"]
+----
 tasks.named<MicronautDockerfile>("dockerfile") {
   baseImage.set("oracle/graalvm-ce:20.3.0-java11")
 }
-```
+----
 
 The above examples switches to use GraalVM CE 20.3.0 as a base image.
 
 To build the application into a Native Image you can run:
 
-```groovy
+[source,bash]
+----
 $ ./gradlew dockerBuildNative
-```
+----
 
 Note that for this to work you must build the application with the same GraalVM SDK as used to build the image.
 
 To push the container to the currently configured container registry you can use either `dockerPush` or `dockerPushNative` for the native image:
 
-```bash
+[source, bash]
+----
 $ ./gradlew dockerPush
-```
+----
 
 To configure the image names to push you can use the `images` setting of the `dockerBuild` task.
 
 For example the following configures `dockerPush` to use Oracle Container Registry:
 
-[subs="verbatim,attributes", role="multi-language-sample"]
-```groovy
+[source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
+----
 tasks.named("dockerBuild") {
     images = ["eu-frankfurt-1.ocir.io/xyzzyz/repo/my-image:$project.version"]
 }
@@ -591,10 +608,10 @@ tasks.named("dockerBuild") {
 tasks.named("dockerBuildNative") {
     images = ["eu-frankfurt-1.ocir.io/xyzzyz/repo/my-image-native:$project.version"]
 }
-```
+----
 
-[subs="verbatim,attributes", role="multi-language-sample"]
-```kotlin
+[source, kotlin, subs="verbatim,attributes", role="multi-language-sample"]
+----
 tasks.named<DockerBuildImage>("dockerBuild") {
     images.add("eu-frankfurt-1.ocir.io/xyzzyz/repo/my-image:$project.version")
 }
@@ -602,7 +619,7 @@ tasks.named<DockerBuildImage>("dockerBuild") {
 tasks.named<DockerBuildImage>("dockerBuildNative") {
     images.add("eu-frankfurt-1.ocir.io/xyzzyz/repo/my-image-native:$project.version")
 }
-```
+----
 
 Notice that you can supply two different image names to push to for the JVM version and the native version of the application.
 
@@ -610,32 +627,32 @@ If you wish to customize the docker builds that are used, the easiest way is to 
 
 If you wish to customize the JVM arguments or native image arguments then it is possible to do so with the `args` method of the `dockerfile` and `dockerfileNative` tasks:
 
-[subs="verbatim,attributes", role="multi-language-sample"]
-```groovy
+[source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
+----
 tasks.named("dockerfile") {
    args("-Xmx128m")
 }
 tasks.named("dockerfileNative") {
    args("-Xmx64m")
 }
-```
+----
 
-[subs="verbatim,attributes", role="multi-language-sample"]
-```kotlin
+[source, kotlin, subs="verbatim,attributes", role="multi-language-sample"]
+----
 tasks.named<MicronautDockerfile>("dockerfile") {
    args("-Xmx128m")
 }
 tasks.named<MicronautDockerfile>("dockerfileNative") {
    args("-Xmx64m")
 }
-```
+----
 
 The above configuration uses a max heap setting of `128m` for Java and `64m` for native image for the application.
 
 To add additional docker instructions to the generated Dockerfile, such as adding a HEALTHCHECK, you can do the following. The additional instructions will be added at the end of the `Dockerfile` just before the `ENTRYPOINT`.
 
-[subs="verbatim,attributes", role="multi-language-sample"]
-```groovy
+[source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
+----
 tasks.named("dockerfile") {
  args("-Xmx128m")
  instruction """HEALTHCHECK CMD curl -s localhost:8090/health | grep '"status":"UP"' """
@@ -644,10 +661,10 @@ tasks.named("dockerfileNative") {
  args("-Xmx64m")
  instruction """HEALTHCHECK CMD curl -s localhost:8090/health | grep '"status":"UP"'"""
 }
-```
+----
 
-[subs="verbatim,attributes", role="multi-language-sample"]
-```kotlin
+[source, kotlin, subs="verbatim,attributes", role="multi-language-sample"]
+----
 tasks.named<Dockerfile>("dockerfile") {
  args("-Xmx128m")
  instruction("""HEALTHCHECK CMD curl -s localhost:8090/health | grep '"status":"UP"' """)
@@ -656,7 +673,7 @@ tasks.named<Dockerfile>("dockerfileNative") {
  args("-Xmx64m")
  instruction("""HEALTHCHECK CMD curl -s localhost:8090/health | grep '"status":"UP"'""")
 }
-```
+----
 
 You can also add any of the other instructions/commands that the docker plugin supports, see {docker-plugin}/blob/master/src/main/groovy/com/bmuschko/gradle/docker/tasks/image/Dockerfile.groovy[the Dockerfile task documentation].
 
@@ -664,8 +681,8 @@ You can also add any of the other instructions/commands that the docker plugin s
 
 A higher level concept of "runtimes" is included in the Micronaut Gradle plugin which essentially allows the plugin to decide which server runtime to include in the dependencies of the application when building the application. For example consider this minimal build:
 
-[subs="verbatim,attributes", role="multi-language-sample"]
-```groovy
+[source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
+----
 plugins {
      id 'io.micronaut.application' version '{gradle-project-version}'
 }
@@ -688,10 +705,10 @@ dependencies {
 application {
     mainClass = "example.Application"
 }
-```
+----
 
-[subs="verbatim,attributes", role="multi-language-sample"]
-```kotlin
+[source, kotlin, subs="verbatim,attributes", role="multi-language-sample"]
+----
 plugins {
      id("io.micronaut.application") version "{gradle-project-version}"
 }
@@ -714,15 +731,16 @@ dependencies {
 application {
     mainClass = "example.Application"
 }
-```
+----
 
 Here the only dependency declared is on the logging framework to use however `runtime` is to `netty` resulting in an application that can be built and run.
 
 If you wish to take the same and build or run it with a different runtime you can pass the `micronaut.runtime` property for the build. For example:
 
-```bash
+[source, bash]
+----
 ./gradlew run -Pmicronaut.runtime=google_function
-```
+----
 
 The above example run the application as a Google Cloud Function.
 
@@ -759,23 +777,23 @@ Keep in mind that copying the only `.jar` file to another directory won't work.
 
 You can add Gradle Shadow plugin so when running `./gradlew assemble` a runnable fatjar is created in `build/libs` directory.
 
-[subs="verbatim,attributes", role="multi-language-sample"]
-```groovy
+[source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
+----
 plugins {
     ...
     id "com.github.johnrengelman.shadow" version "{shadow-version}"
     ...
 }
-```
+----
 
-[subs="verbatim,attributes", role="multi-language-sample"]
-```kotlin
+[source, kotlin, subs="verbatim,attributes", role="multi-language-sample"]
+----
 plugins {
     ...
     id("com.github.johnrengelman.shadow") version "{shadow-version}"
     ...
 }
-```
+----
 
 == Micronaut GraalVM Plugin
 
@@ -783,4 +801,4 @@ The https://plugins.gradle.org/plugin/io.micronaut.graalvm[Micronaut GraalVM plu
 https://github.com/micronaut-projects/micronaut-gradle-plugin#micronaut-application-plugin[Micronaut application plugin] (see below)
 and it provides tasks to generate a GraalVM native image and also creates the GraalVM `resource-config.json` automatically with all the resources from the application.
 
-There is currently no advantage in applying this plugin separately since it aims at configuring a Micronaut Application for GraalVM.
+This plugin can be applied separately if you use the `application` plugin without the `io.micronaut.application` plugin (but we strongly recommend to switch to the `io.micronaut.application` plugin in this case).
