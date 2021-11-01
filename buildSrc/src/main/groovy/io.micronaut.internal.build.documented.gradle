@@ -17,9 +17,6 @@ def asciidoctor = tasks.named("asciidoctor", AsciidoctorTask)
 asciidoctor.configure {
     outputDir = layout.buildDirectory.dir("asciidoc").get().asFile
     resources {
-        from("src/docs/asciidoc/highlight") {
-            into("highlight")
-        }
         from("src/docs/asciidoc/css") {
             into("css")
         }
