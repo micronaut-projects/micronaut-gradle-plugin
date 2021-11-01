@@ -10,3 +10,17 @@
     border-bottom-left-radius: 5px;
     border-bottom-right-radius: 5px;
 }
+
+.toc ul {
+    list-style-type: none;
+    padding-left: 0;
+}
+.toc ul li {
+    margin-top: 5px;
+    padding-left: 0;
+    margin-bottom: 5px;
+}
+
+.toc ul li li {
+    padding-left: 25px;
+}
