@@ -147,17 +147,3 @@
     border-radius: 0 0 4px 4px;
     margin-bottom: 30px;
 }
-
-.copytoclipboard {
-    font-family: "Open Sans";
-    cursor: pointer;
-    background-color: lightgray;
-    color: #000000;
-    float: right;
-    padding: 10px 15px;
-    font-size: 10px;
-    margin-right: 0px;
-    display: block;
-    border-bottom-left-radius: 5px;
-    border-bottom-right-radius: 5px;
-}
