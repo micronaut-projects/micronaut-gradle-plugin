@@ -10,3 +10,7 @@
     border-bottom-left-radius: 5px;
     border-bottom-right-radius: 5px;
 }
+
+.container {
+    max-width: 1400px;
+}
