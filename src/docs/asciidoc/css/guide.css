@@ -12,6 +12,23 @@
     border-bottom-right-radius: 5px;
 }
 
+.container h2,
+.container h3 {
+    margin: 2em 0 1em;
+}
+.container h4,
+.container h5,
+.container h6 {
+    margin: 1em 0 0.5em;
+}
+
+p,ul,ol {
+    margin-bottom: 0.5em;
+}
+
+.multi-language-selector {
+    margin-top: 0.5em;
+}
 
 .toc ul {
     list-style-type: none;
