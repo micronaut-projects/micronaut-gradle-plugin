@@ -36,6 +36,8 @@ import java.util.stream.Collectors;
 public class MicronautApplicationPlugin extends MicronautLibraryPlugin {
 
     public static final String CONFIGURATION_DEVELOPMENT_ONLY = "developmentOnly";
+    // This flag is used for testing purposes only
+    public static final String INTERNAL_CONTINUOUS_FLAG = "io.micronaut.internal.gradle.continuous";
 
     @Override
     public void apply(Project project) {
@@ -114,7 +116,7 @@ public class MicronautApplicationPlugin extends MicronautLibraryPlugin {
         
         new MicronautDockerPlugin().apply(project);
         final TaskContainer tasks = project.getTasks();
-        tasks.withType(JavaExec.class, javaExec -> {
+        tasks.withType(JavaExec.class).configureEach(javaExec -> {
             if (javaExec.getName().equals("run")) {
                 javaExec.jvmArgs(
                         "-Dcom.sun.management.jmxremote"
@@ -129,7 +131,7 @@ public class MicronautApplicationPlugin extends MicronautLibraryPlugin {
             // If -t (continuous mode) is enabled feed parameters to the JVM
             // that allows it to shutdown on resources changes so a rebuild
             // can apply a restart to the application
-            if (project.getGradle().getStartParameter().isContinuous()) {
+            if (project.getGradle().getStartParameter().isContinuous() || Boolean.getBoolean(INTERNAL_CONTINUOUS_FLAG)) {
                 SourceSetContainer sourceSets = project.getConvention()
                         .getPlugin(JavaPluginConvention.class)
                         .getSourceSets();
