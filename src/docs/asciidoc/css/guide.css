@@ -6,10 +6,12 @@
     padding: 10px 15px;
     font-size: 10px;
     margin-right: 20px;
+    margin-top: -16px;
     display: block;
     border-bottom-left-radius: 5px;
     border-bottom-right-radius: 5px;
 }
+
 
 .toc ul {
     list-style-type: none;
@@ -24,3 +26,57 @@
 .toc ul li li {
     padding-left: 25px;
 }
+
+.admonitionblock {
+    margin: 2.5em 0 1em;
+}
+.admonitionblock > table {
+    border-collapse: separate;
+    border: 0;
+    background: none;
+    width: 100%;
+    padding: 10px;
+}
+.admonitionblock>table td.icon {
+    text-align: center;
+    width: 70px;
+    padding-right: 1.125em;
+}
+.admonitionblock>table td.icon img {
+    max-width: none;
+}
+.admonitionblock>table td.icon .title {
+    font-weight: bold;
+    text-transform: uppercase;
+}
+.admonitionblock>table td.content {
+    padding-left: 1.125em;
+    padding-right: 1.25em;
+    border-left-style: solid;
+    border-left-width: 1px;
+}
+.admonitionblock>table td.content>:last-child>:last-child {
+    margin-bottom: 0;
+}
+.important {
+    border: 1px solid #bf0000;
+    background-color: #FCE8EC;
+}
+.important>table td.content {
+    border-color: #bf0000;
+}
+.note>table td.content {
+    border-color: #006fd2;
+}
+.note {
+    border: 1px solid #006fd2;
+    background-color: #cee8ff;
+}
+.warning {
+    border: 1px solid #F0C000;
+    background-color: #FFFFCE;
+}
+.warning>table td.content {
+    border-color: #F0C000;
+}
+
