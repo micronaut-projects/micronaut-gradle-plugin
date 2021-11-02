@@ -29,9 +29,9 @@ A Gradle Plugin which makes development of Micronaut application and libraries a
 
 This project currently consists of 3 plugins:
 
-- the `io.micronaut.application` plugin is aimed at building Micronaut applications. It automatically integrates with GraalVM by applying the `io.micronaut.graalvm` plugin transparently.
-- the `io.micronaut.library` plugin is aimed at building Micronaut libraries.
-- the `io.micronaut.graalvm` plugin integrates with the official {native-gradle-plugin}[GraalVM Native Build Tools plugin] and configures it for Micronaut applications.
+- the https://plugins.gradle.org/plugin/io.micronaut.application[`io.micronaut.application`] plugin is aimed at building Micronaut applications. It automatically integrates with GraalVM by applying the `io.micronaut.graalvm` plugin transparently.
+- the https://plugins.gradle.org/plugin/io.micronaut.library[`io.micronaut.library`] plugin is aimed at building Micronaut libraries.
+- the https://plugins.gradle.org/plugin/io.micronaut.graalvm[`io.micronaut.graalvm`] plugin integrates with the official {native-gradle-plugin}[GraalVM Native Build Tools plugin] and configures it for Micronaut applications.
 
 == Quick Start
 
@@ -51,11 +51,14 @@ Or if you don't have it installed via `curl`:
 [source, bash]
 ----
 # for Java
-$ curl https://launch.micronaut.io/demo.zip?lang=java -o demo.zip && unzip demo.zip -d demo && cd demo
+$ curl https://launch.micronaut.io/demo.zip?lang=java \
+  -o demo.zip && unzip demo.zip -d demo && cd demo
 # for Groovy
-$ curl https://launch.micronaut.io/demo.zip?lang=groovy -o demo.zip && unzip demo.zip -d demo && cd demo
+$ curl https://launch.micronaut.io/demo.zip?lang=groovy \
+  -o demo.zip && unzip demo.zip -d demo && cd demo
 # for Kotlin
-$ curl https://launch.micronaut.io/demo.zip?lang=kotlin -o demo.zip && unzip demo.zip -d demo && cd demo
+$ curl https://launch.micronaut.io/demo.zip?lang=kotlin \
+  -o demo.zip && unzip demo.zip -d demo && cd demo
 ----
 
 == Micronaut Library Plugin
@@ -435,7 +438,8 @@ If you have several GraalVM installations available, or that you want to disable
 org.gradle.java.installations.auto-download=false
 # Disable auto-detection of Java installations
 org.gradle.java.installations.auto-detect=false
-# Setup explicitly that the Java version to use should be the one from the JAVA_HOME environment variable
+# Setup explicitly that the Java version to use
+# should be the one from the JAVA_HOME environment variable
 org.gradle.java.installations.fromEnv=JAVA_HOME
 ----
 
@@ -443,7 +447,10 @@ Alternatively you can pass those options from the command line:
 
 [source, bash]
 ----
-./gradlew -Porg.gradle.java.installations.auto-download=false -Porg.gradle.java.installations.auto-detect=false -Porg.gradle.java.installations.fromEnv=JAVA_HOME build
+./gradlew -Porg.gradle.java.installations.auto-download=false \
+  -Porg.gradle.java.installations.auto-detect=false \
+  -Porg.gradle.java.installations.fromEnv=JAVA_HOME \
+  build
 ----
 
 You can build a native image by running the following task:
