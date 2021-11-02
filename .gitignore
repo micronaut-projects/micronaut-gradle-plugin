@@ -4,6 +4,7 @@ target/
 .gradle/
 .idea/
 build/
+!buildSrc/src/main/groovy/io/micronaut/internal/build
 classes/
 out/
 *.db
