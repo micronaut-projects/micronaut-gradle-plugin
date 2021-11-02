@@ -29,9 +29,9 @@ A Gradle Plugin which makes development of Micronaut application and libraries a
 
 This project currently consists of 3 plugins:
 
-- the `io.micronaut.application` plugin is aimed at building Micronaut applications. It automatically integrates with GraalVM by applying the `io.micronaut.graalvm` plugin transparently.
-- the `io.micronaut.library` plugin is aimed at building Micronaut libraries.
-- the `io.micronaut.graalvm` plugin integrates with the official {native-gradle-plugin}[GraalVM Native Build Tools plugin] and configures it for Micronaut applications.
+- the https://plugins.gradle.org/plugin/io.micronaut.application[`io.micronaut.application`] plugin is aimed at building Micronaut applications. It automatically integrates with GraalVM by applying the `io.micronaut.graalvm` plugin transparently.
+- the https://plugins.gradle.org/plugin/io.micronaut.library[`io.micronaut.library`] plugin is aimed at building Micronaut libraries.
+- the https://plugins.gradle.org/plugin/io.micronaut.graalvm[`io.micronaut.graalvm`] plugin integrates with the official {native-gradle-plugin}[GraalVM Native Build Tools plugin] and configures it for Micronaut applications.
 
 == Quick Start
 
