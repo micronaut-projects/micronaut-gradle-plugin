@@ -12,6 +12,21 @@
     border-bottom-right-radius: 5px;
 }
 
+
+.toc ul {
+    list-style-type: none;
+    padding-left: 0;
+}
+.toc ul li {
+    margin-top: 5px;
+    padding-left: 0;
+    margin-bottom: 5px;
+}
+
+.toc ul li li {
+    padding-left: 25px;
+}
+
 .admonitionblock {
     margin: 2.5em 0 1em;
 }
@@ -64,3 +79,4 @@
 .warning>table td.content {
     border-color: #F0C000;
 }
+
