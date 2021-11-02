@@ -12,6 +12,9 @@
     border-bottom-right-radius: 5px;
 }
 
+.container {
+    max-width: 1400px;
+}
 .container h2,
 .container h3 {
     margin: 2em 0 1em;
@@ -96,4 +99,3 @@ p,ul,ol {
 .warning>table td.content {
     border-color: #F0C000;
 }
-
