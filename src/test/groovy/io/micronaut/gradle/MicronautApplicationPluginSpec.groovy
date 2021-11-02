@@ -2,6 +2,7 @@ package io.micronaut.gradle
 
 
 import org.gradle.testkit.runner.TaskOutcome
+import spock.lang.Issue
 
 class MicronautApplicationPluginSpec extends AbstractGradleBuildSpec {
 
@@ -121,4 +122,48 @@ public class ExampleTest {
 //        task.outcome == TaskOutcome.SUCCESS
 //    }
 
+    @Issue("https://github.com/micronaut-projects/micronaut-gradle-plugin/issues/292")
+    def "Groovy sources are found when configuring watch paths"() {
+                given:
+        settingsFile << "rootProject.name = 'hello-world'"
+        buildFile << """
+            plugins {
+                id "io.micronaut.application"
+                id 'groovy'
+            }
+
+            micronaut {
+                version "3.0.1"
+                runtime "netty"
+            }
+
+            repositories {
+                mavenCentral()
+            }
+
+            dependencies {
+                implementation "org.codehaus.groovy:groovy:3.0.5"
+            }
+            mainClassName="example.Application"
+        """
+
+        testProjectDir.newFolder("src", "main", "groovy", "example")
+        def groovyApp = testProjectDir.newFile("src/main/groovy/example/Application.groovy")
+
+        groovyApp << """package example
+
+            println "Watch paths: \${System.getProperty('micronaut.io.watch.paths')}"
+        """
+
+        when:
+        def result = build('run', "-D${MicronautApplicationPlugin.INTERNAL_CONTINUOUS_FLAG}=true")
+        def task = result.task(":run")
+        def output = result.output.readLines()
+        def watchLine = output.find { it.startsWith("Watch paths: ") }
+            .replace(File.separatorChar, (char) '/')
+
+        then:
+        task.outcome == TaskOutcome.SUCCESS
+        watchLine.contains 'src/main/groovy'
+    }
 }
