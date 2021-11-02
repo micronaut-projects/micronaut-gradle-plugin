@@ -9,7 +9,9 @@ asciidoctorj {
             'highlightjsdir'        : 'highlight',
             'toc'                   : 'left',
             'reproducible'          : '',
-            'nofooter'              : ''
+            'nofooter'              : '',
+            'sectnums'              : '',
+            'sectanchors'           : ''
 }
 
 def asciidoctor = tasks.named("asciidoctor", AsciidoctorTask)

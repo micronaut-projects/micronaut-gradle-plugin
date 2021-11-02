@@ -99,3 +99,12 @@ p,ul,ol {
 .warning>table td.content {
     border-color: #F0C000;
 }
+
+h1:hover a.anchor::before,
+h2:hover a.anchor::before,
+h3:hover a.anchor::before,
+h4:hover a.anchor::before,
+h5:hover a.anchor::before,
+h6:hover a.anchor::before {
+    content: "\00a7"
+}
