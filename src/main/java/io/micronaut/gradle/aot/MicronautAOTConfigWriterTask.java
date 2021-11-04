@@ -15,12 +15,12 @@
  */
 package io.micronaut.gradle.aot;
 
-import io.micronaut.aot.core.sourcegen.AbstractStaticServiceLoaderSourceGenerator;
-import io.micronaut.aot.core.sourcegen.JitStaticServiceLoaderSourceGenerator;
-import io.micronaut.aot.core.sourcegen.KnownMissingTypesSourceGenerator;
-import io.micronaut.aot.core.sourcegen.LogbackConfigurationSourceGenerator;
-import io.micronaut.aot.core.sourcegen.NativeStaticServiceLoaderSourceGenerator;
-import io.micronaut.aot.core.sourcegen.SealedEnvironmentSourceGenerator;
+import io.micronaut.aot.std.sourcegen.AbstractStaticServiceLoaderSourceGenerator;
+import io.micronaut.aot.std.sourcegen.JitStaticServiceLoaderSourceGenerator;
+import io.micronaut.aot.std.sourcegen.KnownMissingTypesSourceGenerator;
+import io.micronaut.aot.std.sourcegen.LogbackConfigurationSourceGenerator;
+import io.micronaut.aot.std.sourcegen.NativeStaticServiceLoaderSourceGenerator;
+import io.micronaut.aot.std.sourcegen.SealedEnvironmentSourceGenerator;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.GradleException;
 import org.gradle.api.file.RegularFileProperty;

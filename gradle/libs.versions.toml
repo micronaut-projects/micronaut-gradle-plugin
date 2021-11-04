@@ -24,6 +24,7 @@ spock-junit4 = { module = "org.spockframework:spock-junit4", version.ref = "spoc
 
 micronaut-aot-api = { module = "io.micronaut.aot:micronaut-aot-api", version.ref = "micronaut-aot" }
 micronaut-aot-core = { module = "io.micronaut.aot:micronaut-aot-core", version.ref = "micronaut-aot" }
+micronaut-aot-std = { module = "io.micronaut.aot:micronaut-aot-std-optimizers", version.ref = "micronaut-aot" }
 micronaut-aot-cli = { module = "io.micronaut.aot:micronaut-aot-cli", version.ref = "micronaut-aot" }
 
 [bundles]

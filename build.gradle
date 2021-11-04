@@ -65,6 +65,7 @@ dependencies {
     implementation libs.graalvmPlug
     implementation libs.micronaut.aot.api
     implementation libs.micronaut.aot.core
+    implementation libs.micronaut.aot.std
     implementation libs.micronaut.aot.cli
     compileOnly libs.bundles.optionalPlugins
 

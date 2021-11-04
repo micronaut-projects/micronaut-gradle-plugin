@@ -240,6 +240,7 @@ public abstract class MicronautAotPlugin implements Plugin<Project> {
             configureAsRuntimeClasspath(configurations, c);
             MicronautExtension micronautExtension = project.getExtensions().getByType(MicronautExtension.class);
             c.getDependencies().addLater(micronautExtension.getAot().getVersion().map(v -> project.getDependencies().create("io.micronaut.aot:micronaut-aot-api:" + v)));
+            c.getDependencies().addLater(micronautExtension.getAot().getVersion().map(v -> project.getDependencies().create("io.micronaut.aot:micronaut-aot-std-optimizers:" + v)));
             c.getDependencies().addLater(micronautExtension.getAot().getVersion().map(v -> project.getDependencies().create("io.micronaut.aot:micronaut-aot-cli:" + v)));
         });
         // User configurations
