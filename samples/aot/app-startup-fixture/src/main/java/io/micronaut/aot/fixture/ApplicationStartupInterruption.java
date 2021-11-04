@@ -1,7 +1,7 @@
 package io.micronaut.aot.fixture;
 
 import io.micronaut.context.ApplicationContextBuilder;
-import io.micronaut.context.ApplicationContextCustomizer;
+import io.micronaut.context.ApplicationContextConfigurer;
 import io.micronaut.context.annotation.ContextConfigurer;
 
 /**
@@ -9,14 +9,14 @@ import io.micronaut.context.annotation.ContextConfigurer;
  * the application under test.
  */
 @ContextConfigurer
-public class ApplicationStartupInterruption implements ApplicationContextCustomizer {
+public class ApplicationStartupInterruption implements ApplicationContextConfigurer {
     @Override
     public int getOrder() {
         return LOWEST_PRECEDENCE;
     }
 
     public @Override
-    void customize(ApplicationContextBuilder builder) {
+    void configure(ApplicationContextBuilder builder) {
         if (System.getProperty("io.micronaut.internal.test.interrupt.startup") != null) {
             System.out.println("Detected test, interrupting application startup");
             System.exit(0);
