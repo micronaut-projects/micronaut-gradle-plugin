@@ -1,0 +1,4 @@
+io.micronaut.gradle
+io.micronaut.gradle.docker
+io.micronaut.gradle.docker.tasks
+io.micronaut.gradle.graalvm
