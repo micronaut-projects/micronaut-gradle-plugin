@@ -177,7 +177,7 @@
 </ul>
 </div>
 <div class="paragraph">
-<p>Please refer to the <a href="#native-image">native image section</a> for more help.</p>
+<p>Please refer to the <a href="#native-image">native image section</a> for more help: the <a href="#toolchain-behavior">toolchain selection mechanism might be surprising to you</a>.</p>
 </div>
 </div>
 </div>
@@ -681,6 +681,18 @@ Said differently, you can run Gradle with OpenJDK, while still building native i
 <p>Gradle will try to locate a <em>compatible GraalVM toolchain</em> to build images. You can tweak what GraalVM version to use by following the <a href="https://graalvm.github.io/native-build-tools/0.9.6/gradle-plugin.html#_selecting_the_graalvm_toolchain">official documentation</a>.</p>
 </li>
 </ul>
+</div>
+<div id="toolchain-behavior" class="admonitionblock important">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Important</div>
+</td>
+<td class="content">
+While the toolchain selection will properly select a GraalVM SDK which matches your language version requirements, it will <strong>not</strong> let you pick a particular GraalVM version (say, prefer 21.3 over 21.1). If your application depends on a specific GraalVM version, you will have to disable automatic detection like explained below.
+</td>
+</tr>
+</table>
 </div>
 <div class="paragraph">
 <p>If you have several GraalVM installations available, or that you want to disable the automatic toolchain recognition, we recommend that you do the following:</p>
