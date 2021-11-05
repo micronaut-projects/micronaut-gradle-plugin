@@ -21,7 +21,7 @@ The 3.0.0 version of the plugin integrates with the {native-gradle-plugin}[offic
     - native image configuration happens in the `graalvmNative` DSL block
     - The GraalVM SDK being used depends on how you configure {gradle-toolchains}[toolchains]
 
-Please refer to the <<native-image, native image section>> for more help.
+Please refer to the <<native-image, native image section>> for more help: the <<toolchain-behavior,toolchain selection mechanism might be surprising to you>>.
 
 == The Gradle plugins
 
@@ -426,6 +426,9 @@ The Micronaut Gradle plugin will automatically configure the toolchains support 
 
 - running Gradle with a GraalVM SDK doesn't necessarily imply that Gradle will use the same SDK to build native images
 - Gradle will try to locate a _compatible GraalVM toolchain_ to build images. You can tweak what GraalVM version to use by following the {native-gradle-plugin}#_selecting_the_graalvm_toolchain[official documentation].
+
+[[toolchain-behavior]]
+IMPORTANT: While the toolchain selection will properly select a GraalVM SDK which matches your language version requirements, it will **not** let you pick a particular GraalVM version (say, prefer 21.3 over 21.1). If your application depends on a specific GraalVM version, you will have to disable automatic detection like explained below.
 
 If you have several GraalVM installations available, or that you want to disable the automatic toolchain recognition, we recommend that you do the following:
 
