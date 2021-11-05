@@ -28,6 +28,7 @@ abstract class AbstractAOTPluginSpec extends AbstractGradleBuildSpec {
     static class AOTConfiguration {
         private final File configFile
         private final Properties props
+        private final Set<String> testedKeys = []
 
         AOTConfiguration(File configFile) {
             this.configFile = configFile
@@ -43,20 +44,22 @@ abstract class AbstractAOTPluginSpec extends AbstractGradleBuildSpec {
             assert configFile.exists() : "Expected to find effective configuration file at $configFile but it doesn't exist"
         }
 
-        void withPropertyKeys(String... keys) {
-            Set<String> actualKeys = props.keySet().collect { it.toString() } as Set<String>
-            Set<String> expectedKeys = keys as Set<String>
-            assert actualKeys.containsAll(expectedKeys)
+        void withExtraPropertyKeys(String... keys) {
+            Set<String> actualKeys = props.keySet().collect { it.toString() } as TreeSet<String>
+            Set<String> expectedKeys = (testedKeys + (keys as Set<String>)) as TreeSet<String>
+            assert actualKeys == expectedKeys
         }
 
         void withProperty(String key, String expectedValue) {
             assert props.containsKey(key)
+            testedKeys << key
             String actualValue = "${props.get(key)}"
             assert actualValue == expectedValue
         }
 
         void withProperty(String key) {
             assert props.containsKey(key)
+            testedKeys << key
         }
     }
 }

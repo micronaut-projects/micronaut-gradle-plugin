@@ -47,4 +47,11 @@ public interface AOTOptimizations {
      */
     @Input
     Property<Boolean> getOptimizeServiceLoading();
+
+    /**
+     * If set to true, YAML files will be converted to Java configuration.
+     * @return the yaml conversion property.
+     */
+    @Input
+    Property<Boolean> getConvertYamlToJava();
 }

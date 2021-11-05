@@ -43,8 +43,9 @@ public class MicronautExtension {
 
     private void configureAotDefaults() {
         aotExtension.getVersion().convention(MicronautAotPlugin.DEFAULT_AOT_VERSION);
-        aotExtension.getSealEnvironment().convention(true);
-        aotExtension.getOptimizeServiceLoading().convention(true);
+        aotExtension.getSealEnvironment().convention(false);
+        aotExtension.getOptimizeServiceLoading().convention(false);
+        aotExtension.getConvertYamlToJava().convention(false);
         aotExtension.getReplaceLogbackXml().convention(false);
     }
 

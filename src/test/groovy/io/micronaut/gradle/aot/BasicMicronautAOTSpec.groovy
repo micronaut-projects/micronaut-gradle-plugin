@@ -14,7 +14,8 @@ class BasicMicronautAOTSpec extends AbstractAOTPluginSpec {
             withProperty('sealed.environment.enabled', 'true')
             withProperty('serviceloading.jit.enabled', 'true')
             withProperty('serviceloading.native.enabled', 'true')
-            withPropertyKeys 'service.types', 'known.missing.types.list'
+            withProperty('yaml.to.java.config.enabled', 'true')
+            withExtraPropertyKeys 'service.types', 'known.missing.types.list'
         }
 
         then: "Context configurer is loaded"

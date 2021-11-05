@@ -21,8 +21,10 @@ import io.micronaut.aot.std.sourcegen.KnownMissingTypesSourceGenerator;
 import io.micronaut.aot.std.sourcegen.LogbackConfigurationSourceGenerator;
 import io.micronaut.aot.std.sourcegen.NativeStaticServiceLoaderSourceGenerator;
 import io.micronaut.aot.std.sourcegen.SealedEnvironmentSourceGenerator;
+import io.micronaut.aot.std.sourcegen.YamlPropertySourceGenerator;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.GradleException;
+import org.gradle.api.InvalidUserCodeException;
 import org.gradle.api.file.RegularFileProperty;
 import org.gradle.api.provider.Property;
 import org.gradle.api.provider.Provider;
@@ -86,6 +88,12 @@ public abstract class MicronautAOTConfigWriterTask extends DefaultTask {
         booleanOptimization(props, SealedEnvironmentSourceGenerator.ID, optimizations.getSealEnvironment());
         booleanOptimization(props, JitStaticServiceLoaderSourceGenerator.ID, optimizations.getOptimizeServiceLoading());
         booleanOptimization(props, NativeStaticServiceLoaderSourceGenerator.ID, optimizations.getOptimizeServiceLoading());
+        booleanOptimization(props, YamlPropertySourceGenerator.ID, optimizations.getConvertYamlToJava());
+        if (optimizations.getConvertYamlToJava().isPresent() && optimizations.getConvertYamlToJava().get()) {
+            if (!optimizations.getOptimizeServiceLoading().isPresent() || !optimizations.getOptimizeServiceLoading().get()) {
+                throw new InvalidUserCodeException("YAML conversion requires service loading optimizations to be enabled too.");
+            }
+        }
         File outputFile = getOutputFile().getAsFile().get();
         if (outputFile.getParentFile().isDirectory() || outputFile.getParentFile().mkdirs()) {
             try (OutputStream out = new FileOutputStream(outputFile)) {

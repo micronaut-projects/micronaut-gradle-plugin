@@ -21,6 +21,11 @@ micronaut {
         incremental(true)
         annotations("demo.app.*")
     }
+    aot {
+        sealEnvironment = true
+        optimizeServiceLoading = true
+        convertYamlToJava = true
+    }
 }
 
 tasks.withType(Test).configureEach {
