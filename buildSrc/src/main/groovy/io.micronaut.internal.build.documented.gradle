@@ -5,13 +5,13 @@ plugins {
 }
 
 asciidoctorj {
-    attributes 'source-highlighter' : 'highlight.js',
-            'highlightjsdir'        : 'highlight',
-            'toc'                   : 'left',
-            'reproducible'          : '',
-            'nofooter'              : '',
-            'sectnums'              : '',
-            'sectanchors'           : ''
+    attributes 'source-highlighter': 'highlight.js',
+            'highlightjsdir': 'highlight',
+            'toc': 'left',
+            'reproducible': '',
+            'nofooter': '',
+            'sectnums': '',
+            'sectanchors': ''
 }
 
 def asciidoctor = tasks.named("asciidoctor", AsciidoctorTask)
@@ -36,10 +36,14 @@ def themer = tasks.register("asciidocThemer", io.micronaut.internal.build.docs.T
     asciidocHtml.fileProvider(asciidoctor.map {
         it.outputDir
     })
-    outputDirectory = layout.buildDirectory.dir("docs")
+    outputDirectory = layout.buildDirectory.dir("themed")
 }
 
-tasks.register("docs") {
+tasks.register("docs", Copy) {
     description = "Generates the plugin documentation"
-    dependsOn(themer)
+    destinationDir = layout.buildDirectory.dir("docs").get().asFile
+    from(themer)
+    into("api") {
+        from javadoc
+    }
 }
