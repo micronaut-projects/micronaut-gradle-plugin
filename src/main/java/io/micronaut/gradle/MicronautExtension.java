@@ -47,6 +47,8 @@ public class MicronautExtension {
         aotExtension.getOptimizeServiceLoading().convention(false);
         aotExtension.getConvertYamlToJava().convention(false);
         aotExtension.getReplaceLogbackXml().convention(false);
+        aotExtension.getOptimizeClassLoading().convention(false);
+        aotExtension.getPrecomputeOperations().convention(false);
     }
 
     /**

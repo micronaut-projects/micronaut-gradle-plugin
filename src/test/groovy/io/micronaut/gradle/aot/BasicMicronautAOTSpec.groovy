@@ -15,6 +15,10 @@ class BasicMicronautAOTSpec extends AbstractAOTPluginSpec {
             withProperty('serviceloading.jit.enabled', 'true')
             withProperty('serviceloading.native.enabled', 'true')
             withProperty('yaml.to.java.config.enabled', 'true')
+            withProperty('scan.reactive.types.enabled', 'true')
+            withProperty('known.missing.types.enabled', 'true')
+            withProperty('sealed.property.source.enabled', 'true')
+            withProperty('precompute.environment.properties.enabled', 'true')
             withExtraPropertyKeys 'service.types', 'known.missing.types.list'
         }
 

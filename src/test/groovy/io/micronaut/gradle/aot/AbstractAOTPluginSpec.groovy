@@ -54,7 +54,7 @@ abstract class AbstractAOTPluginSpec extends AbstractGradleBuildSpec {
             assert props.containsKey(key)
             testedKeys << key
             String actualValue = "${props.get(key)}"
-            assert actualValue == expectedValue
+            assert actualValue == expectedValue : "Expected $key to be $expectedValue but was $actualValue"
         }
 
         void withProperty(String key) {

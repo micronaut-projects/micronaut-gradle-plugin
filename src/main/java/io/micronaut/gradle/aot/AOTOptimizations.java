@@ -54,4 +54,21 @@ public interface AOTOptimizations {
      */
     @Input
     Property<Boolean> getConvertYamlToJava();
+
+    /**
+     * If set to true, the AOT compiler will optimize classloading.
+     */
+    @Input
+    Property<Boolean> getOptimizeClassLoading();
+
+    /**
+     * If set to true, the AOT will precompute at build time a number of
+     * different types of information which would have been computed at
+     * runtime instead.
+     *
+     * @return the precompute operation property
+     */
+    @Input
+    Property<Boolean> getPrecomputeOperations();
+
 }

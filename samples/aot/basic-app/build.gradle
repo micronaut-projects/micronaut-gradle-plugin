@@ -24,7 +24,9 @@ micronaut {
     aot {
         sealEnvironment = true
         optimizeServiceLoading = true
+        optimizeClassLoading = true
         convertYamlToJava = true
+        precomputeOperations = true
     }
 }
 

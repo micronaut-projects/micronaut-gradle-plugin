@@ -16,10 +16,13 @@
 package io.micronaut.gradle.aot;
 
 import io.micronaut.aot.std.sourcegen.AbstractStaticServiceLoaderSourceGenerator;
+import io.micronaut.aot.std.sourcegen.ConstantPropertySourcesSourceGenerator;
+import io.micronaut.aot.std.sourcegen.EnvironmentPropertiesSourceGenerator;
 import io.micronaut.aot.std.sourcegen.JitStaticServiceLoaderSourceGenerator;
 import io.micronaut.aot.std.sourcegen.KnownMissingTypesSourceGenerator;
 import io.micronaut.aot.std.sourcegen.LogbackConfigurationSourceGenerator;
 import io.micronaut.aot.std.sourcegen.NativeStaticServiceLoaderSourceGenerator;
+import io.micronaut.aot.std.sourcegen.PublishersSourceGenerator;
 import io.micronaut.aot.std.sourcegen.SealedEnvironmentSourceGenerator;
 import io.micronaut.aot.std.sourcegen.YamlPropertySourceGenerator;
 import org.gradle.api.DefaultTask;
@@ -89,11 +92,15 @@ public abstract class MicronautAOTConfigWriterTask extends DefaultTask {
         booleanOptimization(props, JitStaticServiceLoaderSourceGenerator.ID, optimizations.getOptimizeServiceLoading());
         booleanOptimization(props, NativeStaticServiceLoaderSourceGenerator.ID, optimizations.getOptimizeServiceLoading());
         booleanOptimization(props, YamlPropertySourceGenerator.ID, optimizations.getConvertYamlToJava());
+        booleanOptimization(props, KnownMissingTypesSourceGenerator.ID, optimizations.getOptimizeClassLoading());
+        booleanOptimization(props, PublishersSourceGenerator.ID, optimizations.getOptimizeClassLoading());
         if (optimizations.getConvertYamlToJava().isPresent() && optimizations.getConvertYamlToJava().get()) {
             if (!optimizations.getOptimizeServiceLoading().isPresent() || !optimizations.getOptimizeServiceLoading().get()) {
                 throw new InvalidUserCodeException("YAML conversion requires service loading optimizations to be enabled too.");
             }
+            booleanOptimization(props, ConstantPropertySourcesSourceGenerator.ID, optimizations.getConvertYamlToJava());
         }
+        booleanOptimization(props, EnvironmentPropertiesSourceGenerator.ID, optimizations.getPrecomputeOperations());
         File outputFile = getOutputFile().getAsFile().get();
         if (outputFile.getParentFile().isDirectory() || outputFile.getParentFile().mkdirs()) {
             try (OutputStream out = new FileOutputStream(outputFile)) {
