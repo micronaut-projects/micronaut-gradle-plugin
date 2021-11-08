@@ -15,6 +15,8 @@ Version {gradle-project-version}
 
 == What's new
 
+NOTE: Documentation for the 2.x branch can be found https://github.com/micronaut-projects/micronaut-gradle-plugin/tree/2.0.x#readme[here].
+
 The 3.0.0 version of the plugin integrates with the {native-gradle-plugin}[official GraalVM plugin] which introduces some breaking changes:
 
     - the `nativeImage` task is now replaced with `nativeCompile`
