@@ -6,7 +6,7 @@
 :shadow-version: 7.0.0
 :native-gradle-plugin: https://graalvm.github.io/native-build-tools/{native-build-tools-version}/gradle-plugin.html
 :gradle-docs: https://docs.gradle.org/{gradle-version}/userguide
-:gradle-toolchains: {gradle-docs}/{gradle-version}/userguide/toolchains.html
+:gradle-toolchains: {gradle-docs}/toolchains.html
 :default-docker-image: openjdk:17-alpine
 :docker-plugin: https://github.com/bmuschko/gradle-docker-plugin
 :aws-docs: https://micronaut-projects.github.io/micronaut-aws/latest/guide/index.html#customRuntimes
