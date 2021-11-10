@@ -1000,7 +1000,7 @@ tasks.named("dockerfileNative") {
 <pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">tasks.named&lt;MicronautDockerfile&gt;("dockerfile") {
    args("-Xmx128m")
 }
-tasks.named&lt;MicronautDockerfile&gt;("dockerfileNative") {
+tasks.named&lt;io.micronaut.gradle.docker.NativeImageDockerfile&gt;("dockerfileNative") {
    args("-Xmx64m")
 }</code></pre>
 </div>
@@ -1029,7 +1029,7 @@ tasks.named("dockerfileNative") {
  args("-Xmx128m")
  instruction("""HEALTHCHECK CMD curl -s localhost:8090/health | grep '"status":"UP"' """)
 }
-tasks.named&lt;Dockerfile&gt;("dockerfileNative") {
+tasks.named&lt;io.micronaut.gradle.docker.NativeImageDockerfile&gt;("dockerfileNative") {
  args("-Xmx64m")
  instruction("""HEALTHCHECK CMD curl -s localhost:8090/health | grep '"status":"UP"'""")
 }</code></pre>
