@@ -654,7 +654,7 @@ tasks.named("dockerfileNative") {
 tasks.named<MicronautDockerfile>("dockerfile") {
    args("-Xmx128m")
 }
-tasks.named<MicronautDockerfile>("dockerfileNative") {
+tasks.named<io.micronaut.gradle.docker.NativeImageDockerfile>("dockerfileNative") {
    args("-Xmx64m")
 }
 ----
@@ -681,7 +681,7 @@ tasks.named<Dockerfile>("dockerfile") {
  args("-Xmx128m")
  instruction("""HEALTHCHECK CMD curl -s localhost:8090/health | grep '"status":"UP"' """)
 }
-tasks.named<Dockerfile>("dockerfileNative") {
+tasks.named<io.micronaut.gradle.docker.NativeImageDockerfile>("dockerfileNative") {
  args("-Xmx64m")
  instruction("""HEALTHCHECK CMD curl -s localhost:8090/health | grep '"status":"UP"'""")
 }
