@@ -1,16 +1,16 @@
 [versions]
 kotlin = "1.4.32"
 docker = "6.7.0"
-diffplug = "3.29.1"
-shadow = "6.1.0"
-groovy = "3.0.8"
+diffplug = "3.33.2"
+shadow = "7.1.0"
+groovy = "3.0.9"
 spock = "2.0-groovy-3.0"
-graalvmPlug = "0.9.5"
+graalvmPlug = "0.9.7.1"
 
 [libraries]
 dockerPlug = { module = "com.bmuschko:gradle-docker-plugin", version.ref = "docker" }
 diffplugPlug = { module = "com.diffplug.gradle:goomph", version.ref = "diffplug" }
-shadowPlug = { module = "com.github.jengelman.gradle.plugins:shadow", version.ref = "shadow" }
+shadowPlug = { module = "gradle.plugin.com.github.johnrengelman:shadow", version.ref = "shadow" }
 graalvmPlug = { module = "org.graalvm.buildtools:native-gradle-plugin", version.ref = "graalvmPlug" }
 
 kotlin-allopen = { module = "org.jetbrains.kotlin:kotlin-allopen", version.ref = "kotlin" }
