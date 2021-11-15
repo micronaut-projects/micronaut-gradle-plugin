@@ -137,17 +137,18 @@ public class MicronautApplicationPlugin extends MicronautLibraryPlugin {
                         .getSourceSets();
                 SourceSet sourceSet = sourceSets.findByName("main");
                 if (sourceSet != null) {
-                    String watchPaths = sourceSet
-                            .getAllSource()
-                            .getSrcDirs()
-                            .stream()
-                            .map(File::getPath)
-                            .collect(Collectors.joining(","));
-
                     Map<String, Object> sysProps = new LinkedHashMap<>();
                     sysProps.put("micronaut.io.watch.restart", true);
                     sysProps.put("micronaut.io.watch.enabled", true);
-                    sysProps.put("micronaut.io.watch.paths", watchPaths);
+                    javaExec.doFirst(workaroundEagerSystemProps -> {
+                        String watchPaths = sourceSet
+                                .getAllSource()
+                                .getSrcDirs()
+                                .stream()
+                                .map(File::getPath)
+                                .collect(Collectors.joining(","));
+                        javaExec.systemProperty("micronaut.io.watch.paths", watchPaths);
+                    });
                     javaExec.systemProperties(
                             sysProps
                     );
