@@ -15,18 +15,18 @@
  */
 package io.micronaut.gradle.docker.model;
 
-import org.gradle.api.file.ConfigurableFileCollection;
-import org.gradle.api.provider.Property;
-import org.gradle.api.tasks.Classpath;
-import org.gradle.api.tasks.Input;
+/**
+ * The kind of runtime a layer targets.
+ */
+public enum RuntimeKind {
+    JIT,
+    NATIVE,
+    ANY;
 
-public interface Layer {
-    @Input
-    Property<LayerKind> getLayerKind();
-
-    @Input
-    Property<RuntimeKind> getRuntimeKind();
-
-    @Classpath
-    ConfigurableFileCollection getFiles();
+    boolean isCompatibleWith(RuntimeKind target) {
+        if (target == ANY || this == ANY) {
+            return true;
+        }
+        return target == this;
+    }
 }

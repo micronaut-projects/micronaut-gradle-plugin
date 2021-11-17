@@ -27,6 +27,8 @@ import org.gradle.api.tasks.OutputDirectory;
 import org.gradle.api.tasks.PathSensitive;
 import org.gradle.api.tasks.PathSensitivity;
 
+import java.util.Locale;
+
 public interface OptimizerIO {
     @Classpath
     ConfigurableFileCollection getClasspath();
@@ -47,6 +49,20 @@ public interface OptimizerIO {
 
     enum TargetRuntime {
         JIT,
-        NATIVE
+        NATIVE;
+
+        public String getSimpleName() {
+            return name().toLowerCase(Locale.US);
+        }
+
+        public String getCapitalizedName() {
+            switch (this) {
+                case JIT:
+                    return "Jit";
+                case NATIVE:
+                    return "Native";
+            }
+            return name();
+        }
     }
 }

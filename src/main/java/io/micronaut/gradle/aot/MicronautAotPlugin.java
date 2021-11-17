@@ -20,6 +20,7 @@ import io.micronaut.gradle.MicronautBasePlugin;
 import io.micronaut.gradle.MicronautExtension;
 import io.micronaut.gradle.docker.model.LayerKind;
 import io.micronaut.gradle.docker.model.MicronautDockerImage;
+import io.micronaut.gradle.docker.model.RuntimeKind;
 import org.graalvm.buildtools.gradle.NativeImagePlugin;
 import org.graalvm.buildtools.gradle.dsl.GraalVMExtension;
 import org.graalvm.buildtools.gradle.dsl.NativeImageOptions;
@@ -63,7 +64,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -136,6 +136,7 @@ public abstract class MicronautAotPlugin implements Plugin<Project> {
         registerJavaExecOptimizedRun(project, tasks, prepareJit);
 
         TaskProvider<MicronautAotOptimizerTask> prepareNative = registerPrepareOptimizationTask(project, optimizerRuntimeClasspath, applicationClasspath, tasks, aotExtension, OptimizerIO.TargetRuntime.NATIVE);
+        registerOptimizedJar(project, tasks, prepareNative, OptimizerIO.TargetRuntime.NATIVE);
         project.getPlugins().withType(NativeImagePlugin.class, p -> registerOptimizedBinary(project, prepareNative));
     }
 
@@ -163,11 +164,11 @@ public abstract class MicronautAotPlugin implements Plugin<Project> {
     }
 
     @SuppressWarnings("unchecked")
-    private void registerDockerImage(Project project, TaskProvider<Jar> optimizedJar) {
+    private void registerDockerImage(Project project, TaskProvider<Jar> optimizedJar, OptimizerIO.TargetRuntime runtime) {
         MicronautExtension micronautExtension = project.getExtensions().getByType(MicronautExtension.class);
         NamedDomainObjectContainer<MicronautDockerImage> dockerImages = (NamedDomainObjectContainer<MicronautDockerImage>) micronautExtension.getExtensions().getByName("dockerImages");
         TaskContainer tasks = project.getTasks();
-        TaskProvider<Jar> optimizedRunnerJar = tasks.register("optimizedRunnerJar", Jar.class, jar -> {
+        TaskProvider<Jar> optimizedRunnerJar = tasks.register("optimizedRunner" + runtime.getCapitalizedName() + "Jar", Jar.class, jar -> {
             jar.from(getArchiveOperations().zipTree(optimizedJar.map(Jar::getArchiveFile)));
             jar.getArchiveClassifier().set("optimized-runner");
             jar.manifest(manifest -> {
@@ -189,17 +190,28 @@ public abstract class MicronautAotPlugin implements Plugin<Project> {
                 manifest.attributes(attrs);
             });
         });
-        dockerImages.create("optimized", image -> {
-            image.addLayer(layer -> {
-                layer.getKind().set(LayerKind.APP);
+        MicronautDockerImage optimized = dockerImages.findByName("optimized");
+        if (optimized != null) {
+            // only consider the main app
+            optimized.addLayer(layer -> {
+                layer.getLayerKind().set(LayerKind.APP);
+                layer.getRuntimeKind().set(runtime == OptimizerIO.TargetRuntime.JIT ? RuntimeKind.JIT : RuntimeKind.NATIVE);
                 layer.getFiles().from(optimizedRunnerJar);
             });
-            image.addLayer(layer -> {
-                layer.getKind().set(LayerKind.LIBS);
-                layer.getFiles().from(layer.getFiles().from(project.getConfigurations().getByName(RUNTIME_CLASSPATH_CONFIGURATION_NAME))
-                );
+        } else {
+            dockerImages.create("optimized", image -> {
+                image.addLayer(layer -> {
+                    layer.getLayerKind().set(LayerKind.APP);
+                    layer.getRuntimeKind().set(runtime == OptimizerIO.TargetRuntime.JIT ? RuntimeKind.JIT : RuntimeKind.NATIVE);
+                    layer.getFiles().from(optimizedRunnerJar);
+                });
+                image.addLayer(layer -> {
+                    layer.getLayerKind().set(LayerKind.LIBS);
+                    layer.getFiles().from(layer.getFiles().from(project.getConfigurations().getByName(RUNTIME_CLASSPATH_CONFIGURATION_NAME))
+                    );
+                });
             });
-        });
+        }
     }
 
     private void registerOptimizedBinary(Project project, TaskProvider<MicronautAotOptimizerTask> prepareNative) {
@@ -213,28 +225,37 @@ public abstract class MicronautAotPlugin implements Plugin<Project> {
         });
     }
 
+    private TaskProvider<Jar> registerOptimizedJar(Project project,
+                                                   TaskContainer tasks,
+                                                   TaskProvider<MicronautAotOptimizerTask> prepareTask,
+                                                   MicronautAotOptimizerTask.TargetRuntime runtime) {
+        TaskProvider<Jar> mainJar = tasks.named("jar", Jar.class);
+        TaskProvider<MergeServiceFiles> mergeTask = tasks.register("mergeServiceFilesForOptimized" + runtime.getCapitalizedName() + "Jar", MergeServiceFiles.class, task -> {
+            task.getInputFiles().from(mainJar.map(jar -> getArchiveOperations().zipTree(jar.getArchiveFile().get().getAsFile())));
+            task.getInputFiles().from(prepareTask.flatMap(MicronautAotOptimizerTask::getGeneratedClassesDirectory));
+            task.getOutputDirectory().convention(project.getLayout().getBuildDirectory().dir("generated/aot/" + runtime.getSimpleName() + "-service-files"));
+        });
+        TaskProvider<Jar> jarTask = tasks.register("optimized" + runtime.getCapitalizedName() + "Jar", Jar.class, jar -> {
+            jar.getInputs().file(prepareTask.map(MicronautAotOptimizerTask::getGeneratedOutputResourceFilter));
+            jar.getArchiveClassifier().convention(runtime.getSimpleName());
+            jar.from(mainJar.get().getSource(), spec -> spec.eachFile(
+                    new JarExclusionSpec(
+                            prepareTask.flatMap(MicronautAotOptimizerTask::getGeneratedOutputResourceFilter),
+                            Collections.singleton("META-INF/services/"),
+                            jar.getLogger()))
+            );
+            jar.from(prepareTask.map(MicronautAotOptimizerTask::getGeneratedClassesDirectory), spec -> spec.exclude("META-INF/services/**"));
+            jar.from(mergeTask);
+        });
+        project.getPlugins().withType(BasePlugin.class, p -> registerDockerImage(project, jarTask, runtime));
+        return jarTask;
+    }
+
     private TaskProvider<JavaExec> registerJavaExecOptimizedRun(Project project,
                                                                 TaskContainer tasks,
                                                                 TaskProvider<MicronautAotOptimizerTask> prepareJit) {
         TaskProvider<Jar> mainJar = tasks.named("jar", Jar.class);
-        TaskProvider<MergeServiceFiles> mergeTask = tasks.register("mergeServiceFilesForOptimizedJar", MergeServiceFiles.class, task -> {
-            task.getInputFiles().from(mainJar.map(jar -> getArchiveOperations().zipTree(jar.getArchiveFile().get().getAsFile())));
-            task.getInputFiles().from(prepareJit.flatMap(MicronautAotOptimizerTask::getGeneratedClassesDirectory));
-            task.getOutputDirectory().convention(project.getLayout().getBuildDirectory().dir("generated/aot/service-files"));
-        });
-        TaskProvider<Jar> jarTask = tasks.register("optimizedJar", Jar.class, jar -> {
-            jar.getInputs().file(prepareJit.map(MicronautAotOptimizerTask::getGeneratedOutputResourceFilter));
-            jar.getArchiveClassifier().convention("optimized");
-            jar.from(mainJar.get().getSource(), spec -> spec.eachFile(
-                    new JarExclusionSpec(
-                            prepareJit.flatMap(MicronautAotOptimizerTask::getGeneratedOutputResourceFilter),
-                            Collections.singleton("META-INF/services/"),
-                            jar.getLogger()))
-            );
-            jar.from(prepareJit.map(MicronautAotOptimizerTask::getGeneratedClassesDirectory), spec -> spec.exclude("META-INF/services/**"));
-            jar.from(mergeTask);
-        });
-        project.getPlugins().withType(BasePlugin.class, p -> registerDockerImage(project, jarTask));
+        TaskProvider<Jar> jarTask = registerOptimizedJar(project, tasks, prepareJit, OptimizerIO.TargetRuntime.JIT);
         project.getPlugins().withType(DistributionPlugin.class, p -> registerOptimizedDistribution(project, jarTask));
         return tasks.register("optimizedRun", JavaExec.class, task -> {
             ProviderFactory providers = project.getProviders();
@@ -269,11 +290,12 @@ public abstract class MicronautAotPlugin implements Plugin<Project> {
                                                                                     TaskContainer tasks,
                                                                                     AOTExtension aotExtension,
                                                                                     MicronautAotOptimizerTask.TargetRuntime runtime) {
-        String runtimeName = runtime.name().toLowerCase(Locale.US);
-        String writeConfigTaskName = "write" + capitalize(runtimeName) + "AOTConfig";
+        String runtimeName = runtime.getSimpleName();
+        String writeConfigTaskName = "write" + runtime.getCapitalizedName() + "AOTConfig";
         TaskProvider<MicronautAOTConfigWriterTask> configTask = tasks.register(writeConfigTaskName, MicronautAOTConfigWriterTask.class, task -> {
             task.getUserConfiguration().convention(aotExtension.getConfigFile());
             task.getAOTOptimizations().convention(aotExtension);
+            task.getForNative().set(runtime == OptimizerIO.TargetRuntime.NATIVE);
             task.getOutputFile().convention(project.getLayout().getBuildDirectory().file("generated/aot/" + runtimeName + ".properties"));
         });
         String prepareTaskName = "prepare" + capitalize(runtimeName) + "Optimizations";

@@ -40,7 +40,7 @@ public abstract class BuildLayersTask extends DefaultTask {
         fileOperations.mkdir(classesDir);
         for (Layer layer : getLayers().get()) {
             final Provider<Directory> layerDir = layerDirectoryOf(layer, getOutputDir(), libsDir, resourcesDir, classesDir);
-            if (layer.getKind().get() == LayerKind.APP) {
+            if (layer.getLayerKind().get() == LayerKind.APP) {
                 // special case for now
                 fileOperations.copy(copy -> copy.from(layer.getFiles()).into(getOutputDir()).rename(s -> "application.jar"));
             } else {
@@ -55,7 +55,7 @@ public abstract class BuildLayersTask extends DefaultTask {
                                                         Provider<Directory> resourcesDir,
                                                         Provider<Directory> classesDir) {
         Provider<Directory> layerDir = libsDir;
-        switch (layer.getKind().get()) {
+        switch (layer.getLayerKind().get()) {
             case APP:
                 layerDir = appDir;
                 break;

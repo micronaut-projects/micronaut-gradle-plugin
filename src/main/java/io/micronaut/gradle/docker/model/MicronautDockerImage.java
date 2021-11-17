@@ -19,6 +19,9 @@ import org.gradle.api.Action;
 import org.gradle.api.Named;
 import org.gradle.api.provider.ListProperty;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 /**
  * Represents a Micronaut docker image, represented
  * with a name and a list of layers.
@@ -29,4 +32,11 @@ public interface MicronautDockerImage extends Named {
     ListProperty<Layer> getLayers();
 
     void addLayer(Action<? super Layer> spec);
+
+    default List<Layer> findLayers(RuntimeKind runtimeKind) {
+        return getLayers().map(layers -> layers.stream()
+                .filter(layer -> layer.getRuntimeKind().get().isCompatibleWith(runtimeKind))
+                .collect(Collectors.toList()))
+                .get();
+    }
 }

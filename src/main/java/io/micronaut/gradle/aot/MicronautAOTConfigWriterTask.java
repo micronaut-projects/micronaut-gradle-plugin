@@ -18,6 +18,7 @@ package io.micronaut.gradle.aot;
 import io.micronaut.aot.std.sourcegen.AbstractStaticServiceLoaderSourceGenerator;
 import io.micronaut.aot.std.sourcegen.ConstantPropertySourcesSourceGenerator;
 import io.micronaut.aot.std.sourcegen.EnvironmentPropertiesSourceGenerator;
+import io.micronaut.aot.std.sourcegen.GraalVMOptimizationFeatureSourceGenerator;
 import io.micronaut.aot.std.sourcegen.JitStaticServiceLoaderSourceGenerator;
 import io.micronaut.aot.std.sourcegen.KnownMissingTypesSourceGenerator;
 import io.micronaut.aot.std.sourcegen.LogbackConfigurationSourceGenerator;
@@ -31,6 +32,7 @@ import org.gradle.api.InvalidUserCodeException;
 import org.gradle.api.file.RegularFileProperty;
 import org.gradle.api.provider.Property;
 import org.gradle.api.provider.Provider;
+import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.InputFile;
 import org.gradle.api.tasks.Nested;
 import org.gradle.api.tasks.Optional;
@@ -56,13 +58,16 @@ public abstract class MicronautAOTConfigWriterTask extends DefaultTask {
     @InputFile
     @PathSensitive(PathSensitivity.NONE)
     @Optional
-    abstract RegularFileProperty getUserConfiguration();
+    public abstract RegularFileProperty getUserConfiguration();
+
+    @Input
+    public abstract Property<Boolean> getForNative();
 
     @Nested
-    abstract Property<AOTOptimizations> getAOTOptimizations();
+    public abstract Property<AOTOptimizations> getAOTOptimizations();
 
     @OutputFile
-    abstract RegularFileProperty getOutputFile();
+    public abstract RegularFileProperty getOutputFile();
 
     private static void booleanOptimization(Properties props, String optimizationId, Provider<Boolean> provider) {
         if (provider.isPresent()) {
@@ -87,6 +92,7 @@ public abstract class MicronautAOTConfigWriterTask extends DefaultTask {
             props.put(AbstractStaticServiceLoaderSourceGenerator.SERVICE_TYPES.getKey(), String.join(",", MicronautAotPlugin.SERVICE_TYPES));
         }
         AOTOptimizations optimizations = getAOTOptimizations().get();
+        booleanOptimization(props, GraalVMOptimizationFeatureSourceGenerator.ID, getForNative());
         booleanOptimization(props, LogbackConfigurationSourceGenerator.ID, optimizations.getReplaceLogbackXml());
         booleanOptimization(props, SealedEnvironmentSourceGenerator.ID, optimizations.getSealEnvironment());
         booleanOptimization(props, JitStaticServiceLoaderSourceGenerator.ID, optimizations.getOptimizeServiceLoading());

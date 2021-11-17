@@ -14,6 +14,7 @@ import io.micronaut.gradle.MicronautRuntime;
 import io.micronaut.gradle.docker.model.DefaultMicronautDockerImage;
 import io.micronaut.gradle.docker.model.LayerKind;
 import io.micronaut.gradle.docker.model.MicronautDockerImage;
+import io.micronaut.gradle.docker.model.RuntimeKind;
 import io.micronaut.gradle.docker.tasks.BuildLayersTask;
 import io.micronaut.gradle.docker.tasks.PrepareDockerContext;
 import org.gradle.api.NamedDomainObjectContainer;
@@ -58,15 +59,15 @@ public class MicronautDockerPlugin implements Plugin<Project> {
         TaskProvider<Jar> runnerJar = createMainRunnerJar(project, tasks);
         dockerImages.create("main", image -> {
             image.addLayer(layer -> {
-                layer.getKind().set(LayerKind.APP);
+                layer.getLayerKind().set(LayerKind.APP);
                 layer.getFiles().from(runnerJar);
             });
             image.addLayer(layer -> {
-                layer.getKind().set(LayerKind.LIBS);
+                layer.getLayerKind().set(LayerKind.LIBS);
                 layer.getFiles().from(project.getConfigurations().getByName(RUNTIME_CLASSPATH_CONFIGURATION_NAME));
             });
             image.addLayer(layer -> {
-                layer.getKind().set(LayerKind.EXPANDED_RESOURCES);
+                layer.getLayerKind().set(LayerKind.EXPANDED_RESOURCES);
                 layer.getFiles().from(project.getExtensions().getByType(SourceSetContainer.class)
                         .getByName(SourceSet.MAIN_SOURCE_SET_NAME).getOutput().getResourcesDir());
             });
@@ -87,8 +88,14 @@ public class MicronautDockerPlugin implements Plugin<Project> {
         TaskProvider<BuildLayersTask> buildLayersTask = tasks.register(adaptTaskName("buildLayers", imageName), BuildLayersTask.class, task -> {
             task.setGroup(BasePlugin.BUILD_GROUP);
             task.setDescription("Builds application layers for use in a Docker container (" + imageName + " image)");
-            task.getLayers().set(imageSpec.getLayers());
+            task.getLayers().set(imageSpec.findLayers(RuntimeKind.JIT));
             task.getOutputDir().convention(project.getLayout().getBuildDirectory().dir("docker/" + imageName + "/layers"));
+        });
+        TaskProvider<BuildLayersTask> buildNativeLayersTask = tasks.register(adaptTaskName("buildNativeLayersTask", imageName), BuildLayersTask.class, task -> {
+            task.setGroup(BasePlugin.BUILD_GROUP);
+            task.setDescription("Builds application layers for use in a Docker container (" + imageName + " image)");
+            task.getLayers().set(imageSpec.findLayers(RuntimeKind.NATIVE));
+            task.getOutputDir().convention(project.getLayout().getBuildDirectory().dir("docker/native-" + imageName + "/layers"));
         });
 
         tasks.configureEach(task -> {
@@ -98,7 +105,7 @@ public class MicronautDockerPlugin implements Plugin<Project> {
         });
 
         Optional<TaskProvider<MicronautDockerfile>> dockerFileTask = configureDockerBuild(project, tasks, buildLayersTask, imageName);
-        TaskProvider<NativeImageDockerfile> nativeImageDockerFileTask = configureNativeDockerBuild(project, tasks, buildLayersTask, imageName);
+        TaskProvider<NativeImageDockerfile> nativeImageDockerFileTask = configureNativeDockerBuild(project, tasks, buildNativeLayersTask, imageName);
 
         project.afterEvaluate(eval -> {
             Optional<DockerBuildStrategy> buildStrategy;
@@ -213,7 +220,7 @@ public class MicronautDockerPlugin implements Plugin<Project> {
 
         TaskProvider<NativeImageDockerfile> dockerFileTask;
         String dockerfileNativeTaskName = adaptTaskName("dockerfileNative", imageName);
-        Provider<RegularFile> targetDockerFile = project.getLayout().getBuildDirectory().file("docker/" + imageName + "/DockerfileNative");
+        Provider<RegularFile> targetDockerFile = project.getLayout().getBuildDirectory().file("docker/native-" + imageName + "/DockerfileNative");
         if (f.exists()) {
             dockerFileTask = tasks.register(dockerfileNativeTaskName, NativeImageDockerfile.class, task -> {
                 task.setGroup(BasePlugin.BUILD_GROUP);
@@ -231,7 +238,7 @@ public class MicronautDockerPlugin implements Plugin<Project> {
         TaskProvider<PrepareDockerContext> prepareContext = tasks.register(adaptTaskName("dockerPrepareContext", imageName), PrepareDockerContext.class, context -> {
             // Because docker requires all files to be found in the build context we need to
             // copy the configuration file directories into the build context
-            context.getOutputDirectory().set(project.getLayout().getBuildDirectory().dir("docker/" + imageName + "/config-dirs"));
+            context.getOutputDirectory().set(project.getLayout().getBuildDirectory().dir("docker/native-" + imageName + "/config-dirs"));
             context.getInputDirectories().from(dockerFileTask.map(t -> t.getNativeImageOptions()
                     .get()
                     .getConfigurationFileDirectories()

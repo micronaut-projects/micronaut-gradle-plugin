@@ -42,6 +42,7 @@ public abstract class DefaultMicronautDockerImage implements MicronautDockerImag
     @Override
     public void addLayer(Action<? super Layer> spec) {
         Layer layer = getObjects().newInstance(Layer.class);
+        layer.getRuntimeKind().convention(RuntimeKind.ANY);
         spec.execute(layer);
         getLayers().add(layer);
     }
