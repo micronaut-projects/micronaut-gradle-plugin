@@ -41,8 +41,8 @@ class DockerfileSpec extends AbstractGradleBuildSpec {
         then:
         task.outcome == TaskOutcome.SUCCESS
         result.output.contains("Dockerfile written to")
-        result.output.contains("build/docker/DockerfileNative")
+        result.output.contains("build/docker/main/DockerfileNative")
 
-        new File("$testProjectDir.root/build/docker/DockerfileNative").text.count("-cp") == 1
+        new File("$testProjectDir.root/build/docker/main/DockerfileNative").text.count("-cp") == 1
     }
 }

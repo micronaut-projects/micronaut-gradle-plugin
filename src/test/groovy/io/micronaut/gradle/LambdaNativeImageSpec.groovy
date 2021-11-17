@@ -37,7 +37,7 @@ class LambdaNativeImageSpec extends AbstractGradleBuildSpec {
         def result = build('dockerfileNative', '-Pmicronaut.runtime=lambda')
 
         def dockerfileNativeTask = result.task(':dockerfileNative')
-        def dockerFileNative = new File(testProjectDir.root, 'build/docker/DockerfileNative').readLines('UTF-8')
+        def dockerFileNative = new File(testProjectDir.root, 'build/docker/main/DockerfileNative').readLines('UTF-8')
 
         then:
         dockerfileNativeTask.outcome == TaskOutcome.SUCCESS
@@ -84,7 +84,7 @@ class LambdaNativeImageSpec extends AbstractGradleBuildSpec {
         def result = build('dockerfileNative')
 
         def dockerfileNativeTask = result.task(':dockerfileNative')
-        def dockerFileNative = new File(testProjectDir.root, 'build/docker/DockerfileNative').readLines('UTF-8')
+        def dockerFileNative = new File(testProjectDir.root, 'build/docker/main/DockerfileNative').readLines('UTF-8')
 
         then:
         dockerfileNativeTask.outcome == TaskOutcome.SUCCESS
@@ -133,7 +133,7 @@ class LambdaNativeImageSpec extends AbstractGradleBuildSpec {
         def result = build('dockerfileNative', '-Pmicronaut.runtime=lambda')
 
         def dockerfileNativeTask = result.task(':dockerfileNative')
-        def dockerFileNative = new File(testProjectDir.root, 'build/docker/DockerfileNative').readLines('UTF-8')
+        def dockerFileNative = new File(testProjectDir.root, 'build/docker/main/DockerfileNative').readLines('UTF-8')
 
         then:
         dockerfileNativeTask.outcome == TaskOutcome.SUCCESS

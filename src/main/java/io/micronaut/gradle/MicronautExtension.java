@@ -1,9 +1,8 @@
 package io.micronaut.gradle;
 
-import io.micronaut.gradle.aot.AOTExtension;
-import io.micronaut.gradle.aot.MicronautAotPlugin;
 import org.gradle.api.Action;
 import org.gradle.api.model.ObjectFactory;
+import org.gradle.api.plugins.ExtensionAware;
 import org.gradle.api.provider.Property;
 
 import javax.inject.Inject;
@@ -18,14 +17,13 @@ import java.util.Map;
  * @author graemerocher
  * @since 1.0.0
  */
-public class MicronautExtension {
+public abstract class MicronautExtension implements ExtensionAware {
 
     private final AnnotationProcessing processing;
     private final Property<String> version;
     private final Property<Boolean> enableNativeImage;
     private final Property<MicronautRuntime> runtime;
     private final Property<MicronautTestRuntime> testRuntime;
-    private final AOTExtension aotExtension;
 
     @Inject
     public MicronautExtension(ObjectFactory objectFactory) {
@@ -37,18 +35,6 @@ public class MicronautExtension {
                                     .convention(MicronautRuntime.NONE);
         this.testRuntime = objectFactory.property(MicronautTestRuntime.class)
                                         .convention(MicronautTestRuntime.NONE);
-        this.aotExtension = objectFactory.newInstance(AOTExtension.class);
-        configureAotDefaults();
-    }
-
-    private void configureAotDefaults() {
-        aotExtension.getVersion().convention(MicronautAotPlugin.DEFAULT_AOT_VERSION);
-        aotExtension.getSealEnvironment().convention(false);
-        aotExtension.getOptimizeServiceLoading().convention(false);
-        aotExtension.getConvertYamlToJava().convention(false);
-        aotExtension.getReplaceLogbackXml().convention(false);
-        aotExtension.getOptimizeClassLoading().convention(false);
-        aotExtension.getPrecomputeOperations().convention(false);
     }
 
     /**
@@ -166,23 +152,6 @@ public class MicronautExtension {
     public MicronautExtension processing(Action<AnnotationProcessing> processingAction) {
         processingAction.execute(this.getProcessing());
         return this;
-    }
-
-    /**
-     * Allows configuring the AOT extension
-     * @return the AOT extension
-     */
-    public AOTExtension getAot() {
-        return aotExtension;
-    }
-
-    /**
-     * Allows configuring the AOT extension
-     *
-     * @param spec the configuration block
-     */
-    public void aot(Action<? super AOTExtension> spec) {
-        spec.execute(aotExtension);
     }
 
     static Map<String, List<String>> mapOf(Object... values) {

@@ -72,6 +72,7 @@ public class MicronautDockerfile extends Dockerfile implements DockerBuildOption
                 workingDir("/function");
                 runCommand("mkdir -p /function/app/resources");
                 copyFile("layers/libs/*.jar", "/function/app/");
+                copyFile("layers/classes/*", "/function/app/classes/");
                 copyFile("layers/resources/*", "/function/app/resources/");
                 copyFile("layers/application.jar", "/function/app/");
                 String cmd = this.defaultCommand.get();
@@ -174,6 +175,7 @@ public class MicronautDockerfile extends Dockerfile implements DockerBuildOption
     static void setupResources(Dockerfile task) {
         task.workingDir("/home/app");
         task.copyFile("layers/libs", "/home/app/libs");
+        task.copyFile("layers/classes", "/home/app/classes");
         task.copyFile("layers/resources", "/home/app/resources");
         task.copyFile("layers/application.jar", "/home/app/application.jar");
     }

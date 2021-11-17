@@ -92,4 +92,7 @@ abstract class AbstractGradleBuildSpec extends Specification {
                 .build()
     }
 
+    static String normalizeLineEndings(String s) {
+        s.replaceAll("\\r\\n?", "\n")
+    }
 }
