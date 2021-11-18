@@ -17,15 +17,10 @@ package io.micronaut.gradle.aot;
 
 import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.file.DirectoryProperty;
-import org.gradle.api.file.RegularFileProperty;
 import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.Classpath;
 import org.gradle.api.tasks.Input;
-import org.gradle.api.tasks.InputFile;
-import org.gradle.api.tasks.Optional;
 import org.gradle.api.tasks.OutputDirectory;
-import org.gradle.api.tasks.PathSensitive;
-import org.gradle.api.tasks.PathSensitivity;
 
 import java.util.Locale;
 
@@ -38,11 +33,6 @@ public interface OptimizerIO {
 
     @Input
     Property<String> getTargetPackage();
-
-    @InputFile
-    @PathSensitive(PathSensitivity.NONE)
-    @Optional
-    RegularFileProperty getConfigurationFile();
 
     @OutputDirectory
     DirectoryProperty getOutputDirectory();

@@ -138,6 +138,25 @@ public abstract class MicronautAotPlugin implements Plugin<Project> {
         TaskProvider<MicronautAotOptimizerTask> prepareNative = registerPrepareOptimizationTask(project, optimizerRuntimeClasspath, applicationClasspath, tasks, aotExtension, OptimizerIO.TargetRuntime.NATIVE);
         registerOptimizedJar(project, tasks, prepareNative, OptimizerIO.TargetRuntime.NATIVE);
         project.getPlugins().withType(NativeImagePlugin.class, p -> registerOptimizedBinary(project, prepareNative));
+
+        registerCreateSamplesTasks(project, optimizerRuntimeClasspath, applicationClasspath, tasks);
+    }
+
+    private void registerCreateSamplesTasks(Project project, Configuration optimizerRuntimeClasspath, Configuration applicationClasspath, TaskContainer tasks) {
+        TaskProvider<Task> createAotSampleConfigurationFiles = tasks.register("createAotSampleConfigurationFiles", task -> {
+            task.setDescription("Generates Micronaut AOT sample configuration files");
+        });
+        for (OptimizerIO.TargetRuntime targetRuntime : OptimizerIO.TargetRuntime.values()) {
+            TaskProvider<MicronautAotSampleConfTask> createSample = tasks.register("createAot" + targetRuntime.getCapitalizedName() + "Sample", MicronautAotSampleConfTask.class, task -> {
+                task.setDescription("Creates a sample " + targetRuntime.getCapitalizedName() + " AOT configuration file");
+                task.getTargetPackage().convention("sample.app");
+                task.getTargetRuntime().set(targetRuntime);
+                task.getOptimizerClasspath().from(optimizerRuntimeClasspath);
+                task.getClasspath().from(applicationClasspath);
+                task.getOutputDirectory().convention(project.getLayout().getBuildDirectory().dir("generated/aot/samples/" + targetRuntime.getSimpleName()));
+            });
+            createAotSampleConfigurationFiles.configure(c -> c.dependsOn(createSample));
+        }
     }
 
     private void registerOptimizedDistribution(Project project,
