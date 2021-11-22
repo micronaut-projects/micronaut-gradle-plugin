@@ -15,6 +15,8 @@
  */
 package io.micronaut.gradle.aot;
 
+import com.github.jengelman.gradle.plugins.shadow.ShadowJavaPlugin;
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar;
 import io.micronaut.gradle.MicronautApplicationPlugin;
 import io.micronaut.gradle.MicronautBasePlugin;
 import io.micronaut.gradle.MicronautExtension;
@@ -45,6 +47,7 @@ import org.gradle.api.java.archives.Attributes;
 import org.gradle.api.logging.Logger;
 import org.gradle.api.plugins.ApplicationPluginConvention;
 import org.gradle.api.plugins.BasePlugin;
+import org.gradle.api.plugins.JavaApplication;
 import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.provider.ProviderFactory;
@@ -67,6 +70,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static com.github.jengelman.gradle.plugins.shadow.ShadowJavaPlugin.SHADOW_GROUP;
 import static org.codehaus.groovy.runtime.StringGroovyMethods.capitalize;
 import static org.gradle.api.plugins.JavaPlugin.RUNTIME_CLASSPATH_CONFIGURATION_NAME;
 
@@ -167,10 +171,10 @@ public abstract class MicronautAotPlugin implements Plugin<Project> {
         classpath.from(optimizedJar);
         classpath.from(project.getConfigurations().getByName(JavaPlugin.RUNTIME_CLASSPATH_CONFIGURATION_NAME));
         TaskProvider<CreateStartScripts> startScripts = project.getTasks().register("create" + capitalize(OPTIMIZED_DIST_NAME) + "StartScripts", CreateStartScripts.class, task -> {
-            JavaExec runTask = project.getTasks().named("run", JavaExec.class).get();
+            JavaApplication javaApplication = project.getExtensions().getByType(JavaApplication.class);
             task.setDescription("Creates OS specific scripts to run the AOT optimized application as a JVM application.");
             task.setClasspath(classpath);
-            task.getMainClass().set(runTask.getMainClass());
+            task.getMainClass().set(javaApplication.getMainClass());
             task.getConventionMapping().map("applicationName", appConvention::getApplicationName);
             task.getConventionMapping().map("outputDir", () -> new File(project.getBuildDir(), "optimizedScripts"));
             task.getConventionMapping().map("executableDir", appConvention::getExecutableDir);
@@ -191,9 +195,9 @@ public abstract class MicronautAotPlugin implements Plugin<Project> {
             jar.from(getArchiveOperations().zipTree(optimizedJar.map(Jar::getArchiveFile)));
             jar.getArchiveClassifier().set("optimized-runner");
             jar.manifest(manifest -> {
-                JavaExec runTask = tasks.named("run", JavaExec.class).get();
+                JavaApplication javaApplication = project.getExtensions().getByType(JavaApplication.class);
                 Attributes attrs = manifest.getAttributes();
-                attrs.put("Main-Class", runTask.getMainClass());
+                attrs.put("Main-Class", javaApplication.getMainClass());
                 attrs.put("Class-Path", project.getProviders().provider(() -> {
                     List<String> classpath = new ArrayList<>();
                     Configuration runtimeClasspath = project.getConfigurations()
@@ -275,14 +279,15 @@ public abstract class MicronautAotPlugin implements Plugin<Project> {
                                                                 TaskProvider<MicronautAotOptimizerTask> prepareJit) {
         TaskProvider<Jar> mainJar = tasks.named("jar", Jar.class);
         TaskProvider<Jar> jarTask = registerOptimizedJar(project, tasks, prepareJit, OptimizerIO.TargetRuntime.JIT);
+        project.getPlugins().withType(ShadowJavaPlugin.class, plugin -> registerShadowJar(project, tasks, jarTask));
         project.getPlugins().withType(DistributionPlugin.class, p -> registerOptimizedDistribution(project, jarTask));
         return tasks.register("optimizedRun", JavaExec.class, task -> {
             ProviderFactory providers = project.getProviders();
             JavaExec runTask = tasks.named("run", JavaExec.class).get();
-            Provider<String> main = providers.provider(() -> runTask.getMainClass().get());
+            JavaApplication javaApplication = project.getExtensions().getByType(JavaApplication.class);
             task.setGroup(runTask.getGroup());
             task.setDescription("Executes the Micronaut application with AOT optimizations");
-            task.getMainClass().convention(main);
+            task.getMainClass().convention(javaApplication.getMainClass());
             task.setClasspath(
                     project.files(jarTask, runTask.getClasspath().filter(f -> !mainJar.get().getArchiveFile().get().getAsFile().equals(f)))
             );
@@ -301,6 +306,29 @@ public abstract class MicronautAotPlugin implements Plugin<Project> {
                 }
             });
         });
+    }
+
+    protected void registerShadowJar(Project project,
+                                     TaskContainer tasks,
+                                     TaskProvider<Jar> optimizedJar) {
+        project.afterEvaluate(unused -> {
+            JavaApplication javaApplication = project.getExtensions().getByType(JavaApplication.class);
+            tasks.register(optimizedJar.getName() + "All", ShadowJar.class, shadow -> {
+                shadow.setGroup(SHADOW_GROUP);
+                shadow.setDescription("Creates a fat jar including the Micronaut AOT optimizations");
+                shadow.getArchiveClassifier().convention("all-optimized");
+                Jar mainJar = tasks.named("jar", Jar.class).get();
+                shadow.getManifest().inheritFrom(mainJar.getManifest());
+                // This is the reason why we use an afterEvalute:
+                // The shadow plugin apparently does something with attributes,
+                // breaking support for providers
+                shadow.getManifest().getAttributes().put("Main-Class", javaApplication.getMainClass().get());
+                shadow.from(optimizedJar.map(jar -> getArchiveOperations().zipTree(jar.getArchiveFile().get())));
+                shadow.getConfigurations().add(project.getConfigurations().findByName("runtimeClasspath"));
+                shadow.getExcludes().addAll(tasks.named(ShadowJavaPlugin.SHADOW_JAR_TASK_NAME, ShadowJar.class).get().getExcludes());
+            });
+        });
+
     }
 
     private TaskProvider<MicronautAotOptimizerTask> registerPrepareOptimizationTask(Project project,
@@ -325,9 +353,9 @@ public abstract class MicronautAotPlugin implements Plugin<Project> {
             Provider<Directory> baseDir = project.getLayout().getBuildDirectory().dir("generated/aot/" + runtimeName);
             task.getOutputDirectory().convention(baseDir);
             task.getTargetRuntime().value(runtime).finalizeValue();
-            TaskProvider<JavaExec> runTask = tasks.named("run", JavaExec.class);
             task.getTargetPackage().convention(providers.provider(() -> {
-                String mainClass = runTask.get().getMainClass().get();
+                JavaApplication javaApplication = project.getExtensions().getByType(JavaApplication.class);
+                String mainClass = javaApplication.getMainClass().get();
                 return mainClass.substring(0, mainClass.lastIndexOf("."));
             }));
             task.getClasspath().from(applicationClasspath);

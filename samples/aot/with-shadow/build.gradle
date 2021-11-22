@@ -1,0 +1,59 @@
+plugins {
+    id("io.micronaut.application")
+    id("io.micronaut.aot")
+    id("com.github.johnrengelman.shadow")
+}
+
+version = "0.1"
+group = "demo.app"
+
+repositories {
+    mavenCentral()
+    maven {
+        url "https://s01.oss.sonatype.org/content/repositories/snapshots/"
+    }
+}
+
+micronaut {
+    version = "3.2.0-SNAPSHOT"
+    runtime("netty")
+    testRuntime("junit5")
+    processing {
+        incremental(true)
+        annotations("demo.app.*")
+    }
+    aot {
+        sealEnvironment = true
+        optimizeServiceLoading = true
+        optimizeClassLoading = true
+        convertYamlToJava = true
+        precomputeOperations = true
+    }
+}
+
+tasks.withType(Test).configureEach {
+    useJUnitPlatform()
+}
+
+tasks.named("test", Test) {
+    inputs.files(file("samples"))
+}
+
+dependencies {
+    annotationProcessor("io.micronaut:micronaut-http-validation")
+    implementation("io.micronaut:micronaut-http-client")
+    implementation("io.micronaut:micronaut-runtime")
+    implementation("javax.annotation:javax.annotation-api")
+    runtimeOnly("ch.qos.logback:logback-classic")
+    implementation("io.micronaut:micronaut-validation")
+}
+
+
+application {
+    mainClass.set("demo.app.Application")
+}
+
+java {
+    sourceCompatibility = JavaVersion.toVersion("11")
+    targetCompatibility = JavaVersion.toVersion("11")
+}
