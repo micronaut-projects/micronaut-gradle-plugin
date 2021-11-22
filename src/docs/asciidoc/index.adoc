@@ -814,3 +814,43 @@ https://github.com/micronaut-projects/micronaut-gradle-plugin#micronaut-applicat
 and it provides tasks to generate a GraalVM native image and also creates the GraalVM `resource-config.json` automatically with all the resources from the application.
 
 This plugin can be applied separately if you use the `application` plugin without the `io.micronaut.application` plugin (but we strongly recommend to switch to the `io.micronaut.application` plugin in this case).
+
+== Upgrade notes
+
+=== Upgrading from 2.x
+
+When upgrading from the 2.x version of the plugins, you will need to change the configuration of the GraalVM native image builds if you use them.
+
+Typically, instead of configuring image compilation using the _task_:
+
+[source,groovy]
+----
+nativeImage {
+    imageName.set("custom")
+}
+----
+
+You now need to use the `graalvmNative` extension. This extension supports building multiple native images, and the main one is named `main` (there is another one for tests, called `test`, which runs unit tests natively):
+
+[source,groovy]
+----
+graalvmNative {
+    binaries {
+        named("main") {
+            imageName.set("custom")
+        }
+    }
+}
+----
+
+Similarly, to compile the native image, you now need to run `nativeCompile` instead of `nativeImage`.
+
+In addition, the official GraalVM plugin makes use of Gradle toolchains support, which can lead to surprising behavior if you are used to switching between local JDKs. If you are facing errors like this one:
+
+----
+> No compatible toolchains found for request filter: {languageVersion=11, vendor=matching('GraalVM'), implementation=vendor-specific} (auto-detect true, auto-download true)
+----
+
+then we recommend tweaking toolchain detection as described in <<#toolchain-behavior, this section of the documentation>>.
+
+In any case, make sure to follow the <<#native-image,configuration instructions>>.
