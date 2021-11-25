@@ -38,6 +38,10 @@ gradlePlugin {
             id = 'io.micronaut.graalvm'
             implementationClass = 'io.micronaut.gradle.graalvm.MicronautGraalPlugin'
         }
+        aotPlugin {
+            id = 'io.micronaut.aot'
+            implementationClass = 'io.micronaut.gradle.aot.MicronautAotPlugin'
+        }
     }
 }
 configurations {
@@ -52,6 +56,10 @@ dependencies {
     implementation libs.diffplugPlug
     implementation libs.shadowPlug
     implementation libs.graalvmPlug
+    implementation libs.micronaut.aot.api
+    implementation libs.micronaut.aot.core
+    implementation libs.micronaut.aot.std
+    implementation libs.micronaut.aot.cli
     compileOnly libs.bundles.optionalPlugins
 
     optionalPluginDependencies libs.bundles.optionalPlugins
@@ -82,6 +90,9 @@ pluginBundle {
         }
         graalPlugin {
             displayName = 'Micronaut GraalVM Plugin'
+        }
+        aotPlugin {
+            displayName = 'Micronaut AOT Plugin'
         }
     }
 }

@@ -117,7 +117,7 @@ micronaut:
         def result = build('dockerBuildNative')
 
         def task = result.task(":dockerBuildNative")
-        def dockerFile = new File(testProjectDir.root, 'build/docker/DockerfileNative').readLines('UTF-8')
+        def dockerFile = new File(testProjectDir.root, 'build/docker/native-main/DockerfileNative').readLines('UTF-8')
 
         expect:
         dockerFile.first().startsWith(nativeImage)
@@ -249,8 +249,8 @@ class Application {
 
         def dockerfileTask = result.task(":dockerfile")
         def dockerfileNativeTask = result.task(":dockerfileNative")
-        def dockerFileNative = new File(testProjectDir.root, 'build/docker/DockerfileNative').readLines('UTF-8')
-        def dockerFile = new File(testProjectDir.root, 'build/docker/Dockerfile').readLines('UTF-8')
+        def dockerFileNative = new File(testProjectDir.root, 'build/docker/native-main/DockerfileNative').readLines('UTF-8')
+        def dockerFile = new File(testProjectDir.root, 'build/docker/main/Dockerfile').readLines('UTF-8')
 
         expect:
         dockerfileTask.outcome == TaskOutcome.SUCCESS
@@ -335,8 +335,8 @@ class Application {
 
         def dockerfileTask = result.task(":dockerfile")
         def dockerfileNativeTask = result.task(":dockerfileNative")
-        def dockerFileNative = new File(testProjectDir.root, 'build/docker/DockerfileNative').readLines('UTF-8')
-        def dockerFile = new File(testProjectDir.root, 'build/docker/Dockerfile').readLines('UTF-8')
+        def dockerFileNative = new File(testProjectDir.root, 'build/docker/native-main/DockerfileNative').readLines('UTF-8')
+        def dockerFile = new File(testProjectDir.root, 'build/docker/main/Dockerfile').readLines('UTF-8')
 
         expect:
         dockerfileTask.outcome == TaskOutcome.SUCCESS
@@ -389,7 +389,7 @@ class Application {
         def result = build('dockerfileNative')
 
         def dockerfileNativeTask = result.task(':dockerfileNative')
-        def dockerFileNative = new File(testProjectDir.root, 'build/docker/DockerfileNative').readLines('UTF-8')
+        def dockerFileNative = new File(testProjectDir.root, 'build/docker/native-main/DockerfileNative').readLines('UTF-8')
 
         then:
         dockerfileNativeTask.outcome == TaskOutcome.SUCCESS
@@ -432,7 +432,7 @@ class Application {
         def result = build('dockerfileNative')
 
         def dockerfileNativeTask = result.task(':dockerfileNative')
-        def dockerFileNative = new File(testProjectDir.root, 'build/docker/DockerfileNative').readLines('UTF-8')
+        def dockerFileNative = new File(testProjectDir.root, 'build/docker/native-main/DockerfileNative').readLines('UTF-8')
 
         then:
         dockerfileNativeTask.outcome == TaskOutcome.SUCCESS
@@ -471,7 +471,7 @@ class Application {
         def result = build('dockerfileNative')
 
         def dockerfileNativeTask = result.task(':dockerfileNative')
-        def dockerFileNative = new File(testProjectDir.root, 'build/docker/DockerfileNative').readLines('UTF-8')
+        def dockerFileNative = new File(testProjectDir.root, 'build/docker/native-main/DockerfileNative').readLines('UTF-8')
 
         then:
         dockerfileNativeTask.outcome == TaskOutcome.SUCCESS
@@ -520,6 +520,6 @@ class Application {
         dockerfileTask.outcome == TaskOutcome.SUCCESS
 
         and:
-        def dockerfile = new File(testProjectDir.root, 'build/docker/Dockerfile').readLines('UTF-8')
+        def dockerfile = new File(testProjectDir.root, 'build/docker/main/Dockerfile').readLines('UTF-8')
     }
 }

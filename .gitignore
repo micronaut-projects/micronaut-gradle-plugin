@@ -16,6 +16,7 @@ bin/
 .settings/
 .project
 */test/
+!src/test/
 */META-INF/
 *.ipr
 *.iws

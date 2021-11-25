@@ -52,6 +52,7 @@ class Application {
         task.outcome == TaskOutcome.SUCCESS
     }
 
+    @IgnoreIf({ os.isWindows() })
     def "test build native image - custom name"() {
         given:
         settingsFile << "rootProject.name = 'hello-world'"

@@ -18,8 +18,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import static java.util.Locale.ENGLISH;
-
 /**
  * Extension to integration support for Kotlin.
  *
@@ -135,7 +133,7 @@ public class MicronautKotlinSupport {
                 List<SourceSet> configurations = additionalSourceSets.get();
                 if (!configurations.isEmpty()) {
                     for (SourceSet sourceSet : configurations) {
-                        String annotationProcessorConfigurationName = "kapt" + capitalize(sourceSet.getName());
+                        String annotationProcessorConfigurationName = "kapt" + Strings.capitalize(sourceSet.getName());
                         String implementationConfigurationName = sourceSet
                                 .getImplementationConfigurationName();
                         List<String> both = Arrays.asList(
@@ -210,10 +208,4 @@ public class MicronautKotlinSupport {
         }
     }
 
-    private static String capitalize(String name) {
-        if (name == null || name.length() == 0) {
-            return name;
-        }
-        return name.substring(0, 1).toUpperCase(ENGLISH) + name.substring(1);
-    }
 }

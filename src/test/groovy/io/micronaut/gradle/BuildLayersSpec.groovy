@@ -37,7 +37,7 @@ class BuildLayersSpec extends AbstractGradleBuildSpec {
 
         then:
         task.outcome == TaskOutcome.SUCCESS
-        new File(testProjectDir.root, "build-custom/docker/layers").exists()
-        !new File(testProjectDir.root, "build/docker/layers").exists()
+        new File(testProjectDir.root, "build-custom/docker/main/layers").exists()
+        !new File(testProjectDir.root, "build/docker/main/layers").exists()
     }
 }
