@@ -10,7 +10,6 @@ import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.Dependency;
 import org.gradle.api.artifacts.DependencySet;
 import org.gradle.api.artifacts.dsl.DependencyHandler;
-import org.gradle.api.plugins.ExtensionContainer;
 import org.gradle.api.plugins.GroovyPlugin;
 import org.gradle.api.plugins.JavaPluginConvention;
 import org.gradle.api.plugins.PluginContainer;
@@ -23,10 +22,22 @@ import org.gradle.api.tasks.compile.JavaCompile;
 import org.gradle.api.tasks.testing.Test;
 
 import java.io.File;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Stream;
 
-import static org.gradle.api.plugins.JavaPlugin.*;
+import static org.gradle.api.plugins.JavaPlugin.ANNOTATION_PROCESSOR_CONFIGURATION_NAME;
+import static org.gradle.api.plugins.JavaPlugin.API_CONFIGURATION_NAME;
+import static org.gradle.api.plugins.JavaPlugin.COMPILE_ONLY_CONFIGURATION_NAME;
+import static org.gradle.api.plugins.JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME;
+import static org.gradle.api.plugins.JavaPlugin.TEST_ANNOTATION_PROCESSOR_CONFIGURATION_NAME;
+import static org.gradle.api.plugins.JavaPlugin.TEST_COMPILE_ONLY_CONFIGURATION_NAME;
+import static org.gradle.api.plugins.JavaPlugin.TEST_IMPLEMENTATION_CONFIGURATION_NAME;
 
 /**
  * A plugin for creating a Micronaut library. Applies the java-library plugin by default.
@@ -57,9 +68,7 @@ public class MicronautLibraryPlugin implements Plugin<Project> {
 
         plugins.apply(getBasePluginName());
         plugins.apply(AptEclipsePlugin.class);
-        ExtensionContainer extensions = project.getExtensions();
-        extensions.create("micronaut", MicronautExtension.class);
-
+        plugins.apply(MicronautBasePlugin.class);
         project.getPlugins().apply(MicronautGraalPlugin.class);
 
         final TaskContainer tasks = project.getTasks();

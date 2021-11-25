@@ -41,3 +41,4 @@ jobs:
           JAVA_HOME: C:\graalvm\graalvm-ce-java11-${{ matrix.graalvm }}
           GRAALVM_HOME: C:\graalvm\graalvm-ce-java11-${{ matrix.graalvm }}
           TESTCONTAINERS_RYUK_DISABLED: true
+          GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GRADLE_ENTERPRISE_ACCESS_KEY }}

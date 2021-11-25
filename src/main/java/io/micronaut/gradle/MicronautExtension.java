@@ -1,9 +1,8 @@
 package io.micronaut.gradle;
 
-import io.micronaut.gradle.graalvm.GraalUtil;
 import org.gradle.api.Action;
-import org.gradle.api.Project;
 import org.gradle.api.model.ObjectFactory;
+import org.gradle.api.plugins.ExtensionAware;
 import org.gradle.api.provider.Property;
 
 import javax.inject.Inject;
@@ -18,7 +17,7 @@ import java.util.Map;
  * @author graemerocher
  * @since 1.0.0
  */
-public class MicronautExtension {
+public abstract class MicronautExtension implements ExtensionAware {
 
     private final AnnotationProcessing processing;
     private final Property<String> version;
