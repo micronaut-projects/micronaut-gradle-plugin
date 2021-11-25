@@ -9,13 +9,10 @@ group = "demo.app"
 
 repositories {
     mavenCentral()
-    maven {
-        url "https://s01.oss.sonatype.org/content/repositories/snapshots/"
-    }
 }
 
 micronaut {
-    version = "3.2.0-SNAPSHOT"
+    version = "3.2.0"
     runtime("netty")
     testRuntime("junit5")
     processing {

@@ -16,13 +16,6 @@ plugins {
 repositories {
     mavenCentral()
     gradlePluginPortal()
-    maven {
-        url = uri("https://s01.oss.sonatype.org/content/repositories/snapshots/")
-        content {
-            includeGroup("io.micronaut")
-            includeGroup("io.micronaut.aot")
-        }
-    }
 }
 
 // Unless overridden in the pluginBundle config DSL, the project version will
