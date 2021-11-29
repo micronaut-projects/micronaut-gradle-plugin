@@ -45,7 +45,11 @@ public class MicronautGraalPlugin implements Plugin<Project> {
         project.getPluginManager().apply(NativeImagePlugin.class);
         project.getPluginManager().withPlugin("io.micronaut.library", plugin -> {
             MicronautExtension extension = project.getExtensions().findByType(MicronautExtension.class);
-            configureMicronautLibrary(project, extension);
+            configureAnnotationProcessing(project, extension);
+        });
+        project.getPluginManager().withPlugin("io.micronaut.application", plugin -> {
+            MicronautExtension extension = project.getExtensions().findByType(MicronautExtension.class);
+            configureAnnotationProcessing(project, extension);
         });
         GraalVMExtension graal = project.getExtensions().findByType(GraalVMExtension.class);
         graal.getBinaries().configureEach(options ->
@@ -109,7 +113,7 @@ public class MicronautGraalPlugin implements Plugin<Project> {
         }
     }
 
-    private static void configureMicronautLibrary(Project project, MicronautExtension extension) {
+    private static void configureAnnotationProcessing(Project project, MicronautExtension extension) {
         SourceSetContainer sourceSets = project
                 .getConvention()
                 .getPlugin(JavaPluginConvention.class)
