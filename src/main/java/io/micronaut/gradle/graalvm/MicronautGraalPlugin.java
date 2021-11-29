@@ -68,9 +68,10 @@ public class MicronautGraalPlugin implements Plugin<Project> {
 
             // We use `afterEvaluate` here in order to preserve laziness of task configuration
             // and because there is no API to allow reacting to registration of tasks.
+            Set<String> alreadyRegisteredTaskNames = new HashSet<>();
             project.afterEvaluate(p -> tasks.withType(Test.class).getCollectionSchema().getElements().forEach(element -> {
                 String testName = element.getName();
-                registerTestAgainstNativeImageTask(project, tasks, testName);
+                registerTestAgainstNativeImageTask(alreadyRegisteredTaskNames, tasks, testName);
             }));
         });
     }
@@ -80,30 +81,32 @@ public class MicronautGraalPlugin implements Plugin<Project> {
      * server. Note that this is different from the `nativeTest` task that the GraalVM Gradle plugin provides,
      * as the latter executes all tests _within_ the native image.
      */
-    private void registerTestAgainstNativeImageTask(Project project, TaskContainer tasks, String testName) {
-        tasks.register(testName + "NativeImage", Test.class, nativeImageTestTask -> {
-            Test testTask = (Test) tasks.getByName(testName);
-            nativeImageTestTask.setClasspath(testTask.getClasspath());
-            nativeImageTestTask.getJavaLauncher().set(testTask.getJavaLauncher());
-            BuildNativeImageTask nativeBuild = (BuildNativeImageTask) tasks.findByName("nativeCompile");
-            nativeImageTestTask.setForkEvery(testTask.getForkEvery());
-            nativeImageTestTask.setTestClassesDirs(testTask.getTestClassesDirs());
-            nativeImageTestTask.getJvmArgumentProviders().add(new CommandLineArgumentProvider() {
-                @InputFile
-                @PathSensitive(PathSensitivity.RELATIVE)
-                Provider<RegularFile> getInputFile() {
-                    return nativeBuild.getOutputFile();
-                }
+    private void registerTestAgainstNativeImageTask(Set<String> alreadyRegistered, TaskContainer tasks, String testName) {
+        if (alreadyRegistered.add(testName)) {
+            tasks.register(testName + "NativeImage", Test.class, nativeImageTestTask -> {
+                Test testTask = (Test) tasks.getByName(testName);
+                nativeImageTestTask.setClasspath(testTask.getClasspath());
+                nativeImageTestTask.getJavaLauncher().set(testTask.getJavaLauncher());
+                BuildNativeImageTask nativeBuild = (BuildNativeImageTask) tasks.findByName("nativeCompile");
+                nativeImageTestTask.setForkEvery(testTask.getForkEvery());
+                nativeImageTestTask.setTestClassesDirs(testTask.getTestClassesDirs());
+                nativeImageTestTask.getJvmArgumentProviders().add(new CommandLineArgumentProvider() {
+                    @InputFile
+                    @PathSensitive(PathSensitivity.RELATIVE)
+                    Provider<RegularFile> getInputFile() {
+                        return nativeBuild.getOutputFile();
+                    }
 
-                @Override
-                public Iterable<String> asArguments() {
-                    return Collections.singleton(
-                            "-Dmicronaut.test.server.executable=" + getInputFile().get().getAsFile().getAbsolutePath()
-                    );
-                }
+                    @Override
+                    public Iterable<String> asArguments() {
+                        return Collections.singleton(
+                                "-Dmicronaut.test.server.executable=" + getInputFile().get().getAsFile().getAbsolutePath()
+                        );
+                    }
+                });
+                nativeImageTestTask.setDescription("Runs tests against a native image build of the server. Requires the server to allow the port to configurable with 'micronaut.server.port'.");
             });
-            nativeImageTestTask.setDescription("Runs tests against a native image build of the server. Requires the server to allow the port to configurable with 'micronaut.server.port'.");
-        });
+        }
     }
 
     private static void configureMicronautLibrary(Project project, MicronautExtension extension) {
