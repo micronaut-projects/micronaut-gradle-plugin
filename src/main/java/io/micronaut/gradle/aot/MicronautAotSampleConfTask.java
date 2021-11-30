@@ -15,6 +15,8 @@
  */
 package io.micronaut.gradle.aot;
 
+import io.micronaut.gradle.Strings;
+
 import java.io.File;
 import java.util.List;
 
@@ -25,5 +27,13 @@ public abstract class MicronautAotSampleConfTask extends AbstractMicronautAotCli
         File targetFile = getOutputDirectory().zip(getTargetRuntime(), (dir, runtime) -> dir.file(runtime.getSimpleName() + ".properties")).get().getAsFile();
         targetFile.getParentFile().mkdirs();
         args.add(targetFile.getAbsolutePath());
+    }
+
+    @Override
+    protected void onSuccess(File outputDir) {
+        File sampleFile = new File(outputDir, getTargetRuntime().map(runtime -> runtime.getSimpleName() + ".properties").orElse("sample.properties").get());
+        if (sampleFile.exists()) {
+            System.out.println("Sample configuration file written to " + Strings.clickableUrl(sampleFile));
+        }
     }
 }

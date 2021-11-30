@@ -995,7 +995,7 @@ yaml.to.java.config.enabled = true
 sealed.property.source.enabled = true
 ----
 
-For native images, it is important to always have the `graalvm.config.enabled` option set to `true`, otherwise the AOT optimizations will not be loaded.
+For native images, it is important to always have the `graalvm.config.enabled` option set to `true`, otherwise the AOT optimizations will not be loaded. The plugin takes care of setting this flag to `true` for you.
 
 It is important to understand that Micronaut AOT works _at build time_.
 Therefore, some optimizations like conversion of YAML files to Java configuration will effectively disable the ability to change the configuration at runtime.
