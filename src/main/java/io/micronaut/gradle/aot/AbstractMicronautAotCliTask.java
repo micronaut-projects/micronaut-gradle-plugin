@@ -46,6 +46,10 @@ abstract class AbstractMicronautAotCliTask extends DefaultTask implements Optimi
 
     }
 
+    protected void onSuccess(File outputDir) {
+
+    }
+
     @TaskAction
     public final void execute() {
         File outputDir = getOutputDirectory().getAsFile().get();
@@ -67,6 +71,7 @@ abstract class AbstractMicronautAotCliTask extends DefaultTask implements Optimi
         if (javaexec.getExitValue() != 0) {
             throw new GradleException("AOT analysis failed");
         }
+        onSuccess(outputDir);
     }
 
 }

@@ -29,11 +29,12 @@ Please refer to the <<native-image, native image section>> for more help: the <<
 
 A Gradle Plugin which makes development of Micronaut application and libraries a breeze.
 
-This project currently consists of 3 plugins:
+This project currently consists of different plugins:
 
 - the https://plugins.gradle.org/plugin/io.micronaut.application[`io.micronaut.application`] plugin is aimed at building Micronaut applications. It automatically integrates with GraalVM by applying the `io.micronaut.graalvm` plugin transparently.
 - the https://plugins.gradle.org/plugin/io.micronaut.library[`io.micronaut.library`] plugin is aimed at building Micronaut libraries.
 - the https://plugins.gradle.org/plugin/io.micronaut.graalvm[`io.micronaut.graalvm`] plugin integrates with the official {native-gradle-plugin}[GraalVM Native Build Tools plugin] and configures it for Micronaut applications.
+- the https://plugins.gradle.org/plugin/io.micronaut.aot[`io.micronaut.aot`] plugin integrates with Micronaut AOT to produce optimized binaries.
 
 == Quick Start
 
@@ -814,6 +815,257 @@ https://github.com/micronaut-projects/micronaut-gradle-plugin#micronaut-applicat
 and it provides tasks to generate a GraalVM native image and also creates the GraalVM `resource-config.json` automatically with all the resources from the application.
 
 This plugin can be applied separately if you use the `application` plugin without the `io.micronaut.application` plugin (but we strongly recommend to switch to the `io.micronaut.application` plugin in this case).
+
+== Micronaut AOT Plugin
+
+WARNING: The Micronaut AOT module is in experimental stages. Use at your own risk!
+
+The `io.micronaut.aot` plugin provides integration with https://micronaut-projects.github.io/micronaut-aot/latest/guide/[Micronaut AOT].
+Micronaut AOT is a module which aims at pre-computing a number of things at _build time_ in order to provide faster startup times and smaller binaries.
+At the moment, the plugin supports optimizing Micronaut applications only (Micronaut libraries or functions will be supported in a future release).
+
+It is capable of generating a number of things:
+
+- an <<#aot:running-jit-mode,optimized jar>>, which is a jar corresponding to the regular application jar, except that it contains some optimizations computed at build time. It may contain, for example, additional classes, or even have different resources.
+- an <<#aot:running-optimized-fat-jar,optimized fat jar>>, which is the same as the previous one, except that it also embeds all transitive dependencies and is a standalone executable.
+- an <<#aot:running-optimized-native-binary,optimized native binary>> which is a GraalVM image compiled with Micronaut AOT optimizations
+- an <<#aot:optimized-docker-image,optimized docker image>> which is a Docker image containing the optimized application
+- an <<aot:optimized-docker-image,optimized native docker image>> which is a Docker image containing the optimized application compiled as a native image
+
+IMPORTANT: Micronaut AOT is a _deployment_ optimization: it adds to build time, in order to make the final application faster to start, or the native images smaller. Therefore, if you use the AOT tasks during development, your feedback cycle will be slower (but the application will start faster). It is a good idea, however, to check the result of the optimization locally, similarly to what you'd do for a native image.
+
+=== Configuration
+
+The `io.micronaut.aot` plugin is an extension to the `io.micronaut.application` plugin.
+
+[source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
+----
+plugins {
+    ...
+    id "io.micronaut.application" version "{gradle-project-version}"
+    id "io.micronaut.aot" version "{gradle-project-version}"
+    ...
+}
+----
+
+[source, kotlin, subs="verbatim,attributes", role="multi-language-sample"]
+----
+plugins {
+    ...
+    id("io.micronaut.application") version "{gradle-project-version}"
+    id("io.micronaut.aot") version "{gradle-project-version}"
+    ...
+}
+----
+
+This will add an `aot` DSL block to the `micronaut` extension, which can be used to enable optimizations:
+
+[source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
+----
+micronaut {
+    ...
+    aot {
+        // optional, override the Micronaut AOT version
+        version = "1.0.0"
+
+        // optimizations configuration
+        optimizeServiceLoading = true
+        convertYamlToJava = true
+        precomputeOperations = true
+        sealEnvironment = true
+    }
+}
+----
+
+[source, kotlin, subs="verbatim,attributes", role="multi-language-sample"]
+----
+micronaut {
+    ...
+    aot {
+        // optional, override the Micronaut AOT version
+        version.set("1.0.0")
+
+        // optimizations configuration
+        optimizeServiceLoading.set(true)
+        convertYamlToJava.set(true)
+        precomputeOperations.set(true)
+        sealEnvironment.set(true)
+    }
+}
+----
+
+Because Micronaut AOT is an extensible optimization engine, not all optimizations are known beforehand by the plugin, which means that not all of them may be accessible via the DSL.
+For this reason, it is possible to provide a _Micronaut AOT configuration file_ instead:
+
+[source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
+----
+micronaut {
+    ...
+    aot {
+        configFile = file("gradle/micronaut-aot.properties")
+    }
+}
+----
+
+[source, kotlin, subs="verbatim,attributes", role="multi-language-sample"]
+----
+micronaut {
+    ...
+    aot {
+        configFile.set(file("gradle/micronaut-aot.properties"))
+    }
+}
+----
+
+NOTE: You can provide both a configuration file and `aot` DSL optimizations.
+The configuration will be merged, by reading the file first, then using the DSL options.
+
+If you want to know about all possible optimizations, you can run the `createAotSampleConfigurationFiles` which will generate a couple of sample files:
+
+The `build/generated/aot/samples/jit/jit.properties` will contain the optimizations which are relevant to an application running in the regular Java virtual machine, for example:
+
+----
+# Checks of existence of some types at build time instead of runtime
+known.missing.types.enabled = true
+# A list of types that the AOT analyzer needs to check for existence (comma separated)
+known.missing.types.list = javax.inject.Inject,io.micronaut.SomeType
+
+# Replaces logback.xml with a pure Java configuration (NOT YET IMPLEMENTED!)
+logback.xml.to.java.enabled = true
+
+# Precomputes Micronaut configuration property keys from the current environment variables
+precompute.environment.properties.enabled = true
+
+# Scans reactive types at build time instead of runtime
+scan.reactive.types.enabled = true
+
+# Seals environment property values: environment properties will be deemed immutable after application startup.
+sealed.environment.enabled = true
+
+# Scans for service types ahead-of-time, avoiding classpath scanning at startup
+serviceloading.jit.enabled = true
+# The list of service types to be scanned (comma separated)
+service.types = io.micronaut.Service1,io.micronaut.Service2
+# A list of implementation types which shouldn't be included in the final application (comma separated)
+serviceloading.rejected.impls = com.Misc,org.Bar
+
+# Converts YAML configuration files to Java configuration
+yaml.to.java.config.enabled = true
+
+# Precomputes property sources at build time
+sealed.property.source.enabled = true
+----
+
+Another file, `build/generated/aot/samples/native/native.properties` will contain the same, but with the options which are relevant to an application compiled to a _native image_:
+
+----
+# Generates GraalVM configuration files required to load the AOT optimizations
+graalvm.config.enabled = true
+# The list of service types to be scanned (comma separated)
+service.types = io.micronaut.Service1,io.micronaut.Service2
+
+# Checks of existence of some types at build time instead of runtime
+known.missing.types.enabled = true
+# A list of types that the AOT analyzer needs to check for existence (comma separated)
+known.missing.types.list = javax.inject.Inject,io.micronaut.SomeType
+
+# Replaces logback.xml with a pure Java configuration (NOT YET IMPLEMENTED!)
+logback.xml.to.java.enabled = true
+
+# Precomputes Micronaut configuration property keys from the current environment variables
+precompute.environment.properties.enabled = true
+
+# Scans reactive types at build time instead of runtime
+scan.reactive.types.enabled = true
+
+# Seals environment property values: environment properties will be deemed immutable after application startup.
+sealed.environment.enabled = true
+
+# Scans for service types ahead-of-time, avoiding classpath scanning at startup
+serviceloading.native.enabled = true
+# The list of service types to be scanned (comma separated)
+service.types = io.micronaut.Service1,io.micronaut.Service2
+# A list of implementation types which shouldn't be included in the final application (comma separated)
+serviceloading.rejected.impls = com.Misc,org.Bar
+
+# Converts YAML configuration files to Java configuration
+yaml.to.java.config.enabled = true
+
+# Precomputes property sources at build time
+sealed.property.source.enabled = true
+----
+
+For native images, it is important to always have the `graalvm.config.enabled` option set to `true`, otherwise the AOT optimizations will not be loaded. The plugin takes care of setting this flag to `true` for you.
+
+It is important to understand that Micronaut AOT works _at build time_.
+Therefore, some optimizations like conversion of YAML files to Java configuration will effectively disable the ability to change the configuration at runtime.
+
+[[aot:running-jit-mode]]
+=== Running an optimized application
+
+The plugin provides a couple of tasks aimed at running an optimized application.
+The first one, `optimizedJar`, will simply run the AOT compiler and produce an "optimized" jar.
+If you want to run the application with the resulting jar, you will need to call the `optimizedRun` task instead, which will create the jar and then start the application.
+
+If you also have the `distribution` plugin applied, the optimized jar will be used to create optimized distributions, in which case you can call the `optimizedDistZip` task to create a distribution zip, the `optimizedDistTar` to create an optimized distribution tar file, or `installOptimizedDist` to install the optimized application to the `build/install` directory.
+
+[[aot:running-optimized-fat-jar]]
+=== Running an optimized fat jar
+
+The plugin supports building an optimized fat jar. You will need to apply the `shadow` plugin to enable this feature:
+
+[source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
+----
+plugins {
+    ...
+    id "com.github.johnrengelman.shadow" version "{shadow-version}"
+    ...
+}
+----
+
+[source, kotlin, subs="verbatim,attributes", role="multi-language-sample"]
+----
+plugins {
+    ...
+    id("com.github.johnrengelman.shadow") version "{shadow-version}"
+    ...
+}
+----
+
+Then you can generate the fat jar by calling: `./gradlew optimizedJitJarAll`.
+The task will generate a fat jar in the `build/libs` directory, that you can run using:
+
+`java -jar build/libs/myapp-0.1-all-optimized.jar`
+
+[[aot:running-optimized-native-binary]]
+=== Building and running an optimized native application
+
+The plugin creates a new native binary called `optimized`.
+The GraalVM plugin will then automatically create a couple of tasks for you:
+
+- the `nativeOptimizedCompile` task will compile a native image with the AOT optimizations
+- the `nativeOptimizedRun` task will run the optimized native image (you can call this task directly, it will precompile the native image before)
+
+[[aot:optimized-docker-image]]
+=== Building an optimized Docker image
+
+It is also possible to build an optimized application and package it into a Docker image.
+For this, you need to call `./gradlew optimizedDockerBuild`.
+It will produce a docker image that you can start using `docker run`.
+
+Alternatively, you can call `./gradlew optimizedDockerPush` to push the generated image to your docker registry.
+
+All configuration options which apply to the standard docker image are also available to the optimized Docker images.
+
+[[aot:optimized-native-docker-image]]
+=== Building an optimized native Docker image
+
+This task also produces a Docker image, but it will build a native image containing the optimized application _within a container_, in order to produce a Docker image which runs the optimized application natively.
+
+The 2 tasks which are available for this are:
+
+- `optimizedDockerBuildNative` to build the optimized native Docker image
+- `optimizedDockerPushNative` to push the optimized native Docker image
 
 == Upgrade notes
 

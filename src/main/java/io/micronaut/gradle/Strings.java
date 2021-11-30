@@ -15,6 +15,10 @@
  */
 package io.micronaut.gradle;
 
+import java.io.File;
+import java.net.URI;
+import java.net.URISyntaxException;
+
 import static java.util.Locale.ENGLISH;
 
 public abstract class Strings {
@@ -23,5 +27,13 @@ public abstract class Strings {
             return name;
         }
         return name.substring(0, 1).toUpperCase(ENGLISH) + name.substring(1);
+    }
+
+    public static String clickableUrl(File file) {
+        try {
+            return new URI("file", "", file.toURI().getPath(), null, null).toString();
+        } catch (URISyntaxException e) {
+            return file.toString();
+        }
     }
 }
