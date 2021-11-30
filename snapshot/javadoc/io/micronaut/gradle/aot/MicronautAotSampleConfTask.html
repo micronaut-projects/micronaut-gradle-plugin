@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":10,"i1":10,"i2":6,"i3":6,"i4":6};
+var methods = {"i0":10,"i1":10,"i2":6,"i3":6,"i4":6,"i5":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],4:["t3","Abstract Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -215,6 +215,10 @@ extends org.gradle.api.DefaultTask</pre>
 <td class="colFirst"><code>abstract org.gradle.api.file.ConfigurableFileCollection</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../io/micronaut/gradle/aot/MicronautAotSampleConfTask.html#getOptimizerClasspath--">getOptimizerClasspath</a></span>()</code>&nbsp;</td>
 </tr>
+<tr id="i5" class="rowColor">
+<td class="colFirst"><code>protected void</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../io/micronaut/gradle/aot/MicronautAotSampleConfTask.html#onSuccess-java.io.File-">onSuccess</a></span>(java.io.File&nbsp;outputDir)</code>&nbsp;</td>
+</tr>
 </table>
 <ul class="blockList">
 <li class="blockList"><a name="methods.inherited.from.class.org.gradle.api.DefaultTask">
@@ -289,6 +293,15 @@ extends org.gradle.api.DefaultTask</pre>
 <li class="blockList">
 <h4>configureExtraArguments</h4>
 <pre>protected&nbsp;void&nbsp;configureExtraArguments(java.util.List&lt;java.lang.String&gt;&nbsp;args)</pre>
+</li>
+</ul>
+<a name="onSuccess-java.io.File-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>onSuccess</h4>
+<pre>protected&nbsp;void&nbsp;onSuccess(java.io.File&nbsp;outputDir)</pre>
 </li>
 </ul>
 <a name="getOptimizerClasspath--">
