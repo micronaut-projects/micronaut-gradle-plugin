@@ -2,6 +2,7 @@ package io.micronaut.gradle.docker;
 
 import com.bmuschko.gradle.docker.tasks.image.Dockerfile;
 import org.graalvm.buildtools.gradle.NativeImagePlugin;
+import org.graalvm.buildtools.gradle.dsl.AgentConfiguration;
 import org.graalvm.buildtools.gradle.dsl.NativeImageOptions;
 import org.graalvm.buildtools.gradle.dsl.NativeResourcesOptions;
 import org.graalvm.buildtools.gradle.internal.BaseNativeImageOptions;
@@ -202,8 +203,23 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
                             return delegate.getVerbose();
                         }
 
+                        /**
+                         * Configures the GraalVM agent options.
+                         *
+                         * @param spec the agent configuration.
+                         */
                         @Override
-                        public Property<Boolean> getAgent() {
+                        public void agent(Action<? super AgentConfiguration> spec) {
+                            delegate.agent(spec);
+                        }
+
+                        /**
+                         * Returns the GraalVM agent configuration.
+                         *
+                         * @return the configuration.
+                         */
+                        @Override
+                        public AgentConfiguration getAgent() {
                             return delegate.getAgent();
                         }
 
