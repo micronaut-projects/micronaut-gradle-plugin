@@ -65,6 +65,7 @@ abstract class AbstractGradleBuildSpec extends Specification {
                 .forwardStdOutput(System.out.newWriter())
                 .forwardStdError(System.err.newWriter())
                 .withPluginClasspath()
+                .withDebug(true)
                 .build()
     }
 
