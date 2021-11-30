@@ -53,7 +53,11 @@ public class MicronautGraalPlugin implements Plugin<Project> {
         });
         GraalVMExtension graal = project.getExtensions().findByType(GraalVMExtension.class);
         graal.getBinaries().configureEach(options ->
-                options.resources(rsrc -> rsrc.autodetection(inf -> inf.getEnabled().convention(true)))
+                options.resources(rsrc -> rsrc.autodetection(inf -> {
+                    inf.getEnabled().convention(true);
+                    inf.getIgnoreExistingResourcesConfigFile().convention(true);
+                    inf.getRestrictToProjectDependencies().convention(true);
+                }))
         );
         project.getPluginManager().withPlugin("application", plugin -> {
             TaskContainer tasks = project.getTasks();
