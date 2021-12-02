@@ -25,6 +25,7 @@ micronaut {
         optimizeClassLoading = true
         convertYamlToJava = true
         precomputeOperations = true
+        deduceEnvironment = true
     }
 }
 

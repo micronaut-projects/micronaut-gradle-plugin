@@ -8,6 +8,7 @@ group = "demo.app"
 
 repositories {
     mavenCentral()
+    mavenLocal()
 }
 
 micronaut {
@@ -24,6 +25,7 @@ micronaut {
         optimizeClassLoading = true
         convertYamlToJava = true
         precomputeOperations = true
+        deduceEnvironment = true
     }
 }
 

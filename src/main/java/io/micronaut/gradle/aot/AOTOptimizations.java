@@ -71,4 +71,13 @@ public interface AOTOptimizations {
     @Input
     Property<Boolean> getPrecomputeOperations();
 
+    /**
+     * If set to true and that the application context uses deduceEnvironment(true)
+     * then the deduction will be done at build time instead of run time.
+     *
+     * @return the deduce environment property
+     */
+    @Input
+    Property<Boolean> getDeduceEnvironment();
+
 }
