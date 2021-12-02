@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":6,"i1":6,"i2":6,"i3":6,"i4":6,"i5":6};
+var methods = {"i0":6,"i1":6,"i2":6,"i3":6,"i4":6,"i5":6,"i6":6};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],4:["t3","Abstract Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -133,17 +133,24 @@ var activeTableTab = "activeTableTab";
 </tr>
 <tr id="i1" class="rowColor">
 <td class="colFirst"><code>org.gradle.api.provider.Property&lt;java.lang.Boolean&gt;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../io/micronaut/gradle/aot/AOTOptimizations.html#getDeduceEnvironment--">getDeduceEnvironment</a></span>()</code>
+<div class="block">If set to true and that the application context uses deduceEnvironment(true)
+ then the deduction will be done at build time instead of run time.</div>
+</td>
+</tr>
+<tr id="i2" class="altColor">
+<td class="colFirst"><code>org.gradle.api.provider.Property&lt;java.lang.Boolean&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../io/micronaut/gradle/aot/AOTOptimizations.html#getOptimizeClassLoading--">getOptimizeClassLoading</a></span>()</code>
 <div class="block">If set to true, the AOT compiler will optimize classloading.</div>
 </td>
 </tr>
-<tr id="i2" class="altColor">
+<tr id="i3" class="rowColor">
 <td class="colFirst"><code>org.gradle.api.provider.Property&lt;java.lang.Boolean&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../io/micronaut/gradle/aot/AOTOptimizations.html#getOptimizeServiceLoading--">getOptimizeServiceLoading</a></span>()</code>
 <div class="block">If set to true, services loading will be optimized.</div>
 </td>
 </tr>
-<tr id="i3" class="rowColor">
+<tr id="i4" class="altColor">
 <td class="colFirst"><code>org.gradle.api.provider.Property&lt;java.lang.Boolean&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../io/micronaut/gradle/aot/AOTOptimizations.html#getPrecomputeOperations--">getPrecomputeOperations</a></span>()</code>
 <div class="block">If set to true, the AOT will precompute at build time a number of
@@ -151,13 +158,13 @@ var activeTableTab = "activeTableTab";
  runtime instead.</div>
 </td>
 </tr>
-<tr id="i4" class="altColor">
+<tr id="i5" class="rowColor">
 <td class="colFirst"><code>org.gradle.api.provider.Property&lt;java.lang.Boolean&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../io/micronaut/gradle/aot/AOTOptimizations.html#getReplaceLogbackXml--">getReplaceLogbackXml</a></span>()</code>
 <div class="block">If set to true, logback.xml is replaced with Java configuration</div>
 </td>
 </tr>
-<tr id="i5" class="rowColor">
+<tr id="i6" class="altColor">
 <td class="colFirst"><code>org.gradle.api.provider.Property&lt;java.lang.Boolean&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../io/micronaut/gradle/aot/AOTOptimizations.html#getSealEnvironment--">getSealEnvironment</a></span>()</code>
 <div class="block">If set to true, the environment variables and system properties
@@ -255,7 +262,7 @@ org.gradle.api.provider.Property&lt;java.lang.Boolean&gt;&nbsp;getOptimizeClassL
 <a name="getPrecomputeOperations--">
 <!--   -->
 </a>
-<ul class="blockListLast">
+<ul class="blockList">
 <li class="blockList">
 <h4>getPrecomputeOperations</h4>
 <pre>@Input
@@ -266,6 +273,22 @@ org.gradle.api.provider.Property&lt;java.lang.Boolean&gt;&nbsp;getPrecomputeOper
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>the precompute operation property</dd>
+</dl>
+</li>
+</ul>
+<a name="getDeduceEnvironment--">
+<!--   -->
+</a>
+<ul class="blockListLast">
+<li class="blockList">
+<h4>getDeduceEnvironment</h4>
+<pre>@Input
+org.gradle.api.provider.Property&lt;java.lang.Boolean&gt;&nbsp;getDeduceEnvironment()</pre>
+<div class="block">If set to true and that the application context uses deduceEnvironment(true)
+ then the deduction will be done at build time instead of run time.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>the deduce environment property</dd>
 </dl>
 </li>
 </ul>
