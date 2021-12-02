@@ -7,7 +7,7 @@ groovy = "3.0.9"
 spock = "2.0-groovy-3.0"
 graalvmPlug = "0.9.8"
 micronaut = "3.2.0"
-micronaut-aot = "1.0.0-M1"
+micronaut-aot = "1.0.0-M2"
 
 [libraries]
 dockerPlug = { module = "com.bmuschko:gradle-docker-plugin", version.ref = "docker" }

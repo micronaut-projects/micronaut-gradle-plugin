@@ -17,6 +17,7 @@ package io.micronaut.gradle.aot;
 
 import io.micronaut.aot.std.sourcegen.AbstractStaticServiceLoaderSourceGenerator;
 import io.micronaut.aot.std.sourcegen.ConstantPropertySourcesSourceGenerator;
+import io.micronaut.aot.std.sourcegen.DeduceEnvironmentSourceGenerator;
 import io.micronaut.aot.std.sourcegen.EnvironmentPropertiesSourceGenerator;
 import io.micronaut.aot.std.sourcegen.GraalVMOptimizationFeatureSourceGenerator;
 import io.micronaut.aot.std.sourcegen.JitStaticServiceLoaderSourceGenerator;
@@ -107,6 +108,7 @@ public abstract class MicronautAOTConfigWriterTask extends DefaultTask {
             booleanOptimization(props, ConstantPropertySourcesSourceGenerator.ID, optimizations.getConvertYamlToJava());
         }
         booleanOptimization(props, EnvironmentPropertiesSourceGenerator.ID, optimizations.getPrecomputeOperations());
+        booleanOptimization(props, DeduceEnvironmentSourceGenerator.ID, optimizations.getDeduceEnvironment());
         File outputFile = getOutputFile().getAsFile().get();
         if (outputFile.getParentFile().isDirectory() || outputFile.getParentFile().mkdirs()) {
             try (OutputStream out = new FileOutputStream(outputFile)) {

@@ -20,6 +20,7 @@ class BasicMicronautAOTSpec extends AbstractAOTPluginSpec {
             withProperty('known.missing.types.enabled', 'true')
             withProperty('sealed.property.source.enabled', 'true')
             withProperty('precompute.environment.properties.enabled', 'true')
+            withProperty('deduce.environment.enabled', 'true')
             withExtraPropertyKeys 'service.types', 'known.missing.types.list'
         }
 
