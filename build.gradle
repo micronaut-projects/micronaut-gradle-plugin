@@ -1,7 +1,7 @@
 // First, apply the publishing plugin
 plugins {
     id "idea"
-    id "com.gradle.plugin-publish" version "0.16.0"
+    id "com.gradle.plugin-publish" version "0.18.0"
     id "java-gradle-plugin"
     id "maven-publish"
     id "groovy"
