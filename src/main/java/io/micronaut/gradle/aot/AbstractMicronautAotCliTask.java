@@ -20,7 +20,9 @@ import org.gradle.api.GradleException;
 import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.internal.file.FileOperations;
+import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.Classpath;
+import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.TaskAction;
 import org.gradle.process.ExecOperations;
 import org.gradle.process.ExecResult;
@@ -41,6 +43,13 @@ abstract class AbstractMicronautAotCliTask extends DefaultTask implements Optimi
 
     @Inject
     protected abstract ExecOperations getExecOperations();
+
+    @Input
+    protected abstract Property<Boolean> getDebug();
+
+    protected AbstractMicronautAotCliTask() {
+        getDebug().convention(false);
+    }
 
     protected void configureExtraArguments(List<String> args) {
 
@@ -67,6 +76,10 @@ abstract class AbstractMicronautAotCliTask extends DefaultTask implements Optimi
             configureExtraArguments(args);
             spec.args(args);
             getLogger().info("Running AOT optimizer with parameters: {}", args);
+            if (getDebug().get()) {
+                System.out.println("Running with debug enabled");
+                spec.jvmArgs("-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5005");
+            }
         });
         if (javaexec.getExitValue() != 0) {
             throw new GradleException("AOT analysis failed");
