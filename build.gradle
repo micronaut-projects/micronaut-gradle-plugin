@@ -52,6 +52,11 @@ tasks.withType(PluginUnderTestMetadata) {
 }
 
 dependencies {
+    constraints {
+        implementation(libs.log4j2.core) {
+            because("Log4j2 <2.15 is vulnerable to RCE (CVE-2021-44228)")
+        }
+    }
     implementation libs.dockerPlug
     implementation libs.diffplugPlug
     implementation libs.shadowPlug

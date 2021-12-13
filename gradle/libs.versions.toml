@@ -8,6 +8,7 @@ spock = "2.0-groovy-3.0"
 graalvmPlug = "0.9.8"
 micronaut = "3.2.0"
 micronaut-aot = "1.0.0-M2"
+log4j2 = { require = "2.15.0", reject = ["]0, 2.15["] }
 
 [libraries]
 dockerPlug = { module = "com.bmuschko:gradle-docker-plugin", version.ref = "docker" }
@@ -21,6 +22,7 @@ kotlin-gradlePlug = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", vers
 groovy-core = { module = "org.codehaus.groovy:groovy", version.ref = "groovy" }
 spock-core = { module = "org.spockframework:spock-core", version.ref = "spock" }
 spock-junit4 = { module = "org.spockframework:spock-junit4", version.ref = "spock" }
+log4j2-core = { module = "org.apache.logging.log4j:log4j-core", version.ref = "log4j2" }
 
 micronaut-aot-api = { module = "io.micronaut.aot:micronaut-aot-api", version.ref = "micronaut-aot" }
 micronaut-aot-core = { module = "io.micronaut.aot:micronaut-aot-core", version.ref = "micronaut-aot" }
