@@ -79,9 +79,19 @@
 </ul>
 </li>
 <li><a href="#_micronaut_graalvm_plugin">6. Micronaut GraalVM Plugin</a></li>
-<li><a href="#_upgrade_notes">7. Upgrade notes</a>
+<li><a href="#_micronaut_aot_plugin">7. Micronaut AOT Plugin</a>
 <ul class="sectlevel2">
-<li><a href="#_upgrading_from_2_x">7.1. Upgrading from 2.x</a></li>
+<li><a href="#_configuration">7.1. Configuration</a></li>
+<li><a href="#aot:running-jit-mode">7.2. Running an optimized application</a></li>
+<li><a href="#aot:running-optimized-fat-jar">7.3. Running an optimized fat jar</a></li>
+<li><a href="#aot:running-optimized-native-binary">7.4. Building and running an optimized native application</a></li>
+<li><a href="#aot:optimized-docker-image">7.5. Building an optimized Docker image</a></li>
+<li><a href="#aot:optimized-native-docker-image">7.6. Building an optimized native Docker image</a></li>
+</ul>
+</li>
+<li><a href="#_upgrade_notes">8. Upgrade notes</a>
+<ul class="sectlevel2">
+<li><a href="#_upgrading_from_2_x">8.1. Upgrading from 2.x</a></li>
 </ul>
 </li>
 </ul>
@@ -96,7 +106,7 @@
 <div class="sectionbody">
 
 <div class="paragraph">
-<p>Version 3.0.3-SNAPSHOT</p>
+<p>Version 3.1.0-SNAPSHOT</p>
 </div>
 </div>
 </div>
@@ -143,7 +153,7 @@ Documentation for the 2.x branch can be found <a href="https://github.com/micron
 <p>A Gradle Plugin which makes development of Micronaut application and libraries a breeze.</p>
 </div>
 <div class="paragraph">
-<p>This project currently consists of 3 plugins:</p>
+<p>This project currently consists of different plugins:</p>
 </div>
 <div class="ulist">
 <ul>
@@ -155,6 +165,9 @@ Documentation for the 2.x branch can be found <a href="https://github.com/micron
 </li>
 <li>
 <p>the <a href="https://plugins.gradle.org/plugin/io.micronaut.graalvm"><code>io.micronaut.graalvm</code></a> plugin integrates with the official <a href="https://graalvm.github.io/native-build-tools/0.9.6/gradle-plugin.html">GraalVM Native Build Tools plugin</a> and configures it for Micronaut applications.</p>
+</li>
+<li>
+<p>the <a href="https://plugins.gradle.org/plugin/io.micronaut.aot"><code>io.micronaut.aot</code></a> plugin integrates with Micronaut AOT to produce optimized binaries.</p>
 </li>
 </ul>
 </div>
@@ -201,14 +214,14 @@ $ curl https://launch.micronaut.io/demo.zip?lang=kotlin \
 <div class="title">Applying the plugin</div>
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">plugins {
-  id 'io.micronaut.library' version '3.0.3-SNAPSHOT'
+  id 'io.micronaut.library' version '3.1.0-SNAPSHOT'
 }</code></pre>
 </div>
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">plugins {
-  id("io.micronaut.library") version "3.0.3-SNAPSHOT"
+  id("io.micronaut.library") version "3.1.0-SNAPSHOT"
 }</code></pre>
 </div>
 </div>
@@ -332,7 +345,7 @@ The Micronaut Library plugin also supports Groovy and Kotlin sources.
 <pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">plugins {
     id "org.jetbrains.kotlin.jvm" version "1.5.30"
     id "org.jetbrains.kotlin.kapt" version "1.5.30"
-    id "io.micronaut.library" version "3.0.3-SNAPSHOT"
+    id "io.micronaut.library" version "3.1.0-SNAPSHOT"
 }</code></pre>
 </div>
 </div>
@@ -341,7 +354,7 @@ The Micronaut Library plugin also supports Groovy and Kotlin sources.
 <pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">plugins {
     id("org.jetbrains.kotlin.jvm") version "1.5.30"
     id("org.jetbrains.kotlin.kapt") version "1.5.30"
-    id("io.micronaut.library") version "3.0.3-SNAPSHOT"
+    id("io.micronaut.library") version "3.1.0-SNAPSHOT"
 }</code></pre>
 </div>
 </div>
@@ -355,7 +368,7 @@ The Micronaut Library plugin also supports Groovy and Kotlin sources.
 <div class="title">A minimal build file</div>
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">plugins {
-    id 'io.micronaut.library' version '3.0.3-SNAPSHOT'
+    id 'io.micronaut.library' version '3.1.0-SNAPSHOT'
 }
 
 version "0.1"
@@ -378,7 +391,7 @@ dependencies {
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">plugins {
-    id("io.micronaut.library") version "3.0.3-SNAPSHOT"
+    id("io.micronaut.library") version "3.1.0-SNAPSHOT"
 }
 
 version = "0.1"
@@ -408,14 +421,14 @@ dependencies {
 <div class="title">Applying the Micronaut Application plugin</div>
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">plugins {
-  id "io.micronaut.application" version "3.0.3-SNAPSHOT"
+  id "io.micronaut.application" version "3.1.0-SNAPSHOT"
 }</code></pre>
 </div>
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">plugins {
-  id("io.micronaut.application") version "3.0.3-SNAPSHOT"
+  id("io.micronaut.application") version "3.1.0-SNAPSHOT"
 }</code></pre>
 </div>
 </div>
@@ -485,7 +498,7 @@ dependencies {
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">plugins {
-    id 'io.micronaut.application' version '3.0.3-SNAPSHOT'
+    id 'io.micronaut.application' version '3.1.0-SNAPSHOT'
 }
 
 version "0.1"
@@ -514,7 +527,7 @@ application {
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">plugins {
-    id("io.micronaut.application") version "3.0.3-SNAPSHOT"
+    id("io.micronaut.application") version "3.1.0-SNAPSHOT"
 }
 
 version = "0.1"
@@ -552,7 +565,7 @@ application {
     id "org.jetbrains.kotlin.jvm" version "1.5.30"
     id "org.jetbrains.kotlin.kapt" version "1.5.30"
     id "org.jetbrains.kotlin.plugin.allopen" version "1.5.30"
-    id "io.micronaut.application" version "3.0.3-SNAPSHOT"
+    id "io.micronaut.application" version "3.1.0-SNAPSHOT"
 }
 
 version "0.1"
@@ -586,7 +599,7 @@ application {
     id("org.jetbrains.kotlin.jvm") version "1.5.30"
     id("org.jetbrains.kotlin.kapt") version "1.5.30"
     id("org.jetbrains.kotlin.plugin.allopen") version "1.5.30"
-    id("io.micronaut.application") version "3.0.3-SNAPSHOT"
+    id("io.micronaut.application") version "3.1.0-SNAPSHOT"
 }
 
 version = "0.1"
@@ -990,7 +1003,7 @@ tasks.named&lt;io.micronaut.gradle.docker.NativeImageDockerfile&gt;("dockerfileN
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">plugins {
-     id 'io.micronaut.application' version '3.0.3-SNAPSHOT'
+     id 'io.micronaut.application' version '3.1.0-SNAPSHOT'
 }
 version "0.1"
 group "com.example"
@@ -1016,7 +1029,7 @@ application {
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">plugins {
-     id("io.micronaut.application") version "3.0.3-SNAPSHOT"
+     id("io.micronaut.application") version "3.1.0-SNAPSHOT"
 }
 version = "0.1"
 group = "com.example"
@@ -1150,10 +1163,345 @@ and it provides tasks to generate a GraalVM native image and also creates the Gr
 </div>
 </div>
 <div class="sect1">
-<h2 id="_upgrade_notes"><a class="anchor" href="#_upgrade_notes"></a>7. Upgrade notes</h2>
+<h2 id="_micronaut_aot_plugin"><a class="anchor" href="#_micronaut_aot_plugin"></a>7. Micronaut AOT Plugin</h2>
+<div class="sectionbody">
+<div class="admonitionblock warning">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Warning</div>
+</td>
+<td class="content">
+The Micronaut AOT module is in experimental stages. Use at your own risk!
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>The <code>io.micronaut.aot</code> plugin provides integration with <a href="https://micronaut-projects.github.io/micronaut-aot/latest/guide/">Micronaut AOT</a>.
+Micronaut AOT is a module which aims at pre-computing a number of things at <em>build time</em> in order to provide faster startup times and smaller binaries.
+At the moment, the plugin supports optimizing Micronaut applications only (Micronaut libraries or functions will be supported in a future release).</p>
+</div>
+<div class="paragraph">
+<p>It is capable of generating a number of things:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>an <a href="#aot:running-jit-mode">optimized jar</a>, which is a jar corresponding to the regular application jar, except that it contains some optimizations computed at build time. It may contain, for example, additional classes, or even have different resources.</p>
+</li>
+<li>
+<p>an <a href="#aot:running-optimized-fat-jar">optimized fat jar</a>, which is the same as the previous one, except that it also embeds all transitive dependencies and is a standalone executable.</p>
+</li>
+<li>
+<p>an <a href="#aot:running-optimized-native-binary">optimized native binary</a> which is a GraalVM image compiled with Micronaut AOT optimizations</p>
+</li>
+<li>
+<p>an <a href="#aot:optimized-docker-image">optimized docker image</a> which is a Docker image containing the optimized application</p>
+</li>
+<li>
+<p>an <a href="#aot:optimized-docker-image">optimized native docker image</a> which is a Docker image containing the optimized application compiled as a native image</p>
+</li>
+</ul>
+</div>
+<div class="admonitionblock important">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Important</div>
+</td>
+<td class="content">
+Micronaut AOT is a <em>deployment</em> optimization: it adds to build time, in order to make the final application faster to start, or the native images smaller. Therefore, if you use the AOT tasks during development, your feedback cycle will be slower (but the application will start faster). It is a good idea, however, to check the result of the optimization locally, similarly to what you&#8217;d do for a native image.
+</td>
+</tr>
+</table>
+</div>
+<div class="sect2">
+<h3 id="_configuration"><a class="anchor" href="#_configuration"></a>7.1. Configuration</h3>
+<div class="paragraph">
+<p>The <code>io.micronaut.aot</code> plugin is an extension to the <code>io.micronaut.application</code> plugin.</p>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">plugins {
+    ...
+    id "io.micronaut.application" version "3.1.0-SNAPSHOT"
+    id "io.micronaut.aot" version "3.1.0-SNAPSHOT"
+    ...
+}</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">plugins {
+    ...
+    id("io.micronaut.application") version "3.1.0-SNAPSHOT"
+    id("io.micronaut.aot") version "3.1.0-SNAPSHOT"
+    ...
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This will add an <code>aot</code> DSL block to the <code>micronaut</code> extension, which can be used to enable optimizations:</p>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">micronaut {
+    ...
+    aot {
+        // optional, override the Micronaut AOT version
+        version = "1.0.0"
+
+        // optimizations configuration
+        optimizeServiceLoading = true
+        convertYamlToJava = true
+        precomputeOperations = true
+        sealEnvironment = true
+    }
+}</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">micronaut {
+    ...
+    aot {
+        // optional, override the Micronaut AOT version
+        version.set("1.0.0")
+
+        // optimizations configuration
+        optimizeServiceLoading.set(true)
+        convertYamlToJava.set(true)
+        precomputeOperations.set(true)
+        sealEnvironment.set(true)
+    }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Because Micronaut AOT is an extensible optimization engine, not all optimizations are known beforehand by the plugin, which means that not all of them may be accessible via the DSL.
+For this reason, it is possible to provide a <em>Micronaut AOT configuration file</em> instead:</p>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">micronaut {
+    ...
+    aot {
+        configFile = file("gradle/micronaut-aot.properties")
+    }
+}</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">micronaut {
+    ...
+    aot {
+        configFile.set(file("gradle/micronaut-aot.properties"))
+    }
+}</code></pre>
+</div>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Note</div>
+</td>
+<td class="content">
+You can provide both a configuration file and <code>aot</code> DSL optimizations.
+The configuration will be merged, by reading the file first, then using the DSL options.
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>If you want to know about all possible optimizations, you can run the <code>createAotSampleConfigurationFiles</code> which will generate a couple of sample files:</p>
+</div>
+<div class="paragraph">
+<p>The <code>build/generated/aot/samples/jit/jit.properties</code> will contain the optimizations which are relevant to an application running in the regular Java virtual machine, for example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre># Checks of existence of some types at build time instead of runtime
+known.missing.types.enabled = true
+# A list of types that the AOT analyzer needs to check for existence (comma separated)
+known.missing.types.list = javax.inject.Inject,io.micronaut.SomeType
+
+# Replaces logback.xml with a pure Java configuration (NOT YET IMPLEMENTED!)
+logback.xml.to.java.enabled = true
+
+# Precomputes Micronaut configuration property keys from the current environment variables
+precompute.environment.properties.enabled = true
+
+# Scans reactive types at build time instead of runtime
+scan.reactive.types.enabled = true
+
+# Seals environment property values: environment properties will be deemed immutable after application startup.
+sealed.environment.enabled = true
+
+# Scans for service types ahead-of-time, avoiding classpath scanning at startup
+serviceloading.jit.enabled = true
+# The list of service types to be scanned (comma separated)
+service.types = io.micronaut.Service1,io.micronaut.Service2
+# A list of implementation types which shouldn't be included in the final application (comma separated)
+serviceloading.rejected.impls = com.Misc,org.Bar
+
+# Converts YAML configuration files to Java configuration
+yaml.to.java.config.enabled = true
+
+# Precomputes property sources at build time
+sealed.property.source.enabled = true</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Another file, <code>build/generated/aot/samples/native/native.properties</code> will contain the same, but with the options which are relevant to an application compiled to a <em>native image</em>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre># Generates GraalVM configuration files required to load the AOT optimizations
+graalvm.config.enabled = true
+# The list of service types to be scanned (comma separated)
+service.types = io.micronaut.Service1,io.micronaut.Service2
+
+# Checks of existence of some types at build time instead of runtime
+known.missing.types.enabled = true
+# A list of types that the AOT analyzer needs to check for existence (comma separated)
+known.missing.types.list = javax.inject.Inject,io.micronaut.SomeType
+
+# Replaces logback.xml with a pure Java configuration (NOT YET IMPLEMENTED!)
+logback.xml.to.java.enabled = true
+
+# Precomputes Micronaut configuration property keys from the current environment variables
+precompute.environment.properties.enabled = true
+
+# Scans reactive types at build time instead of runtime
+scan.reactive.types.enabled = true
+
+# Seals environment property values: environment properties will be deemed immutable after application startup.
+sealed.environment.enabled = true
+
+# Scans for service types ahead-of-time, avoiding classpath scanning at startup
+serviceloading.native.enabled = true
+# The list of service types to be scanned (comma separated)
+service.types = io.micronaut.Service1,io.micronaut.Service2
+# A list of implementation types which shouldn't be included in the final application (comma separated)
+serviceloading.rejected.impls = com.Misc,org.Bar
+
+# Converts YAML configuration files to Java configuration
+yaml.to.java.config.enabled = true
+
+# Precomputes property sources at build time
+sealed.property.source.enabled = true</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>For native images, it is important to always have the <code>graalvm.config.enabled</code> option set to <code>true</code>, otherwise the AOT optimizations will not be loaded. The plugin takes care of setting this flag to <code>true</code> for you.</p>
+</div>
+<div class="paragraph">
+<p>It is important to understand that Micronaut AOT works <em>at build time</em>.
+Therefore, some optimizations like conversion of YAML files to Java configuration will effectively disable the ability to change the configuration at runtime.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="aot:running-jit-mode"><a class="anchor" href="#aot:running-jit-mode"></a>7.2. Running an optimized application</h3>
+<div class="paragraph">
+<p>The plugin provides a couple of tasks aimed at running an optimized application.
+The first one, <code>optimizedJar</code>, will simply run the AOT compiler and produce an "optimized" jar.
+If you want to run the application with the resulting jar, you will need to call the <code>optimizedRun</code> task instead, which will create the jar and then start the application.</p>
+</div>
+<div class="paragraph">
+<p>If you also have the <code>distribution</code> plugin applied, the optimized jar will be used to create optimized distributions, in which case you can call the <code>optimizedDistZip</code> task to create a distribution zip, the <code>optimizedDistTar</code> to create an optimized distribution tar file, or <code>installOptimizedDist</code> to install the optimized application to the <code>build/install</code> directory.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="aot:running-optimized-fat-jar"><a class="anchor" href="#aot:running-optimized-fat-jar"></a>7.3. Running an optimized fat jar</h3>
+<div class="paragraph">
+<p>The plugin supports building an optimized fat jar. You will need to apply the <code>shadow</code> plugin to enable this feature:</p>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">plugins {
+    ...
+    id "com.github.johnrengelman.shadow" version "7.0.0"
+    ...
+}</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">plugins {
+    ...
+    id("com.github.johnrengelman.shadow") version "7.0.0"
+    ...
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Then you can generate the fat jar by calling: <code>./gradlew optimizedJitJarAll</code>.
+The task will generate a fat jar in the <code>build/libs</code> directory, that you can run using:</p>
+</div>
+<div class="paragraph">
+<p><code>java -jar build/libs/myapp-0.1-all-optimized.jar</code></p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="aot:running-optimized-native-binary"><a class="anchor" href="#aot:running-optimized-native-binary"></a>7.4. Building and running an optimized native application</h3>
+<div class="paragraph">
+<p>The plugin creates a new native binary called <code>optimized</code>.
+The GraalVM plugin will then automatically create a couple of tasks for you:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>the <code>nativeOptimizedCompile</code> task will compile a native image with the AOT optimizations</p>
+</li>
+<li>
+<p>the <code>nativeOptimizedRun</code> task will run the optimized native image (you can call this task directly, it will precompile the native image before)</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="aot:optimized-docker-image"><a class="anchor" href="#aot:optimized-docker-image"></a>7.5. Building an optimized Docker image</h3>
+<div class="paragraph">
+<p>It is also possible to build an optimized application and package it into a Docker image.
+For this, you need to call <code>./gradlew optimizedDockerBuild</code>.
+It will produce a docker image that you can start using <code>docker run</code>.</p>
+</div>
+<div class="paragraph">
+<p>Alternatively, you can call <code>./gradlew optimizedDockerPush</code> to push the generated image to your docker registry.</p>
+</div>
+<div class="paragraph">
+<p>All configuration options which apply to the standard docker image are also available to the optimized Docker images.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="aot:optimized-native-docker-image"><a class="anchor" href="#aot:optimized-native-docker-image"></a>7.6. Building an optimized native Docker image</h3>
+<div class="paragraph">
+<p>This task also produces a Docker image, but it will build a native image containing the optimized application <em>within a container</em>, in order to produce a Docker image which runs the optimized application natively.</p>
+</div>
+<div class="paragraph">
+<p>The 2 tasks which are available for this are:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>optimizedDockerBuildNative</code> to build the optimized native Docker image</p>
+</li>
+<li>
+<p><code>optimizedDockerPushNative</code> to push the optimized native Docker image</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_upgrade_notes"><a class="anchor" href="#_upgrade_notes"></a>8. Upgrade notes</h2>
 <div class="sectionbody">
 <div class="sect2">
-<h3 id="_upgrading_from_2_x"><a class="anchor" href="#_upgrading_from_2_x"></a>7.1. Upgrading from 2.x</h3>
+<h3 id="_upgrading_from_2_x"><a class="anchor" href="#_upgrading_from_2_x"></a>8.1. Upgrading from 2.x</h3>
 <div class="paragraph">
 <p>When upgrading from the 2.x version of the plugins, you will need to change the configuration of the GraalVM native image builds if you use them.</p>
 </div>
