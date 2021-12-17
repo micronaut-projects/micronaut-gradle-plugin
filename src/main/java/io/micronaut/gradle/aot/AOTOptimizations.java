@@ -15,8 +15,10 @@
  */
 package io.micronaut.gradle.aot;
 
+import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.Input;
+import org.gradle.api.tasks.Optional;
 
 /**
  * This interface represents the set of optimizations
@@ -34,11 +36,11 @@ public interface AOTOptimizations {
 
     /**
      * If set to true, the environment variables and system properties
-     * read at application startup will be deemed immutable
-     * @return the seal environment property
+     * read at application startup will be deemed immutable.
+     * @return the cache environment property
      */
     @Input
-    Property<Boolean> getSealEnvironment();
+    Property<Boolean> getCacheEnvironment();
 
     /**
      * If set to true, services loading will be optimized. In particular,
@@ -80,4 +82,14 @@ public interface AOTOptimizations {
     @Input
     Property<Boolean> getDeduceEnvironment();
 
+    /**
+     * Sets the list of possible environment names. If set, then the list of environments
+     * which will be considered for some AOT optimizations will use this list, instead
+     * of using whatever is active when the dynamic AOT analysis is performed.
+     *
+     * @return the list of possible environments
+     */
+    @Input
+    @Optional
+    ListProperty<String> getPossibleEnvironments();
 }

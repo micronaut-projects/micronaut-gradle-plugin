@@ -20,7 +20,7 @@ micronaut {
         annotations("demo.app.*")
     }
     aot {
-        sealEnvironment = true
+        cacheEnvironment = true
         optimizeServiceLoading = true
         optimizeClassLoading = true
         convertYamlToJava = true
