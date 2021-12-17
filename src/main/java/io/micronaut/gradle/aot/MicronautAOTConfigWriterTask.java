@@ -16,21 +16,23 @@
 package io.micronaut.gradle.aot;
 
 import io.micronaut.aot.std.sourcegen.AbstractStaticServiceLoaderSourceGenerator;
+import io.micronaut.aot.std.sourcegen.CachedEnvironmentSourceGenerator;
 import io.micronaut.aot.std.sourcegen.ConstantPropertySourcesSourceGenerator;
 import io.micronaut.aot.std.sourcegen.DeduceEnvironmentSourceGenerator;
 import io.micronaut.aot.std.sourcegen.EnvironmentPropertiesSourceGenerator;
+import io.micronaut.aot.std.sourcegen.Environments;
 import io.micronaut.aot.std.sourcegen.GraalVMOptimizationFeatureSourceGenerator;
 import io.micronaut.aot.std.sourcegen.JitStaticServiceLoaderSourceGenerator;
 import io.micronaut.aot.std.sourcegen.KnownMissingTypesSourceGenerator;
 import io.micronaut.aot.std.sourcegen.LogbackConfigurationSourceGenerator;
 import io.micronaut.aot.std.sourcegen.NativeStaticServiceLoaderSourceGenerator;
 import io.micronaut.aot.std.sourcegen.PublishersSourceGenerator;
-import io.micronaut.aot.std.sourcegen.SealedEnvironmentSourceGenerator;
 import io.micronaut.aot.std.sourcegen.YamlPropertySourceGenerator;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.GradleException;
 import org.gradle.api.InvalidUserCodeException;
 import org.gradle.api.file.RegularFileProperty;
+import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Property;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.Input;
@@ -48,6 +50,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.List;
 import java.util.Properties;
 
 /**
@@ -79,6 +82,15 @@ public abstract class MicronautAOTConfigWriterTask extends DefaultTask {
         }
     }
 
+    private static void stringListParameter(Properties props, String parameter, ListProperty<String> provider) {
+        if (provider.isPresent()) {
+            List<String> elements = provider.get();
+            if (!props.containsKey(parameter) && !elements.isEmpty()) {
+                props.put(parameter, String.join(",", elements));
+            }
+        }
+    }
+
     @TaskAction
     void writeConfigFile() {
         Properties props = new Properties();
@@ -98,7 +110,7 @@ public abstract class MicronautAOTConfigWriterTask extends DefaultTask {
         AOTOptimizations optimizations = getAOTOptimizations().get();
         booleanOptimization(props, GraalVMOptimizationFeatureSourceGenerator.ID, getForNative());
         booleanOptimization(props, LogbackConfigurationSourceGenerator.ID, optimizations.getReplaceLogbackXml());
-        booleanOptimization(props, SealedEnvironmentSourceGenerator.ID, optimizations.getSealEnvironment());
+        booleanOptimization(props, CachedEnvironmentSourceGenerator.ID, optimizations.getCacheEnvironment());
         booleanOptimization(props, JitStaticServiceLoaderSourceGenerator.ID, optimizations.getOptimizeServiceLoading());
         booleanOptimization(props, NativeStaticServiceLoaderSourceGenerator.ID, optimizations.getOptimizeServiceLoading());
         booleanOptimization(props, YamlPropertySourceGenerator.ID, optimizations.getConvertYamlToJava());
@@ -112,6 +124,7 @@ public abstract class MicronautAOTConfigWriterTask extends DefaultTask {
         }
         booleanOptimization(props, EnvironmentPropertiesSourceGenerator.ID, optimizations.getPrecomputeOperations());
         booleanOptimization(props, DeduceEnvironmentSourceGenerator.ID, optimizations.getDeduceEnvironment());
+        stringListParameter(props, Environments.POSSIBLE_ENVIRONMENTS_NAMES, optimizations.getPossibleEnvironments());
         File outputFile = getOutputFile().getAsFile().get();
         if (outputFile.getParentFile().isDirectory() || outputFile.getParentFile().mkdirs()) {
             try (OutputStream out = new FileOutputStream(outputFile)) {

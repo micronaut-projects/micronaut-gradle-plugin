@@ -12,7 +12,7 @@ class BasicMicronautAOTSpec extends AbstractAOTPluginSpec {
         hasAOTConfiguration(runtime) {
             withProperty('graalvm.config.enabled', 'native' == runtime ? 'true' : 'false')
             withProperty('logback.xml.to.java.enabled', 'false')
-            withProperty('sealed.environment.enabled', 'true')
+            withProperty('cached.environment.enabled', 'true')
             withProperty('serviceloading.jit.enabled', 'true')
             withProperty('serviceloading.native.enabled', 'true')
             withProperty('yaml.to.java.config.enabled', 'true')
