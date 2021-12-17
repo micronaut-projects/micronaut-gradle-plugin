@@ -1256,7 +1256,7 @@ Micronaut AOT is a <em>deployment</em> optimization: it adds to build time, in o
         optimizeServiceLoading = true
         convertYamlToJava = true
         precomputeOperations = true
-        sealEnvironment = true
+        cacheEnvironment = true
     }
 }</code></pre>
 </div>
@@ -1273,7 +1273,7 @@ Micronaut AOT is a <em>deployment</em> optimization: it adds to build time, in o
         optimizeServiceLoading.set(true)
         convertYamlToJava.set(true)
         precomputeOperations.set(true)
-        sealEnvironment.set(true)
+        cacheEnvironment.set(true)
     }
 }</code></pre>
 </div>
@@ -1337,8 +1337,8 @@ precompute.environment.properties.enabled = true
 # Scans reactive types at build time instead of runtime
 scan.reactive.types.enabled = true
 
-# Seals environment property values: environment properties will be deemed immutable after application startup.
-sealed.environment.enabled = true
+# Caches environment property values: environment properties will be deemed immutable after application startup.
+cached.environment.enabled = true
 
 # Scans for service types ahead-of-time, avoiding classpath scanning at startup
 serviceloading.jit.enabled = true
@@ -1378,8 +1378,8 @@ precompute.environment.properties.enabled = true
 # Scans reactive types at build time instead of runtime
 scan.reactive.types.enabled = true
 
-# Seals environment property values: environment properties will be deemed immutable after application startup.
-sealed.environment.enabled = true
+# Caches environment property values: environment properties will be deemed immutable after application startup.
+cached.environment.enabled = true
 
 # Scans for service types ahead-of-time, avoiding classpath scanning at startup
 serviceloading.native.enabled = true
