@@ -4,7 +4,6 @@ target/
 .gradle/
 .idea/
 build/
-!buildSrc/src/main/groovy/io/micronaut/internal/build
 classes/
 out/
 *.db
@@ -16,7 +15,6 @@ bin/
 .settings/
 .project
 */test/
-!src/test/
 */META-INF/
 *.ipr
 *.iws
