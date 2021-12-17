@@ -77,7 +77,7 @@ import static org.gradle.api.plugins.JavaPlugin.RUNTIME_CLASSPATH_CONFIGURATION_
 @SuppressWarnings("Convert2Lambda")
 public abstract class MicronautAotPlugin implements Plugin<Project> {
 
-    public static final String DEFAULT_AOT_VERSION = "1.0.0-M2";
+    public static final String DEFAULT_AOT_VERSION = "1.0.0-M4";
     public static final String OPTIMIZED_BINARY_NAME = "optimized";
     public static final String OPTIMIZED_DIST_NAME = "optimized";
     public static final String MAIN_BINARY_NAME = "main";
@@ -124,7 +124,7 @@ public abstract class MicronautAotPlugin implements Plugin<Project> {
 
     private void configureAotDefaults(AOTExtension aotExtension) {
         aotExtension.getVersion().convention(MicronautAotPlugin.DEFAULT_AOT_VERSION);
-        aotExtension.getSealEnvironment().convention(false);
+        aotExtension.getCacheEnvironment().convention(false);
         aotExtension.getOptimizeServiceLoading().convention(false);
         aotExtension.getConvertYamlToJava().convention(false);
         aotExtension.getReplaceLogbackXml().convention(false);
