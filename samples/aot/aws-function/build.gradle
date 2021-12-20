@@ -1,0 +1,53 @@
+plugins {
+    id("io.micronaut.library") version "3.1.1-SNAPSHOT"
+    id("io.micronaut.aot") version "3.1.1-SNAPSHOT"
+    id("com.github.johnrengelman.shadow") version "7.1.0"
+}
+
+version = "0.1"
+group = "example.micronaut"
+
+repositories {
+    mavenCentral()
+}
+
+micronaut {
+    version = "3.2.0"
+    runtime("lambda")
+    testRuntime("junit5")
+    processing {
+        incremental(true)
+        annotations("example.micronaut.*")
+    }
+    aot {
+        cacheEnvironment.set(true)
+        optimizeServiceLoading.set(true)
+        optimizeClassLoading.set(true)
+        convertYamlToJava.set(true)
+        precomputeOperations.set(true)
+    }
+}
+
+dependencies {
+    implementation("io.micronaut:micronaut-runtime")
+    implementation("javax.annotation:javax.annotation-api")
+    runtimeOnly("ch.qos.logback:logback-classic")
+    implementation("io.micronaut:micronaut-validation")
+
+    implementation("io.micronaut.aws:micronaut-function-aws")
+
+    testImplementation("io.micronaut:micronaut-http-client")
+
+}
+
+
+java {
+    sourceCompatibility = JavaVersion.toVersion("11")
+    targetCompatibility = JavaVersion.toVersion("11")
+}
+
+tasks.named("assemble") {
+    dependsOn(":shadowJar")
+}
+
+graalvmNative.binaries.all { verbose = true }
