@@ -1279,6 +1279,23 @@ Micronaut AOT is a <em>deployment</em> optimization: it adds to build time, in o
 </div>
 </div>
 <div class="paragraph">
+<p>In addition, you can use the <code>aotPlugins</code> configuration to declare additional AOT modules to be used:</p>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">dependencies {
+    aotPlugins 'io.micronaut.security:micronaut-security-aot:1.0.0'
+}</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">dependencies {
+    aotPlugins("io.micronaut.security:micronaut-security-aot:1.0.0")
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
 <p>Because Micronaut AOT is an extensible optimization engine, not all optimizations are known beforehand by the plugin, which means that not all of them may be accessible via the DSL.
 For this reason, it is possible to provide a <em>Micronaut AOT configuration file</em> instead:</p>
 </div>

@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":6,"i1":6,"i2":6,"i3":6,"i4":6,"i5":6,"i6":6,"i7":6};
+var methods = {"i0":6,"i1":6,"i2":6,"i3":6,"i4":6,"i5":6,"i6":6,"i7":6,"i8":6};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],4:["t3","Abstract Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -133,37 +133,44 @@ var activeTableTab = "activeTableTab";
 </td>
 </tr>
 <tr id="i1" class="rowColor">
+<td class="colFirst"><code>org.gradle.api.provider.MapProperty&lt;java.lang.String,java.lang.String&gt;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../io/micronaut/gradle/aot/AOTOptimizations.html#getConfigurationProperties--">getConfigurationProperties</a></span>()</code>
+<div class="block">An optional map of properties which will be merged with the configuration
+ to generate the final configuration file of Micronaut AOT.</div>
+</td>
+</tr>
+<tr id="i2" class="altColor">
 <td class="colFirst"><code>org.gradle.api.provider.Property&lt;java.lang.Boolean&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../io/micronaut/gradle/aot/AOTOptimizations.html#getConvertYamlToJava--">getConvertYamlToJava</a></span>()</code>
 <div class="block">If set to true, YAML files will be converted to Java configuration.</div>
 </td>
 </tr>
-<tr id="i2" class="altColor">
+<tr id="i3" class="rowColor">
 <td class="colFirst"><code>org.gradle.api.provider.Property&lt;java.lang.Boolean&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../io/micronaut/gradle/aot/AOTOptimizations.html#getDeduceEnvironment--">getDeduceEnvironment</a></span>()</code>
 <div class="block">If set to true and that the application context uses deduceEnvironment(true)
  then the deduction will be done at build time instead of run time.</div>
 </td>
 </tr>
-<tr id="i3" class="rowColor">
+<tr id="i4" class="altColor">
 <td class="colFirst"><code>org.gradle.api.provider.Property&lt;java.lang.Boolean&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../io/micronaut/gradle/aot/AOTOptimizations.html#getOptimizeClassLoading--">getOptimizeClassLoading</a></span>()</code>
 <div class="block">If set to true, the AOT compiler will optimize classloading.</div>
 </td>
 </tr>
-<tr id="i4" class="altColor">
+<tr id="i5" class="rowColor">
 <td class="colFirst"><code>org.gradle.api.provider.Property&lt;java.lang.Boolean&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../io/micronaut/gradle/aot/AOTOptimizations.html#getOptimizeServiceLoading--">getOptimizeServiceLoading</a></span>()</code>
 <div class="block">If set to true, services loading will be optimized.</div>
 </td>
 </tr>
-<tr id="i5" class="rowColor">
+<tr id="i6" class="altColor">
 <td class="colFirst"><code>org.gradle.api.provider.ListProperty&lt;java.lang.String&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../io/micronaut/gradle/aot/AOTOptimizations.html#getPossibleEnvironments--">getPossibleEnvironments</a></span>()</code>
 <div class="block">Sets the list of possible environment names.</div>
 </td>
 </tr>
-<tr id="i6" class="altColor">
+<tr id="i7" class="rowColor">
 <td class="colFirst"><code>org.gradle.api.provider.Property&lt;java.lang.Boolean&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../io/micronaut/gradle/aot/AOTOptimizations.html#getPrecomputeOperations--">getPrecomputeOperations</a></span>()</code>
 <div class="block">If set to true, the AOT will precompute at build time a number of
@@ -171,7 +178,7 @@ var activeTableTab = "activeTableTab";
  runtime instead.</div>
 </td>
 </tr>
-<tr id="i7" class="rowColor">
+<tr id="i8" class="altColor">
 <td class="colFirst"><code>org.gradle.api.provider.Property&lt;java.lang.Boolean&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../io/micronaut/gradle/aot/AOTOptimizations.html#getReplaceLogbackXml--">getReplaceLogbackXml</a></span>()</code>
 <div class="block">If set to true, logback.xml is replaced with Java configuration</div>
@@ -301,7 +308,7 @@ org.gradle.api.provider.Property&lt;java.lang.Boolean&gt;&nbsp;getDeduceEnvironm
 <a name="getPossibleEnvironments--">
 <!--   -->
 </a>
-<ul class="blockListLast">
+<ul class="blockList">
 <li class="blockList">
 <h4>getPossibleEnvironments</h4>
 <pre>@Input
@@ -313,6 +320,23 @@ org.gradle.api.provider.ListProperty&lt;java.lang.String&gt;&nbsp;getPossibleEnv
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>the list of possible environments</dd>
+</dl>
+</li>
+</ul>
+<a name="getConfigurationProperties--">
+<!--   -->
+</a>
+<ul class="blockListLast">
+<li class="blockList">
+<h4>getConfigurationProperties</h4>
+<pre>@Input
+ @Optional
+org.gradle.api.provider.MapProperty&lt;java.lang.String,java.lang.String&gt;&nbsp;getConfigurationProperties()</pre>
+<div class="block">An optional map of properties which will be merged with the configuration
+ to generate the final configuration file of Micronaut AOT.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>the configuration properties</dd>
 </dl>
 </li>
 </ul>
