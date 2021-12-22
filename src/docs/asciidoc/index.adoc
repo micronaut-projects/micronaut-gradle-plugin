@@ -894,6 +894,22 @@ micronaut {
 }
 ----
 
+In addition, you can use the `aotPlugins` configuration to declare additional AOT modules to be used:
+
+[source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
+----
+dependencies {
+    aotPlugins 'io.micronaut.security:micronaut-security-aot:1.0.0'
+}
+----
+
+[source, kotlin, subs="verbatim,attributes", role="multi-language-sample"]
+----
+dependencies {
+    aotPlugins("io.micronaut.security:micronaut-security-aot:1.0.0")
+}
+----
+
 Because Micronaut AOT is an extensible optimization engine, not all optimizations are known beforehand by the plugin, which means that not all of them may be accessible via the DSL.
 For this reason, it is possible to provide a _Micronaut AOT configuration file_ instead:
 

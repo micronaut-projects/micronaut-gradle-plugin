@@ -101,13 +101,16 @@ public abstract class MicronautAOTConfigWriterTask extends DefaultTask {
                 throw new GradleException("Unable to parse configuration file", e);
             }
         }
+        AOTOptimizations optimizations = getAOTOptimizations().get();
+        if (optimizations.getConfigurationProperties().isPresent()) {
+            props.putAll(optimizations.getConfigurationProperties().get());
+        }
         if (!props.containsKey(KnownMissingTypesSourceGenerator.OPTION.key())) {
             props.put(KnownMissingTypesSourceGenerator.OPTION.key(), String.join(",", MicronautAotPlugin.TYPES_TO_CHECK));
         }
         if (!props.containsKey(AbstractStaticServiceLoaderSourceGenerator.SERVICE_TYPES)) {
             props.put(AbstractStaticServiceLoaderSourceGenerator.SERVICE_TYPES, String.join(",", MicronautAotPlugin.SERVICE_TYPES));
         }
-        AOTOptimizations optimizations = getAOTOptimizations().get();
         booleanOptimization(props, GraalVMOptimizationFeatureSourceGenerator.ID, getForNative());
         booleanOptimization(props, LogbackConfigurationSourceGenerator.ID, optimizations.getReplaceLogbackXml());
         booleanOptimization(props, CachedEnvironmentSourceGenerator.ID, optimizations.getCacheEnvironment());
