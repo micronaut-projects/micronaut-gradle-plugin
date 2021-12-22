@@ -49,9 +49,11 @@ import org.gradle.api.plugins.ApplicationPluginConvention;
 import org.gradle.api.plugins.BasePlugin;
 import org.gradle.api.plugins.JavaApplication;
 import org.gradle.api.plugins.JavaPlugin;
+import org.gradle.api.plugins.JavaPluginConvention;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.provider.ProviderFactory;
 import org.gradle.api.tasks.JavaExec;
+import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.TaskContainer;
 import org.gradle.api.tasks.TaskProvider;
 import org.gradle.api.tasks.application.CreateStartScripts;
@@ -283,15 +285,18 @@ public abstract class MicronautAotPlugin implements Plugin<Project> {
         project.getPlugins().withType(ShadowJavaPlugin.class, plugin -> registerShadowJar(project, tasks, jarTask));
         project.getPlugins().withType(DistributionPlugin.class, p -> registerOptimizedDistribution(project, jarTask));
         return tasks.register("optimizedRun", JavaExec.class, task -> {
-            ProviderFactory providers = project.getProviders();
             JavaExec runTask = tasks.named("run", JavaExec.class).get();
             JavaApplication javaApplication = project.getExtensions().getByType(JavaApplication.class);
+            JavaPluginConvention javaPluginConvention = project.getConvention().getPlugin(JavaPluginConvention.class);
+            SourceSet mainSourceSet = javaPluginConvention.getSourceSets().getByName(SourceSet.MAIN_SOURCE_SET_NAME);
             task.setGroup(runTask.getGroup());
             task.setDescription("Executes the Micronaut application with AOT optimizations");
             task.getMainClass().convention(javaApplication.getMainClass());
+            Set<File> mainSourceSetOutput = mainSourceSet.getOutput().getFiles();
             task.setClasspath(
-                    project.files(jarTask, runTask.getClasspath().filter(f -> !mainJar.get().getArchiveFile().get().getAsFile().equals(f)))
-            );
+                    project.files(jarTask, mainSourceSet.getRuntimeClasspath().filter(f -> !mainJar.get().getArchiveFile().get().getAsFile().equals(f)
+                    && mainSourceSetOutput.stream().noneMatch(f::equals)
+            )));
             task.doFirst(new Action<Task>() {
                 @Override
                 public void execute(Task t) {
