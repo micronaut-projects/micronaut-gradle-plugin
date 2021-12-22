@@ -379,6 +379,11 @@ public abstract class MicronautAotPlugin implements Plugin<Project> {
             c.getDependencies().addLater(aotExtension.getVersion().map(v -> project.getDependencies().create("io.micronaut.aot:micronaut-aot-cli:" + v)));
         });
         // User configurations
+        Configuration aotPlugins = configurations.create("aotPlugins", c -> {
+            c.setCanBeResolved(false);
+            c.setCanBeConsumed(false);
+        });
+        aotOptimizerRuntimeClasspath.extendsFrom(aotPlugins);
         Configuration aotApplication = configurations.create("aotApplication", c -> {
             c.setCanBeResolved(false);
             c.setCanBeConsumed(false);

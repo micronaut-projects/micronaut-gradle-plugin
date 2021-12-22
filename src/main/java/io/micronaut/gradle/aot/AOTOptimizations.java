@@ -16,6 +16,7 @@
 package io.micronaut.gradle.aot;
 
 import org.gradle.api.provider.ListProperty;
+import org.gradle.api.provider.MapProperty;
 import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.Optional;
@@ -92,4 +93,13 @@ public interface AOTOptimizations {
     @Input
     @Optional
     ListProperty<String> getPossibleEnvironments();
+
+    /**
+     * An optional map of properties which will be merged with the configuration
+     * to generate the final configuration file of Micronaut AOT.
+     * @return the configuration properties
+     */
+    @Input
+    @Optional
+    MapProperty<String, String> getConfigurationProperties();
 }
