@@ -123,7 +123,7 @@ public class MicronautKotlinSupport {
             ListProperty<SourceSet> additionalSourceSets =
                     micronautExtension.getProcessing().getAdditionalSourceSets();
             final DependencyHandler dependencyHandler = p.getDependencies();
-            final String micronautVersion = MicronautLibraryPlugin.getMicronautVersion(
+            final String micronautVersion = PluginsHelper.findMicronautVersion(
                     p,
                     micronautExtension
             );

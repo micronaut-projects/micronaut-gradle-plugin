@@ -55,7 +55,7 @@ public class MicronautApplicationPlugin extends MicronautLibraryPlugin {
 
         project.afterEvaluate(p -> {
             final MicronautExtension ext = p.getExtensions().getByType(MicronautExtension.class);
-            final String v = getMicronautVersion(p, ext);
+            final String v = PluginsHelper.findMicronautVersion(p, ext);
             final DependencyHandler dependencyHandler = p.getDependencies();
             configureLogging(p, dependencyHandler);
             Dependency platform = resolveMicronautPlatform(dependencyHandler, v);

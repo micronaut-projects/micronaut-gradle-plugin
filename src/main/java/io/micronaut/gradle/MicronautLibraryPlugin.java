@@ -3,7 +3,6 @@ package io.micronaut.gradle;
 import com.diffplug.gradle.eclipse.apt.AptEclipsePlugin;
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar;
 import io.micronaut.gradle.graalvm.MicronautGraalPlugin;
-import org.gradle.api.InvalidUserCodeException;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
@@ -87,7 +86,7 @@ public class MicronautLibraryPlugin implements Plugin<Project> {
 
             final MicronautExtension micronautExtension = p.getExtensions().getByType(MicronautExtension.class);
 
-            String micronautVersion = getMicronautVersion(p, micronautExtension);
+            String micronautVersion = PluginsHelper.findMicronautVersion(p, micronautExtension);
 
             final Dependency platform = resolveMicronautPlatform(dependencyHandler, micronautVersion);
             for (String configuration : getBomConfigurations()) {
@@ -378,17 +377,4 @@ public class MicronautLibraryPlugin implements Plugin<Project> {
         return Arrays.asList("inject-java", "validation");
     }
 
-    static String getMicronautVersion(Project p, MicronautExtension micronautExtension) {
-        String v = micronautExtension.getVersion().getOrNull();
-        if (v == null) {
-            final Object o = p.getProperties().get("micronautVersion");
-            if (o != null) {
-                v = o.toString();
-            }
-        }
-        if (v == null || v.length() == 0) {
-            throw new InvalidUserCodeException("Micronaut version not set. Use micronaut { version '..'} or 'micronautVersion' in gradle.properties to set the version");
-        }
-        return v;
-    }
 }
