@@ -9,6 +9,7 @@ import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.Dependency;
 import org.gradle.api.artifacts.dsl.DependencyHandler;
 import org.gradle.api.file.SourceDirectorySet;
+import org.gradle.api.plugins.ApplicationPlugin;
 import org.gradle.api.plugins.JavaApplication;
 import org.gradle.api.plugins.JavaPluginConvention;
 import org.gradle.api.plugins.PluginContainer;
@@ -27,6 +28,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static io.micronaut.gradle.MicronautComponentPlugin.resolveMicronautPlatform;
+
 /**
  * A plugin for a Micronaut application. Applies the "application" plugin.
  *
@@ -41,6 +44,7 @@ public class MicronautApplicationPlugin extends MicronautLibraryPlugin {
 
     @Override
     public void apply(Project project) {
+        project.getPluginManager().apply(ApplicationPlugin.class);
         super.apply(project);
 
         // create a configuration used for dependencies that are only used for development
@@ -180,11 +184,6 @@ public class MicronautApplicationPlugin extends MicronautLibraryPlugin {
                 }
             }
         }
-    }
-
-    @Override
-    protected String getBasePluginName() {
-        return "application";
     }
 
     public static MicronautRuntime resolveRuntime(Project p) {
