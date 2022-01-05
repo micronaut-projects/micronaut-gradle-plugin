@@ -103,4 +103,25 @@ class BasicMicronautAOTSpec extends AbstractAOTPluginSpec {
 
     }
 
+    def "can optimize an application using the minimal application plugin"() {
+        withSample("aot/basic-app")
+        buildFile.text = buildFile.text.replace('"io.micronaut.application"', '"io.micronaut.minimal.application"')
+
+        when:
+        interruptApplicationStartup()
+        def result = build("optimizedRun")
+
+        then:
+        [
+                'io.micronaut.core.reflect.ClassUtils$Optimizations',
+                'io.micronaut.core.util.EnvironmentProperties',
+                'io.micronaut.core.async.publisher.PublishersOptimizations',
+                'io.micronaut.core.io.service.SoftServiceLoader$Optimizations',
+                'io.micronaut.context.env.ConstantPropertySources'
+        ].each {
+            assert result.output.contains("Setting optimizations for class $it")
+        }
+
+    }
+
 }

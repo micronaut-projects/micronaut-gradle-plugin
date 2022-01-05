@@ -7,10 +7,10 @@ import com.bmuschko.gradle.docker.tasks.container.DockerRemoveContainer;
 import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage;
 import com.bmuschko.gradle.docker.tasks.image.DockerPushImage;
 import com.bmuschko.gradle.docker.tasks.image.Dockerfile;
-import io.micronaut.gradle.MicronautApplicationPlugin;
 import io.micronaut.gradle.MicronautBasePlugin;
 import io.micronaut.gradle.MicronautExtension;
 import io.micronaut.gradle.MicronautRuntime;
+import io.micronaut.gradle.PluginsHelper;
 import io.micronaut.gradle.docker.model.DefaultMicronautDockerImage;
 import io.micronaut.gradle.docker.model.LayerKind;
 import io.micronaut.gradle.docker.model.MicronautDockerImage;
@@ -109,7 +109,7 @@ public class MicronautDockerPlugin implements Plugin<Project> {
 
         project.afterEvaluate(eval -> {
             Optional<DockerBuildStrategy> buildStrategy;
-            MicronautRuntime mr = MicronautApplicationPlugin.resolveRuntime(project);
+            MicronautRuntime mr = PluginsHelper.resolveRuntime(project);
             if (mr != MicronautRuntime.NONE) {
                 buildStrategy = Optional.of(mr.getBuildStrategy());
             } else {
@@ -268,7 +268,7 @@ public class MicronautDockerPlugin implements Plugin<Project> {
         });
 
         project.afterEvaluate(p -> {
-            MicronautRuntime mr = MicronautApplicationPlugin.resolveRuntime(p);
+            MicronautRuntime mr = PluginsHelper.resolveRuntime(p);
             if (mr == MicronautRuntime.LAMBDA) {
                 TaskContainer taskContainer = p.getTasks();
                 TaskProvider<DockerCreateContainer> createLambdaContainer = taskContainer.register(adaptTaskName("createLambdaContainer", imageName), DockerCreateContainer.class, task -> {

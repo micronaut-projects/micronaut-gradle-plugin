@@ -17,9 +17,10 @@ package io.micronaut.gradle.aot;
 
 import com.github.jengelman.gradle.plugins.shadow.ShadowJavaPlugin;
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar;
-import io.micronaut.gradle.MicronautApplicationPlugin;
 import io.micronaut.gradle.MicronautBasePlugin;
 import io.micronaut.gradle.MicronautExtension;
+import io.micronaut.gradle.MicronautMinimalApplicationPlugin;
+import io.micronaut.gradle.docker.MicronautDockerPlugin;
 import io.micronaut.gradle.docker.model.LayerKind;
 import io.micronaut.gradle.docker.model.MicronautDockerImage;
 import io.micronaut.gradle.docker.model.RuntimeKind;
@@ -46,7 +47,6 @@ import org.gradle.api.file.RelativePath;
 import org.gradle.api.java.archives.Attributes;
 import org.gradle.api.logging.Logger;
 import org.gradle.api.plugins.ApplicationPluginConvention;
-import org.gradle.api.plugins.BasePlugin;
 import org.gradle.api.plugins.JavaApplication;
 import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.plugins.JavaPluginConvention;
@@ -121,7 +121,7 @@ public abstract class MicronautAotPlugin implements Plugin<Project> {
         AOTExtension aotExtension = micronautExtension.getExtensions().create("aot", AOTExtension.class);
         configureAotDefaults(aotExtension);
         Configurations configurations = prepareConfigurations(project, aotExtension);
-        project.getPlugins().withType(MicronautApplicationPlugin.class, p -> registerPrepareOptimizationsTasks(project, configurations, aotExtension));
+        project.getPlugins().withType(MicronautMinimalApplicationPlugin.class, p -> registerPrepareOptimizationsTasks(project, configurations, aotExtension));
     }
 
     private void configureAotDefaults(AOTExtension aotExtension) {
@@ -274,7 +274,7 @@ public abstract class MicronautAotPlugin implements Plugin<Project> {
             jar.from(mergeTask);
         });
         tasks.named("assemble").configure(assemble -> assemble.dependsOn(jarTask));
-        project.getPlugins().withType(BasePlugin.class, p -> registerDockerImage(project, jarTask, runtime));
+        project.getPlugins().withType(MicronautDockerPlugin.class, p -> registerDockerImage(project, jarTask, runtime));
         return jarTask;
     }
 

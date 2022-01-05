@@ -66,6 +66,7 @@ public class MicronautComponentPlugin implements Plugin<Project> {
         add(IMPLEMENTATION_CONFIGURATION_NAME);
         add(COMPILE_ONLY_CONFIGURATION_NAME);
     }});
+    public static final String MICRONAUT_BOMS_CONFIGURATION = "micronautBoms";
 
     @Override
     public void apply(Project project) {
@@ -144,7 +145,7 @@ public class MicronautComponentPlugin implements Plugin<Project> {
     }
 
     private void configureMicronautBom(Project project, MicronautExtension micronautExtension) {
-        Configuration micronautBoms = project.getConfigurations().create("micronautBoms", conf -> {
+        Configuration micronautBoms = project.getConfigurations().create(MICRONAUT_BOMS_CONFIGURATION, conf -> {
             conf.setCanBeResolved(false);
             conf.setCanBeConsumed(false);
             conf.setDescription("BOMs which will be applied by the Micronaut plugins");

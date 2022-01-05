@@ -26,6 +26,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -109,5 +110,20 @@ public abstract class PluginsHelper {
                 }
             });
         });
+    }
+
+    public static MicronautRuntime resolveRuntime(Project p) {
+        MicronautExtension ext = p.getExtensions().findByType(MicronautExtension.class);
+        Object o = p.findProperty("micronaut.runtime");
+
+        MicronautRuntime micronautRuntime;
+        if (o != null) {
+            micronautRuntime = MicronautRuntime.valueOf(o.toString().toUpperCase(Locale.ENGLISH));
+        } else if (ext == null) {
+            micronautRuntime = MicronautRuntime.NONE;
+        } else {
+            micronautRuntime = ext.getRuntime().getOrElse(MicronautRuntime.NONE);
+        }
+        return micronautRuntime;
     }
 }

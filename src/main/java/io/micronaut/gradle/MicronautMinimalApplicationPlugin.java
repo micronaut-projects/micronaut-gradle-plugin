@@ -1,0 +1,213 @@
+/*
+ * Copyright 2003-2021 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package io.micronaut.gradle;
+
+import com.github.jengelman.gradle.plugins.shadow.ShadowPlugin;
+import io.micronaut.gradle.graalvm.GraalUtil;
+import org.apache.tools.ant.taskdefs.condition.Os;
+import org.gradle.api.Plugin;
+import org.gradle.api.Project;
+import org.gradle.api.artifacts.Configuration;
+import org.gradle.api.artifacts.ConfigurationContainer;
+import org.gradle.api.artifacts.dsl.DependencyHandler;
+import org.gradle.api.file.SourceDirectorySet;
+import org.gradle.api.plugins.ApplicationPlugin;
+import org.gradle.api.plugins.JavaApplication;
+import org.gradle.api.plugins.JavaPluginConvention;
+import org.gradle.api.plugins.PluginManager;
+import org.gradle.api.provider.Property;
+import org.gradle.api.tasks.JavaExec;
+import org.gradle.api.tasks.SourceSet;
+import org.gradle.api.tasks.SourceSetContainer;
+import org.gradle.api.tasks.SourceSetOutput;
+import org.gradle.api.tasks.TaskContainer;
+
+import java.io.File;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import static io.micronaut.gradle.PluginsHelper.resolveRuntime;
+
+/**
+ * A plugin which allows building Micronaut applications, without support
+ * for GraalVM or Docker.
+ */
+public class MicronautMinimalApplicationPlugin implements Plugin<Project> {
+    public static final String CONFIGURATION_DEVELOPMENT_ONLY = "developmentOnly";
+    // This flag is used for testing purposes only
+    public static final String INTERNAL_CONTINUOUS_FLAG = "io.micronaut.internal.gradle.continuous";
+
+    private static final Map<String, String> LOGGER_CONFIG_FILE_TO_DEPENDENCY = Collections.unmodifiableMap(new HashMap<String, String>() {
+        {
+            put("logback.xml", "ch.qos.logback:logback-classic");
+            put("simplelogger.properties", "org.slf4j:slf4j-simple");
+        }
+    });
+
+    @Override
+    public void apply(Project project) {
+        PluginManager plugins = project.getPluginManager();
+        plugins.apply(ApplicationPlugin.class);
+        plugins.apply(MicronautComponentPlugin.class);
+
+        Configuration developmentOnly = createDevelopmentOnlyConfiguration(project);
+        configureLogging(project);
+        configureMicronautRuntime(project);
+        configureJavaExecTasks(project, developmentOnly);
+    }
+
+    private void configureJavaExecTasks(Project project, Configuration developmentOnly) {
+        final TaskContainer tasks = project.getTasks();
+        tasks.withType(JavaExec.class).configureEach(javaExec -> {
+            if (javaExec.getName().equals("run")) {
+                javaExec.jvmArgs(
+                        "-Dcom.sun.management.jmxremote"
+                );
+                if (!GraalUtil.isGraalJVM()) {
+                    // graal doesn't support this
+                    javaExec.jvmArgs("-XX:TieredStopAtLevel=1");
+                }
+            }
+            javaExec.classpath(developmentOnly);
+
+            // If -t (continuous mode) is enabled feed parameters to the JVM
+            // that allows it to shutdown on resources changes so a rebuild
+            // can apply a restart to the application
+            if (project.getGradle().getStartParameter().isContinuous() || Boolean.getBoolean(INTERNAL_CONTINUOUS_FLAG)) {
+                SourceSetContainer sourceSets = project.getConvention()
+                        .getPlugin(JavaPluginConvention.class)
+                        .getSourceSets();
+                SourceSet sourceSet = sourceSets.findByName("main");
+                if (sourceSet != null) {
+                    Map<String, Object> sysProps = new LinkedHashMap<>();
+                    sysProps.put("micronaut.io.watch.restart", true);
+                    sysProps.put("micronaut.io.watch.enabled", true);
+                    javaExec.doFirst(workaroundEagerSystemProps -> {
+                        String watchPaths = sourceSet
+                                .getAllSource()
+                                .getSrcDirs()
+                                .stream()
+                                .map(File::getPath)
+                                .collect(Collectors.joining(","));
+                        javaExec.systemProperty("micronaut.io.watch.paths", watchPaths);
+                    });
+                    javaExec.systemProperties(
+                            sysProps
+                    );
+                }
+            }
+        });
+    }
+
+    private Configuration createDevelopmentOnlyConfiguration(Project project) {
+        ConfigurationContainer configurations = project.getConfigurations();
+        Configuration developmentOnly = configurations.create(CONFIGURATION_DEVELOPMENT_ONLY, conf -> {
+            conf.setCanBeConsumed(false);
+            conf.setCanBeResolved(true);
+            conf.extendsFrom(configurations.getByName(MicronautComponentPlugin.MICRONAUT_BOMS_CONFIGURATION));
+        });
+
+        // added to ensure file watch works more efficiently on OS X
+        if (Os.isFamily(Os.FAMILY_MAC)) {
+            developmentOnly.getDependencies().add(project.getDependencies().create("io.micronaut:micronaut-runtime-osx"));
+        }
+
+        return developmentOnly;
+    }
+
+    private void configureLogging(Project p) {
+        DependencyHandler dependencyHandler = p.getDependencies();
+        SourceSetContainer sourceSets = p.getConvention().getPlugin(JavaPluginConvention.class)
+                .getSourceSets();
+        SourceSet sourceSet = sourceSets.findByName(SourceSet.MAIN_SOURCE_SET_NAME);
+        if (sourceSet != null) {
+            SourceDirectorySet resources = sourceSet.getResources();
+            Set<File> srcDirs = resources.getSrcDirs();
+            exit:
+            for (File srcDir : srcDirs) {
+                for (Map.Entry<String, String> entry : LOGGER_CONFIG_FILE_TO_DEPENDENCY.entrySet()) {
+                    File loggerConfigFile = new File(srcDir, entry.getKey());
+                    if (loggerConfigFile.exists()) {
+                        dependencyHandler.add(sourceSet.getRuntimeOnlyConfigurationName(), entry.getValue());
+                        break exit;
+                    }
+                }
+            }
+        }
+    }
+
+    private void configureMicronautRuntime(Project project) {
+        project.afterEvaluate(p -> {
+            MicronautRuntime micronautRuntime = resolveRuntime(p);
+            DependencyHandler dependencyHandler = p.getDependencies();
+            micronautRuntime.getDependencies().forEach((scope, dependencies) -> {
+                for (String dependency : dependencies) {
+                    dependencyHandler.add(scope, dependency);
+                }
+            });
+            if (micronautRuntime == MicronautRuntime.GOOGLE_FUNCTION) {
+                configureGoogleCloudFunctionRuntime(project, p, dependencyHandler);
+            }
+            project.getPlugins().withType(ShadowPlugin.class, shadowPlugin -> {
+                JavaApplication javaApplication = project
+                        .getExtensions().findByType(JavaApplication.class);
+                if (javaApplication != null) {
+                    Property<String> mainClass = javaApplication.getMainClass();
+                    if (mainClass.isPresent()) {
+                        project.setProperty("mainClassName", mainClass.get());
+                    }
+                }
+            });
+        });
+    }
+
+    private void configureGoogleCloudFunctionRuntime(Project project, Project p, DependencyHandler dependencyHandler) {
+        String invokerConfig = "invoker";
+        Configuration ic = project.getConfigurations().create(invokerConfig);
+        dependencyHandler.add(invokerConfig, "com.google.cloud.functions.invoker:java-function-invoker:1.0.0-beta2");
+
+        // reconfigure the run task to use Google cloud invoker
+        TaskContainer taskContainer = project.getTasks();
+        taskContainer.register("runFunction", JavaExec.class, run -> {
+            run.dependsOn(taskContainer.findByName("processResources"), taskContainer.findByName("classes"));
+            run.getMainClass().set("com.google.cloud.functions.invoker.runner.Invoker");
+            run.setClasspath(ic);
+            run.setArgs(Arrays.asList(
+                    "--target", "io.micronaut.gcp.function.http.HttpFunction",
+                    "--port", 8080
+            ));
+            run.doFirst(t -> {
+                JavaPluginConvention plugin = project.getConvention().getPlugin(JavaPluginConvention.class);
+                SourceSet sourceSet = plugin.getSourceSets().getByName("main");
+                SourceSetOutput output = sourceSet.getOutput();
+                String runtimeClasspath = project.files(project.getConfigurations().getByName("runtimeClasspath"),
+                        output
+                ).getAsPath();
+                ((JavaExec) t).args("--classpath",
+                        runtimeClasspath
+                );
+            });
+        });
+
+        // Google Cloud Function requires shadow packaging
+        p.getPluginManager().apply(ShadowPlugin.class);
+    }
+}
