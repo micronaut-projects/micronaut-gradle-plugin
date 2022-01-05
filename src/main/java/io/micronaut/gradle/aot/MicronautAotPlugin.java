@@ -273,6 +273,7 @@ public abstract class MicronautAotPlugin implements Plugin<Project> {
             jar.from(prepareTask.map(MicronautAotOptimizerTask::getGeneratedClassesDirectory), spec -> spec.exclude("META-INF/services/**"));
             jar.from(mergeTask);
         });
+        tasks.named("assemble").configure(assemble -> assemble.dependsOn(jarTask));
         project.getPlugins().withType(BasePlugin.class, p -> registerDockerImage(project, jarTask, runtime));
         return jarTask;
     }
@@ -319,7 +320,7 @@ public abstract class MicronautAotPlugin implements Plugin<Project> {
                                      TaskProvider<Jar> optimizedJar) {
         project.afterEvaluate(unused -> {
             JavaApplication javaApplication = project.getExtensions().getByType(JavaApplication.class);
-            tasks.register(optimizedJar.getName() + "All", ShadowJar.class, shadow -> {
+            TaskProvider<ShadowJar> shadowProvider = tasks.register(optimizedJar.getName() + "All", ShadowJar.class, shadow -> {
                 shadow.setGroup(SHADOW_GROUP);
                 shadow.setDescription("Creates a fat jar including the Micronaut AOT optimizations");
                 shadow.getArchiveClassifier().convention("all-optimized");
@@ -333,6 +334,7 @@ public abstract class MicronautAotPlugin implements Plugin<Project> {
                 shadow.getConfigurations().add(project.getConfigurations().findByName("runtimeClasspath"));
                 shadow.getExcludes().addAll(tasks.named(ShadowJavaPlugin.SHADOW_JAR_TASK_NAME, ShadowJar.class).get().getExcludes());
             });
+            tasks.named("assemble").configure(assemble -> assemble.dependsOn(shadowProvider));
         });
 
     }
