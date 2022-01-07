@@ -55,9 +55,16 @@ public class ExampleTest {
 
         def task = result.task(":test")
         println result.output
+
         then:
         result.output.contains('Creating bean classes for 1 type elements')
         task.outcome == TaskOutcome.SUCCESS
+
+        where:
+        plugins << [
+                'id "io.micronaut.application"',
+                'id "io.micronaut.minimal.application"',
+        ]
     }
 
 //    def "test spock test runtime"() {
@@ -156,7 +163,7 @@ public class ExampleTest {
         """
 
         when:
-        def result = build('run', "-D${MicronautApplicationPlugin.INTERNAL_CONTINUOUS_FLAG}=true")
+        def result = build('run', "-D${MicronautMinimalApplicationPlugin.INTERNAL_CONTINUOUS_FLAG}=true")
         def task = result.task(":run")
         def output = result.output.readLines()
         def watchLine = output.find { it.startsWith("Watch paths: ") }

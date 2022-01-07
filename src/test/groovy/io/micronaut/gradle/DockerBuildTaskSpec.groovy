@@ -13,10 +13,11 @@ class DockerBuildTaskSpec extends AbstractGradleBuildSpec {
 
     def "test build docker image"() {
         given:
+        def pluginsBlock = plugins.collect { "                id '$it'" }.join("\n")
         settingsFile << "rootProject.name = 'hello-world'"
         buildFile << """
             plugins {
-                id "io.micronaut.application"
+                $pluginsBlock
             }
             
             micronaut {
@@ -48,6 +49,12 @@ class Application {
         then:
         result.output.contains("Successfully tagged hello-world:latest")
         task.outcome == TaskOutcome.SUCCESS
+
+        where:
+        plugins << [
+                ['io.micronaut.application'],
+                ['io.micronaut.minimal.application', 'io.micronaut.docker'],
+        ]
     }
 
     @Requires({ AbstractGradleBuildSpec.graalVmAvailable })

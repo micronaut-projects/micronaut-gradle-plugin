@@ -36,6 +36,87 @@ This project currently consists of different plugins:
 - the https://plugins.gradle.org/plugin/io.micronaut.graalvm[`io.micronaut.graalvm`] plugin integrates with the official {native-gradle-plugin}[GraalVM Native Build Tools plugin] and configures it for Micronaut applications.
 - the https://plugins.gradle.org/plugin/io.micronaut.aot[`io.micronaut.aot`] plugin integrates with Micronaut AOT to produce optimized binaries.
 
+=== Individual plugins
+
+In addition to the library and application plugins described in the following documentation, you can apply one of the following plugins to your project.
+For example, the `minimal` plugins can be used to reduce the number of tasks, for example if you don't need Docker or GraalVM support:
+
+[cols=3,options=header]
+|===
+|Plugin id
+|Description
+|Also applies
+
+|https://plugins.gradle.org/plugin/io.micronaut.minimal.library[`io.micronaut.minimal.library`]
+|Allows building Micronaut libraries, without GraalVM support
+|`java-library`
+
+|https://plugins.gradle.org/plugin/io.micronaut.minimal.application[`io.micronaut.minimal.application`]
+|Allows building Micronaut applications, without GraalVM nor Docker support
+|`application`
+
+|https://plugins.gradle.org/plugin/io.micronaut.graalvm[`io.micronaut.graalvm`]
+|Adds support for building native images
+|
+
+|https://plugins.gradle.org/plugin/io.micronaut.docker[`io.micronaut.docker`]
+|Adds support for building Docker images
+|
+
+|https://plugins.gradle.org/plugin/io.micronaut.aot[`io.micronaut.aot`]
+|Adds support for Micronaut AOT
+|
+
+|https://plugins.gradle.org/plugin/io.micronaut.library[`io.micronaut.library`]
+|A typical Micronaut Library, with support for GraalVM
+|https://plugins.gradle.org/plugin/io.micronaut.minimal.library[`io.micronaut.minimal.library`], https://plugins.gradle.org/plugin/io.micronaut.graalvm[`io.micronaut.graalvm`], `AptEclipsePlugin`
+
+|https://plugins.gradle.org/plugin/io.micronaut.application[`io.micronaut.application`]
+|A typical Micronaut Application, with support for GraalVM and Docker
+|https://plugins.gradle.org/plugin/io.micronaut.minimal.application[`io.micronaut.minimal.application`], https://plugins.gradle.org/plugin/io.micronaut.graalvm[`io.micronaut.graalvm`], https://plugins.gradle.org/plugin/io.micronaut.docker[`io.micronaut.docker`], `AptEclipsePlugin`
+
+|===
+
+Using the `io.micronaut.application` plugin:
+
+[source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
+----
+plugins {
+  id 'io.micronaut.application' version '{gradle-project-version}'
+}
+----
+
+[source, kotlin, subs="verbatim,attributes", role="multi-language-sample"]
+----
+plugins {
+  id("io.micronaut.application") version "{gradle-project-version}"
+}
+----
+
+is therefore equivalent to applying those plugins individually:
+
+[source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
+----
+plugins {
+  id 'io.micronaut.minimal.application' version '{gradle-project-version}'
+  id 'io.micronaut.docker' version '{gradle-project-version}'
+  id 'io.micronaut.graalvm' version '{gradle-project-version}'
+}
+apply plugin: com.diffplug.gradle.eclipse.apt.AptEclipsePlugin
+----
+
+[source, kotlin, subs="verbatim,attributes", role="multi-language-sample"]
+----
+plugins {
+  id("io.micronaut.application") version "{gradle-project-version}"
+  id("io.micronaut.docker") version "{gradle-project-version}"
+  id("io.micronaut.graalvm") version "{gradle-project-version}"
+}
+apply(plugin=com.diffplug.gradle.eclipse.apt.AptEclipsePlugin::class.java)
+----
+
+`io.micronaut.minimal.application`, `io.micronaut.graalvm` and `io.micronaut.docker` plugins (as well as the Eclipse annotation processing support plugin).
+
 == Quick Start
 
 Template projects are available via https://micronaut.io/launch/[Micronaut Launch] for each language.

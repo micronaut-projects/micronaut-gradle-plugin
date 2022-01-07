@@ -8,7 +8,7 @@ class MicronautGraalPluginSpec extends AbstractGradleBuildSpec {
 
     void 'generate GraalVM resource-config.json with OpenAPI and resources included'() {
         given:
-        withSwaggerMicronautApplication()
+        withSwaggerMicronautApplication(plugins)
 
         when:
         def result = build('generateResourcesConfigFile', '-i', '--stacktrace')
@@ -24,6 +24,13 @@ class MicronautGraalPluginSpec extends AbstractGradleBuildSpec {
         resourceConfigJson.resources.includes.pattern.any { it == "\\Qapplication.yml\\E" }
         resourceConfigJson.resources.includes.pattern.any { it == "\\QMETA-INF/swagger/app-0.0.yml\\E" }
         resourceConfigJson.resources.includes.pattern.any { it == "\\QMETA-INF/swagger/views/swagger-ui/index.html\\E" }
+
+        where:
+        plugins << [
+                ['io.micronaut.application'],
+                ['io.micronaut.minimal.application', 'io.micronaut.graalvm'],
+                ['io.micronaut.graalvm', 'io.micronaut.minimal.application'],
+        ]
     }
 
     void 'generate GraalVM resource-config.json with OpenAPI and resources included without the Micronaut Application plugin'() {
@@ -49,7 +56,7 @@ class MicronautGraalPluginSpec extends AbstractGradleBuildSpec {
     @Requires({ AbstractGradleBuildSpec.graalVmAvailable && !os.windows })
     void 'native-image is called with the generated JSON file directory (Micronaut Application)'() {
         given:
-        withSwaggerMicronautApplication()
+        withSwaggerMicronautApplication(plugins)
 
         when:
         def result = build('nativeCompile', '-i', '--stacktrace')
@@ -61,6 +68,12 @@ class MicronautGraalPluginSpec extends AbstractGradleBuildSpec {
 
         and:
         result.output.contains("-H:ConfigurationFileDirectories=${new File(testProjectDir.root, 'build/native/generated/generateResourcesConfigFile').absolutePath}")
+
+        where:
+        plugins << [
+                ['io.micronaut.application'],
+                ['io.micronaut.minimal.application', 'io.micronaut.graalvm'],
+        ]
     }
 
     @Requires({ AbstractGradleBuildSpec.graalVmAvailable && !os.windows })
@@ -80,15 +93,15 @@ class MicronautGraalPluginSpec extends AbstractGradleBuildSpec {
         result.output.contains("-H:ConfigurationFileDirectories=${new File(testProjectDir.root, 'build/native/generated/generateResourcesConfigFile').absolutePath}")
     }
 
-    private void withSwaggerMicronautApplication() {
+    private void withSwaggerMicronautApplication(List<String> plugins = ['io.micronaut.application']) {
+        def pluginsBlock = plugins.collect { "                id '$it'" }.join("\n")
         testProjectDir.newFile('openapi.properties') << 'swagger-ui.enabled=true'
         testProjectDir.newFolder('src', 'main', 'resources')
         testProjectDir.newFile('src/main/resources/application.yml') << 'micronaut.application.name: hello-world'
         settingsFile << "rootProject.name = 'hello-world'"
         buildFile << """
             plugins {
-                id "io.micronaut.application"
-                id "io.micronaut.graalvm"
+                $pluginsBlock
             }
             dependencies {
                 annotationProcessor("io.micronaut.openapi:micronaut-openapi")

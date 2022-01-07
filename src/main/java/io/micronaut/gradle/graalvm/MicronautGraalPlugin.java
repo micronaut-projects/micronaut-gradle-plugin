@@ -1,8 +1,8 @@
 package io.micronaut.gradle.graalvm;
 
-import io.micronaut.gradle.MicronautApplicationPlugin;
 import io.micronaut.gradle.MicronautExtension;
 import io.micronaut.gradle.MicronautRuntime;
+import io.micronaut.gradle.PluginsHelper;
 import org.graalvm.buildtools.gradle.NativeImagePlugin;
 import org.graalvm.buildtools.gradle.dsl.GraalVMExtension;
 import org.graalvm.buildtools.gradle.tasks.BuildNativeImageTask;
@@ -46,11 +46,11 @@ public class MicronautGraalPlugin implements Plugin<Project> {
     public void apply(Project project) {
         project.getPluginManager().apply(NativeImagePlugin.class);
         workaroundForResourcesDirectoryMissing(project);
-        project.getPluginManager().withPlugin("io.micronaut.library", plugin -> {
+        project.getPluginManager().withPlugin("io.micronaut.minimal.library", plugin -> {
             MicronautExtension extension = project.getExtensions().findByType(MicronautExtension.class);
             configureAnnotationProcessing(project, extension);
         });
-        project.getPluginManager().withPlugin("io.micronaut.application", plugin -> {
+        project.getPluginManager().withPlugin("io.micronaut.minimal.application", plugin -> {
             MicronautExtension extension = project.getExtensions().findByType(MicronautExtension.class);
             configureAnnotationProcessing(project, extension);
         });
@@ -65,7 +65,7 @@ public class MicronautGraalPlugin implements Plugin<Project> {
         project.getPluginManager().withPlugin("application", plugin -> {
             TaskContainer tasks = project.getTasks();
             tasks.withType(BuildNativeImageTask.class).named("nativeCompile", nativeImageTask -> {
-                MicronautRuntime mr = MicronautApplicationPlugin.resolveRuntime(project);
+                MicronautRuntime mr = PluginsHelper.resolveRuntime(project);
                 if (mr == MicronautRuntime.LAMBDA) {
                     DependencySet implementation = project.getConfigurations().getByName("implementation").getDependencies();
                     boolean isAwsApp = implementation.stream()
