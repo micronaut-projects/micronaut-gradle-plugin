@@ -59,7 +59,11 @@
                         <div class="underline"></div>
                         <ul class="sectlevel1">
 <li><a href="#_whats_new">1. What&#8217;s new</a></li>
-<li><a href="#_the_gradle_plugins">2. The Gradle plugins</a></li>
+<li><a href="#_the_gradle_plugins">2. The Gradle plugins</a>
+<ul class="sectlevel2">
+<li><a href="#_individual_plugins">2.1. Individual plugins</a></li>
+</ul>
+</li>
 <li><a href="#_quick_start">3. Quick Start</a></li>
 <li><a href="#_micronaut_library_plugin">4. Micronaut Library Plugin</a>
 <ul class="sectlevel2">
@@ -106,7 +110,7 @@
 <div class="sectionbody">
 
 <div class="paragraph">
-<p>Version 3.1.2-SNAPSHOT</p>
+<p>Version 3.2.0-SNAPSHOT</p>
 </div>
 </div>
 </div>
@@ -171,6 +175,107 @@ Documentation for the 2.x branch can be found <a href="https://github.com/micron
 </li>
 </ul>
 </div>
+<div class="sect2">
+<h3 id="_individual_plugins"><a class="anchor" href="#_individual_plugins"></a>2.1. Individual plugins</h3>
+<div class="paragraph">
+<p>In addition to the library and application plugins described in the following documentation, you can apply one of the following plugins to your project.
+For example, the <code>minimal</code> plugins can be used to reduce the number of tasks, for example if you don&#8217;t need Docker or GraalVM support:</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Plugin id</th>
+<th class="tableblock halign-left valign-top">Description</th>
+<th class="tableblock halign-left valign-top">Also applies</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="https://plugins.gradle.org/plugin/io.micronaut.minimal.library"><code>io.micronaut.minimal.library</code></a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Allows building Micronaut libraries, without GraalVM support</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>java-library</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="https://plugins.gradle.org/plugin/io.micronaut.minimal.application"><code>io.micronaut.minimal.application</code></a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Allows building Micronaut applications, without GraalVM nor Docker support</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>application</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="https://plugins.gradle.org/plugin/io.micronaut.graalvm"><code>io.micronaut.graalvm</code></a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Adds support for building native images</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="https://plugins.gradle.org/plugin/io.micronaut.docker"><code>io.micronaut.docker</code></a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Adds support for building Docker images</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="https://plugins.gradle.org/plugin/io.micronaut.aot"><code>io.micronaut.aot</code></a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Adds support for Micronaut AOT</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="https://plugins.gradle.org/plugin/io.micronaut.library"><code>io.micronaut.library</code></a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">A typical Micronaut Library, with support for GraalVM</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="https://plugins.gradle.org/plugin/io.micronaut.minimal.library"><code>io.micronaut.minimal.library</code></a>, <a href="https://plugins.gradle.org/plugin/io.micronaut.graalvm"><code>io.micronaut.graalvm</code></a>, <code>AptEclipsePlugin</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="https://plugins.gradle.org/plugin/io.micronaut.application"><code>io.micronaut.application</code></a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">A typical Micronaut Application, with support for GraalVM and Docker</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="https://plugins.gradle.org/plugin/io.micronaut.minimal.application"><code>io.micronaut.minimal.application</code></a>, <a href="https://plugins.gradle.org/plugin/io.micronaut.graalvm"><code>io.micronaut.graalvm</code></a>, <a href="https://plugins.gradle.org/plugin/io.micronaut.docker"><code>io.micronaut.docker</code></a>, <code>AptEclipsePlugin</code></p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p>Using the <code>io.micronaut.application</code> plugin:</p>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">plugins {
+  id 'io.micronaut.application' version '3.2.0-SNAPSHOT'
+}</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">plugins {
+  id("io.micronaut.application") version "3.2.0-SNAPSHOT"
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>is therefore equivalent to applying those plugins individually:</p>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">plugins {
+  id 'io.micronaut.minimal.application' version '3.2.0-SNAPSHOT'
+  id 'io.micronaut.docker' version '3.2.0-SNAPSHOT'
+  id 'io.micronaut.graalvm' version '3.2.0-SNAPSHOT'
+}
+apply plugin: com.diffplug.gradle.eclipse.apt.AptEclipsePlugin</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">plugins {
+  id("io.micronaut.application") version "3.2.0-SNAPSHOT"
+  id("io.micronaut.docker") version "3.2.0-SNAPSHOT"
+  id("io.micronaut.graalvm") version "3.2.0-SNAPSHOT"
+}
+apply(plugin=com.diffplug.gradle.eclipse.apt.AptEclipsePlugin::class.java)</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>io.micronaut.minimal.application</code>, <code>io.micronaut.graalvm</code> and <code>io.micronaut.docker</code> plugins (as well as the Eclipse annotation processing support plugin).</p>
+</div>
+</div>
 </div>
 </div>
 <div class="sect1">
@@ -214,14 +319,14 @@ $ curl https://launch.micronaut.io/demo.zip?lang=kotlin \
 <div class="title">Applying the plugin</div>
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">plugins {
-  id 'io.micronaut.library' version '3.1.2-SNAPSHOT'
+  id 'io.micronaut.library' version '3.2.0-SNAPSHOT'
 }</code></pre>
 </div>
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">plugins {
-  id("io.micronaut.library") version "3.1.2-SNAPSHOT"
+  id("io.micronaut.library") version "3.2.0-SNAPSHOT"
 }</code></pre>
 </div>
 </div>
@@ -345,7 +450,7 @@ The Micronaut Library plugin also supports Groovy and Kotlin sources.
 <pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">plugins {
     id "org.jetbrains.kotlin.jvm" version "1.5.30"
     id "org.jetbrains.kotlin.kapt" version "1.5.30"
-    id "io.micronaut.library" version "3.1.2-SNAPSHOT"
+    id "io.micronaut.library" version "3.2.0-SNAPSHOT"
 }</code></pre>
 </div>
 </div>
@@ -354,7 +459,7 @@ The Micronaut Library plugin also supports Groovy and Kotlin sources.
 <pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">plugins {
     id("org.jetbrains.kotlin.jvm") version "1.5.30"
     id("org.jetbrains.kotlin.kapt") version "1.5.30"
-    id("io.micronaut.library") version "3.1.2-SNAPSHOT"
+    id("io.micronaut.library") version "3.2.0-SNAPSHOT"
 }</code></pre>
 </div>
 </div>
@@ -368,7 +473,7 @@ The Micronaut Library plugin also supports Groovy and Kotlin sources.
 <div class="title">A minimal build file</div>
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">plugins {
-    id 'io.micronaut.library' version '3.1.2-SNAPSHOT'
+    id 'io.micronaut.library' version '3.2.0-SNAPSHOT'
 }
 
 version "0.1"
@@ -391,7 +496,7 @@ dependencies {
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">plugins {
-    id("io.micronaut.library") version "3.1.2-SNAPSHOT"
+    id("io.micronaut.library") version "3.2.0-SNAPSHOT"
 }
 
 version = "0.1"
@@ -421,14 +526,14 @@ dependencies {
 <div class="title">Applying the Micronaut Application plugin</div>
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">plugins {
-  id "io.micronaut.application" version "3.1.2-SNAPSHOT"
+  id "io.micronaut.application" version "3.2.0-SNAPSHOT"
 }</code></pre>
 </div>
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">plugins {
-  id("io.micronaut.application") version "3.1.2-SNAPSHOT"
+  id("io.micronaut.application") version "3.2.0-SNAPSHOT"
 }</code></pre>
 </div>
 </div>
@@ -498,7 +603,7 @@ dependencies {
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">plugins {
-    id 'io.micronaut.application' version '3.1.2-SNAPSHOT'
+    id 'io.micronaut.application' version '3.2.0-SNAPSHOT'
 }
 
 version "0.1"
@@ -527,7 +632,7 @@ application {
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">plugins {
-    id("io.micronaut.application") version "3.1.2-SNAPSHOT"
+    id("io.micronaut.application") version "3.2.0-SNAPSHOT"
 }
 
 version = "0.1"
@@ -565,7 +670,7 @@ application {
     id "org.jetbrains.kotlin.jvm" version "1.5.30"
     id "org.jetbrains.kotlin.kapt" version "1.5.30"
     id "org.jetbrains.kotlin.plugin.allopen" version "1.5.30"
-    id "io.micronaut.application" version "3.1.2-SNAPSHOT"
+    id "io.micronaut.application" version "3.2.0-SNAPSHOT"
 }
 
 version "0.1"
@@ -599,7 +704,7 @@ application {
     id("org.jetbrains.kotlin.jvm") version "1.5.30"
     id("org.jetbrains.kotlin.kapt") version "1.5.30"
     id("org.jetbrains.kotlin.plugin.allopen") version "1.5.30"
-    id("io.micronaut.application") version "3.1.2-SNAPSHOT"
+    id("io.micronaut.application") version "3.2.0-SNAPSHOT"
 }
 
 version = "0.1"
@@ -1003,7 +1108,7 @@ tasks.named&lt;io.micronaut.gradle.docker.NativeImageDockerfile&gt;("dockerfileN
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">plugins {
-     id 'io.micronaut.application' version '3.1.2-SNAPSHOT'
+     id 'io.micronaut.application' version '3.2.0-SNAPSHOT'
 }
 version "0.1"
 group "com.example"
@@ -1029,7 +1134,7 @@ application {
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">plugins {
-     id("io.micronaut.application") version "3.1.2-SNAPSHOT"
+     id("io.micronaut.application") version "3.2.0-SNAPSHOT"
 }
 version = "0.1"
 group = "com.example"
@@ -1225,8 +1330,8 @@ Micronaut AOT is a <em>deployment</em> optimization: it adds to build time, in o
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">plugins {
     ...
-    id "io.micronaut.application" version "3.1.2-SNAPSHOT"
-    id "io.micronaut.aot" version "3.1.2-SNAPSHOT"
+    id "io.micronaut.application" version "3.2.0-SNAPSHOT"
+    id "io.micronaut.aot" version "3.2.0-SNAPSHOT"
     ...
 }</code></pre>
 </div>
@@ -1235,8 +1340,8 @@ Micronaut AOT is a <em>deployment</em> optimization: it adds to build time, in o
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">plugins {
     ...
-    id("io.micronaut.application") version "3.1.2-SNAPSHOT"
-    id("io.micronaut.aot") version "3.1.2-SNAPSHOT"
+    id("io.micronaut.application") version "3.2.0-SNAPSHOT"
+    id("io.micronaut.aot") version "3.2.0-SNAPSHOT"
     ...
 }</code></pre>
 </div>
