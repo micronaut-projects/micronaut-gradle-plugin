@@ -18,6 +18,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import static io.micronaut.gradle.MicronautComponentPlugin.resolveMicronautPlatform;
+import static io.micronaut.gradle.PluginsHelper.configureAnnotationProcessors;
+
 /**
  * Extension to integration support for Kotlin.
  *
@@ -25,6 +28,10 @@ import java.util.List;
  * @since 1.0.0
  */
 public class MicronautKotlinSupport {
+    private static final String[] KAPT_CONFIGURATIONS = new String[] {
+            "kapt",
+            "kaptTest"
+    };
 
     /**
      * Check whether Kotlin support is present.
@@ -90,21 +97,11 @@ public class MicronautKotlinSupport {
         }
 
         // add inject-java to kapt scopes
-        List<String> kaptConfigs = Arrays.asList("kapt", "kaptTest");
-        final DependencyHandler dependencies = project.getDependencies();
-        for (String kaptConfig : kaptConfigs) {
-            List<String> modules = MicronautLibraryPlugin.getAnnotationProcessorModules();
-            for (String module : modules) {
-                dependencies.add(
-                        kaptConfig,
-                        "io.micronaut:micronaut-" + module
-                );
-            }
-        }
-
+        DependencyHandler dependencies = project.getDependencies();
+        PluginsHelper.registerAnnotationProcessors(dependencies, KAPT_CONFIGURATIONS);
 
         if (GraalUtil.isGraalJVM()) {
-            for (String configuration : kaptConfigs) {
+            for (String configuration : KAPT_CONFIGURATIONS) {
                 dependencies.add(
                         configuration,
                         "io.micronaut:micronaut-graal"
@@ -113,7 +110,7 @@ public class MicronautKotlinSupport {
         }
 
         project.afterEvaluate(p -> {
-            MicronautLibraryPlugin.applyAdditionalProcessors(
+            PluginsHelper.applyAdditionalProcessors(
                     p,
                     "kapt", "kaptTest"
             );
@@ -123,12 +120,12 @@ public class MicronautKotlinSupport {
             ListProperty<SourceSet> additionalSourceSets =
                     micronautExtension.getProcessing().getAdditionalSourceSets();
             final DependencyHandler dependencyHandler = p.getDependencies();
-            final String micronautVersion = MicronautLibraryPlugin.getMicronautVersion(
+            final String micronautVersion = PluginsHelper.findMicronautVersion(
                     p,
                     micronautExtension
             );
 
-            final Dependency platform = MicronautLibraryPlugin.resolveMicronautPlatform(dependencyHandler, micronautVersion);
+            final Dependency platform = resolveMicronautPlatform(dependencyHandler, micronautVersion);
             if (additionalSourceSets.isPresent()) {
                 List<SourceSet> configurations = additionalSourceSets.get();
                 if (!configurations.isEmpty()) {
@@ -146,7 +143,7 @@ public class MicronautKotlinSupport {
                                     platform
                             );
                         }
-                        MicronautLibraryPlugin.configureAnnotationProcessors(p,
+                        configureAnnotationProcessors(p,
                                 implementationConfigurationName,
                                 annotationProcessorConfigurationName);
                         if (GraalUtil.isGraalJVM()) {
@@ -160,7 +157,7 @@ public class MicronautKotlinSupport {
             }
 
 
-            for (String kaptConfig : kaptConfigs) {
+            for (String kaptConfig : KAPT_CONFIGURATIONS) {
                 dependencyHandler.add(
                         kaptConfig,
                         platform

@@ -26,9 +26,17 @@ group = "io.micronaut.gradle"
 // Use java-gradle-plugin to generate plugin descriptors and specify plugin ids
 gradlePlugin {
     plugins {
+        minimalLibraryPlugin {
+            id = 'io.micronaut.minimal.library'
+            implementationClass = 'io.micronaut.gradle.MicronautMinimalLibraryPlugin'
+        }
         libraryPlugin {
             id = 'io.micronaut.library'
             implementationClass = 'io.micronaut.gradle.MicronautLibraryPlugin'
+        }
+        minimalApplicationPlugin {
+            id = 'io.micronaut.minimal.application'
+            implementationClass = 'io.micronaut.gradle.MicronautMinimalApplicationPlugin'
         }
         applicationPlugin {
             id = 'io.micronaut.application'
@@ -37,6 +45,10 @@ gradlePlugin {
         graalPlugin {
             id = 'io.micronaut.graalvm'
             implementationClass = 'io.micronaut.gradle.graalvm.MicronautGraalPlugin'
+        }
+        dockerPlugin {
+            id = 'io.micronaut.docker'
+            implementationClass = 'io.micronaut.gradle.docker.MicronautDockerPlugin'
         }
         aotPlugin {
             id = 'io.micronaut.aot'

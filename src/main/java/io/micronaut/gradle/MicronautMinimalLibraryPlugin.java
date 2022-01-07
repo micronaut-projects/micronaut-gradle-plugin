@@ -15,25 +15,20 @@
  */
 package io.micronaut.gradle;
 
-import java.io.File;
-import java.net.URI;
-import java.net.URISyntaxException;
+import org.gradle.api.Plugin;
+import org.gradle.api.Project;
+import org.gradle.api.plugins.JavaLibraryPlugin;
+import org.gradle.api.plugins.PluginManager;
 
-import static java.util.Locale.ENGLISH;
-
-public abstract class Strings {
-    public static String capitalize(String name) {
-        if (name == null || name.length() == 0) {
-            return name;
-        }
-        return name.substring(0, 1).toUpperCase(ENGLISH) + name.substring(1);
-    }
-
-    public static String clickableUrl(File file) {
-        try {
-            return new URI("file", "", file.toURI().getPath(), null, null).toString();
-        } catch (URISyntaxException e) {
-            return file.toString();
-        }
+/**
+ * A plugin to build a Micronaut library. It is the base plugin for all Micronaut libraries,
+ * and applies the _minimal_ amount of plugins to make it work.
+ */
+public class MicronautMinimalLibraryPlugin implements Plugin<Project> {
+    @Override
+    public void apply(Project project) {
+        PluginManager plugins = project.getPluginManager();
+        plugins.apply(JavaLibraryPlugin.class);
+        plugins.apply(MicronautComponentPlugin.class);
     }
 }
