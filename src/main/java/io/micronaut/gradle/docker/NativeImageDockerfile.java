@@ -356,7 +356,9 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
             runCommand("yum install -y gcc gcc-c++ libc6-dev zlib1g-dev curl bash zlib zlib-devel zlib-static zip tar gzip");
             String jdkVersion = getJdkVersion().get();
             String graalVersion = getGraalVersion().get();
-            String fileName = "graalvm-ce-" + jdkVersion + "-linux-amd64-" + graalVersion + ".tar.gz";
+            String archMappingBash = "$([[ \"$(arch)\" =~ arm.* || \"$(arch)\" =~ aarch.* ]] && echo aarch64 || echo amd64)";
+            String fileName = "graalvm-ce-" + jdkVersion + "-linux-" + archMappingBash + "-" + graalVersion + ".tar.gz";
+            runCommand("echo \"==== Fetching GraalVM for " + archMappingBash + '\"');
             runCommand("curl -4 -L https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-" + graalVersion + "/" + fileName + " -o /tmp/" + fileName);
             runCommand("tar -zxf /tmp/" + fileName + " -C /tmp && mv /tmp/graalvm-ce-" + jdkVersion + "-" + graalVersion + " /usr/lib/graalvm");
             runCommand("rm -rf /tmp/*");
@@ -417,7 +419,8 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
                 runCommand("echo \"#!/bin/sh\" >> bootstrap && echo \"set -euo pipefail\" >> bootstrap && echo \"" + funcCmd + "\" >> bootstrap");
                 runCommand("chmod 777 bootstrap");
                 runCommand("chmod 777 func");
-                runCommand("zip -j function.zip bootstrap func");
+                runCommand("echo \"$(arch)\" > architecture");
+                runCommand("zip -j function.zip bootstrap func architecture");
                 getInstructions().addAll(additionalInstructions);
                 entryPoint("/function/func");
                 break;
