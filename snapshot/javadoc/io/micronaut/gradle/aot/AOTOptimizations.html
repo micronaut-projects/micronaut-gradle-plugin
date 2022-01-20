@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":6,"i1":6,"i2":6,"i3":6,"i4":6,"i5":6,"i6":6,"i7":6,"i8":6};
+var methods = {"i0":6,"i1":6,"i2":6,"i3":6,"i4":6,"i5":6,"i6":6,"i7":6,"i8":6,"i9":6};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],4:["t3","Abstract Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -184,6 +184,12 @@ var activeTableTab = "activeTableTab";
 <div class="block">If set to true, logback.xml is replaced with Java configuration</div>
 </td>
 </tr>
+<tr id="i9" class="rowColor">
+<td class="colFirst"><code>org.gradle.api.provider.Property&lt;java.lang.String&gt;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../io/micronaut/gradle/aot/AOTOptimizations.html#getTargetPackage--">getTargetPackage</a></span>()</code>
+<div class="block">The target package for AOT generated classes.</div>
+</td>
+</tr>
 </table>
 </li>
 </ul>
@@ -326,7 +332,7 @@ org.gradle.api.provider.ListProperty&lt;java.lang.String&gt;&nbsp;getPossibleEnv
 <a name="getConfigurationProperties--">
 <!--   -->
 </a>
-<ul class="blockListLast">
+<ul class="blockList">
 <li class="blockList">
 <h4>getConfigurationProperties</h4>
 <pre>@Input
@@ -337,6 +343,22 @@ org.gradle.api.provider.MapProperty&lt;java.lang.String,java.lang.String&gt;&nbs
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>the configuration properties</dd>
+</dl>
+</li>
+</ul>
+<a name="getTargetPackage--">
+<!--   -->
+</a>
+<ul class="blockListLast">
+<li class="blockList">
+<h4>getTargetPackage</h4>
+<pre>@Input
+org.gradle.api.provider.Property&lt;java.lang.String&gt;&nbsp;getTargetPackage()</pre>
+<div class="block">The target package for AOT generated classes.
+ For applications it defaults to the package of the main class.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>the target package property</dd>
 </dl>
 </li>
 </ul>
