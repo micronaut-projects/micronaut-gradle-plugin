@@ -102,4 +102,12 @@ public interface AOTOptimizations {
     @Input
     @Optional
     MapProperty<String, String> getConfigurationProperties();
+
+    /**
+     * The target package for AOT generated classes.
+     * For applications it defaults to the package of the main class.
+     * @return the target package property
+     */
+    @Input
+    Property<String> getTargetPackage();
 }

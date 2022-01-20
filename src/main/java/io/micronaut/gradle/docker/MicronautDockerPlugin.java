@@ -17,9 +17,11 @@ import io.micronaut.gradle.docker.model.MicronautDockerImage;
 import io.micronaut.gradle.docker.model.RuntimeKind;
 import io.micronaut.gradle.docker.tasks.BuildLayersTask;
 import io.micronaut.gradle.docker.tasks.PrepareDockerContext;
+import org.gradle.api.Action;
 import org.gradle.api.NamedDomainObjectContainer;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
+import org.gradle.api.Task;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.file.RegularFile;
@@ -72,6 +74,13 @@ public class MicronautDockerPlugin implements Plugin<Project> {
                         .getByName(SourceSet.MAIN_SOURCE_SET_NAME).getOutput().getResourcesDir());
             });
         });
+    }
+
+    private static String simpleNameOf(String appendix, String context) {
+        if ("main".equals(context)) {
+            return appendix;
+        }
+        return context + "-" + appendix;
     }
 
     private static String adaptTaskName(String baseName, String context) {
@@ -276,7 +285,10 @@ public class MicronautDockerPlugin implements Plugin<Project> {
                     task.targetImageId(dockerBuildTask.flatMap(DockerBuildImage::getImageId));
                 });
                 TaskProvider<DockerCopyFileFromContainer> buildLambdaZip = taskContainer.register(adaptTaskName("buildNativeLambda", imageName), DockerCopyFileFromContainer.class);
-                File lambdaZip = new File(project.getBuildDir(), "libs/" + project.getName() + "-" + project.getVersion() + "-lambda.zip");
+                Provider<String> lambdaZip = project.getLayout()
+                        .getBuildDirectory()
+                        .dir("libs")
+                        .map(dir -> dir.file(project.getName() + "-" + project.getVersion() + "-" + simpleNameOf("lambda", imageName) + ".zip").getAsFile().getAbsolutePath());
                 TaskProvider<DockerRemoveContainer> removeContainer = taskContainer.register(adaptTaskName("destroyLambdaContainer", imageName), DockerRemoveContainer.class);
                 removeContainer.configure(task -> {
                     task.mustRunAfter(buildLambdaZip);
@@ -290,8 +302,13 @@ public class MicronautDockerPlugin implements Plugin<Project> {
                             createLambdaContainer.flatMap(DockerCreateContainer::getContainerId)
                     );
                     task.getRemotePath().set("/function/function.zip");
-                    task.getHostPath().set(lambdaZip.getAbsolutePath());
-                    task.doLast(task1 -> System.out.println("AWS Lambda ZIP built: " + lambdaZip));
+                    task.getHostPath().set(lambdaZip);
+                    task.doLast(new Action<Task>() {
+                        @Override
+                        public void execute(Task task1) {
+                            System.out.println("AWS Lambda ZIP built: " + lambdaZip.get());
+                        }
+                    });
                     task.finalizedBy(removeContainer);
                 });
             }
