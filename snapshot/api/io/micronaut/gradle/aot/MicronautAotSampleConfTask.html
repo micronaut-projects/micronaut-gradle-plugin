@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":10,"i1":10,"i2":6,"i3":6,"i4":6,"i5":6,"i6":10};
+var methods = {"i0":10,"i1":10,"i2":6,"i3":6,"i4":6,"i5":6,"i6":6,"i7":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],4:["t3","Abstract Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -204,22 +204,26 @@ extends org.gradle.api.DefaultTask</pre>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../io/micronaut/gradle/aot/MicronautAotSampleConfTask.html#execute--">execute</a></span>()</code>&nbsp;</td>
 </tr>
 <tr id="i2" class="altColor">
+<td class="colFirst"><code>protected abstract org.gradle.api.provider.Property&lt;java.lang.String&gt;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../io/micronaut/gradle/aot/MicronautAotSampleConfTask.html#getAotVersion--">getAotVersion</a></span>()</code>&nbsp;</td>
+</tr>
+<tr id="i3" class="rowColor">
 <td class="colFirst"><code>protected abstract org.gradle.api.provider.Property&lt;java.lang.Boolean&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../io/micronaut/gradle/aot/MicronautAotSampleConfTask.html#getDebug--">getDebug</a></span>()</code>&nbsp;</td>
 </tr>
-<tr id="i3" class="rowColor">
+<tr id="i4" class="altColor">
 <td class="colFirst"><code>protected abstract org.gradle.process.ExecOperations</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../io/micronaut/gradle/aot/MicronautAotSampleConfTask.html#getExecOperations--">getExecOperations</a></span>()</code>&nbsp;</td>
 </tr>
-<tr id="i4" class="altColor">
+<tr id="i5" class="rowColor">
 <td class="colFirst"><code>protected abstract org.gradle.api.internal.file.FileOperations</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../io/micronaut/gradle/aot/MicronautAotSampleConfTask.html#getFileOperations--">getFileOperations</a></span>()</code>&nbsp;</td>
 </tr>
-<tr id="i5" class="rowColor">
+<tr id="i6" class="altColor">
 <td class="colFirst"><code>abstract org.gradle.api.file.ConfigurableFileCollection</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../io/micronaut/gradle/aot/MicronautAotSampleConfTask.html#getOptimizerClasspath--">getOptimizerClasspath</a></span>()</code>&nbsp;</td>
 </tr>
-<tr id="i6" class="altColor">
+<tr id="i7" class="rowColor">
 <td class="colFirst"><code>protected void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../io/micronaut/gradle/aot/MicronautAotSampleConfTask.html#onSuccess-java.io.File-">onSuccess</a></span>(java.io.File&nbsp;outputDir)</code>&nbsp;</td>
 </tr>
@@ -346,6 +350,16 @@ protected abstract&nbsp;org.gradle.process.ExecOperations&nbsp;getExecOperations
 <h4>getDebug</h4>
 <pre>@Input
 protected abstract&nbsp;org.gradle.api.provider.Property&lt;java.lang.Boolean&gt;&nbsp;getDebug()</pre>
+</li>
+</ul>
+<a name="getAotVersion--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getAotVersion</h4>
+<pre>@Input
+protected abstract&nbsp;org.gradle.api.provider.Property&lt;java.lang.String&gt;&nbsp;getAotVersion()</pre>
 </li>
 </ul>
 <a name="execute--">
