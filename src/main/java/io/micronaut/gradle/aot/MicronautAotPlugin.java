@@ -79,7 +79,7 @@ import static org.gradle.api.plugins.JavaPlugin.RUNTIME_CLASSPATH_CONFIGURATION_
 @SuppressWarnings("Convert2Lambda")
 public abstract class MicronautAotPlugin implements Plugin<Project> {
 
-    public static final String DEFAULT_AOT_VERSION = "1.0.0-M5";
+    public static final String DEFAULT_AOT_VERSION = "1.0.0-M6";
     public static final String OPTIMIZED_BINARY_NAME = "optimized";
     public static final String OPTIMIZED_DIST_NAME = "optimized";
     public static final String MAIN_BINARY_NAME = "main";
@@ -146,10 +146,10 @@ public abstract class MicronautAotPlugin implements Plugin<Project> {
         registerOptimizedJar(project, tasks, prepareNative, OptimizerIO.TargetRuntime.NATIVE);
         project.getPlugins().withType(NativeImagePlugin.class, p -> registerOptimizedBinary(project, prepareNative));
 
-        registerCreateSamplesTasks(project, optimizerRuntimeClasspath, applicationClasspath, tasks);
+        registerCreateSamplesTasks(project, optimizerRuntimeClasspath, applicationClasspath, tasks, aotExtension);
     }
 
-    private void registerCreateSamplesTasks(Project project, Configuration optimizerRuntimeClasspath, Configuration applicationClasspath, TaskContainer tasks) {
+    private void registerCreateSamplesTasks(Project project, Configuration optimizerRuntimeClasspath, Configuration applicationClasspath, TaskContainer tasks, AOTExtension aotExtension) {
         TaskProvider<Task> createAotSampleConfigurationFiles = tasks.register("createAotSampleConfigurationFiles", task -> {
             task.setDescription("Generates Micronaut AOT sample configuration files");
         });
@@ -161,6 +161,7 @@ public abstract class MicronautAotPlugin implements Plugin<Project> {
                 task.getOptimizerClasspath().from(optimizerRuntimeClasspath);
                 task.getClasspath().from(applicationClasspath);
                 task.getOutputDirectory().convention(project.getLayout().getBuildDirectory().dir("generated/aot/samples/" + targetRuntime.getSimpleName()));
+                task.getAotVersion().set(aotExtension.getVersion());
             });
             createAotSampleConfigurationFiles.configure(c -> c.dependsOn(createSample));
         }
@@ -367,6 +368,7 @@ public abstract class MicronautAotPlugin implements Plugin<Project> {
                 return mainClass.substring(0, mainClass.lastIndexOf("."));
             }));
             task.getClasspath().from(applicationClasspath);
+            task.getAotVersion().set(aotExtension.getVersion());
         });
     }
 

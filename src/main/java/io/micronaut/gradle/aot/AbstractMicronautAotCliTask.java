@@ -47,6 +47,9 @@ abstract class AbstractMicronautAotCliTask extends DefaultTask implements Optimi
     @Input
     protected abstract Property<Boolean> getDebug();
 
+    @Input
+    protected abstract Property<String> getAotVersion();
+
     protected AbstractMicronautAotCliTask() {
         getDebug().convention(false);
     }
@@ -68,16 +71,16 @@ abstract class AbstractMicronautAotCliTask extends DefaultTask implements Optimi
             spec.setClasspath(classpath);
             spec.getMainClass().set("io.micronaut.aot.cli.Main");
             List<String> args = new ArrayList<>(Arrays.asList(
-                    "--optimizer-classpath", getOptimizerClasspath().getAsPath(),
                     "--classpath", getClasspath().getAsPath(),
                     "--runtime", getTargetRuntime().get().name().toUpperCase(),
                     "--package", getTargetPackage().get()
             ));
+            maybeAddOptimizerClasspath(args, getClasspath());
             configureExtraArguments(args);
             spec.args(args);
             getLogger().info("Running AOT optimizer with parameters: {}", args);
             if (getDebug().get()) {
-                System.out.println("Running with debug enabled");
+                getLogger().info("Running with debug enabled");
                 spec.jvmArgs("-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5005");
             }
         });
@@ -85,6 +88,17 @@ abstract class AbstractMicronautAotCliTask extends DefaultTask implements Optimi
             throw new GradleException("AOT analysis failed");
         }
         onSuccess(outputDir);
+    }
+
+    private void maybeAddOptimizerClasspath(List<String> args, ConfigurableFileCollection classpath) {
+        String version = getAotVersion().get();
+        if (version.startsWith("1.0.0-M")) {
+            int milestone = Integer.parseInt(version.substring(version.indexOf("-M") + 2));
+            if (milestone < 6) {
+                args.add("--optimizer-classpath");
+                args.add(classpath.getAsPath());
+            }
+        }
     }
 
 }
