@@ -18,10 +18,8 @@ package io.micronaut.gradle.aot;
 import com.github.jengelman.gradle.plugins.shadow.ShadowJavaPlugin;
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar;
 import io.micronaut.gradle.MicronautBasePlugin;
+import io.micronaut.gradle.MicronautComponentPlugin;
 import io.micronaut.gradle.MicronautExtension;
-import io.micronaut.gradle.MicronautMinimalApplicationPlugin;
-import io.micronaut.gradle.docker.MicronautDockerPlugin;
-import io.micronaut.gradle.MicronautMinimalLibraryPlugin;
 import io.micronaut.gradle.docker.MicronautDockerPlugin;
 import io.micronaut.gradle.docker.model.LayerKind;
 import io.micronaut.gradle.docker.model.MicronautDockerImage;
@@ -124,8 +122,7 @@ public abstract class MicronautAotPlugin implements Plugin<Project> {
         AOTExtension aotExtension = micronautExtension.getExtensions().create("aot", AOTExtension.class);
         configureAotDefaults(project, aotExtension);
         Configurations configurations = prepareConfigurations(project, aotExtension);
-        project.getPlugins().withType(MicronautMinimalApplicationPlugin.class, p -> registerPrepareOptimizationsTasks(project, configurations, aotExtension));
-        project.getPlugins().withType(MicronautMinimalLibraryPlugin.class, p -> registerPrepareOptimizationsTasks(project, configurations, aotExtension));
+        project.getPlugins().withType(MicronautComponentPlugin.class, p -> registerPrepareOptimizationsTasks(project, configurations, aotExtension));
     }
 
     private void configureAotDefaults(Project project, AOTExtension aotExtension) {
