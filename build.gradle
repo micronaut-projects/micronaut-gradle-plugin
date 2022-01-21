@@ -102,14 +102,23 @@ pluginBundle {
         libraryPlugin {
             displayName = 'Micronaut Library Plugin'
         }
+        minimalLibraryPlugin {
+            displayName = 'Micronaut Minimal Library Plugin'
+        }
         applicationPlugin {
             displayName = 'Micronaut Application Plugin'
+        }
+        minimalApplicationPlugin {
+            displayName = 'Micronaut Minimal Application Plugin'
         }
         graalPlugin {
             displayName = 'Micronaut GraalVM Plugin'
         }
         aotPlugin {
             displayName = 'Micronaut AOT Plugin'
+        }
+        dockerPlugin {
+            displayName = 'Micronaut Docker Plugin'
         }
     }
 }
