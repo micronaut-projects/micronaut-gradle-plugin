@@ -1,66 +1,15 @@
-// First, apply the publishing plugin
 plugins {
-    id "idea"
-    id "com.gradle.plugin-publish" version "0.18.0"
-    id "java-gradle-plugin"
-    id "maven-publish"
-    id "groovy"
-    id "com.adarshr.test-logger"
-    id "io.micronaut.internal.build.documented"
+    id "io.micronaut.internal.build.gradle-plugin"
 }
 
-// If your plugin has any external java dependencies, Gradle will attempt to
-// download them from JCenter for anyone using the plugins DSL
-// so you should probably use JCenter for dependency resolution in your own
-// project.
-repositories {
-    mavenCentral()
-    gradlePluginPortal()
-}
-
-// Unless overridden in the pluginBundle config DSL, the project version will
-// be used as your plugin version when publishing
-version = projectVersion
-group = "io.micronaut.gradle"
-
-// Use java-gradle-plugin to generate plugin descriptors and specify plugin ids
-gradlePlugin {
-    plugins {
-        minimalLibraryPlugin {
-            id = 'io.micronaut.minimal.library'
-            implementationClass = 'io.micronaut.gradle.MicronautMinimalLibraryPlugin'
-        }
-        libraryPlugin {
-            id = 'io.micronaut.library'
-            implementationClass = 'io.micronaut.gradle.MicronautLibraryPlugin'
-        }
-        minimalApplicationPlugin {
-            id = 'io.micronaut.minimal.application'
-            implementationClass = 'io.micronaut.gradle.MicronautMinimalApplicationPlugin'
-        }
-        applicationPlugin {
-            id = 'io.micronaut.application'
-            implementationClass = 'io.micronaut.gradle.MicronautApplicationPlugin'
-        }
-        graalPlugin {
-            id = 'io.micronaut.graalvm'
-            implementationClass = 'io.micronaut.gradle.graalvm.MicronautGraalPlugin'
-        }
-        dockerPlugin {
-            id = 'io.micronaut.docker'
-            implementationClass = 'io.micronaut.gradle.docker.MicronautDockerPlugin'
-        }
-        aotPlugin {
-            id = 'io.micronaut.aot'
-            implementationClass = 'io.micronaut.gradle.aot.MicronautAotPlugin'
-        }
-    }
-}
-configurations {
-    optionalPluginDependencies
-}
-tasks.withType(PluginUnderTestMetadata) {
-    pluginClasspath.from(configurations.optionalPluginDependencies)
+micronautPlugins {
+    register('minimal.library', 'io.micronaut.gradle.MicronautMinimalLibraryPlugin', 'Micronaut Minimal Library Plugin')
+    register('library', 'io.micronaut.gradle.MicronautLibraryPlugin', 'Micronaut Library Plugin')
+    register('minimal.application', 'io.micronaut.gradle.MicronautMinimalApplicationPlugin', 'Micronaut Minimal Application Plugin')
+    register('application', 'io.micronaut.gradle.MicronautApplicationPlugin', 'Micronaut Application Plugin')
+    register('graalvm', 'io.micronaut.gradle.graalvm.MicronautGraalPlugin', 'Micronaut GraalVM Plugin')
+    register('docker', 'io.micronaut.gradle.docker.MicronautDockerPlugin', 'Micronaut Docker Plugin')
+    register('aot', 'io.micronaut.gradle.aot.MicronautAotPlugin', 'Micronaut AOT Plugin')
 }
 
 dependencies {
@@ -85,60 +34,6 @@ dependencies {
     testImplementation libs.groovy.core
     testImplementation libs.spock.core
     testImplementation libs.spock.junit4
-}
-
-tasks.withType(Test).configureEach {
-    useJUnitPlatform()
-}
-// The configuration example below shows the minimum required properties
-// configured to publish your plugin to the plugin portal
-pluginBundle {
-    website = 'https://micronaut.io/'
-    vcsUrl = 'https://github.com/micronaut-projects/micronaut-gradle-plugins'
-    description = 'Gradle Plugins for Micronaut'
-    tags = ['micronaut']
-
-    plugins {
-        libraryPlugin {
-            displayName = 'Micronaut Library Plugin'
-        }
-        minimalLibraryPlugin {
-            displayName = 'Micronaut Minimal Library Plugin'
-        }
-        applicationPlugin {
-            displayName = 'Micronaut Application Plugin'
-        }
-        minimalApplicationPlugin {
-            displayName = 'Micronaut Minimal Application Plugin'
-        }
-        graalPlugin {
-            displayName = 'Micronaut GraalVM Plugin'
-        }
-        aotPlugin {
-            displayName = 'Micronaut AOT Plugin'
-        }
-        dockerPlugin {
-            displayName = 'Micronaut Docker Plugin'
-        }
-    }
-}
-
-java {
-    toolchain {
-      languageVersion.set(JavaLanguageVersion.of(8))
-    }
-}
-
-tasks.withType(Test).configureEach {
-    javaLauncher.set(javaToolchains.launcherFor {
-        languageVersion.set(JavaLanguageVersion.of(11))
-    })
-    inputs.property("GRAALVM_HOME", providers.environmentVariable('GRAALVM_HOME').forUseAtConfigurationTime().getOrElse(""))
-}
-
-idea.module {
-    downloadJavadoc = true
-    downloadSources = true
 }
 
 ['dependencyUpdates', 'useLatestVersions'].each { name ->

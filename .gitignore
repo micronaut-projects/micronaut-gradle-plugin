@@ -4,6 +4,7 @@ target/
 .gradle/
 .idea/
 build/
+!buildSrc/src/**
 classes/
 out/
 *.db

@@ -1,0 +1,55 @@
+import io.micronaut.internal.build.plugin.MicronautPluginExtension
+
+plugins {
+    id "com.gradle.plugin-publish"
+    id "java-gradle-plugin"
+    id "maven-publish"
+    id "groovy"
+    id "com.adarshr.test-logger"
+    id "io.micronaut.internal.build.documented"
+}
+
+repositories {
+    mavenCentral()
+    gradlePluginPortal()
+}
+
+project.extensions.create("micronautPlugins", MicronautPluginExtension, pluginBundle, gradlePlugin)
+
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(8))
+    }
+}
+
+configurations {
+    optionalPluginDependencies
+}
+
+tasks.withType(PluginUnderTestMetadata).configureEach {
+    pluginClasspath.from(configurations.optionalPluginDependencies)
+}
+
+tasks.withType(Test).configureEach {
+    useJUnitPlatform()
+    javaLauncher.set(javaToolchains.launcherFor {
+        languageVersion.set(JavaLanguageVersion.of(11))
+    })
+    inputs.property("GRAALVM_HOME", providers.environmentVariable('GRAALVM_HOME').forUseAtConfigurationTime().getOrElse(""))
+}
+
+pluginBundle {
+    website = 'https://micronaut.io/'
+    vcsUrl = 'https://github.com/micronaut-projects/micronaut-gradle-plugins'
+    description = 'Gradle Plugins for Micronaut'
+    tags = ['micronaut']
+}
+
+publishing {
+    repositories {
+        maven {
+            name = "build"
+            url = "${rootProject.layout.buildDirectory.dir("repo").get().asFile.toURI()}"
+        }
+    }
+}
