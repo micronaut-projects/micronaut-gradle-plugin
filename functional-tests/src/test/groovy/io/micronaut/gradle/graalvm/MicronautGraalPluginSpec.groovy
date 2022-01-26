@@ -7,6 +7,7 @@ import org.gradle.testkit.runner.TaskOutcome
 import spock.lang.Requires
 
 @Requires({ AbstractGradleBuildSpec.graalVmAvailable && !os.windows })
+@Requires({ jvm.isJava11Compatible() })
 class MicronautGraalPluginSpec extends AbstractFunctionalTest {
 
     void 'generate GraalVM resource-config.json with OpenAPI and resources included'() {

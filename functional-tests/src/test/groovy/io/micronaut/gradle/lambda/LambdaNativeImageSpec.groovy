@@ -3,10 +3,13 @@ package io.micronaut.gradle.lambda
 import io.micronaut.gradle.AbstractGradleBuildSpec
 import io.micronaut.gradle.fixtures.AbstractFunctionalTest
 import org.gradle.testkit.runner.TaskOutcome
+import spock.lang.IgnoreIf
 import spock.lang.Issue
 import spock.lang.Requires
 
 @Requires({ AbstractGradleBuildSpec.graalVmAvailable })
+@IgnoreIf({ os.windows })
+@Requires({ jvm.isJava11Compatible() })
 class LambdaNativeImageSpec extends AbstractFunctionalTest {
 
     void 'mainclass is set correctly for an application deployed as GraalVM and Lambda'() {

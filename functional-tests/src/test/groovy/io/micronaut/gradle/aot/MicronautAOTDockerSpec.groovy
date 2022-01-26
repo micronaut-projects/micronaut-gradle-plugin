@@ -58,6 +58,7 @@ ENTRYPOINT ["java", "-jar", "/home/app/application.jar"]
 
     }
 
+    @Requires({ jvm.isJava11() })
     def "generates a native optimized docker image"() {
         withSample("aot/basic-app")
 
