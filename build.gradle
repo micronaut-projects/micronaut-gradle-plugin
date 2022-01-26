@@ -15,5 +15,21 @@
  */
 plugins {
     id "io.micronaut.build.internal.dependency-updates"
-    //id "io.micronaut.internal.build.documented"
+    id "io.micronaut.internal.build.documented"
+}
+
+repositories {
+    mavenCentral()
+    gradlePluginPortal()
+}
+
+dependencies {
+    javadoc gradleApi()
+    javadoc project(":micronaut-minimal-plugin")
+    javadoc project(":micronaut-docker-plugin")
+    javadoc project(":micronaut-graalvm-plugin")
+    javadoc project(":micronaut-aot-plugin")
+    javadoc project(":micronaut-gradle-plugin")
+    javadoc libs.bundles.optionalPlugins
+    javadoc libs.shadowPlugin
 }
