@@ -1,0 +1,41 @@
+import io.micronaut.internal.build.test.FunctionalTestingExtension
+plugins {
+    id 'groovy'
+    id "io.micronaut.internal.build.testing"
+}
+
+configurations {
+    pluginsUnderTest {
+        canBeResolved = true
+        canBeConsumed = false
+    }
+}
+
+extensions.create("functionalTesting", FunctionalTestingExtension)
+
+tasks.withType(Test).configureEach { Test test ->
+    def repoProvider = objects.newInstance(RepositoryProvider)
+    repoProvider.repositoryDir.from(configurations.pluginsUnderTest)
+    repoProvider.version.set(version)
+    test.jvmArgumentProviders.add(repoProvider)
+}
+
+abstract class RepositoryProvider implements CommandLineArgumentProvider {
+    @Internal
+    abstract ConfigurableFileCollection getRepositoryDir()
+
+    @Classpath
+    final Set<File> getClasspath() {
+        getRepositoryDir().getAsFileTree().matching {
+            include("**/*.jar")
+        }.getFiles()
+    }
+
+    @Input
+    abstract Property<String> getVersion()
+
+    @Override
+    Iterable<String> asArguments() {
+        ["-Dinternal.plugin.repo=${repositoryDir.singleFile.absolutePath}", "-Dproject.version=${version.get()}"]
+    }
+}

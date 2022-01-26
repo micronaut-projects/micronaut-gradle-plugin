@@ -6,7 +6,7 @@ plugins {
     id "maven-publish"
     id "groovy"
     id "com.adarshr.test-logger"
-    id "io.micronaut.internal.build.documented"
+    id "io.micronaut.internal.build.testing"
 }
 
 repositories {
@@ -23,19 +23,15 @@ java {
 }
 
 configurations {
-    optionalPluginDependencies
-}
-
-tasks.withType(PluginUnderTestMetadata).configureEach {
-    pluginClasspath.from(configurations.optionalPluginDependencies)
-}
-
-tasks.withType(Test).configureEach {
-    useJUnitPlatform()
-    javaLauncher.set(javaToolchains.launcherFor {
-        languageVersion.set(JavaLanguageVersion.of(11))
-    })
-    inputs.property("GRAALVM_HOME", providers.environmentVariable('GRAALVM_HOME').forUseAtConfigurationTime().getOrElse(""))
+    security {
+        canBeResolved = false
+        canBeConsumed = false
+    }
+    implementation.extendsFrom(security)
+    repository {
+        canBeConsumed = true
+        canBeResolved = false
+    }
 }
 
 pluginBundle {
@@ -50,6 +46,37 @@ publishing {
         maven {
             name = "build"
             url = "${rootProject.layout.buildDirectory.dir("repo").get().asFile.toURI()}"
+        }
+    }
+}
+
+configurations.repository.outgoing {
+    artifact(rootProject.layout.buildDirectory.dir("repo")) {
+        builtBy(tasks.named("publishAllPublicationsToBuildRepository"))
+    }
+}
+
+dependencies {
+    constraints {
+        security(libs.log4j2.core) {
+            because("Log4j2 <2.15 is vulnerable to RCE (CVE-2021-44228)")
+        }
+    }
+}
+
+// This is a quick and dirty workaround for
+// publication tasks which are never up-to-date.
+// The problem is that we rely on a local repository
+// for functional testing, and that every invocation
+// of a test would trigger a publication and therefore
+// never be up-to-date.
+tasks.configureEach {
+    if (it.name.startsWith("generateMetadataFile")
+            || it.name.startsWith("generatePomFile")
+            || it.name.startsWith("publish")) {
+        dependsOn(tasks.named('jar'))
+        onlyIf {
+            !rootProject.layout.buildDirectory.dir("repo").get().asFile.exists() || tasks.getByName("jar").didWork
         }
     }
 }

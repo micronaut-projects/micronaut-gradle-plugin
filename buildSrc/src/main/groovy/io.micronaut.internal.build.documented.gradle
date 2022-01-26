@@ -4,6 +4,10 @@ plugins {
     id "org.asciidoctor.jvm.convert"
 }
 
+repositories {
+    mavenCentral()
+}
+
 asciidoctorj {
     attributes 'source-highlighter': 'highlight.js',
             'highlightjsdir': 'highlight',

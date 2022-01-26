@@ -1,0 +1,24 @@
+plugins {
+    id 'io.micronaut.internal.build.functional-testing'
+}
+
+description = """
+This project contains functional tests for combinations of plugins
+"""
+
+repositories {
+    mavenCentral()
+}
+
+functionalTesting {
+    pluginUnderTest('minimal')
+    pluginUnderTest('graalvm')
+    pluginUnderTest('docker')
+    pluginUnderTest('aot')
+    pluginUnderTest('gradle')
+}
+
+dependencies {
+    testImplementation gradleTestKit()
+    testImplementation testFixtures(project(":micronaut-minimal-plugin"))
+}

@@ -1,0 +1,28 @@
+plugins {
+    id "io.micronaut.internal.build.gradle-plugin"
+}
+
+description = "The main Micronaut Gradle plugin"
+
+micronautPlugins {
+    register('library', 'io.micronaut.gradle.MicronautLibraryPlugin', 'Micronaut Library Plugin')
+    register('application', 'io.micronaut.gradle.MicronautApplicationPlugin', 'Micronaut Application Plugin')
+}
+
+dependencies {
+    constraints {
+        implementation(libs.log4j2.core) {
+            because("Log4j2 <2.15 is vulnerable to RCE (CVE-2021-44228)")
+        }
+    }
+    implementation project(":micronaut-minimal-plugin")
+    implementation project(":micronaut-docker-plugin")
+    implementation project(":micronaut-graalvm-plugin")
+    implementation project(":micronaut-aot-plugin")
+
+    implementation libs.diffplugPlugin
+
+    compileOnly libs.bundles.optionalPlugins
+
+    testImplementation testFixtures(project(":micronaut-minimal-plugin"))
+}

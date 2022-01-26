@@ -1,0 +1,17 @@
+plugins {
+    id 'java'
+}
+
+tasks.withType(Test).configureEach {
+    useJUnitPlatform()
+    javaLauncher.set(javaToolchains.launcherFor {
+        languageVersion.set(JavaLanguageVersion.of(11))
+    })
+    inputs.property("GRAALVM_HOME", providers.environmentVariable('GRAALVM_HOME').forUseAtConfigurationTime().getOrElse(""))
+}
+
+dependencies {
+    testImplementation libs.groovy.core
+    testImplementation libs.spock.core
+    testImplementation libs.spock.junit4
+}
