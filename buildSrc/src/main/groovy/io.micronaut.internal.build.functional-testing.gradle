@@ -25,10 +25,10 @@ abstract class RepositoryProvider implements CommandLineArgumentProvider {
     abstract ConfigurableFileCollection getRepositoryDir()
 
     @Classpath
-    final Set<File> getClasspath() {
+    final FileTree getClasspath() {
         getRepositoryDir().getAsFileTree().matching {
             include("**/*.jar")
-        }.getFiles()
+        }
     }
 
     @Input
