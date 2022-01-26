@@ -36,6 +36,6 @@ abstract class RepositoryProvider implements CommandLineArgumentProvider {
 
     @Override
     Iterable<String> asArguments() {
-        ["-Dinternal.plugin.repo=${repositoryDir.singleFile.absolutePath}", "-Dproject.version=${version.get()}"]
+        ["-Dinternal.plugin.repo=${repositoryDir.singleFile.toURI().toASCIIString()}", "-Dproject.version=${version.get()}"]
     }
 }
