@@ -5,6 +5,7 @@ import org.gradle.testkit.runner.TaskOutcome
 import spock.lang.Requires
 
 @Requires({ AbstractGradleBuildSpec.graalVmAvailable && !os.windows })
+@Requires({ jvm.isJava11() })
 class NativeImageTestTaskSpec extends AbstractGradleBuildSpec {
 
     def "test execute tests against native image"() {

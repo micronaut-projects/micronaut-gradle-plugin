@@ -7,6 +7,7 @@ import spock.lang.Requires
 
 @Requires({ AbstractGradleBuildSpec.graalVmAvailable })
 @IgnoreIf({ os.isWindows() })
+@Requires({ jvm.isJava11() })
 class NativeImageMultiProjectSpec extends AbstractGradleBuildSpec {
 
     def setup() {

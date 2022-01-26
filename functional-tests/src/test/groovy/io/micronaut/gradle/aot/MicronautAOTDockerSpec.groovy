@@ -5,7 +5,7 @@ import spock.lang.IgnoreIf
 import spock.lang.Requires
 
 @IgnoreIf({ os.windows })
-@Requires({ jvm.isJava11Compatible() })
+@Requires({ jvm.isJava11() })
 class MicronautAOTDockerSpec extends AbstractAOTPluginSpec {
 
     def "generates an optimized docker file"() {
@@ -58,7 +58,6 @@ ENTRYPOINT ["java", "-jar", "/home/app/application.jar"]
 
     }
 
-    @Requires({ jvm.isJava11() })
     def "generates a native optimized docker image"() {
         withSample("aot/basic-app")
 

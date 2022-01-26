@@ -13,7 +13,6 @@ abstract class AbstractAOTPluginSpec extends AbstractFunctionalTest {
     protected void withSample(String name) {
         super.withSample(name)
         patchSettings()
-        println(settingsFile.text)
     }
 
     def withPlugins(Plugins kind) {
