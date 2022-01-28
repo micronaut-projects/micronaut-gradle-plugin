@@ -171,7 +171,8 @@ public abstract class MicronautAotPlugin implements Plugin<Project> {
                 task.getOptimizerClasspath().from(optimizerRuntimeClasspath);
                 task.getClasspath().from(applicationClasspath);
                 task.getOutputDirectory().convention(project.getLayout().getBuildDirectory().dir("generated/aot/samples/" + targetRuntime.getSimpleName()));
-                task.getAotVersion().set(aotExtension.getVersion());
+                task.getAotVersion().convention(aotExtension.getVersion());
+                task.getEnvironmentVariables().convention(aotExtension.getEnvironmentVariables());
             });
             createAotSampleConfigurationFiles.configure(c -> c.dependsOn(createSample));
         }
@@ -377,7 +378,8 @@ public abstract class MicronautAotPlugin implements Plugin<Project> {
             task.getTargetRuntime().value(runtime).finalizeValue();
             task.getTargetPackage().convention(aotExtension.getTargetPackage());
             task.getClasspath().from(applicationClasspath);
-            task.getAotVersion().set(aotExtension.getVersion());
+            task.getAotVersion().convention(aotExtension.getVersion());
+            task.getEnvironmentVariables().convention(aotExtension.getEnvironmentVariables());
         });
     }
 

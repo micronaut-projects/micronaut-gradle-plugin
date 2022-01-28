@@ -128,6 +128,7 @@ public abstract class MicronautAOTConfigWriterTask extends DefaultTask {
         booleanOptimization(props, EnvironmentPropertiesSourceGenerator.ID, optimizations.getPrecomputeOperations());
         booleanOptimization(props, DeduceEnvironmentSourceGenerator.ID, optimizations.getDeduceEnvironment());
         stringListParameter(props, Environments.POSSIBLE_ENVIRONMENTS_NAMES, optimizations.getPossibleEnvironments());
+        stringListParameter(props, Environments.TARGET_ENVIRONMENTS_NAMES, optimizations.getTargetEnvironments());
         File outputFile = getOutputFile().getAsFile().get();
         if (outputFile.getParentFile().isDirectory() || outputFile.getParentFile().mkdirs()) {
             try (OutputStream out = new FileOutputStream(outputFile)) {
