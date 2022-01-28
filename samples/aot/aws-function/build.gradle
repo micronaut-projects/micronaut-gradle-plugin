@@ -12,7 +12,7 @@ repositories {
 }
 
 micronaut {
-    version = "3.3.0-M1"
+    version = "3.3.0"
     runtime("lambda")
     testRuntime("junit5")
     processing {
