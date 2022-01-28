@@ -20,9 +20,11 @@ import org.gradle.api.GradleException;
 import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.internal.file.FileOperations;
+import org.gradle.api.provider.MapProperty;
 import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.Classpath;
 import org.gradle.api.tasks.Input;
+import org.gradle.api.tasks.Optional;
 import org.gradle.api.tasks.TaskAction;
 import org.gradle.process.ExecOperations;
 import org.gradle.process.ExecResult;
@@ -49,6 +51,10 @@ abstract class AbstractMicronautAotCliTask extends DefaultTask implements Optimi
 
     @Input
     protected abstract Property<String> getAotVersion();
+
+    @Input
+    @Optional
+    protected abstract MapProperty<String, String> getEnvironmentVariables();
 
     protected AbstractMicronautAotCliTask() {
         getDebug().convention(false);
@@ -82,6 +88,9 @@ abstract class AbstractMicronautAotCliTask extends DefaultTask implements Optimi
             if (getDebug().get()) {
                 getLogger().info("Running with debug enabled");
                 spec.jvmArgs("-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5005");
+            }
+            if (getEnvironmentVariables().isPresent()) {
+                spec.environment(getEnvironmentVariables().get());
             }
         });
         if (javaexec.getExitValue() != 0) {
