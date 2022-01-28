@@ -95,6 +95,18 @@ public interface AOTOptimizations {
     ListProperty<String> getPossibleEnvironments();
 
     /**
+     * Sets the list of target environment names. If set, then the list of environments
+     * is automatically configured before the AOT analysis starts. Note that it differs
+     * from {@link #getPossibleEnvironments()} that this call will override whatever
+     * the application context is configured to use.
+     *
+     * @return the list of target environments
+     */
+    @Input
+    @Optional
+    ListProperty<String> getTargetEnvironments();
+
+    /**
      * An optional map of properties which will be merged with the configuration
      * to generate the final configuration file of Micronaut AOT.
      * @return the configuration properties
@@ -110,4 +122,17 @@ public interface AOTOptimizations {
      */
     @Input
     Property<String> getTargetPackage();
+
+    /**
+     * Configures environment variables which will be injected
+     * during AOT analysis. This can be useful whenever some
+     * beans require environment variables to be present, but
+     * that those are not available when the AOT analysis is
+     * performed.
+     *
+     * @return the map of environment variables
+     */
+    @Input
+    @Optional
+    MapProperty<String, String> getEnvironmentVariables();
 }
