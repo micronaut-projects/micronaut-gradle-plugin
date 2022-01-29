@@ -464,13 +464,8 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
         }
         List<String> commandLine = new ArrayList<>();
         commandLine.add("native-image");
-        commandLine.addAll(new NativeImageCommandLineProvider(
-                getProviders().provider(() -> options),
-                getProviders().provider(() -> false),
-                executable,
-                getObjects().property(String.class),
-                getObjects().fileProperty()
-        ).asArguments());
+        List<String> args = buildNativeImageCommandLineArgs(executable, options);
+        commandLine.addAll(args);
 
         String baseImage = imageResolver.get();
 
@@ -484,6 +479,31 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
             commandLine.add("-H:+StaticExecutableWithDynamicLibC");
         }
         return commandLine;
+    }
+
+    private List<String> buildNativeImageCommandLineArgs(Provider<String> executable, NativeImageOptions options) {
+        List<String> args = new NativeImageCommandLineProvider(
+                getProviders().provider(() -> options),
+                getProviders().provider(() -> false),
+                executable,
+                getObjects().property(String.class),
+                getObjects().fileProperty()
+        ).asArguments();
+        if (System.getProperty("os.name").toLowerCase().contains("windows")) {
+            // This is a dirty workaround for https://github.com/micronaut-projects/micronaut-gradle-plugin/issues/358
+            String current = getLayout().getProjectDirectory().dir(".").getAsFile().toPath().toAbsolutePath().toString();
+            args = args.stream()
+                    .map(arg -> {
+                        if (arg.contains(current)) {
+                            return arg.replace(current, "")
+                                    .replace(java.io.File.separatorChar, '/')
+                                    .replace(";", ":");
+                        }
+                        return arg;
+                    })
+                    .collect(Collectors.toList());
+        }
+        return args;
     }
 
     /**
@@ -593,6 +613,5 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
             return baseImage;
         }
     }
-
 
 }
