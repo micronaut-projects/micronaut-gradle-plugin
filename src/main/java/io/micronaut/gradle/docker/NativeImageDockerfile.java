@@ -350,8 +350,9 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
     // Everything done in this method MUST be lazy, so use providers as much as possible
     private void setupInstructions(List<Instruction> additionalInstructions) {
         DockerBuildStrategy buildStrategy = getBuildStrategy().get();
+        BaseImageForBuildStrategyResolver imageResolver = new BaseImageForBuildStrategyResolver(buildStrategy);
         if (buildStrategy == DockerBuildStrategy.LAMBDA) {
-            from(new From("amazonlinux:latest").withStage("graalvm"));
+            from(new From(imageResolver.resolve()).withStage("graalvm"));
             environmentVariable("LANG", "en_US.UTF-8");
             runCommand("yum install -y gcc gcc-c++ libc6-dev zlib1g-dev curl bash zlib zlib-devel zlib-static zip tar gzip");
             String jdkVersion = getJdkVersion().get();
@@ -371,7 +372,6 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
         MicronautDockerfile.setupResources(this);
         Property<String> executable = getObjects().property(String.class);
         executable.set("application");
-        BaseImageForBuildStrategyResolver imageResolver = new BaseImageForBuildStrategyResolver(buildStrategy);
         runCommand("mkdir /home/app/config-dirs");
         Provider<From> baseImageProvider = getProviders().provider(() -> new From(imageResolver.get()));
         getInstructions().addAll(getNativeImageOptions().map(options ->
