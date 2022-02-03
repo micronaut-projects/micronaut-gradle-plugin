@@ -351,6 +351,7 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
     private void setupInstructions(List<Instruction> additionalInstructions) {
         DockerBuildStrategy buildStrategy = getBuildStrategy().get();
         BaseImageForBuildStrategyResolver imageResolver = new BaseImageForBuildStrategyResolver(buildStrategy);
+        Provider<From> baseImageProvider = getProviders().provider(() -> new From(imageResolver.get()));
         if (buildStrategy == DockerBuildStrategy.LAMBDA) {
             from(new From(imageResolver.resolve()).withStage("graalvm"));
             environmentVariable("LANG", "en_US.UTF-8");
@@ -373,7 +374,6 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
         Property<String> executable = getObjects().property(String.class);
         executable.set("application");
         runCommand("mkdir /home/app/config-dirs");
-        Provider<From> baseImageProvider = getProviders().provider(() -> new From(imageResolver.get()));
         getInstructions().addAll(getNativeImageOptions().map(options ->
                 options.getConfigurationFileDirectories()
                         .getFiles()
