@@ -142,4 +142,104 @@ class LambdaNativeImageSpec extends AbstractGradleBuildSpec {
         !dockerFileNative.find() { it.contains('-H:Class=io.micronaut.function.aws.runtime.MicronautLambdaRuntime')}
         dockerFileNative.find() { it.contains('-H:Class=com.example.BookLambdaRuntime')}
     }
+
+    @Issue("https://github.com/micronaut-projects/micronaut-gradle-plugin/issues/279")
+    void 'baseImage is overridden correctly for an AWS Lambda function using custom-runtime and GraalVM'() {
+        given:
+        settingsFile << "rootProject.name = 'hello-world'"
+        buildFile << """
+            plugins {
+                id "io.micronaut.application"
+            }
+
+            micronaut {
+                version "2.3.4"
+                runtime "netty"
+            }
+
+            $repositoriesBlock
+
+            dependencies {
+                implementation("io.micronaut:micronaut-validation")
+                implementation("io.micronaut:micronaut-runtime")
+                implementation("io.micronaut.aws:micronaut-function-aws")
+                implementation("io.micronaut.aws:micronaut-function-aws-custom-runtime")
+                runtimeOnly("ch.qos.logback:logback-classic")
+                testImplementation("io.micronaut:micronaut-http-client")
+            }
+
+            application {
+                mainClass.set("com.example.BookLambdaRuntime")
+            }
+
+            java {
+                sourceCompatibility = JavaVersion.toVersion('11')
+                targetCompatibility = JavaVersion.toVersion('11')
+            }
+
+            dockerfileNative {
+                baseImage('internal.proxy.com/amazonlinux:latest')
+            }
+        """
+
+        when:
+        def result = build('dockerfileNative', '-Pmicronaut.runtime=lambda')
+
+        def dockerfileNativeTask = result.task(':dockerfileNative')
+        def dockerFileNative = new File(testProjectDir.root, 'build/docker/native-main/DockerfileNative').readLines('UTF-8')
+
+        then:
+        dockerfileNativeTask.outcome == TaskOutcome.SUCCESS
+
+        and:
+        dockerFileNative.find() { it.contains('internal.proxy.com/amazonlinux:latest')}
+    }
+
+    @Issue("https://github.com/micronaut-projects/micronaut-gradle-plugin/issues/279")
+    void 'baseImage is set correctly for an AWS Lambda function using custom-runtime and GraalVM'() {
+        given:
+        settingsFile << "rootProject.name = 'hello-world'"
+        buildFile << """
+            plugins {
+                id "io.micronaut.application"
+            }
+
+            micronaut {
+                version "2.3.4"
+                runtime "netty"
+            }
+
+            $repositoriesBlock
+
+            dependencies {
+                implementation("io.micronaut:micronaut-validation")
+                implementation("io.micronaut:micronaut-runtime")
+                implementation("io.micronaut.aws:micronaut-function-aws")
+                implementation("io.micronaut.aws:micronaut-function-aws-custom-runtime")
+                runtimeOnly("ch.qos.logback:logback-classic")
+                testImplementation("io.micronaut:micronaut-http-client")
+            }
+
+            application {
+                mainClass.set("com.example.BookLambdaRuntime")
+            }
+
+            java {
+                sourceCompatibility = JavaVersion.toVersion('11')
+                targetCompatibility = JavaVersion.toVersion('11')
+            }
+        """
+
+        when:
+        def result = build('dockerfileNative', '-Pmicronaut.runtime=lambda')
+
+        def dockerfileNativeTask = result.task(':dockerfileNative')
+        def dockerFileNative = new File(testProjectDir.root, 'build/docker/native-main/DockerfileNative').readLines('UTF-8')
+
+        then:
+        dockerfileNativeTask.outcome == TaskOutcome.SUCCESS
+
+        and:
+        dockerFileNative.find() { it.contains('amazonlinux:latest')}
+    }
 }
