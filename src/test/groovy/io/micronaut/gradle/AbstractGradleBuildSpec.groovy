@@ -96,4 +96,14 @@ abstract class AbstractGradleBuildSpec extends Specification {
     static String normalizeLineEndings(String s) {
         s.replaceAll("\\r\\n?", "\n")
     }
+
+    static String argFileContentsOf(BuildResult result) {
+        result.output.lines().filter {
+            it.contains('Starting process') && it.contains('bin/native-image')
+        }.map {
+            new File(it.substring(it.lastIndexOf('@') + 1))
+        }.findFirst()
+                .map { it.text }
+                .orElse("")
+    }
 }
