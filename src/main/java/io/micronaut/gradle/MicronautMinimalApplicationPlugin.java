@@ -85,6 +85,8 @@ public class MicronautMinimalApplicationPlugin implements Plugin<Project> {
                     // graal doesn't support this
                     javaExec.jvmArgs("-XX:TieredStopAtLevel=1");
                 }
+                // https://github.com/micronaut-projects/micronaut-gradle-plugin/issues/385
+                javaExec.getOutputs().upToDateWhen(t -> false);
             }
             javaExec.classpath(developmentOnly);
 
