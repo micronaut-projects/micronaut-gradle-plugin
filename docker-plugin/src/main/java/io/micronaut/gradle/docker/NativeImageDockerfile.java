@@ -349,8 +349,10 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
     // Everything done in this method MUST be lazy, so use providers as much as possible
     private void setupInstructions(List<Instruction> additionalInstructions) {
         DockerBuildStrategy buildStrategy = getBuildStrategy().get();
+        BaseImageForBuildStrategyResolver imageResolver = new BaseImageForBuildStrategyResolver(buildStrategy);
+        Provider<From> baseImageProvider = getProviders().provider(() -> new From(imageResolver.get()));
         if (buildStrategy == DockerBuildStrategy.LAMBDA) {
-            from(new From("amazonlinux:latest").withStage("graalvm"));
+            from(new From(imageResolver.resolve()).withStage("graalvm"));
             environmentVariable("LANG", "en_US.UTF-8");
             runCommand("yum install -y gcc gcc-c++ libc6-dev zlib1g-dev curl bash zlib zlib-devel zlib-static zip tar gzip");
             String jdkVersion = getJdkVersion().get();
@@ -370,9 +372,7 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
         MicronautDockerfile.setupResources(this);
         Property<String> executable = getObjects().property(String.class);
         executable.set("application");
-        BaseImageForBuildStrategyResolver imageResolver = new BaseImageForBuildStrategyResolver(buildStrategy);
         runCommand("mkdir /home/app/config-dirs");
-        Provider<From> baseImageProvider = getProviders().provider(() -> new From(imageResolver.get()));
         getInstructions().addAll(getNativeImageOptions().map(options ->
                 options.getConfigurationFileDirectories()
                         .getFiles()
@@ -463,13 +463,8 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
         }
         List<String> commandLine = new ArrayList<>();
         commandLine.add("native-image");
-        commandLine.addAll(new NativeImageCommandLineProvider(
-                getProviders().provider(() -> options),
-                getProviders().provider(() -> false),
-                executable,
-                getObjects().property(String.class),
-                getObjects().fileProperty()
-        ).asArguments());
+        List<String> args = buildNativeImageCommandLineArgs(executable, options);
+        commandLine.addAll(args);
 
         String baseImage = imageResolver.get();
 
@@ -483,6 +478,32 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
             commandLine.add("-H:+StaticExecutableWithDynamicLibC");
         }
         return commandLine;
+    }
+
+    private List<String> buildNativeImageCommandLineArgs(Provider<String> executable, NativeImageOptions options) {
+        List<String> args = new NativeImageCommandLineProvider(
+                getProviders().provider(() -> options),
+                getProviders().provider(() -> false),
+                executable,
+                getObjects().property(String.class),
+                getObjects().fileProperty(),
+                getProviders().provider(() -> false) // in a docker container we don't use the @arg file
+        ).asArguments();
+        if (System.getProperty("os.name").toLowerCase().contains("windows")) {
+            // This is a dirty workaround for https://github.com/micronaut-projects/micronaut-gradle-plugin/issues/358
+            String current = getLayout().getProjectDirectory().dir(".").getAsFile().toPath().toAbsolutePath().toString();
+            args = args.stream()
+                    .map(arg -> {
+                        if (arg.contains(current)) {
+                            return arg.replace(current, "")
+                                    .replace(java.io.File.separatorChar, '/')
+                                    .replace(";", ":");
+                        }
+                        return arg;
+                    })
+                    .collect(Collectors.toList());
+        }
+        return args;
     }
 
     /**
@@ -591,6 +612,5 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
             return baseImage;
         }
     }
-
 
 }

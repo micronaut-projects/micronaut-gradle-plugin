@@ -305,6 +305,8 @@ public abstract class MicronautAotPlugin implements Plugin<Project> {
                 task.setGroup(runTask.getGroup());
                 task.setDescription("Executes the Micronaut application with AOT optimizations");
                 task.getMainClass().convention(javaApplication.getMainClass());
+                // https://github.com/micronaut-projects/micronaut-gradle-plugin/issues/385
+                task.getOutputs().upToDateWhen(t -> false);
                 Set<File> mainSourceSetOutput = mainSourceSet.getOutput().getFiles();
                 task.setClasspath(
                         project.files(jarTask, mainSourceSet.getRuntimeClasspath().filter(f -> !mainJar.get().getArchiveFile().get().getAsFile().equals(f)

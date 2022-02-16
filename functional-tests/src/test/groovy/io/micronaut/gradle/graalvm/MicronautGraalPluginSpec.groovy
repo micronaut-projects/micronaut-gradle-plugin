@@ -65,7 +65,7 @@ class MicronautGraalPluginSpec extends AbstractFunctionalTest {
         result.task(":nativeCompile").outcome == TaskOutcome.SUCCESS
 
         and:
-        result.output.contains("-H:ConfigurationFileDirectories=${new File(testProjectDir.root, 'build/native/generated/generateResourcesConfigFile').absolutePath}")
+        argFileContentsOf(result).contains("-H:ConfigurationFileDirectories=${new File(testProjectDir.root, 'build/native/generated/generateResourcesConfigFile').absolutePath}")
 
         where:
         plugins << [
@@ -87,7 +87,7 @@ class MicronautGraalPluginSpec extends AbstractFunctionalTest {
         result.task(":nativeCompile").outcome == TaskOutcome.SUCCESS
 
         and:
-        result.output.contains("-H:ConfigurationFileDirectories=${new File(testProjectDir.root, 'build/native/generated/generateResourcesConfigFile').absolutePath}")
+        argFileContentsOf(result).contains("-H:ConfigurationFileDirectories=${new File(testProjectDir.root, 'build/native/generated/generateResourcesConfigFile').absolutePath}")
     }
 
     private void withSwaggerMicronautApplication() {

@@ -5,6 +5,7 @@ target/
 .idea/
 build/
 !buildSrc/src/**
+!build-logic/src/main/java/io/micronaut/build
 classes/
 out/
 *.db

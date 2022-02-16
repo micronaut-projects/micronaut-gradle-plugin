@@ -103,8 +103,8 @@ class Application {
         def task = result.task(":nativeCompile")
         then:
         result.output.contains("Native Image written to")
-        result.output.contains("[basic-app:")
-        result.output.contains('-Dfoo=bar')
+        result.output.contains("Generating 'basic-app'")
+        argFileContentsOf(result).contains('-Dfoo=bar')
         task.outcome == TaskOutcome.SUCCESS
     }
 }
