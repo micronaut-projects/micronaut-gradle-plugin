@@ -487,7 +487,8 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
                 getProviders().provider(() -> false),
                 executable,
                 getObjects().property(String.class),
-                getObjects().fileProperty()
+                getObjects().fileProperty(),
+                getProviders().provider(() -> false) // in a docker container we don't use the @arg file
         ).asArguments();
         if (System.getProperty("os.name").toLowerCase().contains("windows")) {
             // This is a dirty workaround for https://github.com/micronaut-projects/micronaut-gradle-plugin/issues/358
