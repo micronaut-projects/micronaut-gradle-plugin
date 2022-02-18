@@ -5,19 +5,19 @@ diffplug = "3.33.2"
 shadow = "7.1.0"
 groovy = "3.0.9"
 spock = "2.0-groovy-3.0"
-graalvmPlug = "0.9.10"
+graalvmPlugin = "0.9.10"
 micronaut = "3.2.0"
 micronaut-aot = "1.0.0-M7"
 log4j2 = { require = "2.17.1", reject = ["]0, 2.17["] }
 
 [libraries]
 dockerPlug = { module = "com.bmuschko:gradle-docker-plugin", version.ref = "docker" }
-diffplugPlug = { module = "com.diffplug.gradle:goomph", version.ref = "diffplug" }
-shadowPlug = { module = "gradle.plugin.com.github.johnrengelman:shadow", version.ref = "shadow" }
-graalvmPlug = { module = "org.graalvm.buildtools:native-gradle-plugin", version.ref = "graalvmPlug" }
+diffplugPlugin = { module = "com.diffplug.gradle:goomph", version.ref = "diffplug" }
+shadowPlugin = { module = "gradle.plugin.com.github.johnrengelman:shadow", version.ref = "shadow" }
+graalvmPlugin = { module = "org.graalvm.buildtools:native-gradle-plugin", version.ref = "graalvmPlugin" }
 
 kotlin-allopen = { module = "org.jetbrains.kotlin:kotlin-allopen", version.ref = "kotlin" }
-kotlin-gradlePlug = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
+kotlin-gradlePlugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 
 groovy-core = { module = "org.codehaus.groovy:groovy", version.ref = "groovy" }
 spock-core = { module = "org.spockframework:spock-core", version.ref = "spock" }
@@ -30,4 +30,4 @@ micronaut-aot-std = { module = "io.micronaut.aot:micronaut-aot-std-optimizers", 
 micronaut-aot-cli = { module = "io.micronaut.aot:micronaut-aot-cli", version.ref = "micronaut-aot" }
 
 [bundles]
-optionalPlugins = [ "kotlin-allopen", "kotlin-gradlePlug", "graalvmPlug" ]
+optionalPlugins = [ "kotlin-allopen", "kotlin-gradlePlugin", "graalvmPlugin" ]

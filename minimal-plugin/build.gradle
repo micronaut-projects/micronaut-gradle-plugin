@@ -1,0 +1,21 @@
+plugins {
+    id "io.micronaut.internal.build.gradle-plugin"
+    id "java-test-fixtures"
+}
+
+description = "The main Micronaut Gradle plugin"
+
+micronautPlugins {
+    register('minimal.library', 'io.micronaut.gradle.MicronautMinimalLibraryPlugin', 'Micronaut Minimal Library Plugin')
+    register('minimal.application', 'io.micronaut.gradle.MicronautMinimalApplicationPlugin', 'Micronaut Minimal Application Plugin')
+}
+
+dependencies {
+    compileOnly libs.bundles.optionalPlugins
+    compileOnly libs.shadowPlugin
+
+    testFixturesImplementation gradleTestKit()
+    testFixturesImplementation libs.groovy.core
+    testFixturesImplementation libs.spock.core
+    testFixturesImplementation libs.spock.junit4
+}

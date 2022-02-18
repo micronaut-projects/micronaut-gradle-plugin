@@ -1,0 +1,18 @@
+plugins {
+    id "io.micronaut.internal.build.gradle-plugin"
+}
+
+description = "Micronaut Docker Gradle plugin"
+
+micronautPlugins {
+    register('docker', 'io.micronaut.gradle.docker.MicronautDockerPlugin', 'Micronaut Docker Plugin')
+}
+
+dependencies {
+    implementation project(":micronaut-minimal-plugin")
+    implementation libs.dockerPlug
+
+    compileOnly libs.graalvmPlugin
+
+    testImplementation testFixtures(project(":micronaut-minimal-plugin"))
+}

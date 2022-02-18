@@ -1,0 +1,15 @@
+plugins {
+    id "io.micronaut.internal.build.gradle-plugin"
+}
+
+description = "Micronaut AOT Gradle plugin"
+
+micronautPlugins {
+    register('graalvm', 'io.micronaut.gradle.graalvm.MicronautGraalPlugin', 'Micronaut GraalVM Plugin')
+}
+
+dependencies {
+    implementation project(":micronaut-minimal-plugin")
+    implementation libs.graalvmPlugin
+    testImplementation testFixtures(project(":micronaut-minimal-plugin"))
+}

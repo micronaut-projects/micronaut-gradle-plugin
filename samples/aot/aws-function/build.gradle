@@ -1,6 +1,6 @@
 plugins {
-    id("io.micronaut.library") version "3.1.1-SNAPSHOT"
-    id("io.micronaut.aot") version "3.1.1-SNAPSHOT"
+    id("io.micronaut.library")
+    id("io.micronaut.aot")
     id("com.github.johnrengelman.shadow") version "7.1.0"
 }
 
