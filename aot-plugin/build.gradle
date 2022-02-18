@@ -1,0 +1,24 @@
+plugins {
+    id "io.micronaut.internal.build.gradle-plugin"
+}
+
+description = "Micronaut AOT Gradle plugin"
+
+micronautPlugins {
+    register('aot', 'io.micronaut.gradle.aot.MicronautAotPlugin', 'Micronaut AOT Plugin')
+}
+
+dependencies {
+    implementation project(":micronaut-minimal-plugin")
+    implementation project(":micronaut-docker-plugin")
+    implementation project(":micronaut-graalvm-plugin")
+    implementation libs.micronaut.aot.api
+    implementation libs.micronaut.aot.core
+    implementation libs.micronaut.aot.std
+    implementation libs.micronaut.aot.cli
+
+    compileOnly libs.bundles.optionalPlugins
+    compileOnly libs.shadowPlugin
+
+    testImplementation testFixtures(project(":micronaut-minimal-plugin"))
+}

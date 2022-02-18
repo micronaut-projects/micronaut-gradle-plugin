@@ -4,6 +4,10 @@ plugins {
     id "org.asciidoctor.jvm.convert"
 }
 
+repositories {
+    mavenCentral()
+}
+
 asciidoctorj {
     attributes 'source-highlighter': 'highlight.js',
             'highlightjsdir': 'highlight',
@@ -37,6 +41,33 @@ def themer = tasks.register("asciidocThemer", io.micronaut.internal.build.docs.T
         it.outputDir
     })
     outputDirectory = layout.buildDirectory.dir("themed")
+}
+
+configurations {
+    javadoc {
+        canBeResolved = true
+        canBeConsumed = false
+        attributes {
+            attribute(Usage.USAGE_ATTRIBUTE, objects.named(Usage, Usage.JAVA_RUNTIME))
+            attribute(LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE, objects.named(LibraryElements, LibraryElements.JAR))
+            attribute(Category.CATEGORY_ATTRIBUTE, objects.named(Category, Category.LIBRARY))
+            attribute(Bundling.BUNDLING_ATTRIBUTE, objects.named(Bundling, Bundling.EXTERNAL))
+        }
+    }
+}
+
+def javadoc = tasks.register("javadoc", Javadoc) {
+    description = "Generate javadocs from all plugins"
+    group = "Documentation"
+    destinationDir = layout.buildDirectory.dir("javadoc").get().asFile
+    title = "Micronaut Gradle plugins API"
+    options.author = true
+    source = subprojects.findAll {
+        it.name.matches(".*-plugin")
+    }.collect {
+        it.sourceSets.main.java.srcDirs
+    }
+    classpath = configurations.javadoc
 }
 
 tasks.register("docs", Copy) {
