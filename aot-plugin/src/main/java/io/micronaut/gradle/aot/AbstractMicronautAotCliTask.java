@@ -31,6 +31,9 @@ import org.gradle.process.ExecResult;
 
 import javax.inject.Inject;
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -69,34 +72,49 @@ abstract class AbstractMicronautAotCliTask extends DefaultTask implements Optimi
     }
 
     @TaskAction
-    public final void execute() {
+    public final void execute() throws IOException {
         File outputDir = getOutputDirectory().getAsFile().get();
         getFileOperations().delete(outputDir);
-        ExecResult javaexec = getExecOperations().javaexec(spec -> {
-            FileCollection classpath = getOptimizerClasspath().plus(getClasspath());
-            spec.setClasspath(classpath);
-            spec.getMainClass().set("io.micronaut.aot.cli.Main");
-            List<String> args = new ArrayList<>(Arrays.asList(
-                    "--classpath", getClasspath().getAsPath(),
-                    "--runtime", getTargetRuntime().get().name().toUpperCase(),
-                    "--package", getTargetPackage().get()
-            ));
-            maybeAddOptimizerClasspath(args, getClasspath());
-            configureExtraArguments(args);
-            spec.args(args);
-            getLogger().info("Running AOT optimizer with parameters: {}", args);
-            if (getDebug().get()) {
-                getLogger().info("Running with debug enabled");
-                spec.jvmArgs("-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5005");
+        File argFile = File.createTempFile("aot", "args");
+        try {
+            ExecResult javaexec = getExecOperations().javaexec(spec -> {
+                FileCollection classpath = getOptimizerClasspath().plus(getClasspath());
+                spec.setClasspath(classpath);
+                spec.getMainClass().set("io.micronaut.aot.cli.Main");
+                List<String> args = new ArrayList<>(Arrays.asList(
+                        "--classpath", getClasspath().getAsPath(),
+                        "--runtime", getTargetRuntime().get().name().toUpperCase(),
+                        "--package", getTargetPackage().get()
+                ));
+                maybeAddOptimizerClasspath(args, getClasspath());
+                configureExtraArguments(args);
+                boolean useArgFile = true;
+                try (PrintWriter wrt = new PrintWriter(new FileWriter(argFile))) {
+                    args.forEach(wrt::println);
+                } catch (IOException e) {
+                    useArgFile = false;
+                }
+                if (useArgFile) {
+                    spec.args("@" + argFile.getAbsolutePath());
+                } else {
+                    spec.args(args);
+                }
+                getLogger().info("Running AOT optimizer {} with parameters: {}", useArgFile ? "using arg file" : "directly", args);
+                if (getDebug().get()) {
+                    getLogger().info("Running with debug enabled");
+                    spec.jvmArgs("-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5005");
+                }
+                if (getEnvironmentVariables().isPresent()) {
+                    spec.environment(getEnvironmentVariables().get());
+                }
+            });
+            if (javaexec.getExitValue() != 0) {
+                throw new GradleException("AOT analysis failed");
             }
-            if (getEnvironmentVariables().isPresent()) {
-                spec.environment(getEnvironmentVariables().get());
-            }
-        });
-        if (javaexec.getExitValue() != 0) {
-            throw new GradleException("AOT analysis failed");
+        } finally {
+            onSuccess(outputDir);
+            argFile.delete();
         }
-        onSuccess(outputDir);
     }
 
     private void maybeAddOptimizerClasspath(List<String> args, ConfigurableFileCollection classpath) {
