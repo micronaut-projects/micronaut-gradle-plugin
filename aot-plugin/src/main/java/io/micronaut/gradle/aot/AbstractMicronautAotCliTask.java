@@ -90,7 +90,7 @@ abstract class AbstractMicronautAotCliTask extends DefaultTask implements Optimi
                 configureExtraArguments(args);
                 boolean useArgFile = true;
                 try (PrintWriter wrt = new PrintWriter(new FileWriter(argFile))) {
-                    args.forEach(wrt::println);
+                    args.forEach(arg -> wrt.println(escapeArg(arg)));
                 } catch (IOException e) {
                     useArgFile = false;
                 }
@@ -126,6 +126,14 @@ abstract class AbstractMicronautAotCliTask extends DefaultTask implements Optimi
                 args.add(classpath.getAsPath());
             }
         }
+    }
+
+    private static String escapeArg(String arg) {
+        arg = arg.replace("\\", "\\\\");
+        if (arg.contains(" ")) {
+            arg = "\"" + arg + "\"";
+        }
+        return arg;
     }
 
 }
