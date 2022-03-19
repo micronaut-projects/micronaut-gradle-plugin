@@ -19,24 +19,35 @@ abstract class AbstractGradleBuildSpec extends Specification {
 
     @Rule
     TemporaryFolder testProjectDir = new TemporaryFolder()
+    protected Path baseDir
 
-    File settingsFile
-    File buildFile
-    File kotlinBuildFile
+    File getSettingsFile() {
+        baseDir.resolve("settings.gradle").toFile()
+    }
+
+    File getBuildFile() {
+        baseDir.resolve("build.gradle").toFile()
+    }
+
+    File getKotlinBuildFile() {
+        baseDir.resolve("build.gradle.kts").toFile()
+    }
 
     // This can be used during development to add statements like includeBuild
     final List<String> postSettingsStatements = [
     ]
 
     def setup() {
-        settingsFile = testProjectDir.newFile('settings.gradle')
-        buildFile = testProjectDir.newFile('build.gradle')
-        kotlinBuildFile = testProjectDir.newFile('build.gradle.kts')
+        baseDir = testProjectDir.root.toPath()
+    }
+
+    void withSpacesInTestDir() {
+        baseDir = testProjectDir.newFolder("with spaces").toPath()
     }
 
     protected void withSample(String name) {
         File sampleDir = new File("../samples/$name").canonicalFile
-        copySample(sampleDir.toPath(), testProjectDir.root.toPath())
+        copySample(sampleDir.toPath(), baseDir)
     }
 
     private static void copySample(Path from, Path into) {
@@ -51,7 +62,7 @@ abstract class AbstractGradleBuildSpec extends Specification {
     }
 
     File file(String relativePath) {
-        testProjectDir.root.toPath().resolve(relativePath).toFile()
+        baseDir.resolve(relativePath).toFile()
     }
 
     def getRepositoriesBlock(String dsl = 'groovy') {
@@ -85,7 +96,7 @@ abstract class AbstractGradleBuildSpec extends Specification {
                 )
             }
         }
-        runner.withProjectDir(testProjectDir.root)
+        runner.withProjectDir(baseDir.toFile())
                 .withArguments(["--no-watch-fs",
                                 "-S",
                                 "-Porg.gradle.java.installations.auto-download=false",
