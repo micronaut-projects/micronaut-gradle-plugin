@@ -1,6 +1,7 @@
 package io.micronaut.gradle.aot
 
-
+import org.gradle.testkit.runner.TaskOutcome
+import spock.lang.Issue
 import spock.lang.Requires
 
 @Requires({ jvm.isJava11Compatible() })
@@ -136,6 +137,20 @@ class BasicMicronautAOTSpec extends AbstractAOTPluginSpec {
             assert result.output.contains("Setting optimizations for class $it")
         }
 
+    }
+
+    @Issue("https://github.com/micronaut-projects/micronaut-gradle-plugin/issues/401")
+    def "supports spaces in file names"() {
+        withSpacesInTestDir()
+        withSample("aot/basic-app")
+        withPlugins(Plugins.MINIMAL_APPLICATION)
+        println("Base directory: $baseDir")
+
+        when:
+        def result = build "prepareJitOptimizations"
+
+        then:
+        result.task(":prepareJitOptimizations").outcome == TaskOutcome.SUCCESS
     }
 
 }
