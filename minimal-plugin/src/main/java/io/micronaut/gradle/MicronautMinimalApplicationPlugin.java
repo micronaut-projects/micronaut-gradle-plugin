@@ -15,6 +15,7 @@
  */
 package io.micronaut.gradle;
 
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar;
 import io.micronaut.gradle.graalvm.GraalUtil;
 import org.apache.tools.ant.taskdefs.condition.Os;
 import org.gradle.api.Plugin;
@@ -176,6 +177,12 @@ public class MicronautMinimalApplicationPlugin implements Plugin<Project> {
                         project.setProperty("mainClassName", mainClass.get());
                     }
                 }
+
+                // If shadow JAR is enabled it must be configured to merge
+                // all META-INF/services file into a single file otherwise this
+                // will break the application
+                project.getTasks().withType(ShadowJar.class).configureEach(ShadowJar::mergeServiceFiles);
+
             });
         });
     }
