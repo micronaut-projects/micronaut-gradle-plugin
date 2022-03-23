@@ -78,11 +78,12 @@ abstract class AbstractMicronautAotCliTask extends DefaultTask implements Optimi
         File argFile = File.createTempFile("aot", "args");
         try {
             ExecResult javaexec = getExecOperations().javaexec(spec -> {
+                FileCollection aotClasspath = getOptimizerClasspath();
                 FileCollection classpath = getOptimizerClasspath().plus(getClasspath());
-                spec.setClasspath(classpath);
+                spec.setClasspath(aotClasspath);
                 spec.getMainClass().set("io.micronaut.aot.cli.Main");
                 List<String> args = new ArrayList<>(Arrays.asList(
-                        "--classpath", getClasspath().getAsPath(),
+                        "--classpath", classpath.getAsPath(),
                         "--runtime", getTargetRuntime().get().name().toUpperCase(),
                         "--package", getTargetPackage().get()
                 ));
