@@ -4,8 +4,6 @@ import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.Input;
 
-import javax.annotation.Nullable;
-
 /**
  * Build options for Docker.
  *
@@ -56,4 +54,11 @@ public interface DockerBuildOptions {
      * @return The ports
      */
     DockerBuildOptions exportPorts(Integer... ports);
+
+    /**
+     * The working directory to use in the container.
+     * Defaults to /home/app
+     * @return the target directory
+     */
+    Property<String> getTargetWorkingDirectory();
 }

@@ -92,4 +92,62 @@ class Application {
         and:
         def dockerfile = new File(testProjectDir.root, 'build/docker/main/Dockerfile').readLines('UTF-8')
     }
+
+    @Issue("https://github.com/micronaut-projects/micronaut-gradle-plugin/issues/402")
+    def "can override default working dir"() {
+        given:
+        settingsFile << "rootProject.name = 'hello-world'"
+        buildFile << """import io.micronaut.gradle.docker.DockerBuildOptions
+
+            plugins {
+                id "io.micronaut.minimal.application"
+                id "io.micronaut.docker"
+            }
+            
+            micronaut {
+                version "3.4.0"
+            }
+            
+            $repositoriesBlock
+
+            mainClassName="example.Application"
+
+            tasks.withType(DockerBuildOptions).configureEach {
+                targetWorkingDirectory = "/home/alternate"
+            }
+            
+        """
+        testProjectDir.newFolder("src", "main", "java", "example")
+        def javaFile = testProjectDir.newFile("src/main/java/example/Application.java")
+        javaFile.parentFile.mkdirs()
+        javaFile << """
+package example;
+
+class Application {
+    public static void main(String... args) {
+    
+    }
+}
+"""
+
+        when:
+        def result = build('dockerfile', '-s')
+
+        then:
+        def dockerfileTask = result.task(":dockerfile")
+        dockerfileTask.outcome == TaskOutcome.SUCCESS
+
+        and:
+        def dockerfile = new File(testProjectDir.root, 'build/docker/main/Dockerfile').text
+        dockerfile == """FROM openjdk:17-alpine
+WORKDIR /home/alternate
+COPY layers/libs /home/alternate/libs
+COPY layers/classes /home/alternate/classes
+COPY layers/resources /home/alternate/resources
+COPY layers/application.jar /home/alternate/application.jar
+EXPOSE 8080
+ENTRYPOINT ["java", "-jar", "/home/alternate/application.jar"]
+"""
+    }
+
 }

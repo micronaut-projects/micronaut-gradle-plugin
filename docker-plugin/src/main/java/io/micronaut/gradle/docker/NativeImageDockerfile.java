@@ -42,6 +42,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static io.micronaut.gradle.docker.MicronautDockerfile.DEFAULT_WORKING_DIR;
+
 /**
  * Specialization of {@link Dockerfile} for building native images.
  *
@@ -111,6 +113,10 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
     @Optional
     public abstract Property<String> getDefaultCommand();
 
+    @Input
+    @Override
+    public abstract Property<String> getTargetWorkingDirectory();
+
     @Inject
     protected abstract ProviderFactory getProviders();
 
@@ -140,6 +146,7 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
                         .map(v -> "java" + v)
         );
         getGraalVersion().convention("21.3.0");
+        getTargetWorkingDirectory().convention(DEFAULT_WORKING_DIR);
         getGraalImage().convention(getGraalVersion().zip(getJdkVersion(), NativeImageDockerfile::toGraalVMBaseImageName));
         getNativeImageOptions().convention(project
                 .getTasks()
@@ -372,7 +379,8 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
         MicronautDockerfile.setupResources(this);
         Property<String> executable = getObjects().property(String.class);
         executable.set("application");
-        runCommand("mkdir /home/app/config-dirs");
+        String workDir = getTargetWorkingDirectory().get();
+        runCommand("mkdir " + workDir + "/config-dirs");
         getInstructions().addAll(getNativeImageOptions().map(options ->
                 options.getConfigurationFileDirectories()
                         .getFiles()
@@ -386,7 +394,7 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
                 from(new From("fnproject/fn-java-fdk:" + getProjectFnVersion()).withStage("fnfdk"));
                 from(baseImageProvider);
                 workingDir("/function");
-                copyFile(new CopyFile("/home/app/application", "/function/func").withStage("graalvm"));
+                copyFile(new CopyFile(workDir + "/application", "/function/func").withStage("graalvm"));
                 copyFile(new CopyFile("/function/runtime/lib/*", ".").withStage("fnfdk"));
                 entryPoint(getArgs().map(strings -> {
                     List<String> newList = new ArrayList<>(strings.size() + 1);
@@ -405,7 +413,7 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
                 from(baseImageProvider);
                 workingDir("/function");
                 runCommand("yum install -y zip");
-                copyFile(new CopyFile("/home/app/application", "/function/func").withStage("builder"));
+                copyFile(new CopyFile(workDir + "/application", "/function/func").withStage("builder"));
                 String funcCmd = String.join(" ", getArgs().map(strings -> {
                     List<String> newList = new ArrayList<>(strings.size() + 1);
                     newList.add("./func");
@@ -431,7 +439,7 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
                 }));
                 exposePort(getExposedPorts());
                 getInstructions().addAll(additionalInstructions);
-                copyFile(new CopyFile("/home/app/application", "/app/application").withStage("graalvm"));
+                copyFile(new CopyFile(workDir + "/application", "/app/application").withStage("graalvm"));
                 entryPoint(getArgs().map(strings -> {
                     List<String> newList = new ArrayList<>(strings.size() + 1);
                     newList.add("/app/application");
@@ -443,7 +451,7 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
     }
 
     private CopyFileInstruction toCopyResourceDirectoryInstruction(java.io.File resourceDirectory) {
-        return new CopyFileInstruction(new CopyFile("config-dirs/" + resourceDirectory.getName(), "/home/app/config-dirs/" + resourceDirectory.getName()));
+        return new CopyFileInstruction(new CopyFile("config-dirs/" + resourceDirectory.getName(), getTargetWorkingDirectory().get() + "/config-dirs/" + resourceDirectory.getName()));
     }
 
     protected List<String> buildActualCommandLine(Provider<String> executable, DockerBuildStrategy buildStrategy, BaseImageForBuildStrategyResolver imageResolver) {
@@ -522,13 +530,13 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
         Provider<List<String>> remappedConfigDirectories = originalOptions.map(orig -> orig.getConfigurationFileDirectories()
                 .getFiles()
                 .stream()
-                .map(f -> "/home/app/config-dirs/" + f.getName())
+                .map(f -> getTargetWorkingDirectory().get() + "/config-dirs/" + f.getName())
                 .collect(Collectors.toList())
         );
         options.getConfigurationFileDirectories().setFrom(
                 remappedConfigDirectories
         );
-        options.getClasspath().from("/home/app/libs/*.jar", "/home/app/resources:/home/app/application.jar");
+        options.getClasspath().from(getTargetWorkingDirectory().map(d -> d + "/libs/*.jar"), getTargetWorkingDirectory().map(d -> d + "/resources:" + d + "/application.jar"));
         options.getImageName().set("application");
     }
 

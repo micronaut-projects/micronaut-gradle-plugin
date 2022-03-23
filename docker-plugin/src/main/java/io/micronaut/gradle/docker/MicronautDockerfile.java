@@ -1,16 +1,15 @@
 package io.micronaut.gradle.docker;
 
 import com.bmuschko.gradle.docker.tasks.image.Dockerfile;
-import org.gradle.api.Action;
 import org.gradle.api.JavaVersion;
 import org.gradle.api.Project;
-import org.gradle.api.Task;
 import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.plugins.BasePlugin;
 import org.gradle.api.plugins.JavaApplication;
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.Input;
+import org.gradle.api.tasks.Optional;
 import org.gradle.api.tasks.TaskAction;
 import org.gradle.internal.jvm.Jvm;
 
@@ -20,6 +19,7 @@ import java.util.Collections;
 import java.util.List;
 
 public class MicronautDockerfile extends Dockerfile implements DockerBuildOptions {
+    public static final String DEFAULT_WORKING_DIR = "/home/app";
 
     @Input
     private final Property<String> baseImage;
@@ -31,6 +31,9 @@ public class MicronautDockerfile extends Dockerfile implements DockerBuildOption
     private final Property<DockerBuildStrategy> buildStrategy;
     @Input
     private final Property<String> defaultCommand;
+
+    @Input
+    private final Property<String> targetWorkingDirectory;
 
     public MicronautDockerfile() {
         Project project = getProject();
@@ -44,6 +47,11 @@ public class MicronautDockerfile extends Dockerfile implements DockerBuildOption
         this.args = objects.listProperty(String.class);
         this.exposedPorts = objects.listProperty(Integer.class)
                     .convention(Collections.singletonList(8080));
+        this.targetWorkingDirectory = objects.property(String.class).convention(DEFAULT_WORKING_DIR);
+    }
+
+    public Property<String> getTargetWorkingDirectory() {
+        return targetWorkingDirectory;
     }
 
     @Override
@@ -59,6 +67,7 @@ public class MicronautDockerfile extends Dockerfile implements DockerBuildOption
     }
 
     private void setupInstructions(List<Instruction> additionalInstructions) {
+        String workDir = getTargetWorkingDirectory().get();
         DockerBuildStrategy buildStrategy = this.buildStrategy.getOrElse(DockerBuildStrategy.DEFAULT);
         JavaApplication javaApplication = getProject().getExtensions().getByType(JavaApplication.class);
         String from = getBaseImage().getOrNull();
@@ -95,7 +104,7 @@ public class MicronautDockerfile extends Dockerfile implements DockerBuildOption
                         newList.add("java");
                         newList.addAll(strings);
                         newList.add("-jar");
-                        newList.add("/home/app/application.jar");
+                        newList.add(workDir + "/application.jar");
                         return newList;
                     }));
                 }
@@ -173,10 +182,14 @@ public class MicronautDockerfile extends Dockerfile implements DockerBuildOption
     }
 
     static void setupResources(Dockerfile task) {
-        task.workingDir("/home/app");
-        task.copyFile("layers/libs", "/home/app/libs");
-        task.copyFile("layers/classes", "/home/app/classes");
-        task.copyFile("layers/resources", "/home/app/resources");
-        task.copyFile("layers/application.jar", "/home/app/application.jar");
+        String workDir = DEFAULT_WORKING_DIR;
+        if (task instanceof DockerBuildOptions) {
+            workDir = ((DockerBuildOptions) task).getTargetWorkingDirectory().get();
+        }
+        task.workingDir(workDir);
+        task.copyFile("layers/libs", workDir + "/libs");
+        task.copyFile("layers/classes", workDir + "/classes");
+        task.copyFile("layers/resources", workDir + "/resources");
+        task.copyFile("layers/application.jar", workDir + "/application.jar");
     }
 }
