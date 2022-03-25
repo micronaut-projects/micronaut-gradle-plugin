@@ -465,9 +465,6 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
             if (!javaApplication.getMainClass().isPresent()) {
                 options.getMainClass().set("io.micronaut.function.aws.runtime.MicronautLambdaRuntime");
             }
-            if (!options.getMainClass().isPresent()) {
-                options.getMainClass().set("io.micronaut.function.aws.runtime.MicronautLambdaRuntime");
-            }
         }
         List<String> commandLine = new ArrayList<>();
         commandLine.add("native-image");
