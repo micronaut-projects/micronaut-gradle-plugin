@@ -84,7 +84,11 @@ public class MicronautComponentPlugin implements Plugin<Project> {
 
         configureTesting(project, micronautExtension);
 
-        ShadowPluginSupport.withShadowPlugin(project, () -> configureTesting(project, micronautExtension));
+        ShadowPluginSupport.withShadowPlugin(project, () -> {
+            configureTesting(project, micronautExtension);
+            ShadowPluginSupport.mergeServiceFiles(project);
+        });
+
     }
 
     private void configureTesting(Project project, MicronautExtension micronautExtension) {

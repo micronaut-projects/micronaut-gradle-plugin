@@ -15,6 +15,7 @@
  */
 package io.micronaut.gradle;
 
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar;
 import org.gradle.api.Project;
 
 public class ShadowPluginSupport {
@@ -22,5 +23,14 @@ public class ShadowPluginSupport {
 
     public static void withShadowPlugin(Project p, Runnable action) {
         p.getPluginManager().withPlugin(SHADOW_PLUGIN, unused -> action.run());
+    }
+
+    /**
+     * If shadow JAR is enabled, it configures to merge all META-INF/services file into a single file otherwise this will break the application.
+     * <a href="https://imperceptiblethoughts.com/shadow/configuration/merging/#merging-service-descriptor-files">Shadow: Merging Server Descriptor Files</a>
+     * @param project Gradle Project
+     */
+    public static void mergeServiceFiles(Project project) {
+        project.getTasks().withType(ShadowJar.class).configureEach(ShadowJar::mergeServiceFiles);
     }
 }
