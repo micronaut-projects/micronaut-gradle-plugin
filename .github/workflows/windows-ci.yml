@@ -14,7 +14,7 @@ jobs:
     runs-on: windows-2016
     strategy:
       matrix:
-        graalvm: ['21.3.0']
+        graalvm: ['22.0.0.2']
     steps:
       - uses: actions/checkout@v3
       - uses: actions/cache@v2.1.7

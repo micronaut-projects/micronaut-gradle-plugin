@@ -94,9 +94,9 @@ micronaut:
 
         where:
         runtime  | nativeImage
-        "netty"  | 'FROM ghcr.io/graalvm/native-image:java'
+        "netty"  | 'FROM ghcr.io/graalvm/native-image:ol8-java'
         "lambda" | 'FROM amazonlinux:latest AS graalvm'
-        "jetty"  | 'FROM ghcr.io/graalvm/native-image:java'
+        "jetty"  | 'FROM ghcr.io/graalvm/native-image:ol8-java'
     }
 
     void 'build mostly static native images when using distroless docker image for runtime=#runtime'() {
@@ -484,9 +484,9 @@ class Application {
 
         where:
         runtime  | nativeImage
-        "netty"  | 'FROM ghcr.io/graalvm/native-image:java'
+        "netty"  | 'FROM ghcr.io/graalvm/native-image:ol8-java'
         "lambda" | 'FROM amazonlinux:latest AS graalvm'
-        "jetty"  | 'FROM ghcr.io/graalvm/native-image:java'
+        "jetty"  | 'FROM ghcr.io/graalvm/native-image:ol8-java'
     }
 
     @Issue("https://github.com/micronaut-projects/micronaut-gradle-plugin/issues/402")
@@ -565,7 +565,7 @@ micronaut:
         expect:
         task.outcome == TaskOutcome.SUCCESS
         dockerFile == """
-FROM ghcr.io/graalvm/native-image:java11-21.3.0 AS graalvm
+FROM ghcr.io/graalvm/native-image:ol8-java11-22.0.0.2 AS graalvm
 WORKDIR /home/alternate
 COPY layers/libs /home/alternate/libs
 COPY layers/classes /home/alternate/classes
