@@ -468,7 +468,10 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
             options.getBuildArgs().add("--report-unsupported-elements-at-runtime");
         } else if (buildStrategy == DockerBuildStrategy.LAMBDA) {
             JavaApplication javaApplication = getProject().getExtensions().getByType(JavaApplication.class);
-            if (!javaApplication.getMainClass().isPresent() || !options.getMainClass().isPresent()) {
+            if (!javaApplication.getMainClass().isPresent()) {
+                options.getMainClass().set(MICRONAUT_LAMBDA_RUNTIME);
+            }
+            if (!options.getMainClass().isPresent()) {
                 options.getMainClass().set(MICRONAUT_LAMBDA_RUNTIME);
             }
         }
