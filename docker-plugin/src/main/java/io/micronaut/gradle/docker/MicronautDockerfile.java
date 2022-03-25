@@ -18,7 +18,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import static io.micronaut.gradle.docker.MicronautLambdaUtils.MICRONAUT_LAMBDA_RUNTIME;
+import static io.micronaut.gradle.docker.NativeImageDockerfile.MICRONAUT_LAMBDA_RUNTIME;
 
 public class MicronautDockerfile extends Dockerfile implements DockerBuildOptions {
     public static final String DEFAULT_WORKING_DIR = "/home/app";

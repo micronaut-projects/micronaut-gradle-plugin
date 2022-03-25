@@ -43,7 +43,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import static io.micronaut.gradle.docker.MicronautDockerfile.DEFAULT_WORKING_DIR;
-import static io.micronaut.gradle.docker.MicronautLambdaUtils.MICRONAUT_LAMBDA_RUNTIME;
 
 /**
  * Specialization of {@link Dockerfile} for building native images.
@@ -52,6 +51,11 @@ import static io.micronaut.gradle.docker.MicronautLambdaUtils.MICRONAUT_LAMBDA_R
  * @since 1.0.0
  */
 public abstract class NativeImageDockerfile extends Dockerfile implements DockerBuildOptions {
+
+    /**
+     * Main class for Provided runtime and Application Type: Micronaut Application.
+     */
+    public static final String MICRONAUT_LAMBDA_RUNTIME = "io.micronaut.function.aws.runtime.MicronautLambdaRuntime";
 
     private static final List<Integer> SUPPORTED_JAVA_VERSIONS = Collections.unmodifiableList(
             // keep those in descending order
