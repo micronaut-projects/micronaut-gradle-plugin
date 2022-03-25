@@ -145,7 +145,7 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
                         .map(NativeImageDockerfile::toSupportedJavaVersion)
                         .map(v -> "java" + v)
         );
-        getGraalVersion().convention("21.3.0");
+        getGraalVersion().convention("22.0.0.2");
         getTargetWorkingDirectory().convention(DEFAULT_WORKING_DIR);
         getGraalImage().convention(getGraalVersion().zip(getJdkVersion(), NativeImageDockerfile::toGraalVMBaseImageName));
         getNativeImageOptions().convention(project
@@ -331,7 +331,7 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
     }
 
     private static String toGraalVMBaseImageName(String graalVersion, String jdkVersion) {
-        return "ghcr.io/graalvm/native-image:" + jdkVersion + '-' + graalVersion;
+        return "ghcr.io/graalvm/native-image:ol8-" + jdkVersion + '-' + graalVersion;
     }
 
     private static int toSupportedJavaVersion(int version) {
@@ -340,7 +340,7 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
                 return javaVersion;
             }
         }
-        return SUPPORTED_JAVA_VERSIONS.stream().reduce((x, y) -> y).orElse(8);
+        return SUPPORTED_JAVA_VERSIONS.stream().reduce((x, y) -> y).orElse(11);
     }
 
     @TaskAction
