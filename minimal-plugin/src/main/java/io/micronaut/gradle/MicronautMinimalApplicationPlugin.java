@@ -177,13 +177,9 @@ public class MicronautMinimalApplicationPlugin implements Plugin<Project> {
                         project.setProperty("mainClassName", mainClass.get());
                     }
                 }
-
-                // If shadow JAR is enabled it must be configured to merge
-                // all META-INF/services file into a single file otherwise this
-                // will break the application
-                project.getTasks().withType(ShadowJar.class).configureEach(ShadowJar::mergeServiceFiles);
-
+                ShadowPluginSupport.mergeServiceFiles(project);
             });
+
         });
     }
 
