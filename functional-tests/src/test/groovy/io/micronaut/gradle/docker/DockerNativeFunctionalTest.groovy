@@ -94,9 +94,9 @@ micronaut:
 
         where:
         runtime  | nativeImage
-        "netty"  | 'FROM ghcr.io/graalvm/native-image:java'
+        "netty"  | 'FROM ghcr.io/graalvm/native-image:ol8-java'
         "lambda" | 'FROM amazonlinux:latest AS graalvm'
-        "jetty"  | 'FROM ghcr.io/graalvm/native-image:java'
+        "jetty"  | 'FROM ghcr.io/graalvm/native-image:ol8-java'
     }
 
     void 'build mostly static native images when using distroless docker image for runtime=#runtime'() {
@@ -484,9 +484,9 @@ class Application {
 
         where:
         runtime  | nativeImage
-        "netty"  | 'FROM ghcr.io/graalvm/native-image:java'
+        "netty"  | 'FROM ghcr.io/graalvm/native-image:ol8-java'
         "lambda" | 'FROM amazonlinux:latest AS graalvm'
-        "jetty"  | 'FROM ghcr.io/graalvm/native-image:java'
+        "jetty"  | 'FROM ghcr.io/graalvm/native-image:ol8-java'
     }
 
     @Issue("https://github.com/micronaut-projects/micronaut-gradle-plugin/issues/402")
