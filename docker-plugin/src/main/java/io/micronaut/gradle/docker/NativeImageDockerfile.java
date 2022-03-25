@@ -43,6 +43,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import static io.micronaut.gradle.docker.MicronautDockerfile.DEFAULT_WORKING_DIR;
+import static io.micronaut.gradle.docker.MicronautLambdaUtils.MICRONAUT_LAMBDA_RUNTIME;
 
 /**
  * Specialization of {@link Dockerfile} for building native images.
@@ -56,6 +57,7 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
             // keep those in descending order
             Arrays.asList(17, 11)
     );
+
 
     /**
      * @return The JDK version to use with native image. Defaults to the toolchain version, or the current Java version.
@@ -462,11 +464,8 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
             options.getBuildArgs().add("--report-unsupported-elements-at-runtime");
         } else if (buildStrategy == DockerBuildStrategy.LAMBDA) {
             JavaApplication javaApplication = getProject().getExtensions().getByType(JavaApplication.class);
-            if (!javaApplication.getMainClass().isPresent()) {
-                options.getMainClass().set("io.micronaut.function.aws.runtime.MicronautLambdaRuntime");
-            }
-            if (!options.getMainClass().isPresent()) {
-                options.getMainClass().set("io.micronaut.function.aws.runtime.MicronautLambdaRuntime");
+            if (!javaApplication.getMainClass().isPresent() || !options.getMainClass().isPresent()) {
+                options.getMainClass().set(MICRONAUT_LAMBDA_RUNTIME);
             }
         }
         List<String> commandLine = new ArrayList<>();
