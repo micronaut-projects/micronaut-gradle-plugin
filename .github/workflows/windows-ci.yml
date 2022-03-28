@@ -17,7 +17,7 @@ jobs:
         graalvm: ['22.0.0.2']
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/cache@v2.1.7
+      - uses: actions/cache@v3
         with:
           path: ~/.gradle/caches
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
