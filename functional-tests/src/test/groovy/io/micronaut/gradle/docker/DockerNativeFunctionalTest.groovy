@@ -1,7 +1,7 @@
 package io.micronaut.gradle.docker
 
 import io.micronaut.gradle.AbstractGradleBuildSpec
-import io.micronaut.gradle.fixtures.AbstractFunctionalTest
+import io.micronaut.gradle.fixtures.AbstractEagerConfiguringFunctionalTest
 import org.gradle.testkit.runner.TaskOutcome
 import spock.lang.IgnoreIf
 import spock.lang.Issue
@@ -10,7 +10,7 @@ import spock.lang.Requires
 @Requires({ AbstractGradleBuildSpec.graalVmAvailable })
 @IgnoreIf({ os.windows })
 @Requires({ jvm.isJava11Compatible() })
-class DockerNativeFunctionalTest extends AbstractFunctionalTest {
+class DockerNativeFunctionalTest extends AbstractEagerConfiguringFunctionalTest {
 
     def "test build docker native image for runtime #runtime"() {
         given:
@@ -355,12 +355,12 @@ class Application {
         and:
         dockerFile.first() == ('FROM test_base_image_jvm')
         dockerFile.find { s -> s == """HEALTHCHECK CMD curl -s localhost:8090/health | grep '"status":"UP"'""" }
-        dockerFile.find { s -> s == 'ENTRYPOINT ["./entrypoint.sh"]'}
+        dockerFile.find { s -> s == 'ENTRYPOINT ["./entrypoint.sh"]' }
 
         and:
         dockerFileNative.find() { s -> s == 'FROM test_base_image_docker' }
         dockerFileNative.find { s -> s == """HEALTHCHECK CMD curl -s localhost:8090/health | grep '"status":"UP"'""" }
-        dockerFileNative.find { s -> s == 'ENTRYPOINT ["./entrypoint.sh"]'}
+        dockerFileNative.find { s -> s == 'ENTRYPOINT ["./entrypoint.sh"]' }
     }
 
     void 'test build native docker file'() {
@@ -480,7 +480,7 @@ class Application {
         dockerFileNative.find() { s -> s == 'FROM test_base_image_docker' }
         dockerFileNative.find { s -> s == """HEALTHCHECK CMD curl -s localhost:8090/health | grep '"status":"UP"'""" }
         dockerFileNative.last().contains('ENTRYPOINT')
-        dockerFileNative.find {s -> s.contains('-Xmx64m')}
+        dockerFileNative.find { s -> s.contains('-Xmx64m') }
 
         where:
         runtime  | nativeImage
@@ -583,4 +583,37 @@ ENTRYPOINT ["/app/application", "-Xmx64m"]
 
     }
 
+    @Issue("https://github.com/micronaut-projects/micronaut-gradle-plugin/issues/373")
+    def "docker plugin shouldn't assume nativeCompile is available"() {
+        settingsFile << """
+            rootProject.name = 'hello-world'
+        """
+        buildFile << """plugins {
+  id 'io.micronaut.minimal.application'
+  id 'io.micronaut.docker'
+}
+
+micronaut {
+    version "3.4.0"
+    runtime "netty"
+}
+            
+$repositoriesBlock
+
+mainClassName="example.Application"
+
+// Force realization of all tasks to trigger the problem
+afterEvaluate {
+    project.tasks.forEach(task -> println(task.getName()))
+}
+"""
+
+        when:
+        def result = build('dockerfile')
+
+        def task = result.task(":dockerfile")
+
+        then:
+        task.outcome == TaskOutcome.SUCCESS
+    }
 }

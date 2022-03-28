@@ -42,6 +42,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 import static io.micronaut.gradle.Strings.capitalize;
 import static org.gradle.api.plugins.JavaPlugin.RUNTIME_CLASSPATH_CONFIGURATION_NAME;
@@ -101,12 +102,7 @@ public class MicronautDockerPlugin implements Plugin<Project> {
             task.getLayers().set(imageSpec.findLayers(RuntimeKind.JIT));
             task.getOutputDir().convention(project.getLayout().getBuildDirectory().dir("docker/" + imageName + "/layers"));
         });
-        TaskProvider<BuildLayersTask> buildNativeLayersTask = tasks.register(adaptTaskName("buildNativeLayersTask", imageName), BuildLayersTask.class, task -> {
-            task.setGroup(BasePlugin.BUILD_GROUP);
-            task.setDescription("Builds application layers for use in a Docker container (" + imageName + " image)");
-            task.getLayers().set(imageSpec.findLayers(RuntimeKind.NATIVE));
-            task.getOutputDir().convention(project.getLayout().getBuildDirectory().dir("docker/native-" + imageName + "/layers"));
-        });
+
 
         tasks.configureEach(task -> {
             if (BasePlugin.ASSEMBLE_TASK_NAME.equals(task.getName())) {
@@ -115,8 +111,26 @@ public class MicronautDockerPlugin implements Plugin<Project> {
         });
 
         Optional<TaskProvider<MicronautDockerfile>> dockerFileTask = configureDockerBuild(project, tasks, buildLayersTask, imageName);
-        TaskProvider<NativeImageDockerfile> nativeImageDockerFileTask = configureNativeDockerBuild(project, tasks, buildNativeLayersTask, imageName);
+        project.getPlugins().withId("io.micronaut.graalvm", plugin -> {
+            TaskProvider<BuildLayersTask> buildNativeLayersTask = tasks.register(adaptTaskName("buildNativeLayersTask", imageName), BuildLayersTask.class, task -> {
+                task.setGroup(BasePlugin.BUILD_GROUP);
+                task.setDescription("Builds application layers for use in a Docker container (" + imageName + " image)");
+                task.getLayers().set(imageSpec.findLayers(RuntimeKind.NATIVE));
+                task.getOutputDir().convention(project.getLayout().getBuildDirectory().dir("docker/native-" + imageName + "/layers"));
+            });
+            TaskProvider<NativeImageDockerfile> nativeImageDockerFileTask = configureNativeDockerBuild(project, tasks, buildNativeLayersTask, imageName);
+            withBuildStrategy(project, buildStrategy -> nativeImageDockerFileTask.configure(it -> {
+                buildStrategy.ifPresent(bs -> it.getBuildStrategy().set(buildStrategy.get()));
+                it.setupNativeImageTaskPostEvaluate();
+            }));
+        });
+        withBuildStrategy(project, buildStrategy -> dockerFileTask.ifPresent(t -> t.configure(it -> {
+            buildStrategy.ifPresent(bs -> it.getBuildStrategy().set(buildStrategy.get()));
+            it.setupTaskPostEvaluate();
+        })));
+    }
 
+    private void withBuildStrategy(Project project, Consumer<? super Optional<DockerBuildStrategy>> action) {
         project.afterEvaluate(eval -> {
             Optional<DockerBuildStrategy> buildStrategy;
             MicronautRuntime mr = PluginsHelper.resolveRuntime(project);
@@ -125,14 +139,7 @@ public class MicronautDockerPlugin implements Plugin<Project> {
             } else {
                 buildStrategy = Optional.empty();
             }
-            nativeImageDockerFileTask.configure(it -> {
-                buildStrategy.ifPresent(bs -> it.getBuildStrategy().set(buildStrategy.get()));
-                it.setupNativeImageTaskPostEvaluate();
-            });
-            dockerFileTask.ifPresent(t -> t.configure(it -> {
-                buildStrategy.ifPresent(bs -> it.getBuildStrategy().set(buildStrategy.get()));
-                it.setupTaskPostEvaluate();
-            }));
+            action.accept(buildStrategy);
         });
     }
 
