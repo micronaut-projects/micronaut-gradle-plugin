@@ -59,7 +59,7 @@ public abstract class SimpleSourceProcessor extends DefaultTask {
                     if (Files.isDirectory(path)) {
                         Files.createDirectories(target);
                     } else if (Files.isRegularFile(path)) {
-                        String contents = Files.readString(path, StandardCharsets.UTF_8);
+                        String contents = new String(Files.readAllBytes(path), StandardCharsets.UTF_8);
                         for (Map.Entry<String, String> entry : replacements.entrySet()) {
                             contents = contents.replace(entry.getKey(), entry.getValue());
                         }
