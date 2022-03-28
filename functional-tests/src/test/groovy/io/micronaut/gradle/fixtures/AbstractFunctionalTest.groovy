@@ -18,6 +18,7 @@ abstract class AbstractFunctionalTest extends AbstractGradleBuildSpec {
         settingsFile.text = """
             pluginManagement {
                 repositories {
+                    mavenCentral()
                     maven {
                         url = "${System.getProperty("internal.plugin.repo")}"
                     }
