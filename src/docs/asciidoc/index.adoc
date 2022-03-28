@@ -947,7 +947,7 @@ micronaut {
     ...
     aot {
         // optional, override the Micronaut AOT version
-        version = "1.0.0"
+        version = "1.0.1"
 
         // optimizations configuration
         optimizeServiceLoading = true

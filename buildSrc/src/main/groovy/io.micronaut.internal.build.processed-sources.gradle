@@ -1,0 +1,15 @@
+plugins {
+    id 'java'
+}
+
+def catalog = extensions.findByType(VersionCatalogsExtension).named('libs')
+
+def processSources = tasks.register("processJavaSources", io.micronaut.internal.build.sourcegen.SimpleSourceProcessor) {
+    templates = file("src/templates/java")
+    outputDirectory = layout.buildDirectory.dir("generated-sources/templates/java")
+    catalog.versionAliases.each { alias ->
+        replacements.put("%${alias.replace('.','_').toUpperCase()}_VERSION%", catalog.findVersion(alias).get().requiredVersion)
+    }
+}
+
+sourceSets.main.java.srcDir(processSources)

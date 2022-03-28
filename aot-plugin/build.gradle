@@ -1,5 +1,6 @@
 plugins {
     id "io.micronaut.internal.build.gradle-plugin"
+    id "io.micronaut.internal.build.processed-sources"
 }
 
 description = "Micronaut AOT Gradle plugin"
