@@ -1,10 +1,10 @@
 package io.micronaut.gradle.kotlin
 
-import io.micronaut.gradle.fixtures.AbstractFunctionalTest
+import io.micronaut.gradle.fixtures.AbstractEagerConfiguringFunctionalTest
 import org.gradle.testkit.runner.TaskOutcome
 import spock.lang.IgnoreIf
 
-class KotlinLibraryFunctionalTest extends AbstractFunctionalTest {
+class KotlinLibraryFunctionalTest extends AbstractEagerConfiguringFunctionalTest {
     @IgnoreIf({ jvm.java16Compatible }) // https://youtrack.jetbrains.com/issue/KT-45545
     def "test apply defaults for micronaut-library and kotlin with kotlin DSL"() {
         given:

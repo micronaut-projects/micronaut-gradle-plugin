@@ -1,11 +1,11 @@
 package io.micronaut.gradle.shadow
 
-import io.micronaut.gradle.fixtures.AbstractFunctionalTest
+import io.micronaut.gradle.fixtures.AbstractEagerConfiguringFunctionalTest
 import org.gradle.testkit.runner.TaskOutcome
 import spock.lang.Issue
 import spock.lang.Unroll
 
-class ShadowJarSpec extends AbstractFunctionalTest {
+class ShadowJarSpec extends AbstractEagerConfiguringFunctionalTest {
 
     private static final String SHADE_VERSION = "7.1.2"
     private static final String MICRONAUT_VERSION = "3.4.0"

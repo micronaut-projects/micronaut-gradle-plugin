@@ -1,10 +1,10 @@
 package io.micronaut.gradle
 
-import io.micronaut.gradle.fixtures.AbstractFunctionalTest
+import io.micronaut.gradle.fixtures.AbstractEagerConfiguringFunctionalTest
 import org.gradle.testkit.runner.TaskOutcome
 import spock.lang.Unroll
 
-class FullMicronautRuntimeSpec extends AbstractFunctionalTest {
+class FullMicronautRuntimeSpec extends AbstractEagerConfiguringFunctionalTest {
 
     @Unroll
     def "test execute tests for application for runtime: #runtime"() {

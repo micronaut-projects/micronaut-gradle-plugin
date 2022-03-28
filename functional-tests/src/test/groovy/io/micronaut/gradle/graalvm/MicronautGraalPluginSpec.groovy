@@ -2,13 +2,13 @@ package io.micronaut.gradle.graalvm
 
 import groovy.json.JsonSlurper
 import io.micronaut.gradle.AbstractGradleBuildSpec
-import io.micronaut.gradle.fixtures.AbstractFunctionalTest
+import io.micronaut.gradle.fixtures.AbstractEagerConfiguringFunctionalTest
 import org.gradle.testkit.runner.TaskOutcome
 import spock.lang.Requires
 
 @Requires({ AbstractGradleBuildSpec.graalVmAvailable && !os.windows })
 @Requires({ jvm.isJava11Compatible() })
-class MicronautGraalPluginSpec extends AbstractFunctionalTest {
+class MicronautGraalPluginSpec extends AbstractEagerConfiguringFunctionalTest {
 
     void 'generate GraalVM resource-config.json with OpenAPI and resources included'() {
         given:
