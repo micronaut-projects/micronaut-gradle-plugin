@@ -1,14 +1,11 @@
 package io.micronaut.gradle.graalvm;
 
 import io.micronaut.gradle.MicronautExtension;
-import io.micronaut.gradle.MicronautRuntime;
-import io.micronaut.gradle.PluginsHelper;
 import org.graalvm.buildtools.gradle.NativeImagePlugin;
 import org.graalvm.buildtools.gradle.dsl.GraalVMExtension;
 import org.graalvm.buildtools.gradle.tasks.BuildNativeImageTask;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
-import org.gradle.api.artifacts.DependencySet;
 import org.gradle.api.file.RegularFile;
 import org.gradle.api.plugins.JavaPluginConvention;
 import org.gradle.api.provider.ListProperty;
@@ -27,7 +24,6 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -64,18 +60,6 @@ public class MicronautGraalPlugin implements Plugin<Project> {
         );
         project.getPluginManager().withPlugin("application", plugin -> {
             TaskContainer tasks = project.getTasks();
-            tasks.withType(BuildNativeImageTask.class).named("nativeCompile", nativeImageTask -> {
-                MicronautRuntime mr = PluginsHelper.resolveRuntime(project);
-                if (mr == MicronautRuntime.LAMBDA) {
-                    DependencySet implementation = project.getConfigurations().getByName("implementation").getDependencies();
-                    boolean isAwsApp = implementation.stream()
-                            .noneMatch(dependency -> Objects.equals(dependency.getGroup(), "io.micronaut.aws") && dependency.getName().equals("micronaut-function-aws"));
-
-                    if (isAwsApp) {
-                        nativeImageTask.getOptions().get().getMainClass().set("io.micronaut.function.aws.runtime.MicronautLambdaRuntime");
-                    }
-                }
-            });
 
             // We use `afterEvaluate` here in order to preserve laziness of task configuration
             // and because there is no API to allow reacting to registration of tasks.
