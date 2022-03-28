@@ -126,4 +126,19 @@ public abstract class PluginsHelper {
         }
         return micronautRuntime;
     }
+
+    public static ApplicationType resolveApplicationType(Project p) {
+        MicronautExtension ext = p.getExtensions().findByType(MicronautExtension.class);
+        Object o = p.findProperty("micronaut.applicationType");
+
+        ApplicationType applicationType;
+        if (o != null) {
+            applicationType = ApplicationType.valueOf(o.toString().toUpperCase(Locale.ENGLISH));
+        } else if (ext == null) {
+            applicationType = ApplicationType.DEFAULT;
+        } else {
+            applicationType = ext.getApplicationType().getOrElse(ApplicationType.DEFAULT);
+        }
+        return applicationType;
+    }
 }

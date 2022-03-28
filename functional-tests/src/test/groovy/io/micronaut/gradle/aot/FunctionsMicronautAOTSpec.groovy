@@ -1,7 +1,9 @@
 package io.micronaut.gradle.aot
 
 import io.micronaut.gradle.AbstractGradleBuildSpec
+import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.TaskOutcome
+import spock.lang.Ignore
 import spock.lang.Requires
 
 @Requires({ jvm.isJava11Compatible() })
@@ -51,7 +53,7 @@ class FunctionsMicronautAOTSpec extends AbstractAOTPluginSpec {
         withSample("aot/${provider}-function")
 
         when:
-        def result = build "nativeOptimizedCompile"
+        BuildResult result = build "nativeOptimizedCompile"
 
         then:
         result.task(":nativeOptimizedCompile").outcome == TaskOutcome.SUCCESS

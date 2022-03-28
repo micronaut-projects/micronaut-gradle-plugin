@@ -1,6 +1,7 @@
 package io.micronaut.gradle.docker;
 
 import com.bmuschko.gradle.docker.tasks.image.Dockerfile;
+import io.micronaut.gradle.ApplicationType;
 import org.gradle.api.JavaVersion;
 import org.gradle.api.Project;
 import org.gradle.api.model.ObjectFactory;
@@ -68,7 +69,7 @@ public class MicronautDockerfile extends Dockerfile implements DockerBuildOption
         System.out.println("Dockerfile written to: " + getDestFile().get().getAsFile().getAbsolutePath());
     }
 
-    private void setupInstructions(List<Instruction> additionalInstructions) {
+    private void setupInstructions(List<Instruction> additionalInstructions, ApplicationType applicationType) {
         String workDir = getTargetWorkingDirectory().get();
         DockerBuildStrategy buildStrategy = this.buildStrategy.getOrElse(DockerBuildStrategy.DEFAULT);
         JavaApplication javaApplication = getProject().getExtensions().getByType(JavaApplication.class);
@@ -127,12 +128,12 @@ public class MicronautDockerfile extends Dockerfile implements DockerBuildOption
     /**
      * This is executed post project evaluation
      */
-    void setupTaskPostEvaluate() {
+    void setupTaskPostEvaluate(ApplicationType applicationType) {
         // Get any custom instructions the user may or may not have entered, but ignoring our 'from' placeholder
         List<Instruction> additionalInstructions = new ArrayList<>(getInstructions().get().subList(1, getInstructions().get().size()));
         // Reset the instructions to empty
         getInstructions().set(new ArrayList<>());
-        setupInstructions(additionalInstructions);
+        setupInstructions(additionalInstructions, applicationType);
     }
 
     /**

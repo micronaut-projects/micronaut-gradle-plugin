@@ -28,6 +28,7 @@ import org.gradle.api.plugins.ApplicationPlugin;
 import org.gradle.api.plugins.JavaApplication;
 import org.gradle.api.plugins.JavaPluginConvention;
 import org.gradle.api.plugins.PluginManager;
+import org.gradle.api.plugins.UnknownPluginException;
 import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.JavaExec;
 import org.gradle.api.tasks.SourceSet;
@@ -44,6 +45,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static io.micronaut.gradle.PluginsHelper.resolveApplicationType;
 import static io.micronaut.gradle.PluginsHelper.resolveRuntime;
 
 /**
@@ -160,7 +162,9 @@ public class MicronautMinimalApplicationPlugin implements Plugin<Project> {
         project.afterEvaluate(p -> {
             MicronautRuntime micronautRuntime = resolveRuntime(p);
             DependencyHandler dependencyHandler = p.getDependencies();
-            micronautRuntime.getDependencies().forEach((scope, dependencies) -> {
+
+            ApplicationType applicationType = resolveApplicationType(p);
+            MicronautRuntimeDependencies.getDependencies(micronautRuntime, applicationType).forEach((scope, dependencies) -> {
                 for (String dependency : dependencies) {
                     dependencyHandler.add(scope, dependency);
                 }
@@ -212,6 +216,10 @@ public class MicronautMinimalApplicationPlugin implements Plugin<Project> {
         });
 
         // Google Cloud Function requires shadow packaging
-        p.getPluginManager().apply(ShadowPluginSupport.SHADOW_PLUGIN);
+        try {
+            p.getPluginManager().apply(ShadowPluginSupport.SHADOW_PLUGIN);
+        } catch (UnknownPluginException e) {
+
+        }
     }
 }

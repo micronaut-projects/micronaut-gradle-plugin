@@ -22,6 +22,7 @@ public abstract class MicronautExtension implements ExtensionAware {
     private final AnnotationProcessing processing;
     private final Property<String> version;
     private final Property<Boolean> enableNativeImage;
+    private final Property<ApplicationType> applicationType;
     private final Property<MicronautRuntime> runtime;
     private final Property<MicronautTestRuntime> testRuntime;
 
@@ -31,6 +32,8 @@ public abstract class MicronautExtension implements ExtensionAware {
         this.version = objectFactory.property(String.class);
         this.enableNativeImage = objectFactory.property(Boolean.class)
                                     .convention(true);
+        this.applicationType = objectFactory.property(ApplicationType.class)
+                .convention(ApplicationType.DEFAULT);
         this.runtime = objectFactory.property(MicronautRuntime.class)
                                     .convention(MicronautRuntime.NONE);
         this.testRuntime = objectFactory.property(MicronautTestRuntime.class)
@@ -42,6 +45,13 @@ public abstract class MicronautExtension implements ExtensionAware {
      */
     public Property<MicronautTestRuntime> getTestRuntime() {
         return testRuntime;
+    }
+
+    /**
+     * @return The Micronaut application type.
+     */
+    public Property<ApplicationType> getApplicationType() {
+        return applicationType;
     }
 
     /**
@@ -103,6 +113,32 @@ public abstract class MicronautExtension implements ExtensionAware {
     public MicronautExtension runtime(MicronautRuntime micronautRuntime) {
         if (micronautRuntime != null) {
             this.runtime.set(micronautRuntime);
+        }
+        return this;
+    }
+
+    /**
+     * Configures the application type.
+     *
+     * @param applicationType The micronaut application type
+     * @return This extension
+     */
+    public MicronautExtension applicationType(String applicationType) {
+        if (MicronautExtension.this.applicationType != null) {
+            this.applicationType.set(ApplicationType.valueOf(applicationType.toUpperCase(Locale.ENGLISH)));
+        }
+        return this;
+    }
+
+    /**
+     * Configures the application type.
+     *
+     * @param applicationType The micronaut application type
+     * @return This extension
+     */
+    public MicronautExtension applicationType(ApplicationType applicationType) {
+        if (applicationType != null) {
+            this.applicationType.set(applicationType);
         }
         return this;
     }

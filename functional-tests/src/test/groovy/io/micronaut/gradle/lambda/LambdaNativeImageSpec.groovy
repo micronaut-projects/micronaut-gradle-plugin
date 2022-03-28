@@ -1,11 +1,15 @@
 package io.micronaut.gradle.lambda
 
 import io.micronaut.gradle.AbstractGradleBuildSpec
+import io.micronaut.gradle.ApplicationType
 import io.micronaut.gradle.fixtures.AbstractEagerConfiguringFunctionalTest
+import org.gradle.testkit.runner.BuildResult
+import org.gradle.testkit.runner.BuildTask
 import org.gradle.testkit.runner.TaskOutcome
 import spock.lang.IgnoreIf
 import spock.lang.Issue
 import spock.lang.Requires
+import spock.lang.Unroll
 
 @Requires({ AbstractGradleBuildSpec.graalVmAvailable })
 @IgnoreIf({ os.windows })
@@ -49,7 +53,8 @@ class LambdaNativeImageSpec extends AbstractEagerConfiguringFunctionalTest {
         !dockerFileNative.find() { it.contains('com.example.Application')}
     }
 
-    void 'explicitly configured main class takes precedence for an application deployed as GraalVM and Lambda'() {
+    @Unroll("for application Type: #applicationType main class for Native Image is #className")
+    void 'explicitly configured main class takes precedence for an application of type function when deployed as GraalVM and Lambda'(String applicationType, String className) {
         given:
         settingsFile << "rootProject.name = 'hello-world'"
         buildFile << """
@@ -77,17 +82,28 @@ class LambdaNativeImageSpec extends AbstractEagerConfiguringFunctionalTest {
         """
 
         when:
-        def result = build('dockerfileNative', '-Pmicronaut.runtime=lambda')
+        BuildResult result = (applicationType != null) ?
+                build('dockerfileNative', '-Pmicronaut.runtime=lambda', '-Pmicronaut.applicationType=' + applicationType) :
+                build('dockerfileNative', '-Pmicronaut.runtime=lambda')
 
-        def dockerfileNativeTask = result.task(':dockerfileNative')
-        def dockerFileNative = new File(testProjectDir.root, 'build/docker/native-main/DockerfileNative').readLines('UTF-8')
+        BuildTask dockerfileNativeTask = result.task(':dockerfileNative')
+        List<String> dockerFileNative = new File(testProjectDir.root, 'build/docker/native-main/DockerfileNative').readLines('UTF-8')
 
         then:
         dockerfileNativeTask.outcome == TaskOutcome.SUCCESS
 
-        and:
-        !dockerFileNative.find() { it.contains('-H:Class=io.micronaut.function.aws.runtime.MicronautLambdaRuntime')}
-        dockerFileNative.find() { it.contains('com.example.Application')}
+        when:
+        String line = dockerFileNative.findAll { it.contains('-H:Class=')}
+
+        then:
+        line
+        line.contains('-H:Class=' + className)
+
+        where:
+        applicationType || className
+        null            || 'io.micronaut.function.aws.runtime.MicronautLambdaRuntime'
+        'default'       || 'io.micronaut.function.aws.runtime.MicronautLambdaRuntime'
+        'function'      || 'com.example.Application'
     }
 
     void 'it is possible to define the mainclass for a dockerfile native'() {
@@ -177,7 +193,7 @@ class LambdaNativeImageSpec extends AbstractEagerConfiguringFunctionalTest {
         """
 
         when:
-        def result = build('dockerfileNative', '-Pmicronaut.runtime=lambda')
+        def result = build('dockerfileNative', '-Pmicronaut.runtime=lambda', '-Pmicronaut.applicationType=function')
 
         def dockerfileNativeTask = result.task(':dockerfileNative')
         def dockerFileNative = new File(testProjectDir.root, 'build/docker/native-main/DockerfileNative').readLines('UTF-8')

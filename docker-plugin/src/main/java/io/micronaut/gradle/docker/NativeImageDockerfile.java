@@ -1,6 +1,7 @@
 package io.micronaut.gradle.docker;
 
 import com.bmuschko.gradle.docker.tasks.image.Dockerfile;
+import io.micronaut.gradle.ApplicationType;
 import org.graalvm.buildtools.gradle.NativeImagePlugin;
 import org.graalvm.buildtools.gradle.dsl.AgentConfiguration;
 import org.graalvm.buildtools.gradle.dsl.NativeImageOptions;
@@ -355,7 +356,7 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
     }
 
     // Everything done in this method MUST be lazy, so use providers as much as possible
-    private void setupInstructions(List<Instruction> additionalInstructions) {
+    private void setupInstructions(List<Instruction> additionalInstructions, ApplicationType applicationType) {
         DockerBuildStrategy buildStrategy = getBuildStrategy().get();
         BaseImageForBuildStrategyResolver imageResolver = new BaseImageForBuildStrategyResolver(buildStrategy);
         Provider<From> baseImageProvider = getProviders().provider(() -> new From(imageResolver.get()));
@@ -389,7 +390,7 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
                         .map(this::toCopyResourceDirectoryInstruction)
                         .collect(Collectors.toList())
         ));
-        runCommand(getProviders().provider(() -> String.join(" ", buildActualCommandLine(executable, buildStrategy, imageResolver))));
+        runCommand(getProviders().provider(() -> String.join(" ", buildActualCommandLine(executable, buildStrategy, imageResolver, applicationType))));
         switch (buildStrategy) {
             case ORACLE_FUNCTION:
                 from(new From("fnproject/fn-java-fdk:" + getProjectFnVersion()).withStage("fnfdk"));
@@ -457,7 +458,8 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
 
     protected List<String> buildActualCommandLine(Provider<String> executable,
                                                   DockerBuildStrategy buildStrategy,
-                                                  BaseImageForBuildStrategyResolver imageResolver) {
+                                                  BaseImageForBuildStrategyResolver imageResolver,
+                                                  ApplicationType applicationType) {
         NativeImageOptions options = newNativeImageOptions("actualDockerOptions");
         prepareNativeImageOptions(options);
         if (buildStrategy == DockerBuildStrategy.ORACLE_FUNCTION) {
@@ -465,8 +467,12 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
             options.getBuildArgs().add("--report-unsupported-elements-at-runtime");
         } else if (buildStrategy == DockerBuildStrategy.LAMBDA) {
             JavaApplication javaApplication = getProject().getExtensions().getByType(JavaApplication.class);
-            if (!options.getMainClass().isPresent()) {
-                options.getMainClass().set(javaApplication.getMainClass().orElse(DEFAULT_LAMBDA_RUNTIME_CLASS));
+            if (applicationType == ApplicationType.DEFAULT) {
+                options.getMainClass().set(DEFAULT_LAMBDA_RUNTIME_CLASS);
+            } else {
+                if (!options.getMainClass().isPresent()) {
+                    options.getMainClass().set(javaApplication.getMainClass().orElse(DEFAULT_LAMBDA_RUNTIME_CLASS));
+                }
             }
         }
         List<String> commandLine = new ArrayList<>();
@@ -552,11 +558,11 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
     /**
      * This is executed post project evaluation
      */
-    void setupNativeImageTaskPostEvaluate() {
+    void setupNativeImageTaskPostEvaluate(ApplicationType applicationType) {
         List<Instruction> additionalInstructions = new ArrayList<>(getInstructions().get());
         // Reset the instructions to empty
         getInstructions().set(new ArrayList<>());
-        setupInstructions(additionalInstructions);
+        setupInstructions(additionalInstructions, applicationType);
     }
 
     /**

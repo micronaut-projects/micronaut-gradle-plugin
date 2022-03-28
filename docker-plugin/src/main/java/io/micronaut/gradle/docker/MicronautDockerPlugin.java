@@ -7,6 +7,7 @@ import com.bmuschko.gradle.docker.tasks.container.DockerRemoveContainer;
 import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage;
 import com.bmuschko.gradle.docker.tasks.image.DockerPushImage;
 import com.bmuschko.gradle.docker.tasks.image.Dockerfile;
+import io.micronaut.gradle.ApplicationType;
 import io.micronaut.gradle.MicronautBasePlugin;
 import io.micronaut.gradle.MicronautExtension;
 import io.micronaut.gradle.MicronautRuntime;
@@ -121,12 +122,14 @@ public class MicronautDockerPlugin implements Plugin<Project> {
             TaskProvider<NativeImageDockerfile> nativeImageDockerFileTask = configureNativeDockerBuild(project, tasks, buildNativeLayersTask, imageName);
             withBuildStrategy(project, buildStrategy -> nativeImageDockerFileTask.configure(it -> {
                 buildStrategy.ifPresent(bs -> it.getBuildStrategy().set(buildStrategy.get()));
-                it.setupNativeImageTaskPostEvaluate();
+                ApplicationType applicationType = PluginsHelper.resolveApplicationType(project);
+                it.setupNativeImageTaskPostEvaluate(applicationType);
             }));
         });
         withBuildStrategy(project, buildStrategy -> dockerFileTask.ifPresent(t -> t.configure(it -> {
             buildStrategy.ifPresent(bs -> it.getBuildStrategy().set(buildStrategy.get()));
-            it.setupTaskPostEvaluate();
+            ApplicationType applicationType = PluginsHelper.resolveApplicationType(project);
+            it.setupTaskPostEvaluate(applicationType);
         })));
     }
 
