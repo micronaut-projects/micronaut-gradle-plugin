@@ -1,10 +1,10 @@
 package io.micronaut.gradle.aot
 
 import groovy.transform.CompileStatic
-import io.micronaut.gradle.fixtures.AbstractFunctionalTest
+import io.micronaut.gradle.fixtures.AbstractEagerConfiguringFunctionalTest
 
 @CompileStatic
-abstract class AbstractAOTPluginSpec extends AbstractFunctionalTest {
+abstract class AbstractAOTPluginSpec extends AbstractEagerConfiguringFunctionalTest {
     def setup() {
         withSample('aot/app-startup-fixture')
     }
