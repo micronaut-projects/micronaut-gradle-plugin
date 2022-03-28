@@ -66,7 +66,7 @@ public final class MicronautRuntimeDependencies {
      * A map of dependencies and scopes
      * @return The dependencies and scopes
      */
-    public static Map<String, List<String>> getDependencies(MicronautRuntime runtime, ApplicationType applicationType) {
+    public static Map<String, List<String>> findDependenciesFor(MicronautRuntime runtime, ApplicationType applicationType) {
         if (runtime == MicronautRuntime.LAMBDA) {
             if (applicationType == ApplicationType.DEFAULT) {
                 return MicronautExtension.mapOf(

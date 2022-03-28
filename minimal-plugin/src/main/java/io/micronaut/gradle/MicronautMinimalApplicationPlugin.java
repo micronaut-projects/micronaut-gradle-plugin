@@ -164,7 +164,7 @@ public class MicronautMinimalApplicationPlugin implements Plugin<Project> {
             DependencyHandler dependencyHandler = p.getDependencies();
 
             ApplicationType applicationType = resolveApplicationType(p);
-            MicronautRuntimeDependencies.getDependencies(micronautRuntime, applicationType).forEach((scope, dependencies) -> {
+            MicronautRuntimeDependencies.findDependenciesFor(micronautRuntime, applicationType).forEach((scope, dependencies) -> {
                 for (String dependency : dependencies) {
                     dependencyHandler.add(scope, dependency);
                 }
