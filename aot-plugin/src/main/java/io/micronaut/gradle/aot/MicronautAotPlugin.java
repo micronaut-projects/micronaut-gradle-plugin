@@ -78,7 +78,7 @@ import static org.gradle.api.plugins.JavaPlugin.RUNTIME_CLASSPATH_CONFIGURATION_
 @SuppressWarnings("Convert2Lambda")
 public abstract class MicronautAotPlugin implements Plugin<Project> {
 
-    public static final String DEFAULT_AOT_VERSION = "1.0.0";
+    public static final String DEFAULT_AOT_VERSION = "1.0.1";
     public static final String OPTIMIZED_BINARY_NAME = "optimized";
     public static final String OPTIMIZED_DIST_NAME = "optimized";
     public static final String MAIN_BINARY_NAME = "main";
