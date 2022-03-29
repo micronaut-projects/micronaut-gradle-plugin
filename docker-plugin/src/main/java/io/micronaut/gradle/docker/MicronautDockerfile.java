@@ -18,8 +18,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import static io.micronaut.gradle.docker.MicronautDockerPlugin.DEFAULT_LAMBDA_RUNTIME_CLASS;
-
 public class MicronautDockerfile extends Dockerfile implements DockerBuildOptions {
     public static final String DEFAULT_WORKING_DIR = "/home/app";
 
@@ -94,9 +92,7 @@ public class MicronautDockerfile extends Dockerfile implements DockerBuildOption
                 }
                 break;
             case LAMBDA:
-                if (!javaApplication.getMainClass().isPresent()) {
-                    javaApplication.getMainClass().set(DEFAULT_LAMBDA_RUNTIME_CLASS);
-                }
+                javaApplication.getMainClass().set("io.micronaut.function.aws.runtime.MicronautLambdaRuntime");
             default:
                 from(new Dockerfile.From(from != null ? from : "openjdk:17-alpine"));
                 setupResources(this);

@@ -48,8 +48,6 @@ import static io.micronaut.gradle.Strings.capitalize;
 import static org.gradle.api.plugins.JavaPlugin.RUNTIME_CLASSPATH_CONFIGURATION_NAME;
 
 public class MicronautDockerPlugin implements Plugin<Project> {
-    public static final String DEFAULT_LAMBDA_RUNTIME_CLASS = "io.micronaut.function.aws.runtime.MicronautLambdaRuntime";
-
     @Override
     public void apply(Project project) {
         project.getPluginManager().apply(MicronautBasePlugin.class);
