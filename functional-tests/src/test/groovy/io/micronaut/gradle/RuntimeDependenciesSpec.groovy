@@ -1,12 +1,13 @@
 package io.micronaut.gradle
 
+import io.micronaut.gradle.fixtures.AbstractEagerConfiguringFunctionalTest
 import spock.lang.Narrative
 import spock.lang.Unroll
 
 @Narrative("""\
 Micronaut Gradle plugin adds dependencies depending on the environment being target.
 """)
-class RuntimeDependenciesSpec extends AbstractGradleBuildSpec {
+class RuntimeDependenciesSpec extends AbstractEagerConfiguringFunctionalTest {
 
     @Unroll
     def "#runtime runtime adds #description for the #configuration" (String runtime,
@@ -18,10 +19,11 @@ class RuntimeDependenciesSpec extends AbstractGradleBuildSpec {
         buildFile << """
             plugins {
                 id "io.micronaut.minimal.application"
+                id("com.github.johnrengelman.shadow") version("$SHADE_VERSION")
             }
             
             micronaut {
-                version "3.4.0"
+                version "$MICRONAUT_VERSION"
                 runtime "$runtime"                
             }
             
