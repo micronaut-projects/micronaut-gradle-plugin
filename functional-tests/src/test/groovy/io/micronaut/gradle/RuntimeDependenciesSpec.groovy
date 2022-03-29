@@ -1,20 +1,21 @@
 package io.micronaut.gradle
 
+import io.micronaut.gradle.fixtures.AbstractEagerConfiguringFunctionalTest
 import spock.lang.Narrative
 import spock.lang.Unroll
 
 @Narrative("""\
 Micronaut Gradle plugin adds dependencies depending on the environment being target.
 """)
-class RuntimeDependenciesSpec extends AbstractGradleBuildSpec {
+class RuntimeDependenciesSpec extends AbstractEagerConfiguringFunctionalTest {
 
     @Unroll
     def "application type: #applicationType and #runtime runtime adds #description for the #configuration" (ApplicationType applicationType,
-                                                                     String runtime,
-                                                                     String configuration,
-                                                                     List<String> coordinates,
-                                                                     List<String> missingCoordinates,
-                                                                     String description) {
+                                                                                                            String runtime,
+                                                                                                            String configuration,
+                                                                                                            List<String> coordinates,
+                                                                                                            List<String> missingCoordinates,
+                                                                                                            String description) {
         given:
         settingsFile << "rootProject.name = 'hello-world'"
         buildFile << """

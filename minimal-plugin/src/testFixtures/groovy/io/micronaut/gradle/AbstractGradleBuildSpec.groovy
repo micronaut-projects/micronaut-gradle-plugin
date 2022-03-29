@@ -20,7 +20,7 @@ abstract class AbstractGradleBuildSpec extends Specification {
     }
 
     boolean containsDependency(String mavenCoordinate, String configuration) {
-        BuildResult result = build('dependencies')//  "--configuration ${configuration}"
+        BuildResult result = build('dependencies', "--configuration", configuration)
         BuildTask task = result.task(":dependencies")
         assert task.outcome == TaskOutcome.SUCCESS
         result.output.contains(mavenCoordinate)
