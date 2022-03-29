@@ -468,7 +468,12 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
         } else if (buildStrategy == DockerBuildStrategy.LAMBDA) {
             JavaApplication javaApplication = getProject().getExtensions().getByType(JavaApplication.class);
             if (applicationType == ApplicationType.DEFAULT) {
-                options.getMainClass().set(DEFAULT_LAMBDA_RUNTIME_CLASS);
+                if (!javaApplication.getMainClass().isPresent()) {
+                    options.getMainClass().set(DEFAULT_LAMBDA_RUNTIME_CLASS);
+                }
+                if (!options.getMainClass().isPresent()) {
+                    options.getMainClass().set(DEFAULT_LAMBDA_RUNTIME_CLASS);
+                }
             } else {
                 if (!options.getMainClass().isPresent()) {
                     options.getMainClass().set(javaApplication.getMainClass().orElse(DEFAULT_LAMBDA_RUNTIME_CLASS));
