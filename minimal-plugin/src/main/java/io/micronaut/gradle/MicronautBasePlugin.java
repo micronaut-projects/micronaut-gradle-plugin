@@ -19,8 +19,11 @@ import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 
 public class MicronautBasePlugin implements Plugin<Project> {
+
+    public static final String MICRONAUT_EXTENSION = "micronaut";
+
     @Override
     public void apply(Project project) {
-        project.getExtensions().create("micronaut", MicronautExtension.class);
+        project.getExtensions().create(MICRONAUT_EXTENSION, MicronautExtension.class);
     }
 }

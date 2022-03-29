@@ -19,6 +19,7 @@ import org.gradle.api.InvalidUserCodeException;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.DependencySet;
 import org.gradle.api.artifacts.dsl.DependencyHandler;
+import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.SourceSet;
 
 import java.io.File;
@@ -129,11 +130,10 @@ public abstract class PluginsHelper {
 
     public static ApplicationType resolveApplicationType(Project p) {
         MicronautExtension ext = p.getExtensions().findByType(MicronautExtension.class);
-        Object o = p.findProperty("micronaut.applicationType");
-
+        Provider<String> property = p.getProviders().gradleProperty(MicronautBasePlugin.MICRONAUT_EXTENSION + ".applicationType");
         ApplicationType applicationType;
-        if (o != null) {
-            applicationType = ApplicationType.valueOf(o.toString().toUpperCase(Locale.ENGLISH));
+        if (property.isPresent()) {
+            applicationType = ApplicationType.valueOf(property.get().toUpperCase(Locale.ENGLISH));
         } else if (ext == null) {
             applicationType = ApplicationType.DEFAULT;
         } else {
