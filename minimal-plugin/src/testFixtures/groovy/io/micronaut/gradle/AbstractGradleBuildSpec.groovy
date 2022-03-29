@@ -2,7 +2,9 @@ package io.micronaut.gradle
 
 import io.micronaut.gradle.graalvm.GraalUtil
 import org.gradle.testkit.runner.BuildResult
+import org.gradle.testkit.runner.BuildTask
 import org.gradle.testkit.runner.GradleRunner
+import org.gradle.testkit.runner.TaskOutcome
 import org.junit.Rule
 import org.junit.rules.TemporaryFolder
 import spock.lang.Specification
@@ -15,6 +17,13 @@ import java.nio.file.StandardCopyOption
 abstract class AbstractGradleBuildSpec extends Specification {
     static boolean isGraalVmAvailable() {
         return GraalUtil.isGraalJVM() || System.getenv("GRAALVM_HOME")
+    }
+
+    boolean containsDependency(String mavenCoordinate, String configuration) {
+        BuildResult result = build('dependencies', "--configuration", configuration)
+        BuildTask task = result.task(":dependencies")
+        assert task.outcome == TaskOutcome.SUCCESS
+        result.output.contains(mavenCoordinate)
     }
 
     @Rule
