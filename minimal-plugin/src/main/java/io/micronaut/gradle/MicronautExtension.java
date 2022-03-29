@@ -123,19 +123,6 @@ public abstract class MicronautExtension implements ExtensionAware {
      * @param applicationType The micronaut application type
      * @return This extension
      */
-    public MicronautExtension applicationType(String applicationType) {
-        if (MicronautExtension.this.applicationType != null) {
-            this.applicationType.set(ApplicationType.valueOf(applicationType.toUpperCase(Locale.ENGLISH)));
-        }
-        return this;
-    }
-
-    /**
-     * Configures the application type.
-     *
-     * @param applicationType The micronaut application type
-     * @return This extension
-     */
     public MicronautExtension applicationType(ApplicationType applicationType) {
         if (applicationType != null) {
             this.applicationType.set(applicationType);

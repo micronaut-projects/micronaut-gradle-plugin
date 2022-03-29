@@ -25,7 +25,7 @@ class RuntimeDependenciesSpec extends AbstractGradleBuildSpec {
             micronaut {
                 version "3.4.0"
                 runtime "$runtime"
-                applicationType "${applicationType.name().toLowerCase()}"                
+                applicationType "${applicationType.name()}"                
             }
             
             $repositoriesBlock                                   

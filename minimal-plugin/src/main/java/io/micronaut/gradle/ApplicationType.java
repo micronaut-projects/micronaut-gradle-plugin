@@ -58,4 +58,9 @@ public enum ApplicationType {
     public String getName() {
         return name().toLowerCase(Locale.ENGLISH);
     }
+
+    @Override
+    public String toString() {
+        return this.name();
+    }
 }
