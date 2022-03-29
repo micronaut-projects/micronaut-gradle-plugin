@@ -67,6 +67,7 @@ public final class MicronautRuntimeDependencies {
      * @return The dependencies and scopes
      */
     public static Map<String, List<String>> findDependenciesFor(MicronautRuntime runtime, ApplicationType applicationType) {
+
         if (runtime == MicronautRuntime.LAMBDA) {
             if (applicationType == ApplicationType.DEFAULT) {
                 return MicronautExtension.mapOf(
@@ -82,6 +83,14 @@ public final class MicronautRuntimeDependencies {
                         JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME,
                         Collections.singletonList(micronautAwsDependency(ARTIFACT_ID_MICRONAUT_AWS_CUSTOM_RUNTIME)));
             }
+        } else if (runtime == LAMBDA_JAVA && applicationType == ApplicationType.DEFAULT) {
+            return MicronautExtension.mapOf(
+                    JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME,
+                    Collections.singletonList(micronautAwsDependency(ARTIFACT_ID_MICRONAUT_AWS_API_PROXY)),
+                    DEVELOPMENT_ONLY,
+                    Collections.singletonList(micronautAwsDependency(ARTIFACT_ID_MICRONAUT_AWS_API_PROXY_TEST)),
+                    JavaPlugin.TEST_IMPLEMENTATION_CONFIGURATION_NAME,
+                    Collections.singletonList(micronautAwsDependency(ARTIFACT_ID_MICRONAUT_AWS_API_PROXY_TEST)));
 
         } else if(runtime == MicronautRuntime.ORACLE_FUNCTION) {
             return MicronautExtension.mapOf(

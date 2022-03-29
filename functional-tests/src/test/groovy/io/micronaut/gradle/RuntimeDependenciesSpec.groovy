@@ -64,9 +64,12 @@ class RuntimeDependenciesSpec extends AbstractEagerConfiguringFunctionalTest {
         ApplicationType.DEFAULT  | 'lambda'               | 'compileClasspath'     || ["io.micronaut.aws:micronaut-function-aws-api-proxy", "io.micronaut.aws:micronaut-function-aws-custom-runtime"]   | []
         ApplicationType.DEFAULT  | 'lambda'               | 'developmentOnly'      || ["io.micronaut.aws:micronaut-function-aws-api-proxy-test"]                                                        | []
         ApplicationType.DEFAULT  | 'lambda'               | 'testRuntimeClasspath' || ["io.micronaut.aws:micronaut-function-aws-api-proxy-test"]                                                        | []
-        ApplicationType.DEFAULT  | 'lambda_java'          | 'compileClasspath'     || []                                                                                                                | ["io.micronaut.aws:micronaut-function-aws-api-proxy", "io.micronaut.aws:micronaut-function-aws-custom-runtime"]
-        ApplicationType.DEFAULT  | 'lambda_java'          | 'developmentOnly'      || []                                                                                                                | ["io.micronaut.aws:micronaut-function-aws-api-proxy-test"]
-        ApplicationType.DEFAULT  | 'lambda_java'          | 'testRuntimeClasspath' || []                                                                                                                | ["io.micronaut.aws:micronaut-function-aws-api-proxy-test"]
+        ApplicationType.DEFAULT  | 'lambda_java'          | 'compileClasspath'     || ["io.micronaut.aws:micronaut-function-aws-api-proxy"]                                                             | ["io.micronaut.aws:micronaut-function-aws-custom-runtime"]
+        ApplicationType.DEFAULT  | 'lambda_java'          | 'developmentOnly'      || ["io.micronaut.aws:micronaut-function-aws-api-proxy-test"]                                                        | []
+        ApplicationType.DEFAULT  | 'lambda_java'          | 'testRuntimeClasspath' || ["io.micronaut.aws:micronaut-function-aws-api-proxy-test"]                                                        | []
+        ApplicationType.FUNCTION | 'lambda_java'          | 'compileClasspath'     || []                                                                                                                | ["io.micronaut.aws:micronaut-function-aws-api-proxy", "io.micronaut.aws:micronaut-function-aws-custom-runtime"]
+        ApplicationType.FUNCTION | 'lambda_java'          | 'developmentOnly'      || []                                                                                                                | ["io.micronaut.aws:micronaut-function-aws-api-proxy-test"]
+        ApplicationType.FUNCTION | 'lambda_java'          | 'testRuntimeClasspath' || []                                                                                                                | ["io.micronaut.aws:micronaut-function-aws-api-proxy-test"]
 
         description =  String.join(",", coordinates) + " and does not add " + String.join(',', missingCoordinates)
     }
