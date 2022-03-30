@@ -42,7 +42,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static io.micronaut.gradle.docker.MicronautDockerPlugin.DEFAULT_LAMBDA_RUNTIME_CLASS;
 import static io.micronaut.gradle.docker.MicronautDockerfile.DEFAULT_WORKING_DIR;
 
 /**
@@ -455,9 +454,7 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
         return new CopyFileInstruction(new CopyFile("config-dirs/" + resourceDirectory.getName(), getTargetWorkingDirectory().get() + "/config-dirs/" + resourceDirectory.getName()));
     }
 
-    protected List<String> buildActualCommandLine(Provider<String> executable,
-                                                  DockerBuildStrategy buildStrategy,
-                                                  BaseImageForBuildStrategyResolver imageResolver) {
+    protected List<String> buildActualCommandLine(Provider<String> executable, DockerBuildStrategy buildStrategy, BaseImageForBuildStrategyResolver imageResolver) {
         NativeImageOptions options = newNativeImageOptions("actualDockerOptions");
         prepareNativeImageOptions(options);
         if (buildStrategy == DockerBuildStrategy.ORACLE_FUNCTION) {
@@ -465,8 +462,11 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
             options.getBuildArgs().add("--report-unsupported-elements-at-runtime");
         } else if (buildStrategy == DockerBuildStrategy.LAMBDA) {
             JavaApplication javaApplication = getProject().getExtensions().getByType(JavaApplication.class);
+            if (!javaApplication.getMainClass().isPresent()) {
+                options.getMainClass().set("io.micronaut.function.aws.runtime.MicronautLambdaRuntime");
+            }
             if (!options.getMainClass().isPresent()) {
-                options.getMainClass().set(javaApplication.getMainClass().orElse(DEFAULT_LAMBDA_RUNTIME_CLASS));
+                options.getMainClass().set("io.micronaut.function.aws.runtime.MicronautLambdaRuntime");
             }
         }
         List<String> commandLine = new ArrayList<>();
