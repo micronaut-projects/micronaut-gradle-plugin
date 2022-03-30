@@ -16,6 +16,7 @@
 plugins {
     id "io.micronaut.build.internal.dependency-updates"
     id "io.micronaut.internal.build.documented"
+    id "io.micronaut.build.internal.quality-reporting"
 }
 
 repositories {
