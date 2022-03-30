@@ -11,10 +11,10 @@ on:
 jobs:
   build:
     if: github.repository != 'micronaut-projects/micronaut-project-template'
-    runs-on: windows-2016
+    runs-on: windows-latest
     strategy:
       matrix:
-        graalvm: ['22.0.0.2']
+        java: ['11']
     steps:
       - uses: actions/checkout@v3
       - uses: actions/cache@v2.1.7
@@ -23,23 +23,16 @@ jobs:
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
           restore-keys: |
             ${{ runner.os }}-gradle-
-      - name: Download GraalVM
-        run: Invoke-RestMethod -Uri https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-${{ matrix.graalvm }}/graalvm-ce-java11-windows-amd64-${{ matrix.graalvm }}.zip -OutFile 'graal.zip'
-      - name: Install GraalVM
-        run: Expand-Archive -path 'graal.zip' -destinationpath 'C:\graalvm'
-      - name: Install Native Image
-        run: C:\graalvm\graalvm-ce-java11-${{ matrix.graalvm }}\bin\gu.cmd install native-image
-      - name: Set up Visual C Build Tools Workload for Visual Studio 2017 Build Tools
-        run: |
-          choco install visualstudio2017-workload-vctools
+      - name: Setup GraalVM CE
+        uses: graalvm/setup-graalvm@v1
+        with:
+          version: '22.0.0.2'
+          java-version: ${{ matrix.java }}
+          components: 'native-image'
       - name: Build with Gradle
         shell: cmd
-        run: |
-          call "C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\VC\Auxiliary\Build\vcvars64.bat"
-          ./gradlew.bat check --no-daemon --continue
+        run: ./gradlew.bat check --no-daemon --continue
         env:
-          JAVA_HOME: C:\graalvm\graalvm-ce-java11-${{ matrix.graalvm }}
-          GRAALVM_HOME: C:\graalvm\graalvm-ce-java11-${{ matrix.graalvm }}
           TESTCONTAINERS_RYUK_DISABLED: true
           GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GRADLE_ENTERPRISE_ACCESS_KEY }}
           GRADLE_ENTERPRISE_CACHE_USERNAME: ${{ secrets.GRADLE_ENTERPRISE_CACHE_USERNAME }}
