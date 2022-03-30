@@ -1,7 +1,7 @@
 package io.micronaut.gradle.lambda
 
 import io.micronaut.gradle.AbstractGradleBuildSpec
-import io.micronaut.gradle.fixtures.AbstractEagerConfiguringFunctionalTest
+import io.micronaut.gradle.fixtures.AbstractFunctionalTest
 import org.gradle.testkit.runner.TaskOutcome
 import spock.lang.IgnoreIf
 import spock.lang.Issue
@@ -10,9 +10,9 @@ import spock.lang.Requires
 @Requires({ AbstractGradleBuildSpec.graalVmAvailable })
 @IgnoreIf({ os.windows })
 @Requires({ jvm.isJava11Compatible() })
-class LambdaNativeImageSpec extends AbstractEagerConfiguringFunctionalTest {
+class LambdaNativeImageSpec extends AbstractFunctionalTest {
 
-    void 'mainclass defaults to MicronautLambdaRuntime for an application deployed as GraalVM and Lambda'() {
+    void 'mainclass is set correctly for an application deployed as GraalVM and Lambda'() {
         given:
         settingsFile << "rootProject.name = 'hello-world'"
         buildFile << """
@@ -28,6 +28,10 @@ class LambdaNativeImageSpec extends AbstractEagerConfiguringFunctionalTest {
             }
             
             $repositoriesBlock
+            
+            application {
+                mainClass.set("com.example.Application")
+            }
             
             java {
                 sourceCompatibility = JavaVersion.toVersion('11')
@@ -47,47 +51,6 @@ class LambdaNativeImageSpec extends AbstractEagerConfiguringFunctionalTest {
         and:
         dockerFileNative.find() { it.contains('-H:Class=io.micronaut.function.aws.runtime.MicronautLambdaRuntime')}
         !dockerFileNative.find() { it.contains('com.example.Application')}
-    }
-
-    void 'explicitly configured main class takes precedence for an application deployed as GraalVM and Lambda'() {
-        given:
-        settingsFile << "rootProject.name = 'hello-world'"
-        buildFile << """
-            plugins {
-                id "io.micronaut.minimal.application"
-                id "io.micronaut.docker"
-                id "io.micronaut.graalvm"
-            }
-            
-            micronaut {
-                version "2.3.4"
-                runtime "netty"
-            }
-            
-            $repositoriesBlock
-
-            application {
-                mainClass = 'com.example.Application'
-            }            
-
-            java {
-                sourceCompatibility = JavaVersion.toVersion('11')
-                targetCompatibility = JavaVersion.toVersion('11')
-            }
-        """
-
-        when:
-        def result = build('dockerfileNative', '-Pmicronaut.runtime=lambda')
-
-        def dockerfileNativeTask = result.task(':dockerfileNative')
-        def dockerFileNative = new File(testProjectDir.root, 'build/docker/native-main/DockerfileNative').readLines('UTF-8')
-
-        then:
-        dockerfileNativeTask.outcome == TaskOutcome.SUCCESS
-
-        and:
-        !dockerFileNative.find() { it.contains('-H:Class=io.micronaut.function.aws.runtime.MicronautLambdaRuntime')}
-        dockerFileNative.find() { it.contains('com.example.Application')}
     }
 
     void 'it is possible to define the mainclass for a dockerfile native'() {
