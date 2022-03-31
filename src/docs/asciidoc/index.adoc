@@ -863,7 +863,7 @@ There are a couple of options:
 
 ==== Layered application
 
-The plugin creates a "layered" application in `build/layers` and from that directory you can run `java -jar myapp.jar`.
+The plugin creates a "layered" application in `build/docker/main/layers` and from that directory you can run `java -jar myapp.jar`.
 It works because that directory contains a `lib` directory with all the libraries and a `resources` directory with the configuration.
 Keep in mind that copying the only `.jar` file to another directory won't work.
 
