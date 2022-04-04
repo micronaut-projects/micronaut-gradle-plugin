@@ -62,7 +62,7 @@ public final class MicronautRuntimeDependencies {
      * @return The dependencies and scopes
      */
     public static Dependencies findApplicationPluginDependenciesByRuntime(MicronautRuntime runtime) {
-        if (runtime == LAMBDA_JAVA || runtime.isLambdaProvided()) {
+        if (runtime.isLambda()) {
             Dependencies.Builder builder = Dependencies.builder()
                     .implementation(micronautAwsDependency(ARTIFACT_ID_MICRONAUT_AWS_API_PROXY))
                     .developmentOnly(micronautAwsDependency(ARTIFACT_ID_MICRONAUT_AWS_API_PROXY_TEST))
