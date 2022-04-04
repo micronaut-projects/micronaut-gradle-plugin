@@ -15,6 +15,8 @@
  */
 package io.micronaut.gradle;
 
+import org.gradle.api.GradleException;
+
 import static io.micronaut.gradle.MicronautRuntime.*;
 
 /**
@@ -105,6 +107,8 @@ public final class MicronautRuntimeDependencies {
 
         } else if (runtime == UNDERTOW) {
             return Dependencies.builder().implementation(micronautServletDependency(ARTIFACT_ID_MICRONAUT_SERVLET_UNDERTOW)).build();
+        } else if (runtime != NONE) {
+            throw new GradleException("Application plugin dependencies not specified for runtime " + runtime.name());
         }
         return Dependencies.builder().build();
     }
