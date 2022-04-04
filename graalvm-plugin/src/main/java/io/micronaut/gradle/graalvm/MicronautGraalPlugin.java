@@ -31,6 +31,8 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static io.micronaut.gradle.MicronautRuntime.isLambdaProvided;
+
 /**
  * Support for building GraalVM native images.
  *
@@ -66,7 +68,7 @@ public class MicronautGraalPlugin implements Plugin<Project> {
             TaskContainer tasks = project.getTasks();
             tasks.withType(BuildNativeImageTask.class).named("nativeCompile", nativeImageTask -> {
                 MicronautRuntime mr = PluginsHelper.resolveRuntime(project);
-                if (mr == MicronautRuntime.LAMBDA) {
+                if (isLambdaProvided(mr)) {
                     DependencySet implementation = project.getConfigurations().getByName("implementation").getDependencies();
                     boolean isAwsApp = implementation.stream()
                             .noneMatch(dependency -> Objects.equals(dependency.getGroup(), "io.micronaut.aws") && dependency.getName().equals("micronaut-function-aws"));

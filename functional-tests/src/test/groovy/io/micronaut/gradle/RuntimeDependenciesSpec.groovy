@@ -51,10 +51,16 @@ class RuntimeDependenciesSpec extends AbstractEagerConfiguringFunctionalTest {
         'oracle_function'      | 'compileClasspath'     || ["io.micronaut.oraclecloud:micronaut-oraclecloud-function-http"]
         'oracle_function'      | 'developmentOnly'      || ["io.micronaut.oraclecloud:micronaut-oraclecloud-function-http-test"]
         'oracle_function'      | 'testRuntimeClasspath' || ["io.micronaut.oraclecloud:micronaut-oraclecloud-function-http-test"]
-        'oracle_function'      | 'runtimeOnly'           || ["com.fnproject.fn:runtime"]
+        'oracle_function'      | 'runtimeOnly'          || ["com.fnproject.fn:runtime"]
+        'lambda_java'          | 'compileClasspath'     || ["io.micronaut.aws:micronaut-function-aws-api-proxy"]
+        'lambda_java'          | 'developmentOnly'      || ["io.micronaut.aws:micronaut-function-aws-api-proxy-test"]
+        'lambda_java'          | 'testRuntimeClasspath' || ["io.micronaut.aws:micronaut-function-aws-api-proxy-test"]
         'lambda'               | 'compileClasspath'     || ["io.micronaut.aws:micronaut-function-aws-api-proxy", "io.micronaut.aws:micronaut-function-aws-custom-runtime"]
         'lambda'               | 'developmentOnly'      || ["io.micronaut.aws:micronaut-function-aws-api-proxy-test"]
         'lambda'               | 'testRuntimeClasspath' || ["io.micronaut.aws:micronaut-function-aws-api-proxy-test"]
+        'lambda_provided'      | 'compileClasspath'     || ["io.micronaut.aws:micronaut-function-aws-api-proxy", "io.micronaut.aws:micronaut-function-aws-custom-runtime"]
+        'lambda_provided'      | 'developmentOnly'      || ["io.micronaut.aws:micronaut-function-aws-api-proxy-test"]
+        'lambda_provided'      | 'testRuntimeClasspath' || ["io.micronaut.aws:micronaut-function-aws-api-proxy-test"]
 
         description =  String.join(",", coordinates)
     }
