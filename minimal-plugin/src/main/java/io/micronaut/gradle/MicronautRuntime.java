@@ -77,8 +77,8 @@ public enum MicronautRuntime {
         return buildStrategy;
     }
 
-    public static boolean isLambdaProvided(MicronautRuntime runtime) {
-        return runtime == LAMBDA_PROVIDED || runtime == LAMBDA;
+    public boolean isLambdaProvided() {
+        return this == LAMBDA_PROVIDED || this == LAMBDA;
     }
 
 }

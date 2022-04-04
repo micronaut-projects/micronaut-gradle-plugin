@@ -44,7 +44,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
 
-import static io.micronaut.gradle.MicronautRuntime.isLambdaProvided;
 import static io.micronaut.gradle.Strings.capitalize;
 import static org.gradle.api.plugins.JavaPlugin.RUNTIME_CLASSPATH_CONFIGURATION_NAME;
 
@@ -284,7 +283,7 @@ public class MicronautDockerPlugin implements Plugin<Project> {
 
         project.afterEvaluate(p -> {
             MicronautRuntime mr = PluginsHelper.resolveRuntime(p);
-            if (isLambdaProvided(mr)) {
+            if (mr.isLambdaProvided()) {
                 TaskContainer taskContainer = p.getTasks();
                 TaskProvider<DockerCreateContainer> createLambdaContainer = taskContainer.register(adaptTaskName("createLambdaContainer", imageName), DockerCreateContainer.class, task -> {
                     task.dependsOn(dockerBuildTask);
