@@ -51,7 +51,6 @@ import static io.micronaut.gradle.PluginsHelper.resolveRuntime;
  * for GraalVM or Docker.
  */
 public class MicronautMinimalApplicationPlugin implements Plugin<Project> {
-    public static final String CONFIGURATION_DEVELOPMENT_ONLY = "developmentOnly";
     // This flag is used for testing purposes only
     public static final String INTERNAL_CONTINUOUS_FLAG = "io.micronaut.internal.gradle.continuous";
 
@@ -68,7 +67,7 @@ public class MicronautMinimalApplicationPlugin implements Plugin<Project> {
         plugins.apply(ApplicationPlugin.class);
         plugins.apply(MicronautComponentPlugin.class);
 
-        Configuration developmentOnly = createDevelopmentOnlyConfiguration(project);
+        Configuration developmentOnly = DevelopmentOnlyConfiguration.createDevelopmentOnlyConfiguration(project);
         configureLogging(project);
         configureMicronautRuntime(project);
         configureJavaExecTasks(project, developmentOnly);
@@ -119,21 +118,7 @@ public class MicronautMinimalApplicationPlugin implements Plugin<Project> {
         });
     }
 
-    private Configuration createDevelopmentOnlyConfiguration(Project project) {
-        ConfigurationContainer configurations = project.getConfigurations();
-        Configuration developmentOnly = configurations.create(CONFIGURATION_DEVELOPMENT_ONLY, conf -> {
-            conf.setCanBeConsumed(false);
-            conf.setCanBeResolved(true);
-            conf.extendsFrom(configurations.getByName(MicronautComponentPlugin.MICRONAUT_BOMS_CONFIGURATION));
-        });
 
-        // added to ensure file watch works more efficiently on OS X
-        if (Os.isFamily(Os.FAMILY_MAC)) {
-            developmentOnly.getDependencies().add(project.getDependencies().create("io.micronaut:micronaut-runtime-osx"));
-        }
-
-        return developmentOnly;
-    }
 
     private void configureLogging(Project p) {
         DependencyHandler dependencyHandler = p.getDependencies();
