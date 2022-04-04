@@ -19,7 +19,7 @@ import org.gradle.api.plugins.JavaPlugin;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -50,7 +50,7 @@ public class Dependencies {
     }
 
     public Map<String, List<String>> toMap() {
-        Map<String, List<String>> m = new HashMap<>();
+        Map<String, List<String>> m = new LinkedHashMap<>();
         if (isNotEmpty(developmentOnlyDependencies)) {
             m.put(DEVELOPMENT_ONLY, developmentOnlyDependencies);
         }
