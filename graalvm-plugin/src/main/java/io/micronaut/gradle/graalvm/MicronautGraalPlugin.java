@@ -66,7 +66,7 @@ public class MicronautGraalPlugin implements Plugin<Project> {
             TaskContainer tasks = project.getTasks();
             tasks.withType(BuildNativeImageTask.class).named("nativeCompile", nativeImageTask -> {
                 MicronautRuntime mr = PluginsHelper.resolveRuntime(project);
-                if (mr == MicronautRuntime.LAMBDA) {
+                if (mr.isLambdaProvided()) {
                     DependencySet implementation = project.getConfigurations().getByName("implementation").getDependencies();
                     boolean isAwsApp = implementation.stream()
                             .noneMatch(dependency -> Objects.equals(dependency.getGroup(), "io.micronaut.aws") && dependency.getName().equals("micronaut-function-aws"));

@@ -1,12 +1,6 @@
 package io.micronaut.gradle;
 
 import io.micronaut.gradle.docker.DockerBuildStrategy;
-import org.gradle.api.plugins.JavaPlugin;
-
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
 
 /**
  * The packaging kind of the application.
@@ -22,92 +16,58 @@ public enum MicronautRuntime {
     /**
      * Default packaging.
      */
-    NETTY("io.micronaut:micronaut-http-server-netty"),
+    NETTY,
     /**
      * Tomcat server.
      */
-    TOMCAT("io.micronaut.servlet:micronaut-http-server-tomcat"),
+    TOMCAT,
     /**
      * Jetty server.
      */
-    JETTY("io.micronaut.servlet:micronaut-http-server-jetty"),
+    JETTY,
     /**
      * Undertow server.
      */
-    UNDERTOW("io.micronaut.servlet:micronaut-http-server-undertow"),
+    UNDERTOW,
+
     /**
-     * AWS lambda packaged as a Jar file.
+     * AWS lambda packaged as a Jar file and deploy to a Java runtime.
      */
-    LAMBDA(DockerBuildStrategy.LAMBDA, MicronautExtension.mapOf(
-            JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME,
-            Arrays.asList("io.micronaut.aws:micronaut-function-aws-api-proxy", "io.micronaut.aws:micronaut-function-aws-custom-runtime"),
-            "developmentOnly",
-            Collections.singletonList("io.micronaut.aws:micronaut-function-aws-api-proxy-test"),
-            JavaPlugin.TEST_IMPLEMENTATION_CONFIGURATION_NAME,
-            Collections.singletonList("io.micronaut.aws:micronaut-function-aws-api-proxy-test")
-    )),
+    LAMBDA_JAVA,
+
+    /**
+     * AWS lambda deployed to a Provided runtime.
+     * @deprecated Use {@link #LAMBDA_PROVIDED} instead.
+     */
+    @Deprecated
+    LAMBDA(DockerBuildStrategy.LAMBDA),
+
+    /**
+     * AWS lambda deployed to a Provided runtime.
+     */
+    LAMBDA_PROVIDED(DockerBuildStrategy.LAMBDA),
+
     /**
      * Oracle Cloud Function, packaged as a docker container.
      */
-    ORACLE_FUNCTION(DockerBuildStrategy.ORACLE_FUNCTION, MicronautExtension.mapOf(
-            JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME,
-            Collections.singletonList("io.micronaut.oraclecloud:micronaut-oraclecloud-function-http"),
-            JavaPlugin.TEST_IMPLEMENTATION_CONFIGURATION_NAME,
-            Collections.singletonList("io.micronaut.oraclecloud:micronaut-oraclecloud-function-http-test"),
-            "developmentOnly",
-            Collections.singletonList("io.micronaut.oraclecloud:micronaut-oraclecloud-function-http-test"),
-            JavaPlugin.RUNTIME_ONLY_CONFIGURATION_NAME,
-            Collections.singletonList("com.fnproject.fn:runtime")
-    )),
+    ORACLE_FUNCTION(DockerBuildStrategy.ORACLE_FUNCTION),
     /**
      * Google Cloud Function, packaged as a Fat JAR.
      */
-    GOOGLE_FUNCTION(MicronautExtension.mapOf(
-            JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME,
-            Collections.singletonList("io.micronaut.gcp:micronaut-gcp-function-http"),
-            "developmentOnly",
-            Arrays.asList("com.google.cloud.functions:functions-framework-api", "io.micronaut.gcp:micronaut-gcp-function-http-test"),
-            JavaPlugin.COMPILE_ONLY_CONFIGURATION_NAME,
-            Collections.singletonList("com.google.cloud.functions:functions-framework-api"),
-            JavaPlugin.TEST_IMPLEMENTATION_CONFIGURATION_NAME,
-            Arrays.asList("com.google.cloud.functions:functions-framework-api", "io.micronaut.gcp:micronaut-gcp-function-http-test")
-    )),
+    GOOGLE_FUNCTION,
     /**
      * Azure Cloud Function.
      */
-    AZURE_FUNCTION(MicronautExtension.mapOf(
-            JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME,
-            Arrays.asList("io.micronaut.azure:micronaut-azure-function-http", "com.microsoft.azure.functions:azure-functions-java-library"),
-            "developmentOnly",
-            Collections.singletonList("io.micronaut.azure:micronaut-azure-function-http-test"),
-            JavaPlugin.TEST_IMPLEMENTATION_CONFIGURATION_NAME,
-            Collections.singletonList("io.micronaut.azure:micronaut-azure-function-http-test")
-    ));
+    AZURE_FUNCTION;
 
-    private final Map<String, List<String>> implementation;
     private final DockerBuildStrategy buildStrategy;
 
-    MicronautRuntime(String... dependencies) {
-        this.implementation = Collections.singletonMap(JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME, Arrays.asList(dependencies));
+    MicronautRuntime() {
         this.buildStrategy = DockerBuildStrategy.DEFAULT;
     }
 
-    MicronautRuntime(Map<String, List<String>> implementation) {
-        this.implementation = implementation;
-        this.buildStrategy = DockerBuildStrategy.DEFAULT;
-    }
-
-    MicronautRuntime(DockerBuildStrategy buildStrategy, Map<String, List<String>> implementation) {
-        this.implementation = implementation;
+    MicronautRuntime(DockerBuildStrategy buildStrategy) {
         this.buildStrategy = buildStrategy;
-    }
-
-    /**
-     * A map of dependencies and scopes
-     * @return The dependencies and scopes
-     */
-    public Map<String, List<String>> getDependencies() {
-        return implementation;
     }
 
     /**
@@ -116,4 +76,12 @@ public enum MicronautRuntime {
     public DockerBuildStrategy getBuildStrategy() {
         return buildStrategy;
     }
+
+    public boolean isLambda() {
+        return this == LAMBDA_JAVA || isLambdaProvided();
+    }
+    public boolean isLambdaProvided() {
+        return this == LAMBDA_PROVIDED || this == LAMBDA;
+    }
+
 }
