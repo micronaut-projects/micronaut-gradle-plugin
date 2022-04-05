@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":10,"i1":10,"i2":9,"i3":9};
+var methods = {"i0":10,"i1":10,"i2":10,"i3":9,"i4":9};
 var tabs = {65535:["t0","All Methods"],1:["t1","Static Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -48,7 +48,7 @@ var activeTableTab = "activeTableTab";
 <div class="subNav">
 <ul class="navList">
 <li><a href="../../../io/micronaut/gradle/MicronautMinimalLibraryPlugin.html" title="class in io.micronaut.gradle"><span class="typeNameLink">Prev&nbsp;Class</span></a></li>
-<li><a href="../../../io/micronaut/gradle/MicronautTestRuntime.html" title="enum in io.micronaut.gradle"><span class="typeNameLink">Next&nbsp;Class</span></a></li>
+<li><a href="../../../io/micronaut/gradle/MicronautRuntimeDependencies.html" title="class in io.micronaut.gradle"><span class="typeNameLink">Next&nbsp;Class</span></a></li>
 </ul>
 <ul class="navList">
 <li><a href="../../../index.html?io/micronaut/gradle/MicronautRuntime.html" target="_top">Frames</a></li>
@@ -159,7 +159,19 @@ extends java.lang.Enum&lt;<a href="../../../io/micronaut/gradle/MicronautRuntime
 </tr>
 <tr class="rowColor">
 <td class="colOne"><code><span class="memberNameLink"><a href="../../../io/micronaut/gradle/MicronautRuntime.html#LAMBDA">LAMBDA</a></span></code>
-<div class="block">AWS lambda packaged as a Jar file.</div>
+<div class="block"><span class="deprecatedLabel">Deprecated.</span>&nbsp;
+<div class="block"><span class="deprecationComment">Use <a href="../../../io/micronaut/gradle/MicronautRuntime.html#LAMBDA_PROVIDED"><code>LAMBDA_PROVIDED</code></a> instead.</span></div>
+</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colOne"><code><span class="memberNameLink"><a href="../../../io/micronaut/gradle/MicronautRuntime.html#LAMBDA_JAVA">LAMBDA_JAVA</a></span></code>
+<div class="block">AWS lambda packaged as a Jar file and deploy to a Java runtime.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colOne"><code><span class="memberNameLink"><a href="../../../io/micronaut/gradle/MicronautRuntime.html#LAMBDA_PROVIDED">LAMBDA_PROVIDED</a></span></code>
+<div class="block">AWS lambda deployed to a Provided runtime.</div>
 </td>
 </tr>
 <tr class="altColor">
@@ -207,18 +219,20 @@ extends java.lang.Enum&lt;<a href="../../../io/micronaut/gradle/MicronautRuntime
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../io/micronaut/gradle/MicronautRuntime.html#getBuildStrategy--">getBuildStrategy</a></span>()</code>&nbsp;</td>
 </tr>
 <tr id="i1" class="rowColor">
-<td class="colFirst"><code>java.util.Map&lt;java.lang.String,java.util.List&lt;java.lang.String&gt;&gt;</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../io/micronaut/gradle/MicronautRuntime.html#getDependencies--">getDependencies</a></span>()</code>
-<div class="block">A map of dependencies and scopes</div>
-</td>
+<td class="colFirst"><code>boolean</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../io/micronaut/gradle/MicronautRuntime.html#isLambda--">isLambda</a></span>()</code>&nbsp;</td>
 </tr>
 <tr id="i2" class="altColor">
+<td class="colFirst"><code>boolean</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../io/micronaut/gradle/MicronautRuntime.html#isLambdaProvided--">isLambdaProvided</a></span>()</code>&nbsp;</td>
+</tr>
+<tr id="i3" class="rowColor">
 <td class="colFirst"><code>static <a href="../../../io/micronaut/gradle/MicronautRuntime.html" title="enum in io.micronaut.gradle">MicronautRuntime</a></code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../io/micronaut/gradle/MicronautRuntime.html#valueOf-java.lang.String-">valueOf</a></span>(java.lang.String&nbsp;name)</code>
 <div class="block">Returns the enum constant of this type with the specified name.</div>
 </td>
 </tr>
-<tr id="i3" class="rowColor">
+<tr id="i4" class="altColor">
 <td class="colFirst"><code>static <a href="../../../io/micronaut/gradle/MicronautRuntime.html" title="enum in io.micronaut.gradle">MicronautRuntime</a>[]</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../io/micronaut/gradle/MicronautRuntime.html#values--">values</a></span>()</code>
 <div class="block">Returns an array containing the constants of this enum type, in
@@ -304,14 +318,36 @@ the order they are declared.</div>
 <div class="block">Undertow server.</div>
 </li>
 </ul>
+<a name="LAMBDA_JAVA">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>LAMBDA_JAVA</h4>
+<pre>public static final&nbsp;<a href="../../../io/micronaut/gradle/MicronautRuntime.html" title="enum in io.micronaut.gradle">MicronautRuntime</a> LAMBDA_JAVA</pre>
+<div class="block">AWS lambda packaged as a Jar file and deploy to a Java runtime.</div>
+</li>
+</ul>
 <a name="LAMBDA">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
 <h4>LAMBDA</h4>
-<pre>public static final&nbsp;<a href="../../../io/micronaut/gradle/MicronautRuntime.html" title="enum in io.micronaut.gradle">MicronautRuntime</a> LAMBDA</pre>
-<div class="block">AWS lambda packaged as a Jar file.</div>
+<pre>@Deprecated
+public static final&nbsp;<a href="../../../io/micronaut/gradle/MicronautRuntime.html" title="enum in io.micronaut.gradle">MicronautRuntime</a> LAMBDA</pre>
+<div class="block"><span class="deprecatedLabel">Deprecated.</span>&nbsp;<span class="deprecationComment">Use <a href="../../../io/micronaut/gradle/MicronautRuntime.html#LAMBDA_PROVIDED"><code>LAMBDA_PROVIDED</code></a> instead.</span></div>
+<div class="block">AWS lambda deployed to a Provided runtime.</div>
+</li>
+</ul>
+<a name="LAMBDA_PROVIDED">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>LAMBDA_PROVIDED</h4>
+<pre>public static final&nbsp;<a href="../../../io/micronaut/gradle/MicronautRuntime.html" title="enum in io.micronaut.gradle">MicronautRuntime</a> LAMBDA_PROVIDED</pre>
+<div class="block">AWS lambda deployed to a Provided runtime.</div>
 </li>
 </ul>
 <a name="ORACLE_FUNCTION">
@@ -394,24 +430,10 @@ not permitted.)</div>
 </dl>
 </li>
 </ul>
-<a name="getDependencies--">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>getDependencies</h4>
-<pre>public&nbsp;java.util.Map&lt;java.lang.String,java.util.List&lt;java.lang.String&gt;&gt;&nbsp;getDependencies()</pre>
-<div class="block">A map of dependencies and scopes</div>
-<dl>
-<dt><span class="returnLabel">Returns:</span></dt>
-<dd>The dependencies and scopes</dd>
-</dl>
-</li>
-</ul>
 <a name="getBuildStrategy--">
 <!--   -->
 </a>
-<ul class="blockListLast">
+<ul class="blockList">
 <li class="blockList">
 <h4>getBuildStrategy</h4>
 <pre>public&nbsp;<a href="../../../io/micronaut/gradle/docker/DockerBuildStrategy.html" title="enum in io.micronaut.gradle.docker">DockerBuildStrategy</a>&nbsp;getBuildStrategy()</pre>
@@ -419,6 +441,24 @@ not permitted.)</div>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>The docker build strategy</dd>
 </dl>
+</li>
+</ul>
+<a name="isLambda--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>isLambda</h4>
+<pre>public&nbsp;boolean&nbsp;isLambda()</pre>
+</li>
+</ul>
+<a name="isLambdaProvided--">
+<!--   -->
+</a>
+<ul class="blockListLast">
+<li class="blockList">
+<h4>isLambdaProvided</h4>
+<pre>public&nbsp;boolean&nbsp;isLambdaProvided()</pre>
 </li>
 </ul>
 </li>
@@ -449,7 +489,7 @@ not permitted.)</div>
 <div class="subNav">
 <ul class="navList">
 <li><a href="../../../io/micronaut/gradle/MicronautMinimalLibraryPlugin.html" title="class in io.micronaut.gradle"><span class="typeNameLink">Prev&nbsp;Class</span></a></li>
-<li><a href="../../../io/micronaut/gradle/MicronautTestRuntime.html" title="enum in io.micronaut.gradle"><span class="typeNameLink">Next&nbsp;Class</span></a></li>
+<li><a href="../../../io/micronaut/gradle/MicronautRuntimeDependencies.html" title="class in io.micronaut.gradle"><span class="typeNameLink">Next&nbsp;Class</span></a></li>
 </ul>
 <ul class="navList">
 <li><a href="../../../index.html?io/micronaut/gradle/MicronautRuntime.html" target="_top">Frames</a></li>
