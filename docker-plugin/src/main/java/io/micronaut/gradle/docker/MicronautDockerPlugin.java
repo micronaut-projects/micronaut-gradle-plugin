@@ -283,7 +283,7 @@ public class MicronautDockerPlugin implements Plugin<Project> {
 
         project.afterEvaluate(p -> {
             MicronautRuntime mr = PluginsHelper.resolveRuntime(p);
-            if (mr == MicronautRuntime.LAMBDA) {
+            if (mr.isLambdaProvided()) {
                 TaskContainer taskContainer = p.getTasks();
                 TaskProvider<DockerCreateContainer> createLambdaContainer = taskContainer.register(adaptTaskName("createLambdaContainer", imageName), DockerCreateContainer.class, task -> {
                     task.dependsOn(dockerBuildTask);
