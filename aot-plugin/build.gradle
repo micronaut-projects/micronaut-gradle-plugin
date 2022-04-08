@@ -10,9 +10,9 @@ micronautPlugins {
 }
 
 dependencies {
-    implementation project(":micronaut-minimal-plugin")
-    implementation project(":micronaut-docker-plugin")
-    implementation project(":micronaut-graalvm-plugin")
+    api project(":micronaut-minimal-plugin")
+    api project(":micronaut-docker-plugin")
+    api project(":micronaut-graalvm-plugin")
     implementation libs.micronaut.aot.api
     implementation libs.micronaut.aot.core
     implementation libs.micronaut.aot.std
