@@ -15,10 +15,10 @@ dependencies {
             because("Log4j2 <2.15 is vulnerable to RCE (CVE-2021-44228)")
         }
     }
-    implementation project(":micronaut-minimal-plugin")
-    implementation project(":micronaut-docker-plugin")
-    implementation project(":micronaut-graalvm-plugin")
-    implementation project(":micronaut-aot-plugin")
+    api project(":micronaut-minimal-plugin")
+    api project(":micronaut-docker-plugin")
+    api project(":micronaut-graalvm-plugin")
+    api project(":micronaut-aot-plugin")
 
     implementation libs.diffplugPlugin
 
