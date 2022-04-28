@@ -15,10 +15,13 @@
  */
 package io.micronaut.gradle.aot;
 
+import org.gradle.api.Action;
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.MapProperty;
 import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.Input;
+import org.gradle.api.tasks.Internal;
+import org.gradle.api.tasks.Nested;
 import org.gradle.api.tasks.Optional;
 
 /**
@@ -135,4 +138,27 @@ public interface AOTOptimizations {
     @Input
     @Optional
     MapProperty<String, String> getEnvironmentVariables();
+
+    /**
+     * Returns the Netty optimizations
+     * @return the netty optimizations
+     */
+    @Nested
+    NettyOptimizations getNettyOptimizations();
+
+    /**
+     * Configures the Netty optimizations
+     */
+    default void netty(Action<? super NettyOptimizations> configuration) {
+        configuration.execute(getNettyOptimizations());
+    }
+
+    /**
+     * A short-hand notation to enable Netty optimizations
+     * @return the netty optimizations property
+     */
+    @Internal
+    default Property<Boolean> getOptimizeNetty() {
+        return getNettyOptimizations().getEnabled();
+    }
 }
