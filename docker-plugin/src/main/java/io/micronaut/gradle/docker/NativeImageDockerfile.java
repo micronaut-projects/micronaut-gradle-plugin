@@ -145,7 +145,7 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
                         .map(NativeImageDockerfile::toSupportedJavaVersion)
                         .map(v -> "java" + v)
         );
-        getGraalVersion().convention("22.0.0.2");
+        getGraalVersion().convention("22.1.0");
         getTargetWorkingDirectory().convention(DEFAULT_WORKING_DIR);
         getGraalImage().convention(getGraalVersion().zip(getJdkVersion(), NativeImageDockerfile::toGraalVMBaseImageName));
         getNativeImageOptions().convention(project
