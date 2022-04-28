@@ -26,6 +26,7 @@ import io.micronaut.aot.std.sourcegen.JitStaticServiceLoaderSourceGenerator;
 import io.micronaut.aot.std.sourcegen.KnownMissingTypesSourceGenerator;
 import io.micronaut.aot.std.sourcegen.LogbackConfigurationSourceGenerator;
 import io.micronaut.aot.std.sourcegen.NativeStaticServiceLoaderSourceGenerator;
+import io.micronaut.aot.std.sourcegen.NettyPropertiesSourceGenerator;
 import io.micronaut.aot.std.sourcegen.PublishersSourceGenerator;
 import io.micronaut.aot.std.sourcegen.YamlPropertySourceGenerator;
 import org.gradle.api.DefaultTask;
@@ -90,6 +91,11 @@ public abstract class MicronautAOTConfigWriterTask extends DefaultTask {
             }
         }
     }
+    private static void stringParameter(Properties props, String parameter, Property<String> provider) {
+        if (provider.isPresent()) {
+            props.put(parameter, provider.get());
+        }
+    }
 
     @TaskAction
     void writeConfigFile() {
@@ -129,6 +135,11 @@ public abstract class MicronautAOTConfigWriterTask extends DefaultTask {
         booleanOptimization(props, DeduceEnvironmentSourceGenerator.ID, optimizations.getDeduceEnvironment());
         stringListParameter(props, Environments.POSSIBLE_ENVIRONMENTS_NAMES, optimizations.getPossibleEnvironments());
         stringListParameter(props, Environments.TARGET_ENVIRONMENTS_NAMES, optimizations.getTargetEnvironments());
+        booleanOptimization(props, NettyPropertiesSourceGenerator.ID, optimizations.getOptimizeNetty());
+        if (optimizations.getOptimizeNetty().isPresent() && optimizations.getOptimizeNetty().get()) {
+            stringParameter(props, NettyPropertiesSourceGenerator.MACHINE_ID, optimizations.getNettyOptimizations().getMachineId());
+            stringParameter(props, NettyPropertiesSourceGenerator.PROCESS_ID, optimizations.getNettyOptimizations().getPid());
+        }
         File outputFile = getOutputFile().getAsFile().get();
         if (outputFile.getParentFile().isDirectory() || outputFile.getParentFile().mkdirs()) {
             try (OutputStream out = new FileOutputStream(outputFile)) {
