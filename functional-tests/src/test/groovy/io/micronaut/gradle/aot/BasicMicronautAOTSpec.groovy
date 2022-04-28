@@ -27,6 +27,7 @@ class BasicMicronautAOTSpec extends AbstractAOTPluginSpec {
             withProperty('sealed.property.source.enabled', 'true')
             withProperty('precompute.environment.properties.enabled', 'true')
             withProperty('deduce.environment.enabled', 'true')
+            withProperty('netty.properties.enabled', 'true')
             withExtraPropertyKeys 'service.types', 'known.missing.types.list'
         }
 
@@ -89,6 +90,7 @@ class BasicMicronautAOTSpec extends AbstractAOTPluginSpec {
             withProperty('precompute.environment.properties.enabled', 'true')
             withProperty('deduce.environment.enabled', 'true')
             withProperty('some.plugin.enabled', 'true')
+            withProperty('netty.properties.enabled', 'true')
             withExtraPropertyKeys 'service.types', 'known.missing.types.list'
         }
 

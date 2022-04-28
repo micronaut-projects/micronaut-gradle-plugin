@@ -142,6 +142,7 @@ public abstract class MicronautAotPlugin implements Plugin<Project> {
                 return "io.micronaut.aot.generated";
             }
         }));
+        aotExtension.getOptimizeNetty().convention(false);
     }
 
     private void registerPrepareOptimizationsTasks(Project project, Configurations configurations, AOTExtension aotExtension) {

@@ -28,6 +28,7 @@ class FunctionsMicronautAOTSpec extends AbstractAOTPluginSpec {
             withProperty('sealed.property.source.enabled', 'true')
             withProperty('precompute.environment.properties.enabled', 'true')
             withProperty('deduce.environment.enabled', 'false')
+            withProperty('netty.properties.enabled', 'false')
             withExtraPropertyKeys 'service.types', 'known.missing.types.list'
         }
 
