@@ -856,6 +856,9 @@ The advantage of allowing your dependencies to be dictated by the runtime is tha
 If you are interested in deploying your Micronaut application to AWS Lambda using GraalVM you only need to set the runtime to `lambda` and execute `./gradlew buildNativeLambda`.
 This task will generate a GraalVM native image inside a Docker container and then it will create the file `build/libs/your-app.zip` file ready to be deployed to AWS Lambda using a custom runtime. See more information in {aws-docs}[Micronaut AWS documentation].
 
+The plugin will detect the host operating system architecture (based on the `os.arch` Java system property) and will install the corresponding GraalVM  binary distribution inside the Docker image.
+This means that when running packaging from an X86_64 (Intel/AMD) machine, the produced native image will be an `amd64` binary, whilst on an ARM host (such as the new Mac M1) it will be an `aarch64` binary.
+
 === Packaging the application
 
 By default the plugin doesn't create a runnable fatjar when running `./gradlew assemble`.
