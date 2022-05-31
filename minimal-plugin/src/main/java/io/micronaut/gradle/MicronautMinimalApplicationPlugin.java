@@ -103,6 +103,7 @@ public class MicronautMinimalApplicationPlugin implements Plugin<Project> {
                     Map<String, Object> sysProps = new LinkedHashMap<>();
                     sysProps.put("micronaut.io.watch.restart", true);
                     sysProps.put("micronaut.io.watch.enabled", true);
+                    //noinspection Convert2Lambda
                     javaExec.doFirst(new Action<Task>() {
                         @Override
                         public void execute(Task workaroundEagerSystemProps) {
