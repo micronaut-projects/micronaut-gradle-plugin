@@ -15,11 +15,12 @@
  */
 package io.micronaut.gradle;
 
-import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar;
 import io.micronaut.gradle.graalvm.GraalUtil;
 import org.apache.tools.ant.taskdefs.condition.Os;
+import org.gradle.api.Action;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
+import org.gradle.api.Task;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.ConfigurationContainer;
 import org.gradle.api.artifacts.dsl.DependencyHandler;
@@ -102,14 +103,17 @@ public class MicronautMinimalApplicationPlugin implements Plugin<Project> {
                     Map<String, Object> sysProps = new LinkedHashMap<>();
                     sysProps.put("micronaut.io.watch.restart", true);
                     sysProps.put("micronaut.io.watch.enabled", true);
-                    javaExec.doFirst(workaroundEagerSystemProps -> {
-                        String watchPaths = sourceSet
-                                .getAllSource()
-                                .getSrcDirs()
-                                .stream()
-                                .map(File::getPath)
-                                .collect(Collectors.joining(","));
-                        javaExec.systemProperty("micronaut.io.watch.paths", watchPaths);
+                    javaExec.doFirst(new Action<Task>() {
+                        @Override
+                        public void execute(Task workaroundEagerSystemProps) {
+                            String watchPaths = sourceSet
+                                    .getAllSource()
+                                    .getSrcDirs()
+                                    .stream()
+                                    .map(File::getPath)
+                                    .collect(Collectors.joining(","));
+                            javaExec.systemProperty("micronaut.io.watch.paths", watchPaths);
+                        }
                     });
                     javaExec.systemProperties(
                             sysProps
