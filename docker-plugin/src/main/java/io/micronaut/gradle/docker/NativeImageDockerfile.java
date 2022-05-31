@@ -331,7 +331,7 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
     }
 
     private static String toGraalVMBaseImageName(String graalVersion, String jdkVersion) {
-        return "ghcr.io/graalvm/native-image:ol8-" + jdkVersion + '-' + graalVersion;
+        return "ghcr.io/graalvm/native-image:ol7-" + jdkVersion + '-' + graalVersion;
     }
 
     private static int toSupportedJavaVersion(int version) {
