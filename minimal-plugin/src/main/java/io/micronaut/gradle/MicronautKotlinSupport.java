@@ -162,7 +162,7 @@ public class MicronautKotlinSupport {
                         }
 
                         if (group.length() > 0) {
-                            options.arg("micronaut.processing.group,", group);
+                            options.arg("micronaut.processing.group", group);
                         }
                         options.arg("micronaut.processing.module", module);
 
