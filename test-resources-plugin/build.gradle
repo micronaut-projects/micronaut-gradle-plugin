@@ -1,0 +1,15 @@
+plugins {
+    id "io.micronaut.internal.build.gradle-plugin"
+}
+
+description = "Micronaut Test Resources Gradle plugin"
+
+micronautPlugins {
+    register('test-resources', 'io.micronaut.gradle.testresources.MicronautTestResourcesPlugin', 'Micronaut Test Resources Plugin')
+}
+
+dependencies {
+    implementation libs.micronaut.testresources
+    implementation project(":micronaut-minimal-plugin")
+    testImplementation testFixtures(project(":micronaut-minimal-plugin"))
+}

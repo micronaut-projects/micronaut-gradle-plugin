@@ -6,7 +6,7 @@ pluginManagement {
 }
 
 plugins {
-    id 'io.micronaut.build.shared.settings' version '5.3.9'
+    id 'io.micronaut.build.shared.settings' version '5.3.10'
 }
 
 rootProject.name = 'micronaut-gradle-plugin-parent'
@@ -16,6 +16,7 @@ include("docker-plugin")
 include("graalvm-plugin")
 include("aot-plugin")
 include("gradle-plugin")
+include("test-resources-plugin")
 include("functional-tests")
 
 for (project in rootProject.children) {

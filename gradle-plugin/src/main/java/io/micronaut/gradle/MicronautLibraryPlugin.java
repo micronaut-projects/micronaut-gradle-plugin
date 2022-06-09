@@ -2,6 +2,7 @@ package io.micronaut.gradle;
 
 import com.diffplug.gradle.eclipse.apt.AptEclipsePlugin;
 import io.micronaut.gradle.graalvm.MicronautGraalPlugin;
+import io.micronaut.gradle.testresources.MicronautTestResourcesPlugin;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.plugins.PluginContainer;
@@ -21,6 +22,8 @@ public class MicronautLibraryPlugin implements Plugin<Project> {
         plugins.apply(MicronautMinimalLibraryPlugin.class);
         plugins.apply(AptEclipsePlugin.class);
         plugins.apply(MicronautGraalPlugin.class);
+        plugins.apply(MicronautTestResourcesPlugin.class);
+
     }
 
 }
