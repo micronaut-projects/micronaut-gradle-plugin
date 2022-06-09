@@ -67,7 +67,7 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
         TaskContainer tasks = project.getTasks();
         TaskProvider<StartTestResourcesService> startTestResourcesService = createStartServiceTask(server, config, testResourcesService, tasks);
         TaskProvider<WriteServerSettings> writeTestProperties = createWriteTestPropertiesTask(project, explicitPort, config, portFile, accessTokenProvider, testResourcesService, tasks);
-        project.getConfigurations().all(conf -> configureDependencies(project, config, dependencies, writeTestProperties, conf));
+        project.afterEvaluate(p -> p.getConfigurations().all(conf -> configureDependencies(project, config, dependencies, writeTestProperties, conf)));
 
         tasks.withType(Test.class).configureEach(t -> t.dependsOn(startTestResourcesService));
         tasks.withType(JavaExec.class).configureEach(t -> t.dependsOn(startTestResourcesService));
@@ -89,17 +89,17 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
         if ("developmentOnly".equals(name) || "testRuntimeOnly".equals(name)) {
             // Would be cleaner to use `config.getEnabled().zip(...)` but for some
             // reason it fails
-            conf.getDependencies().addLater(config.getVersion().map(v -> {
+            conf.getDependencies().addAllLater(config.getVersion().map(v -> {
                 if (Boolean.TRUE.equals(config.getEnabled().get())) {
-                    return dependencies.create("io.micronaut.testresources:micronaut-test-resources-client:" + v);
+                    return Collections.singleton(dependencies.create("io.micronaut.testresources:micronaut-test-resources-client:" + v));
                 }
-                return null;
+                return Collections.emptyList();
             }));
-            conf.getDependencies().addLater(config.getEnabled().map(enabled -> {
+            conf.getDependencies().addAllLater(config.getEnabled().map(enabled -> {
                 if (Boolean.TRUE.equals(enabled)) {
-                    return dependencies.create(project.files(writeTestProperties));
+                    return Collections.singleton(dependencies.create(project.files(writeTestProperties)));
                 }
-                return null;
+                return Collections.emptyList();
             }));
         }
     }
