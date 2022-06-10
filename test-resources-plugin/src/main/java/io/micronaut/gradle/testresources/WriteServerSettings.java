@@ -29,6 +29,10 @@ import java.io.FileOutputStream;
 import java.io.PrintWriter;
 
 public abstract class WriteServerSettings extends DefaultTask {
+    private static final String SERVER_URI = "server.uri";
+    private static final String SERVER_ACCESS_TOKEN = "server.access.token";
+    private static final String SERVER_CLIENT_READ_TIMEOUT = "server.client.read.timeout";
+
     @OutputDirectory
     public abstract DirectoryProperty getOutputDirectory();
 
@@ -39,13 +43,20 @@ public abstract class WriteServerSettings extends DefaultTask {
     @Input
     public abstract Property<Integer> getPort();
 
+    @Input
+    @Optional
+    public abstract Property<Integer> getClientTimeout();
+
     @TaskAction
     void writeProperties() throws FileNotFoundException {
         File propertiesFile = getOutputDirectory().file("test-resources.properties").get().getAsFile();
         try (PrintWriter prn = new PrintWriter(new FileOutputStream(propertiesFile))) {
-            prn.println("server.uri=http\\://localhost\\:" + getPort().get());
+            prn.println(SERVER_URI + "=http\\://localhost\\:" + getPort().get());
             if (getToken().isPresent()) {
-                prn.println("server.access.token=" + getToken().get());
+                prn.println(SERVER_ACCESS_TOKEN + "=" + getToken().get());
+            }
+            if (getClientTimeout().isPresent()) {
+                prn.println(SERVER_CLIENT_READ_TIMEOUT + "=" + getClientTimeout().get());
             }
         }
     }

@@ -92,4 +92,14 @@ public interface TestResourcesConfiguration {
      * classpath.
      */
     ListProperty<String> getAdditionalModules();
+
+    /**
+     * Configures the maximum amount of time to wait for
+     * the server to start a test resource. Some containers
+     * may take a long amount of time to start with slow internet
+     * connections.
+     * Defaults to 60.
+     * @return the client timeout in seconds
+     */
+    Property<Integer> getClientTimeout();
 }

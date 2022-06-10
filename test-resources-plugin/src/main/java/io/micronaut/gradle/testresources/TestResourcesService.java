@@ -36,10 +36,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 abstract class TestResourcesService implements BuildService<TestResourcesService.Params> {
 
     private static final String SERVER_ENTRY_POINT = "io.micronaut.testresources.server.Application";
-    private static final String MICRONAUT_HTTP_CLIENT_READ_TIMEOUT = "micronaut.http.client.read-timeout";
     private static final String SERVER_ACCESS_TOKEN = "server.access-token";
     private static final String MICRONAUT_SERVER_PORT = "micronaut.server.port";
-    private static final String TIMEOUT_DEFAULT = "60s";
 
     interface Params extends BuildServiceParameters {
         ConfigurableFileCollection getClasspath();
@@ -49,6 +47,7 @@ abstract class TestResourcesService implements BuildService<TestResourcesService
         Property<Integer> getPort();
 
         Property<String> getAccessToken();
+
     }
 
     private static ExecutorService executorService = Executors.newFixedThreadPool(1);
@@ -93,13 +92,12 @@ abstract class TestResourcesService implements BuildService<TestResourcesService
         executorService.submit(() -> getExecOperations().javaexec(spec -> {
             spec.classpath(getParameters().getClasspath().getFiles());
             spec.getMainClass().set(SERVER_ENTRY_POINT);
-            spec.args("-D" + MICRONAUT_HTTP_CLIENT_READ_TIMEOUT + "=" + TIMEOUT_DEFAULT);
             Property<String> accessToken = getParameters().getAccessToken();
             if (accessToken.isPresent()) {
-                spec.args("-D" + SERVER_ACCESS_TOKEN + "=" + accessToken.get());
+                spec.systemProperty(SERVER_ACCESS_TOKEN, accessToken.get());
             }
             if (explicitPort.isPresent()) {
-                spec.args("-D" + MICRONAUT_SERVER_PORT + "=" + explicitPort.get());
+                spec.systemProperty(MICRONAUT_SERVER_PORT, explicitPort.get());
             } else {
                 spec.args("--port-file=" + outputPortFile.getAbsolutePath());
             }

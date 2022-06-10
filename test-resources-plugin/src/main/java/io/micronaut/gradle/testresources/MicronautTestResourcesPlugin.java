@@ -42,6 +42,8 @@ import java.util.stream.Stream;
  * tweak the behavior of the test resources server.
  */
 public class MicronautTestResourcesPlugin implements Plugin<Project> {
+    private static final int DEFAULT_CLIENT_TIMEOUT_SECONDS = 60;
+
     private final AtomicBoolean warned = new AtomicBoolean();
 
     public void apply(Project project) {
@@ -129,9 +131,10 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
                 }
             }
             task.setOnlyIf(t -> config.getEnabled().get());
-            task.getToken().set(accessTokenProvider);
-            task.getPort().set(explicitPort.orElse(project.getProviders().fileContents(portFile).getAsText().map(Integer::parseInt)));
-            task.getOutputDirectory().set(project.getLayout().getBuildDirectory().dir("generated-resources/test-resources-server"));
+            task.getToken().convention(accessTokenProvider);
+            task.getPort().convention(explicitPort.orElse(project.getProviders().fileContents(portFile).getAsText().map(Integer::parseInt)));
+            task.getOutputDirectory().convention(project.getLayout().getBuildDirectory().dir("generated-resources/test-resources-server"));
+            task.getClientTimeout().convention(config.getClientTimeout());
         });
     }
 
@@ -159,6 +162,7 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
         testResources.getVersion().convention(VersionInfo.getVersion());
         testResources.getExplicitPort().convention(explicitPort);
         testResources.getInferClasspath().convention(true);
+        testResources.getClientTimeout().convention(DEFAULT_CLIENT_TIMEOUT_SECONDS);
         return testResources;
     }
 
