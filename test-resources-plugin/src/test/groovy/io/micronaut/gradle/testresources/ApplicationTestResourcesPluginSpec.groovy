@@ -2,7 +2,9 @@ package io.micronaut.gradle.testresources
 
 import io.micronaut.gradle.AbstractGradleBuildSpec
 import org.gradle.testkit.runner.TaskOutcome
+import spock.lang.IgnoreIf
 
+@IgnoreIf({ os.windows })
 class ApplicationTestResourcesPluginSpec extends AbstractGradleBuildSpec {
 
     def "integrates with test resources without further configuration"() {
