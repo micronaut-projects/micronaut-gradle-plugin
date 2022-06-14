@@ -6,6 +6,7 @@ import org.gradle.testkit.runner.TaskOutcome
 import spock.lang.IgnoreIf
 import spock.lang.Issue
 import spock.lang.Requires
+import spock.util.environment.RestoreSystemProperties
 
 @Requires({ AbstractGradleBuildSpec.graalVmAvailable })
 @IgnoreIf({ os.windows })
@@ -51,6 +52,56 @@ class LambdaNativeImageSpec extends AbstractFunctionalTest {
         and:
         dockerFileNative.find() { it.contains('-H:Class=io.micronaut.function.aws.runtime.MicronautLambdaRuntime')}
         !dockerFileNative.find() { it.contains('com.example.Application')}
+    }
+
+    void 'native lambdas build in docker fetch the correct graalvm for #desc'() {
+        given:
+        def graalVersion = '22.1.0'
+        settingsFile << "rootProject.name = 'hello-world'"
+        buildFile << """
+            plugins {
+                id "io.micronaut.minimal.application"
+                id "io.micronaut.graalvm"
+                id "io.micronaut.docker"
+            }
+
+            micronaut {
+                version "2.3.4"
+                runtime "lambda"
+            }
+
+            $repositoriesBlock
+
+            application {
+                mainClass.set("com.example.Application")
+            }
+
+            java {
+                sourceCompatibility = JavaVersion.toVersion('11')
+                targetCompatibility = JavaVersion.toVersion('11')
+            }
+
+            dockerfileNative {
+                graalArch.set('$archset')
+            }
+        """
+
+        when:
+        def result = build('dockerfileNative')
+
+        def dockerfileNativeTask = result.task(':dockerfileNative')
+        def dockerFileNative = new File(testProjectDir.root, 'build/docker/native-main/DockerfileNative').readLines('UTF-8')
+
+        then:
+        dockerfileNativeTask.outcome == TaskOutcome.SUCCESS
+
+        and:
+        dockerFileNative.find() { it.contains("linux-${archset}-${graalVersion}.tar.gz ") }
+
+        where:
+        archset   | desc
+        'aarch64' | 'ARM architecture'
+        'amd64'   | 'Intel architecture'
     }
 
     void 'it is possible to define the mainclass for a dockerfile native'() {
