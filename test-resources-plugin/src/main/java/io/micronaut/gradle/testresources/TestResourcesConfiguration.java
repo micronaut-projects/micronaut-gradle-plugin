@@ -102,4 +102,13 @@ public interface TestResourcesConfiguration {
      * @return the client timeout in seconds
      */
     Property<Integer> getClientTimeout();
+
+    /**
+     * When set to true, then the server will be shared between
+     * independent builds (e.g two different projects built in separate
+     * checkout directories).
+     *
+     * @return the shared server property
+     */
+    Property<Boolean> getSharedServer();
 }

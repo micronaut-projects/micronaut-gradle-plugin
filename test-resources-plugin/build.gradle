@@ -13,3 +13,7 @@ dependencies {
     implementation project(":micronaut-minimal-plugin")
     testImplementation testFixtures(project(":micronaut-minimal-plugin"))
 }
+
+repositories {
+    mavenLocal()
+}
