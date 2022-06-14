@@ -15,7 +15,9 @@ class ApplicationTestResourcesPluginSpec extends AbstractGradleBuildSpec {
 
         then:
         result.task(':test').outcome == TaskOutcome.SUCCESS
-        result.output.contains "Loaded 2 test resources resolvers: io.micronaut.testresources.mysql.MySQLTestResourceProvider, io.micronaut.testresources.testcontainers.GenericTestContainerProvider"
+        result.output.contains "Loaded 2 test resources resolvers"
+        result.output.contains "io.micronaut.testresources.mysql.MySQLTestResourceProvider"
+        result.output.contains "io.micronaut.testresources.testcontainers.GenericTestContainerProvider"
     }
 
     def "fails if test resources support is disabled"() {
@@ -64,7 +66,10 @@ class ApplicationTestResourcesPluginSpec extends AbstractGradleBuildSpec {
 
         then:
         result.task(':test').outcome == TaskOutcome.SUCCESS
-        result.output.contains "Loaded 3 test resources resolvers: io.micronaut.testresources.kafka.KafkaTestResourceProvider, io.micronaut.testresources.mysql.MySQLTestResourceProvider, io.micronaut.testresources.testcontainers.GenericTestContainerProvider"
+        result.output.contains "Loaded 3 test resources resolvers"
+        result.output.contains "io.micronaut.testresources.kafka.KafkaTestResourceProvider"
+        result.output.contains "io.micronaut.testresources.mysql.MySQLTestResourceProvider"
+        result.output.contains "io.micronaut.testresources.testcontainers.GenericTestContainerProvider"
     }
 
     def "runs the application with test resources support"() {
@@ -75,7 +80,9 @@ class ApplicationTestResourcesPluginSpec extends AbstractGradleBuildSpec {
 
         then:
         result.task(':run').outcome == TaskOutcome.SUCCESS
-        result.output.contains "Loaded 2 test resources resolvers: io.micronaut.testresources.mysql.MySQLTestResourceProvider, io.micronaut.testresources.testcontainers.GenericTestContainerProvider"
+        result.output.contains "Loaded 2 test resources resolvers"
+        result.output.contains "io.micronaut.testresources.mysql.MySQLTestResourceProvider"
+        result.output.contains "io.micronaut.testresources.testcontainers.GenericTestContainerProvider"
     }
 
     private void withTestResourcesConfiguration(String configuration) {

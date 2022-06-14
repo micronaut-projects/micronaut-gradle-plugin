@@ -5,6 +5,7 @@ package io.micronaut.gradle.testresources;
 
 import io.micronaut.gradle.MicronautExtension;
 import io.micronaut.testresources.buildtools.MavenDependency;
+import io.micronaut.testresources.buildtools.ServerUtils;
 import io.micronaut.testresources.buildtools.TestResourcesClasspath;
 import io.micronaut.testresources.buildtools.VersionInfo;
 import org.gradle.api.GradleException;
@@ -14,9 +15,12 @@ import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.Dependency;
 import org.gradle.api.artifacts.ModuleDependency;
 import org.gradle.api.artifacts.dsl.DependencyHandler;
+import org.gradle.api.file.Directory;
+import org.gradle.api.file.DirectoryProperty;
 import org.gradle.api.file.RegularFile;
 import org.gradle.api.internal.project.ProjectInternal;
 import org.gradle.api.provider.Provider;
+import org.gradle.api.provider.ProviderFactory;
 import org.gradle.api.tasks.JavaExec;
 import org.gradle.api.tasks.TaskContainer;
 import org.gradle.api.tasks.TaskProvider;
@@ -25,13 +29,14 @@ import org.gradle.internal.event.ListenerManager;
 import org.gradle.internal.service.ServiceRegistry;
 import org.gradle.internal.session.BuildSessionLifecycleListener;
 
+import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -42,9 +47,11 @@ import java.util.stream.Stream;
  * tweak the behavior of the test resources server.
  */
 public class MicronautTestResourcesPlugin implements Plugin<Project> {
-    private static final int DEFAULT_CLIENT_TIMEOUT_SECONDS = 60;
+    public static final String START_TEST_RESOURCES_SERVICE = "startTestResourcesService";
+    public static final String STOP_TEST_RESOURCES_SERVICE = "stopTestResourcesService";
+    public static final String GROUP = "Micronaut Test Resources";
 
-    private final AtomicBoolean warned = new AtomicBoolean();
+    private static final int DEFAULT_CLIENT_TIMEOUT_SECONDS = 60;
 
     public void apply(Project project) {
         project.getPluginManager().withPlugin("io.micronaut.component", unused -> configurePlugin(project));
@@ -56,37 +63,54 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
         TestResourcesConfiguration config = createTestResourcesConfiguration(project, explicitPort);
         DependencyHandler dependencies = project.getDependencies();
         server.getDependencies().addAllLater(buildTestResourcesDependencyList(project, dependencies, config));
-        Provider<RegularFile> portFile = project.getLayout().getBuildDirectory().file("test-resources-port.txt");
         String accessToken = UUID.randomUUID().toString();
-        Provider<String> accessTokenProvider = project.getProviders().provider(() -> {
-            if (explicitPort.isPresent()) {
-                warnAboutPotentialSecurityIssue(project);
-                return null;
+        Provider<String> accessTokenProvider = project.getProviders().provider(() -> accessToken);
+        Provider<Directory> settingsDirectory = config.getSharedServer().flatMap(shared -> {
+            DirectoryProperty directoryProperty = project.getObjects().directoryProperty();
+            if (Boolean.TRUE.equals(shared)) {
+                directoryProperty.set(ServerUtils.getDefaultSharedSettingsPath().toFile());
             }
-            return accessToken;
-        });
-        Provider<TestResourcesService> testResourcesService = registerTestResourcesService(project, server, explicitPort, portFile, accessTokenProvider);
+            return directoryProperty;
+        }).orElse(project.getLayout().getBuildDirectory().dir("test-resources-settings"));
+        Provider<RegularFile> portFile = project.getLayout().getBuildDirectory().file("test-resources-port.txt");
+        Path stopAtEndFile;
+        try {
+            File asFile = project.getLayout().getBuildDirectory().file("test-resources/" + UUID.randomUUID()).get().getAsFile();
+            if (asFile.getParentFile().isDirectory() || asFile.getParentFile().mkdirs()) {
+                asFile.deleteOnExit();
+                stopAtEndFile = asFile.toPath();
+                Files.deleteIfExists(stopAtEndFile);
+            } else {
+                throw new IOException("Could not create directory for test resources stop file");
+            }
+        } catch (IOException e) {
+            throw new GradleException("Unable to create temp file", e);
+        }
         TaskContainer tasks = project.getTasks();
-        TaskProvider<StartTestResourcesService> startTestResourcesService = createStartServiceTask(server, config, testResourcesService, tasks);
-        TaskProvider<WriteServerSettings> writeTestProperties = createWriteTestPropertiesTask(project, explicitPort, config, portFile, accessTokenProvider, testResourcesService, tasks);
-        project.afterEvaluate(p -> p.getConfigurations().all(conf -> configureDependencies(project, config, dependencies, writeTestProperties, conf)));
+        Provider<Boolean> isStandalone = config.getSharedServer().zip(project.getProviders().provider(() -> {
+            boolean singleTask = project.getGradle().getStartParameter().getTaskNames().size() == 1;
+            boolean onlyStartTask = project.getGradle().getTaskGraph()
+                    .getAllTasks()
+                    .stream()
+                    .allMatch(task -> task.getProject().equals(project) && StartTestResourcesService.class.isAssignableFrom(task.getClass()));
+            return singleTask && onlyStartTask;
+        }), (shared, singleTask) -> shared || singleTask);
+        TaskProvider<StartTestResourcesService> startTestResourcesService = createStartServiceTask(server, config, settingsDirectory, accessTokenProvider, tasks, portFile, stopAtEndFile, isStandalone);
+        TaskProvider<StopTestResourcesService> stopTestResourcesService = createStopServiceTask(settingsDirectory, tasks);
+        project.afterEvaluate(p -> p.getConfigurations().all(conf -> configureDependencies(project, config, dependencies, startTestResourcesService, conf)));
 
         tasks.withType(Test.class).configureEach(t -> t.dependsOn(startTestResourcesService));
         tasks.withType(JavaExec.class).configureEach(t -> t.dependsOn(startTestResourcesService));
 
-        configureServiceReset((ProjectInternal) project);
+        configureServiceReset((ProjectInternal) project, settingsDirectory, stopAtEndFile);
     }
 
-    private Provider<TestResourcesService> registerTestResourcesService(Project project, Configuration server, Provider<Integer> explicitPort, Provider<RegularFile> portFile, Provider<String> accessTokenProvider) {
-        return project.getGradle().getSharedServices().registerIfAbsent("testResourcesService", TestResourcesService.class, spec -> {
-            spec.getParameters().getClasspath().from(server);
-            spec.getParameters().getPortFile().set(portFile);
-            spec.getParameters().getPort().convention(explicitPort);
-            spec.getParameters().getAccessToken().set(accessTokenProvider);
-        });
+    private TaskProvider<StopTestResourcesService> createStopServiceTask(Provider<Directory> settingsDirectory, TaskContainer tasks) {
+        return tasks.register(STOP_TEST_RESOURCES_SERVICE, StopTestResourcesService.class, task -> task.getSettingsDirectory().convention(settingsDirectory));
     }
 
-    private void configureDependencies(Project project, TestResourcesConfiguration config, DependencyHandler dependencies, TaskProvider<WriteServerSettings> writeTestProperties, Configuration conf) {
+
+    private void configureDependencies(Project project, TestResourcesConfiguration config, DependencyHandler dependencies, TaskProvider<StartTestResourcesService> writeTestProperties, Configuration conf) {
         String name = conf.getName();
         if ("developmentOnly".equals(name) || "testRuntimeOnly".equals(name)) {
             // Would be cleaner to use `config.getEnabled().zip(...)` but for some
@@ -106,63 +130,53 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
         }
     }
 
-    private TaskProvider<StartTestResourcesService> createStartServiceTask(Configuration server, TestResourcesConfiguration config, Provider<TestResourcesService> testResourcesService, TaskContainer tasks) {
-        return tasks.register("startTestResourcesService", StartTestResourcesService.class, task -> {
+    private TaskProvider<StartTestResourcesService> createStartServiceTask(Configuration server,
+                                                                           TestResourcesConfiguration config,
+                                                                           Provider<Directory> settingsDirectory,
+                                                                           Provider<String> accessToken,
+                                                                           TaskContainer tasks,
+                                                                           Provider<RegularFile> portFile,
+                                                                           Path stopFile,
+                                                                           Provider<Boolean> isStandalone) {
+        return tasks.register(START_TEST_RESOURCES_SERVICE, StartTestResourcesService.class, task -> {
             task.setOnlyIf(t -> config.getEnabled().get());
-            task.getServer().set(testResourcesService);
-            task.getClasspath().from(server);
-        });
-    }
-
-    private TaskProvider<WriteServerSettings> createWriteTestPropertiesTask(Project project, Provider<Integer> explicitPort, TestResourcesConfiguration config, Provider<RegularFile> portFile, Provider<String> accessTokenProvider, Provider<TestResourcesService> testResourcesService, TaskContainer tasks) {
-        return tasks.register("writeTestResourceProperties", WriteServerSettings.class, task -> {
-            if (Boolean.TRUE.equals(config.getEnabled().get()) && !explicitPort.isPresent()) {
-                // This is a very ugly hack, but we need the port of the server
-                // to be available when the task gets configured
-                Path portFilePath = portFile.get().getAsFile().toPath();
-                testResourcesService.get(); // force startup of service
-                while (!Files.exists(portFilePath)) {
-                    try {
-                        // Give some time for the server to start
-                        Thread.sleep(50);
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                    }
-                }
-            }
-            task.setOnlyIf(t -> config.getEnabled().get());
-            task.getToken().convention(accessTokenProvider);
-            task.getPort().convention(explicitPort.orElse(project.getProviders().fileContents(portFile).getAsText().map(Integer::parseInt)));
-            task.getOutputDirectory().convention(project.getLayout().getBuildDirectory().dir("generated-resources/test-resources-server"));
+            task.getPortFile().convention(portFile);
+            task.getSettingsDirectory().convention(settingsDirectory);
+            task.getAccessToken().convention(accessToken);
+            task.getExplicitPort().convention(config.getExplicitPort());
             task.getClientTimeout().convention(config.getClientTimeout());
+            task.getClasspath().from(server);
+            task.getForeground().convention(false);
+            task.getStopFile().set(stopFile.toFile());
+            task.getStandalone().set(isStandalone);
         });
-    }
-
-    private void warnAboutPotentialSecurityIssue(Project project) {
-        if (warned.compareAndSet(false, true)) {
-            project.getLogger().warn(
-                    "********************************************\n" +
-                            "* WARNING: an explicit port was configured *\n" +
-                            "* for the test resources server: it will   *\n" +
-                            "* accept any incoming connection from the  *\n" +
-                            "* loopback network interface.              *\n" +
-                            "********************************************\n"
-            );
-        }
     }
 
     private TestResourcesConfiguration createTestResourcesConfiguration(Project project, Provider<Integer> explicitPort) {
         MicronautExtension micronautExtension = project.getExtensions().getByType(MicronautExtension.class);
         TestResourcesConfiguration testResources = micronautExtension.getExtensions().create("testResources", TestResourcesConfiguration.class);
+        ProviderFactory providers = project.getProviders();
         testResources.getEnabled().convention(
                 micronautExtension.getVersion()
-                        .orElse(project.getProviders().gradleProperty("micronautVersion"))
+                        .orElse(providers.gradleProperty("micronautVersion"))
                         .map(MicronautTestResourcesPlugin::isAtLeastMicronaut3dot5)
         );
         testResources.getVersion().convention(VersionInfo.getVersion());
         testResources.getExplicitPort().convention(explicitPort);
         testResources.getInferClasspath().convention(true);
         testResources.getClientTimeout().convention(DEFAULT_CLIENT_TIMEOUT_SECONDS);
+        testResources.getSharedServer().convention(
+                providers.gradleProperty("shared.test.resources")
+                        .orElse(providers.systemProperty("shared.test.resources"))
+                        .orElse(providers.environmentVariable("SHARED_TEST_RESOURCES"))
+                        .orElse("false")
+                        .map(str -> {
+                            if (str.isEmpty()) {
+                                return true;
+                            }
+                            return Boolean.parseBoolean(str);
+                        })
+        );
         return testResources;
     }
 
@@ -207,7 +221,9 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
         }).orElse(Collections.emptyList());
     }
 
-    private void configureServiceReset(ProjectInternal project) {
+    private void configureServiceReset(ProjectInternal project,
+                                       Provider<Directory> settingsDirectory,
+                                       Path shouldStopFile) {
         ServiceRegistry services = project.getServices();
         ListenerManager listenerManager = services.get(ListenerManager.class);
         Field parentField;
@@ -219,7 +235,16 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
             listenerManager.addListener(new BuildSessionLifecycleListener() {
                 @Override
                 public void beforeComplete() {
-                    TestResourcesService.reset();
+                    try {
+                        if (Files.exists(shouldStopFile)) {
+                            project.getLogger().debug("Stop file contains " + Files.readAllLines(shouldStopFile));
+                            if (Boolean.parseBoolean(Files.readAllLines(shouldStopFile).get(0))) {
+                                ServerUtils.stopServer(settingsDirectory.get().getAsFile().toPath());
+                            }
+                        }
+                    } catch (IOException e) {
+                        project.getLogger().debug("Test resources server is already stopped", e);
+                    }
                 }
             });
         } catch (NoSuchFieldException | IllegalAccessException e) {
