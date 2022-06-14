@@ -56,6 +56,9 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
             // keep those in descending order
             Arrays.asList(17, 11)
     );
+    private static final String ARM_ARCH = "aarch64";
+    private static final String X86_64_ARCH = "amd64";
+    private static final String GRAAL_VERSION_CONVENTION = "22.1.0";
 
     /**
      * @return The JDK version to use with native image. Defaults to the toolchain version, or the current Java version.
@@ -68,6 +71,12 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
      */
     @Input
     public abstract Property<String> getGraalVersion();
+
+    /**
+     * @return The Graal architecture
+     */
+    @Input
+    public abstract Property<String> getGraalArch();
 
     /**
      * @return the GraalVM docker image to use
@@ -145,7 +154,9 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
                         .map(NativeImageDockerfile::toSupportedJavaVersion)
                         .map(v -> "java" + v)
         );
-        getGraalVersion().convention("22.1.0");
+        getGraalVersion().convention(GRAAL_VERSION_CONVENTION);
+        String osArch = System.getProperty("os.arch");
+        getGraalArch().convention(ARM_ARCH.equals(osArch) ? ARM_ARCH : X86_64_ARCH);
         getTargetWorkingDirectory().convention(DEFAULT_WORKING_DIR);
         getGraalImage().convention(getGraalVersion().zip(getJdkVersion(), NativeImageDockerfile::toGraalVMBaseImageName));
         getNativeImageOptions().convention(project
@@ -364,7 +375,8 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
             runCommand("yum install -y gcc gcc-c++ libc6-dev zlib1g-dev curl bash zlib zlib-devel zlib-static zip tar gzip");
             String jdkVersion = getJdkVersion().get();
             String graalVersion = getGraalVersion().get();
-            String fileName = "graalvm-ce-" + jdkVersion + "-linux-amd64-" + graalVersion + ".tar.gz";
+            String graalArch = getGraalArch().get();
+            String fileName = "graalvm-ce-" + jdkVersion + "-linux-" + graalArch + "-" + graalVersion + ".tar.gz";
             runCommand("curl -4 -L https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-" + graalVersion + "/" + fileName + " -o /tmp/" + fileName);
             runCommand("tar -zxf /tmp/" + fileName + " -C /tmp && mv /tmp/graalvm-ce-" + jdkVersion + "-" + graalVersion + " /usr/lib/graalvm");
             runCommand("rm -rf /tmp/*");
