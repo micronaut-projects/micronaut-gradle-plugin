@@ -16,6 +16,7 @@ include("docker-plugin")
 include("graalvm-plugin")
 include("aot-plugin")
 include("gradle-plugin")
+include("test-resources-plugin")
 include("functional-tests")
 
 for (project in rootProject.children) {

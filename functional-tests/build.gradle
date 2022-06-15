@@ -16,6 +16,7 @@ functionalTesting {
     pluginUnderTest('docker')
     pluginUnderTest('aot')
     pluginUnderTest('gradle')
+    pluginUnderTest('test-resources')
 }
 
 dependencies {

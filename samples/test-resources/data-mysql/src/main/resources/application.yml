@@ -1,0 +1,18 @@
+micronaut:
+  application:
+    name: demo
+  server:
+    port: -1
+netty:
+  default:
+    allocator:
+      max-order: 3
+datasources:
+  default:
+    driverClassName: com.mysql.cj.jdbc.Driver
+    schema-generate: CREATE
+    dialect: MYSQL
+#  users:
+#    driverClassName: org.postgresql.Driver
+#    schema-generate: CREATE_DROP
+#    dialect: POSTGRES

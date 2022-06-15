@@ -95,6 +95,16 @@ abstract class AbstractGradleBuildSpec extends Specification {
     }
 
     BuildResult build(String... args) {
+        configureRunner(args)
+                .build()
+    }
+
+    BuildResult fails(String... args) {
+        configureRunner(args)
+            .buildAndFail()
+    }
+
+    GradleRunner configureRunner(String... args) {
         prepareBuild()
         def runner = newRunner()
         if (Jvm.current.java16Compatible) {
@@ -115,7 +125,6 @@ abstract class AbstractGradleBuildSpec extends Specification {
                 .forwardStdOutput(System.out.newWriter())
                 .forwardStdError(System.err.newWriter())
                 .withDebug(true)
-                .build()
     }
 
     static String normalizeLineEndings(String s) {

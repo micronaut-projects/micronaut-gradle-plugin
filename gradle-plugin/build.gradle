@@ -19,6 +19,7 @@ dependencies {
     api project(":micronaut-docker-plugin")
     api project(":micronaut-graalvm-plugin")
     api project(":micronaut-aot-plugin")
+    api project(":micronaut-test-resources-plugin")
 
     implementation libs.diffplugPlugin
 
