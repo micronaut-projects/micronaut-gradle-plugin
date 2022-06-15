@@ -8,7 +8,6 @@ group = "demo.app"
 
 repositories {
     mavenCentral()
-    mavenLocal()
 }
 
 micronaut {

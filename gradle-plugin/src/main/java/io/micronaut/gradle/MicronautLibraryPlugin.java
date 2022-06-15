@@ -21,6 +21,7 @@ public class MicronautLibraryPlugin implements Plugin<Project> {
         plugins.apply(MicronautMinimalLibraryPlugin.class);
         plugins.apply(AptEclipsePlugin.class);
         plugins.apply(MicronautGraalPlugin.class);
+
     }
 
 }
