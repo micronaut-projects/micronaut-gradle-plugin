@@ -4,3 +4,4 @@ io.micronaut.gradle.docker
 io.micronaut.gradle.docker.model
 io.micronaut.gradle.docker.tasks
 io.micronaut.gradle.graalvm
+io.micronaut.gradle.testresources
