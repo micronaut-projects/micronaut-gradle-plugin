@@ -112,8 +112,6 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
             return singleTask && onlyStartTask;
         }), (shared, singleTask) -> shared || singleTask);
         TaskProvider<StartTestResourcesService> internalStart = createStartServiceTask(server, config, settingsDirectory, accessTokenProvider, tasks, portFile, stopAtEndFile, isStandalone);
-        createStopServiceTask(settingsDirectory, tasks);
-        project.afterEvaluate(p -> p.getConfigurations().all(conf -> configureDependencies(project, config, dependencies, internalStart, conf)));
         tasks.register(START_TEST_RESOURCES_SERVICE, task -> {
             task.dependsOn(internalStart);
             task.setOnlyIf(t -> config.getEnabled().get());
@@ -121,6 +119,7 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
             task.setDescription("Starts the test resources server in standalone mode");
         });
         createStopServiceTask(settingsDirectory, tasks);
+        project.afterEvaluate(p -> p.getConfigurations().all(conf -> configureDependencies(project, config, dependencies, internalStart, conf)));
 
         project.getPluginManager().withPlugin("io.micronaut.component", unused -> {
             tasks.withType(Test.class).configureEach(t -> t.dependsOn(internalStart));
