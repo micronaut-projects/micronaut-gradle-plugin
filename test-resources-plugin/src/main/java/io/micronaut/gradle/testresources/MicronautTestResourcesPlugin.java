@@ -55,6 +55,7 @@ import static java.util.stream.Stream.concat;
  */
 public class MicronautTestResourcesPlugin implements Plugin<Project> {
     public static final String START_TEST_RESOURCES_SERVICE = "startTestResourcesService";
+    public static final String START_TEST_RESOURCES_SERVICE_INTERNAL = "internalStartTestResourcesService";
     public static final String STOP_TEST_RESOURCES_SERVICE = "stopTestResourcesService";
     public static final String GROUP = "Micronaut Test Resources";
 
@@ -107,16 +108,22 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
             boolean onlyStartTask = project.getGradle().getTaskGraph()
                     .getAllTasks()
                     .stream()
-                    .allMatch(task -> task.getProject().equals(project) && StartTestResourcesService.class.isAssignableFrom(task.getClass()));
+                    .anyMatch(task -> task.getProject().equals(project) && task.getName().equals(START_TEST_RESOURCES_SERVICE));
             return singleTask && onlyStartTask;
         }), (shared, singleTask) -> shared || singleTask);
-        TaskProvider<StartTestResourcesService> startTestResourcesService = createStartServiceTask(server, config, settingsDirectory, accessTokenProvider, tasks, portFile, stopAtEndFile, isStandalone);
+        TaskProvider<StartTestResourcesService> internalStart = createStartServiceTask(server, config, settingsDirectory, accessTokenProvider, tasks, portFile, stopAtEndFile, isStandalone);
+        tasks.register(START_TEST_RESOURCES_SERVICE, task -> {
+            task.dependsOn(internalStart);
+            task.setOnlyIf(t -> config.getEnabled().get());
+            task.setGroup(MicronautTestResourcesPlugin.GROUP);
+            task.setDescription("Starts the test resources server in standalone mode");
+        });
         createStopServiceTask(settingsDirectory, tasks);
-        project.afterEvaluate(p -> p.getConfigurations().all(conf -> configureDependencies(project, config, dependencies, startTestResourcesService, conf)));
+        project.afterEvaluate(p -> p.getConfigurations().all(conf -> configureDependencies(project, config, dependencies, internalStart, conf)));
 
         project.getPluginManager().withPlugin("io.micronaut.component", unused -> {
-            tasks.withType(Test.class).configureEach(t -> t.dependsOn(startTestResourcesService));
-            tasks.withType(JavaExec.class).configureEach(t -> t.dependsOn(startTestResourcesService));
+            tasks.withType(Test.class).configureEach(t -> t.dependsOn(internalStart));
+            tasks.withType(JavaExec.class).configureEach(t -> t.dependsOn(internalStart));
         });
 
         configureServiceReset((ProjectInternal) project, settingsDirectory, stopAtEndFile);
@@ -159,7 +166,7 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
                                                                            Provider<RegularFile> portFile,
                                                                            Path stopFile,
                                                                            Provider<Boolean> isStandalone) {
-        return tasks.register(START_TEST_RESOURCES_SERVICE, StartTestResourcesService.class, task -> {
+        return tasks.register(START_TEST_RESOURCES_SERVICE_INTERNAL, StartTestResourcesService.class, task -> {
             task.setOnlyIf(t -> config.getEnabled().get());
             task.getPortFile().convention(portFile);
             task.getSettingsDirectory().convention(settingsDirectory);
