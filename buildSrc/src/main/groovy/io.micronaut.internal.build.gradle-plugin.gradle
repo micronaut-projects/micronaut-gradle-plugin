@@ -9,6 +9,8 @@ plugins {
     id "io.micronaut.internal.build.testing"
 }
 
+pluginManager.apply(io.micronaut.build.MicronautQualityChecksParticipantPlugin)
+
 repositories {
     mavenCentral()
     gradlePluginPortal()
@@ -79,4 +81,9 @@ tasks.configureEach {
             !rootProject.layout.buildDirectory.dir("repo").get().asFile.exists() || tasks.getByName("jar").didWork
         }
     }
+}
+
+// There are many violations that we'll need to fix later
+tasks.withType(Checkstyle).configureEach {
+    enabled = false
 }
