@@ -6,6 +6,7 @@ description = "Micronaut Test Resources Gradle plugin"
 
 micronautPlugins {
     register('test-resources', 'io.micronaut.gradle.testresources.MicronautTestResourcesPlugin', 'Micronaut Test Resources Plugin')
+    register('test-resources-consumer', 'io.micronaut.gradle.testresources.MicronautTestResourcesConsumerPlugin', 'Micronaut Test Resources Consumer Plugin')
 }
 
 dependencies {

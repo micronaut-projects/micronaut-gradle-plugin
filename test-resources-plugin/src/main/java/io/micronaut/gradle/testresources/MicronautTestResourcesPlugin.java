@@ -16,6 +16,7 @@ import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.Dependency;
 import org.gradle.api.artifacts.ModuleDependency;
 import org.gradle.api.artifacts.dsl.DependencyHandler;
+import org.gradle.api.attributes.Usage;
 import org.gradle.api.file.Directory;
 import org.gradle.api.file.DirectoryProperty;
 import org.gradle.api.file.RegularFile;
@@ -58,6 +59,9 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
     public static final String START_TEST_RESOURCES_SERVICE_INTERNAL = "internalStartTestResourcesService";
     public static final String STOP_TEST_RESOURCES_SERVICE = "stopTestResourcesService";
     public static final String GROUP = "Micronaut Test Resources";
+    public static final String TESTRESOURCES_CONFIGURATION = "testresources";
+    public static final String TESTRESOURCES_ELEMENTS_CONFIGURATION = "testresourcesSettingsElements";
+    public static final String MICRONAUT_TEST_RESOURCES_USAGE = "micronaut.test.resources";
 
     private static final int DEFAULT_CLIENT_TIMEOUT_SECONDS = 60;
 
@@ -70,6 +74,7 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
 
     private void configurePlugin(Project project) {
         Configuration server = createTestResourcesServerConfiguration(project);
+        Configuration outgoing = createTestResourcesOutgoingConfiguration(project);
         ProviderFactory providers = project.getProviders();
         Provider<Integer> explicitPort = providers.systemProperty("micronaut.test-resources.server.port").map(Integer::parseInt);
         TestResourcesConfiguration config = createTestResourcesConfiguration(project, explicitPort);
@@ -89,19 +94,7 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
             return directoryProperty;
         }).orElse(project.getLayout().getBuildDirectory().dir("test-resources-settings"));
         Provider<RegularFile> portFile = project.getLayout().getBuildDirectory().file("test-resources-port.txt");
-        Path stopAtEndFile;
-        try {
-            File asFile = project.getLayout().getBuildDirectory().file("test-resources/" + UUID.randomUUID()).get().getAsFile();
-            if (asFile.getParentFile().isDirectory() || asFile.getParentFile().mkdirs()) {
-                asFile.deleteOnExit();
-                stopAtEndFile = asFile.toPath();
-                Files.deleteIfExists(stopAtEndFile);
-            } else {
-                throw new IOException("Could not create directory for test resources stop file");
-            }
-        } catch (IOException e) {
-            throw new GradleException("Unable to create temp file", e);
-        }
+        Path stopAtEndFile = createStopFile(project);
         TaskContainer tasks = project.getTasks();
         Provider<Boolean> isStandalone = config.getSharedServer().zip(providers.provider(() -> {
             boolean singleTask = project.getGradle().getStartParameter().getTaskNames().size() == 1;
@@ -120,13 +113,31 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
         });
         createStopServiceTask(settingsDirectory, tasks);
         project.afterEvaluate(p -> p.getConfigurations().all(conf -> configureDependencies(project, config, dependencies, internalStart, conf)));
-
+        outgoing.getOutgoing().artifact(internalStart);
+        outgoing.getDependencies().addLater(config.getVersion().map(v -> dependencies.create("io.micronaut.testresources:micronaut-test-resources-client:" + v)));
         project.getPluginManager().withPlugin("io.micronaut.component", unused -> {
             tasks.withType(Test.class).configureEach(t -> t.dependsOn(internalStart));
             tasks.withType(JavaExec.class).configureEach(t -> t.dependsOn(internalStart));
         });
 
         configureServiceReset((ProjectInternal) project, settingsDirectory, stopAtEndFile);
+    }
+
+    private Path createStopFile(Project project) {
+        Path stopAtEndFile;
+        try {
+            File asFile = project.getLayout().getBuildDirectory().file("test-resources/" + UUID.randomUUID()).get().getAsFile();
+            if (asFile.getParentFile().isDirectory() || asFile.getParentFile().mkdirs()) {
+                asFile.deleteOnExit();
+                stopAtEndFile = asFile.toPath();
+                Files.deleteIfExists(stopAtEndFile);
+            } else {
+                throw new IOException("Could not create directory for test resources stop file");
+            }
+        } catch (IOException e) {
+            throw new GradleException("Unable to create temp file", e);
+        }
+        return stopAtEndFile;
     }
 
     private SourceSet createTestResourcesSourceSet(JavaPluginExtension javaPluginExtension) {
@@ -136,7 +147,6 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
     private void  createStopServiceTask(Provider<Directory> settingsDirectory, TaskContainer tasks) {
         tasks.register(STOP_TEST_RESOURCES_SERVICE, StopTestResourcesService.class, task -> task.getSettingsDirectory().convention(settingsDirectory));
     }
-
 
     private void configureDependencies(Project project, TestResourcesConfiguration config, DependencyHandler dependencies, TaskProvider<StartTestResourcesService> writeTestProperties, Configuration conf) {
         String name = conf.getName();
@@ -282,10 +292,21 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
     }
 
     private static Configuration createTestResourcesServerConfiguration(Project project) {
-        return project.getConfigurations().create("testresources", conf -> {
+        return project.getConfigurations().create(TESTRESOURCES_CONFIGURATION, conf -> {
             conf.setDescription("Dependencies for the Micronaut test resources service");
             conf.setCanBeConsumed(false);
             conf.setCanBeResolved(true);
+        });
+    }
+
+    private static Configuration createTestResourcesOutgoingConfiguration(Project project) {
+        return project.getConfigurations().create(TESTRESOURCES_ELEMENTS_CONFIGURATION, conf -> {
+            conf.setDescription("Provides the Micronaut Test Resources client configuration files");
+            conf.setCanBeConsumed(true);
+            conf.setCanBeResolved(false);
+            conf.attributes(attr -> {
+                attr.attribute(Usage.USAGE_ATTRIBUTE, project.getObjects().named(Usage.class, MICRONAUT_TEST_RESOURCES_USAGE));
+            });
         });
     }
 
