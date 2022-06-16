@@ -2,6 +2,7 @@ package io.micronaut.gradle
 
 
 import org.gradle.testkit.runner.TaskOutcome
+import spock.lang.Ignore
 import spock.lang.Issue
 
 class MicronautApplicationPluginSpec extends AbstractGradleBuildSpec {
@@ -62,6 +63,88 @@ public class ExampleTest {
 
         where:
         plugins << [
+                'id "io.micronaut.application"',
+                'id "io.micronaut.minimal.application"',
+        ]
+    }
+
+    @Ignore("Not sure how to fix java.lang.NoClassDefFoundError: org/jetbrains/kotlin/allopen/gradle/AllOpenExtension")
+    def "test kotest 5 test runtime with #plugin"() {
+        given:
+        settingsFile << "rootProject.name = 'hello-world'"
+        buildFile << """plugins {
+                       |    id("org.jetbrains.kotlin.jvm") version "1.6.21"
+                       |    id("org.jetbrains.kotlin.kapt") version "1.6.21"
+                       |    id("org.jetbrains.kotlin.plugin.allopen") version "1.6.21"
+                       |    $plugin
+                       |}
+                       |
+                       |tasks {
+                       |    compileKotlin {
+                       |        kotlinOptions {
+                       |            jvmTarget = "11"
+                       |        }
+                       |    }
+                       |    compileTestKotlin {
+                       |        kotlinOptions {
+                       |            jvmTarget = "11"
+                       |        }
+                       |    }
+                       |}
+                       |
+                       |micronaut {
+                       |    version "3.5.1"
+                       |    runtime "netty"
+                       |    testRuntime "kotest5"
+                       |}
+                       |
+                       |dependencies {
+                       |    implementation("io.micronaut.kotlin:micronaut-kotlin-runtime")
+                       |}
+                       |
+                       |$repositoriesBlock
+                       |
+                       |mainClassName="example.Application"
+                       """.stripMargin()
+        testProjectDir.newFolder("src", "test", "kotlin", "example")
+        def testFile = testProjectDir.newFile("src/test/kotlin/example/ExampleTest.kt")
+        testFile << """package com.example
+                        |
+                        |import io.micronaut.runtime.EmbeddedApplication
+                        |import io.micronaut.test.extensions.kotest5.annotation.MicronautTest
+                        |import io.kotest.core.spec.style.StringSpec
+                        |
+                        |@MicronautTest
+                        |class ExampleTest(private val application: EmbeddedApplication<*>): StringSpec({
+                        |
+                        |    "test the server is running" {
+                        |        assert(application.isRunning)
+                        |    }
+                        |})
+                        """.stripMargin()
+        def configFile = testProjectDir.newFile("src/test/kotlin/example/ProjectConfig.kt")
+        testFile << """package example
+                      |
+                      |import io.kotest.core.config.AbstractProjectConfig
+                      |import io.micronaut.test.extensions.kotest5.MicronautKotestExtension
+                      |
+                      |object ProjectConfig : AbstractProjectConfig() {
+                      |    override fun listeners() = listOf(MicronautKotestExtension)
+                      |    override fun extensions() = listOf(MicronautKotestExtension)
+                      |}
+                      """.stripMargin()
+
+        when:
+        def result = build('test')
+
+        def task = result.task(":test")
+        println result.output
+
+        then:
+        task.outcome == TaskOutcome.SUCCESS
+
+        where:
+        plugin << [
                 'id "io.micronaut.application"',
                 'id "io.micronaut.minimal.application"',
         ]
