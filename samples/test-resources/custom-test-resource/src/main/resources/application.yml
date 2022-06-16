@@ -1,0 +1,9 @@
+micronaut:
+  application:
+    name: demo
+  server:
+    port: -1
+netty:
+  default:
+    allocator:
+      max-order: 3
