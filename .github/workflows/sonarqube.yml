@@ -50,6 +50,7 @@ jobs:
         run: |
           ./gradlew check sonarqube --no-daemon --parallel --continue
         env:
+          PREDICTIVE_TEST_SELECTION: false
           TESTCONTAINERS_RYUK_DISABLED: true
           GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GRADLE_ENTERPRISE_ACCESS_KEY }}
           GRADLE_ENTERPRISE_CACHE_USERNAME: ${{ secrets.GRADLE_ENTERPRISE_CACHE_USERNAME }}

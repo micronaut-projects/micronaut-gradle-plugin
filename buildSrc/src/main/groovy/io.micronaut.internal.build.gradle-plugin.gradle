@@ -18,12 +18,6 @@ repositories {
 
 project.extensions.create("micronautPlugins", MicronautPluginExtension, pluginBundle, gradlePlugin)
 
-java {
-    toolchain {
-        languageVersion.set(JavaLanguageVersion.of(8))
-    }
-}
-
 configurations {
     security {
         canBeResolved = false
