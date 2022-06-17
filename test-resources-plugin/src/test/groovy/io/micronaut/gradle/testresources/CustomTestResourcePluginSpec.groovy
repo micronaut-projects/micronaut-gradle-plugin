@@ -2,7 +2,9 @@ package io.micronaut.gradle.testresources
 
 import io.micronaut.gradle.AbstractGradleBuildSpec
 import org.gradle.testkit.runner.TaskOutcome
+import spock.lang.Requires
 
+@Requires({ !os.windows })
 class CustomTestResourcePluginSpec extends AbstractGradleBuildSpec {
 
     def "can implement a custom test resource using the testResources source set"() {
