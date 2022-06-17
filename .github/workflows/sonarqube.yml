@@ -34,11 +34,12 @@ jobs:
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
           restore-keys: |
             ${{ runner.os }}-gradle-
-      - name: Set up JDK
-        uses: actions/setup-java@v3
+      - name: Setup GraalVM CE
+        uses: graalvm/setup-graalvm@v1
         with:
-          distribution: 'adopt'
-          java-version: 11
+          version: '22.1.0'
+          java-version: '11'
+          components: 'native-image'
       - name: Optional setup step
         env:
           GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GRADLE_ENTERPRISE_ACCESS_KEY }}
@@ -48,7 +49,7 @@ jobs:
           [ -f ./setup.sh ] && ./setup.sh || true
       - name: Analyse with Gradle
         run: |
-          ./gradlew check sonarqube --no-daemon --parallel --continue
+          ./gradlew check sonarqube --no-daemon --parallel --continue --no-build-cache
         env:
           PREDICTIVE_TEST_SELECTION: false
           TESTCONTAINERS_RYUK_DISABLED: true

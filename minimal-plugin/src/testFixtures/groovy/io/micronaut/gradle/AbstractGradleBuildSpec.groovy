@@ -60,6 +60,7 @@ abstract class AbstractGradleBuildSpec extends Specification {
 
         def jacocoConf = AbstractGradleBuildSpec.classLoader.getResourceAsStream("testkit-gradle.properties")?.text
         if (jacocoConf) {
+            println "Configuring Code Coverage support: ${jacocoConf}"
             file("gradle.properties") << jacocoConf
         }
     }
