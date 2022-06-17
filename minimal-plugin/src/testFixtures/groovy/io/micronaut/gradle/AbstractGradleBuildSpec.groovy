@@ -57,6 +57,12 @@ abstract class AbstractGradleBuildSpec extends Specification {
     protected void withSample(String name) {
         File sampleDir = new File("../samples/$name").canonicalFile
         copySample(sampleDir.toPath(), baseDir)
+
+        def jacocoConf = AbstractGradleBuildSpec.classLoader.getResourceAsStream("testkit-gradle.properties")?.text
+        if (jacocoConf) {
+            println "Configuring Code Coverage support: ${jacocoConf}"
+            file("gradle.properties") << jacocoConf
+        }
     }
 
     private static void copySample(Path from, Path into) {

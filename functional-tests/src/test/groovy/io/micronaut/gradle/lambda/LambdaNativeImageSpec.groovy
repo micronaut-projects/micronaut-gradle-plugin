@@ -24,7 +24,7 @@ class LambdaNativeImageSpec extends AbstractFunctionalTest {
             }
             
             micronaut {
-                version "2.3.4"
+                version "3.5.1"
                 runtime "netty"
             }
             
@@ -66,7 +66,7 @@ class LambdaNativeImageSpec extends AbstractFunctionalTest {
             }
 
             micronaut {
-                version "2.3.4"
+                version "3.5.1"
                 runtime "lambda"
             }
 
@@ -115,7 +115,7 @@ class LambdaNativeImageSpec extends AbstractFunctionalTest {
             }
             
             micronaut {
-                version "2.3.4"
+                version "3.5.1"
                 runtime "netty"
             }
             
@@ -165,7 +165,7 @@ class LambdaNativeImageSpec extends AbstractFunctionalTest {
             }
 
             micronaut {
-                version "2.3.4"
+                version "3.5.1"
                 runtime "netty"
             }
 
@@ -214,7 +214,7 @@ class LambdaNativeImageSpec extends AbstractFunctionalTest {
             }
 
             micronaut {
-                version "2.3.4"
+                version "3.5.1"
                 runtime "netty"
             }
 
@@ -266,7 +266,7 @@ class LambdaNativeImageSpec extends AbstractFunctionalTest {
             }
 
             micronaut {
-                version "2.3.4"
+                version "3.5.1"
                 runtime "netty"
             }
 

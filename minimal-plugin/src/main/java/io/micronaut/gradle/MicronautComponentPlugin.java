@@ -143,16 +143,16 @@ public class MicronautComponentPlugin implements Plugin<Project> {
             conf.setDescription("BOMs which will be applied by the Micronaut plugins");
         });
         DependencyHandler dependencyHandler = project.getDependencies();
-        dependencyHandler.addProvider(micronautBoms.getName(), project.getProviders().provider(() -> {
-            String micronautVersion = PluginsHelper.findMicronautVersion(project, micronautExtension);
-            return resolveMicronautPlatform(dependencyHandler, micronautVersion);
-        }));
-        project.getConfigurations().configureEach(conf -> {
-            if (CONFIGURATIONS_TO_APPLY_BOMS.contains(conf.getName())) {
-                conf.extendsFrom(micronautBoms);
-            }
-        });
         project.afterEvaluate(p -> {
+            dependencyHandler.addProvider(micronautBoms.getName(), project.getProviders().provider(() -> {
+                String micronautVersion = PluginsHelper.findMicronautVersion(project, micronautExtension);
+                return resolveMicronautPlatform(dependencyHandler, micronautVersion);
+            }));
+            project.getConfigurations().configureEach(conf -> {
+                if (CONFIGURATIONS_TO_APPLY_BOMS.contains(conf.getName())) {
+                    conf.extendsFrom(micronautBoms);
+                }
+            });
             ListProperty<SourceSet> additionalSourceSets =
                     micronautExtension.getProcessing().getAdditionalSourceSets();
 

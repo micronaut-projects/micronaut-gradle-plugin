@@ -105,7 +105,8 @@ class MicronautGraalPluginSpec extends AbstractEagerConfiguringFunctionalTest {
                 implementation("io.swagger.core.v3:swagger-annotations")
             }
             micronaut {
-                version "2.5.4"
+                version "3.5.1"
+                runtime 'netty'
             }
             $repositoriesBlock
             group = "example.micronaut"
@@ -134,7 +135,7 @@ class Application {
         testProjectDir.newFolder('src', 'main', 'resources')
         testProjectDir.newFile('src/main/resources/application.yml') << 'micronaut.application.name: hello-world'
         settingsFile << "rootProject.name = 'hello-world'"
-        String micronautVersion = '2.5.0'
+        String micronautVersion = '3.5.1'
         buildFile << """
             plugins {
                 id "application"
@@ -147,6 +148,7 @@ class Application {
                 
                 implementation(enforcedPlatform("io.micronaut:micronaut-bom:$micronautVersion"))
                 implementation("io.micronaut:micronaut-inject")
+                implementation("io.micronaut:micronaut-http-server-netty")
                 implementation("io.swagger.core.v3:swagger-annotations")
             }
             

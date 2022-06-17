@@ -16,7 +16,7 @@ class MicronautApplicationPluginSpec extends AbstractGradleBuildSpec {
             }
             
             micronaut {
-                version "2.3.3"
+                version "3.5.1"
                 runtime "netty"
                 testRuntime "junit5"
             }
@@ -31,11 +31,11 @@ class MicronautApplicationPluginSpec extends AbstractGradleBuildSpec {
 package example;
 
 import io.micronaut.runtime.EmbeddedApplication;
-import io.micronaut.test.annotation.MicronautTest;
+import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Assertions;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 @MicronautTest
 public class ExampleTest {
@@ -160,7 +160,7 @@ public class ExampleTest {
 //            }
 //
 //            micronaut {
-//                version "2.3.3"
+//                version "3.5.1"
 //                runtime "netty"
 //                testRuntime "spock"
 //            }
@@ -181,9 +181,9 @@ public class ExampleTest {
 //package example
 //
 //import io.micronaut.runtime.EmbeddedApplication
-//import io.micronaut.test.annotation.MicronautTest
+//import io.micronaut.test.extensions.spock.annotation.MicronautTest
 //import spock.lang.Specification
-//import javax.inject.Inject
+//import jakarta.inject.Inject
 //
 //@MicronautTest
 //class ExampleSpec extends Specification {
