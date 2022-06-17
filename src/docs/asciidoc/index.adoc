@@ -1373,7 +1373,7 @@ plugins {
 }
 
 micronaut {
-    testResources.targetProject.set(":testresources")         // <2>
+    testResources.targetProject.set(":shared-testresources")   // <2>
 }
 ----
 <1> Use the test resources consumer plugin instead
