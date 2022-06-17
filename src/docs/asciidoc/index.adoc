@@ -1,15 +1,16 @@
 = Micronaut Gradle plugin
 :native-build-tools-version: 0.9.11
-:kotlin-version: 1.5.30
-:micronaut-version: 3.1.1
-:gradle-version: 7.2
-:shadow-version: 7.0.0
+:kotlin-version: 1.6.21
+:micronaut-version: 3.5.1
+:gradle-version: 7.4.1
+:shadow-version: 7.1.2
 :native-gradle-plugin: https://graalvm.github.io/native-build-tools/{native-build-tools-version}/gradle-plugin.html
 :gradle-docs: https://docs.gradle.org/{gradle-version}/userguide
 :gradle-toolchains: {gradle-docs}/toolchains.html
 :default-docker-image: openjdk:17-alpine
 :docker-plugin: https://github.com/bmuschko/gradle-docker-plugin
 :aws-docs: https://micronaut-projects.github.io/micronaut-aws/latest/guide/index.html#customRuntimes
+:testresources-guide: https://micronaut-projects.github.io/micronaut-test-resources/latest/guide
 
 Version {gradle-project-version}
 
@@ -74,6 +75,14 @@ For example, the `minimal` plugins can be used to reduce the number of tasks, fo
 |https://plugins.gradle.org/plugin/io.micronaut.application[`io.micronaut.application`]
 |A typical Micronaut Application, with support for GraalVM and Docker
 |https://plugins.gradle.org/plugin/io.micronaut.minimal.application[`io.micronaut.minimal.application`], https://plugins.gradle.org/plugin/io.micronaut.graalvm[`io.micronaut.graalvm`], https://plugins.gradle.org/plugin/io.micronaut.docker[`io.micronaut.docker`], `AptEclipsePlugin`
+
+|https://plugins.gradle.org/plugin/io.micronaut.test-resources[`io.micronaut.test-resources`]
+|Provides automatic test resources provisioning on a single project
+|
+
+|https://plugins.gradle.org/plugin/io.micronaut.test-resources-consumer[`io.micronaut.test-resources-consumer`]
+|Provides ability to use test resources of other projects of multiproject builds
+|
 
 |===
 
@@ -1181,6 +1190,272 @@ The 2 tasks which are available for this are:
 
 - `optimizedDockerBuildNative` to build the optimized native Docker image
 - `optimizedDockerPushNative` to push the optimized native Docker image
+
+
+[[test-resources]]
+== Automatic test resources provisioning
+
+The Micronaut Gradle plugin integrates with https://github.com/micronaut-projects/micronaut-test-resources[Micronaut Test Resources] to automatically provision test resources.
+In particular, it makes use of https://testcontainers.org/[Testcontainers] to automatically provide resources like databases or other external services like Kafka or RabbitMQ.
+
+Test resources are handled by a "test resources service" which is a server accepting requests for test resources, which <<sec:test-resources-lifecycle,lifecycle>> is handled by the Gradle plugin.
+A test resources request is, to simplify, a request to resolve a _missing configuration property_.
+For example, if the `kafka.bootstrap-servers` property isn't set, Micronaut will query the test resources service for the value of this property.
+This will trigger the creaton of a a Kafka test container, and the service will answer with the URI to the bootstrap server.
+
+=== The test resources plugin
+
+The easiest way to add test resources support is to apply the `io.micronaut.test-resources` plugin:
+
+[source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
+----
+plugins {
+    id "io.micronaut.application" version "{micronaut-version}"
+    id "io.micronaut.test-resources" version "{micronaut-version}"
+    ...
+}
+----
+
+[source, kotlin, subs="verbatim,attributes", role="multi-language-sample"]
+----
+plugins {
+    id("io.micronaut.application") version "{micronaut-version}"
+    id("io.micronaut.test-resources") version "{micronaut-version}"
+    ...
+}
+----
+
+Adding this plugin will be sufficient for most use cases.
+This will let Gradle automatically start containers, for example, when a particular property is not present in your configuration and that you run tests (`./gradlew test`) or the application in development mode (`./gradlew run` or `./gradlew -t run`).
+
+For example, if the `datasources.default.url` configuration property is missing, and that your configuration contains:
+
+[source,yaml]
+----
+datasources:
+  default:
+    dialect: MYSQL
+----
+
+Then a MySQL database will automatically be started and available for use in your tests: the `url`, `username` and `password` configuration properties will automatically be injected to your application.
+
+Please refer to the {testresources-guide}/[Micronaut Test Resources documentation] for a list of all supported modules and their configuration options.
+
+=== Configuring the test resources plugin
+
+In addition, the plugin will add a `testResources` extension to the `micronaut` configuration block, providing a number of options:
+
+[source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
+----
+micronaut {
+    testResources {
+        enabled = true // true by default
+        version = "1.0.0" // override Micronaut Test Resources version
+        explicitPort = 15471 // by default, uses a random port
+        inferClasspath = true // true by default
+        additionalModules.add(JDBC_MYSQL) // empty by default
+        clientTimeout = 60 // in seconds, maximum time to wait for resources to be available, 60s by default
+        sharedServer = true // false by default
+    }
+}
+----
+
+[source, kotlin, subs="verbatim,attributes", role="multi-language-sample"]
+----
+micronaut {
+    testResources {
+        enabled.set(true) // true by default
+        version.set("1.0.0") // override Micronaut Test Resources version
+        explicitPort.set(15471) // by default, uses a random port
+        inferClasspath.set(true) // true by default
+        additionalModules.add(JDBC_MYSQL) // empty by default
+        clientTimeout.set(60) // in seconds, maximum time to wait for resources to be available, 60s by default
+        sharedServer.set(true) // false by default
+    }
+}
+----
+
+- the `version` property will let you override the default version of Micronaut Test Resources that the plugin uses.
+- the `enabled` property can let you disable test resources provisioning (for example depending on the environment).
+- by default, a test resources server will be started. This server uses a randomly available port, but you can override this by setting the `explicitPort` property instead.
+- by default, the plugin will automatically determine which modules to add to the test resources support, by inspecting the dependencies declared in the project. For example, if you use both `micronaut-data-jdbc` and `mysql-connector-java`, it will automatically add support for MySQL provisioning. Under some circumstances, you might want to disable this behavior by setting the `inferClasspath` property to `false`.
+- the `additionalModules` property can be used to explicitly declare test resources modules to be loaded. This is useful if inference failed to detect a module, or if you want to use <<sec:standalone-test-resources,a standalone test resources service>>.
+- if set to `true`, then the test server which is used by the project can be shared between independent builds (e.g different Git repositories): this can be useful in conjunction with a <<sec:standalone-test-resources,a standalone test resources service>>, where for example a producer is used in one project, and a consumer is defined in another, but both need to use the same messaging server.
+
+[NOTE]
+====
+The `additionalModules` property can be used to declare {testresources-guide}[Micronaut Test Resources] modules. However, it might be necessary to add more libraries on the test resources classpath. For example, you may need to add additional JDBC drivers. For this, you can use the `testresources` configuration:
+[source,groovy]
+----
+dependencies {
+    // declare an additional dependency on test resources classpath
+    testresources "my:jdbc-driver:1.0"
+}
+----
+====
+
+[[sec:standalone-test-resources]]
+=== Standalone test resources service
+
+The `io.micronaut.test-resources` plugin works particularly well in single-module projects, or in multi-projects where test resources are not shared between modules.
+However, in some cases, you may want to reuse test containers for multiple projects of the same multi-project build, in order to save startup times for example.
+
+For this purpose, the `io.micronaut.test-resources` plugin can be applied on a project independently of the application or library plugins.
+
+For example, imagine a multi-project build which consists of :
+
+- a Kafka consumer
+- a Kafka producer
+- functional tests integrating both
+
+If each project applies the `io.micronaut.test-resources` plugin independently, then each project will use its own test server, independently of the others.
+
+However, you might want to run the consumer in one terminal, and the producer in another, and still want them to talk to the _same_ Kafka cluster.
+For this you have a couple options:
+
+    1. you can use a shared test server, by setting the `sharedServer` property to `true` in the `testResources` extension.
+    2. you can define a distinct project which role is to handle the test resources lifecycle
+
+The first solution comes with a major drawback: _shared servers_ are shared by all projects in the multi-project build, but also between projects of the same build. However the configuration of the server will depend on the _first one started_.
+
+To avoid this problem it is recommended to declare a distinct project to handle test resources.
+Here, we're going to add a project called `shared-testresources` which is going to be a _test resources provider_:
+
+[source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
+----
+// shared-testresources/build.gradle
+plugins {
+    id "io.micronaut.test-resources" version "{micronaut-version}" // <1>
+}
+
+micronaut {
+    testResources {
+        additionalModules.add(KAFKA)                 // <2>
+    }
+}
+----
+
+[source, kotlin, subs="verbatim,attributes", role="multi-language-sample"]
+----
+// shared-testresources/build.gradle.kts
+plugins {
+    id("io.micronaut.test-resources") version "{micronaut-version}" // <1>
+}
+
+micronaut {
+    testResources {
+        additionalModules.add(KAFKA)                  // <2>
+    }
+}
+----
+<1> use `test-resources` as a standalone plugin
+<2> declare that it will provide Kafka containers
+
+Then each consumer of test resources need to apply the `io.micronaut.test-resources-consumer` plugin instead:
+
+[source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
+----
+plugins {
+    id "io.micronaut.application" version "{micronaut-version}"
+    id "io.micronaut.test-resources-consumer" version "{micronaut-version}" // <1>
+}
+
+micronaut {
+    testResources.targetProject = ':shared-testresources'           // <2>
+}
+----
+
+[source, kotlin, subs="verbatim,attributes", role="multi-language-sample"]
+----
+plugins {
+    id("io.micronaut.application") version "{micronaut-version}"
+    id("io.micronaut.test-resources-consumer") version "{micronaut-version}" // <1>
+}
+
+micronaut {
+    testResources.targetProject.set(":testresources")         // <2>
+}
+----
+<1> Use the test resources consumer plugin instead
+<2> Declare that it consumes test resources provided by the `:testresources` project
+
+Now Gradle will automatically start test resources when one of the project needs them, and reuse them in all consumer projects.
+
+[[sec:test-resources-lifecycle]]
+=== Test resources lifecycle
+
+Test resources are handled by a service which is, by default, started at the beginning of a build, and stopped at the end.
+
+For example, if you invoke:
+
+`./gradlew test`
+
+Then the test resources service will be started before tests are executed, then tests will share the resources provided by the service.
+Any test resource started during the test will be stopped _when the build finishes_.
+
+In https://docs.gradle.org/current/userguide/userguide.html#sec:continuous_build[continuous mode], the test resources are shared between builds.
+For example, if you run:
+
+`./gradlew -t test` (run test in continuous mode)
+
+Then the test resources will be spawned during the first execution of tests.
+If you make any change to sources (production or test) and save the files, Gradle will rebuild the project and run the tests _using the same test resources_.
+This behavior can be extremely useful to save time since typically Docker containers would only be spawned once.
+If you interrupt the continuous build, the test resources will be stopped.
+
+[sec:keepalive-test-resources]
+=== Keeping test resources alive
+
+We have seen that running in continous mode allows keeping test resources alive as long as a continous build runs.
+However, what if you want to start the test resources service in the background, and keep it alive for multiple, independent builds (different invocations on the command line for example) ?
+
+You can achieve this behavior by running the `startTestResourcesService` command:
+
+`./gradlew startTestResourcesService`
+
+This command **must** be the only command executed: it will start a test resources service in the background, which will be shared between builds.
+Therefore, it's your responsibility to stop the service when you are done by running:
+
+`./gradlew stopTestResourcesService`
+
+WARNING: When keeping a test resources service alive, you must understand that any change to the test resources configuration will be ignored until you stop the service.
+
+[sec:custom-test-resources]
+=== Implementing your own test resources resolver
+
+https://github.com/micronaut-projects/micronaut-test-resources[Micronaut Test Resources] provides integration with a lot of databases and services, and also supports a {testresources-guide}/#modules-testcontainers[fully declarative way] to spawn test containers.
+However, there are cases where you might need to implement your own test resources resolver.
+
+The plugin makes it extremely straightforward: it declares an additional source set called `testResources`.
+You therefore write your test resources directly in `src/testResources/java` for example, and the test resource will be automatically made available.
+
+For example, let's write a test resource which provides the value of the `greeting.message` property.
+
+First, let's create the `src/testResources/java/demo/GreetingTestResource.java` file:
+
+.src/testResources/java/demo/GreetingTestResource.java
+[source, java]
+----
+include::samples/test-resources/custom-test-resource/src/testResources/java/demo/GreetingTestResource.java[]
+----
+
+Then you need to declare the test resource in the service file descriptor:
+
+.src/testResources/resources/META-INF/services/io.micronaut.testresources.core.TestResourcesResolver
+[source, text]
+----
+include::samples/test-resources/custom-test-resource/src/testResources/resources/META-INF/services/io.micronaut.testresources.core.TestResourcesResolver[]
+----
+
+Now the value of the `greeting.message` property will be available in your tests:
+
+.src/test/java/demo/DemoTest.java
+[source, java]
+----
+include::samples/test-resources/custom-test-resource/src/test/java/demo/DemoTest.java[tag=test]
+----
+
+You can learn more about custom test resource resolvers in the {testresources-guide}/#implementing-test-resources[Micronaut Test Resources] documentation.
 
 == Upgrade notes
 
