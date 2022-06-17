@@ -1360,8 +1360,8 @@ plugins {
     id "io.micronaut.test-resources-consumer" version "{micronaut-version}" // <1>
 }
 
-micronaut {
-    testResources.targetProject = ':shared-testresources'           // <2>
+dependencies {
+    testresources project(':shared-testresources')           // <2>
 }
 ----
 
@@ -1372,8 +1372,8 @@ plugins {
     id("io.micronaut.test-resources-consumer") version "{micronaut-version}" // <1>
 }
 
-micronaut {
-    testResources.targetProject.set(":shared-testresources")   // <2>
+dependencies {
+    testresources(project(":shared-testresources"))           // <2>
 }
 ----
 <1> Use the test resources consumer plugin instead
