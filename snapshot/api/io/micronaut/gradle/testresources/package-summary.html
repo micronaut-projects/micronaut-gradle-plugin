@@ -86,6 +86,15 @@
 <div class="block">Configuration for the test resources plugin.</div>
 </td>
 </tr>
+<tr class="rowColor">
+<td class="colFirst"><a href="../../../../io/micronaut/gradle/testresources/TestResourcesConsumerConfiguration.html" title="interface in io.micronaut.gradle.testresources">TestResourcesConsumerConfiguration</a></td>
+<td class="colLast">
+<div class="block">An extension of the Micronaut extension for use with
+ the <a href="../../../../io/micronaut/gradle/testresources/MicronautTestResourcesConsumerPlugin.html" title="class in io.micronaut.gradle.testresources"><code>MicronautTestResourcesConsumerPlugin</code></a>, which lets
+ the user declare what project provides the test resources
+ service.</div>
+</td>
+</tr>
 </tbody>
 </table>
 </li>
@@ -98,12 +107,22 @@
 </tr>
 <tbody>
 <tr class="altColor">
+<td class="colFirst"><a href="../../../../io/micronaut/gradle/testresources/MicronautTestResourcesConsumerPlugin.html" title="class in io.micronaut.gradle.testresources">MicronautTestResourcesConsumerPlugin</a></td>
+<td class="colLast">
+<div class="block">A lightweight test resources plugin, which requires
+ that another project of the build actually applies
+ the <a href="../../../../io/micronaut/gradle/testresources/MicronautTestResourcesPlugin.html" title="class in io.micronaut.gradle.testresources"><code>MicronautTestResourcesPlugin</code></a>: this plugin
+ will simply configure builds so that it uses the
+ test resources plugin from another project.</div>
+</td>
+</tr>
+<tr class="rowColor">
 <td class="colFirst"><a href="../../../../io/micronaut/gradle/testresources/MicronautTestResourcesPlugin.html" title="class in io.micronaut.gradle.testresources">MicronautTestResourcesPlugin</a></td>
 <td class="colLast">
 <div class="block">This plugin integrates with Micronaut Test Resources.</div>
 </td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <td class="colFirst"><a href="../../../../io/micronaut/gradle/testresources/StopTestResourcesService.html" title="class in io.micronaut.gradle.testresources">StopTestResourcesService</a></td>
 <td class="colLast">
 <div class="block">A task to explicitly stop the test resources server.</div>
