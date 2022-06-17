@@ -127,12 +127,13 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
         Path stopAtEndFile;
         try {
             File asFile = project.getLayout().getBuildDirectory().file("test-resources/" + UUID.randomUUID()).get().getAsFile();
-            if (asFile.getParentFile().isDirectory() || asFile.getParentFile().mkdirs()) {
+            File parentDir = asFile.getParentFile();
+            if (parentDir.isDirectory() || parentDir.mkdirs()) {
                 asFile.deleteOnExit();
                 stopAtEndFile = asFile.toPath();
                 Files.deleteIfExists(stopAtEndFile);
             } else {
-                throw new IOException("Could not create directory for test resources stop file");
+                throw new IOException("Could not create directory for test resources stop file at " + parentDir.getAbsolutePath());
             }
         } catch (IOException e) {
             throw new GradleException("Unable to create temp file", e);
