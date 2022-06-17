@@ -16,7 +16,7 @@ class MicronautRuntimeSpec extends AbstractGradleBuildSpec {
             }
             
             micronaut {
-                version "2.3.4-SNAPSHOT"
+                version "3.5.1"
                 runtime "$runtime"
                 testRuntime "junit5"
             }
@@ -59,11 +59,11 @@ public class FooController {
 package example;
 
 import io.micronaut.http.HttpStatus;
-import io.micronaut.http.client.RxHttpClient;
-import io.micronaut.test.annotation.MicronautTest;
+import io.micronaut.http.client.HttpClient;
+import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import org.junit.jupiter.api.Test;
 import io.micronaut.http.client.annotation.*;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import static org.junit.jupiter.api.Assertions.*;
 
 @MicronautTest
@@ -71,7 +71,7 @@ public class FooControllerTest {
 
     @Inject
     @Client("/")
-    RxHttpClient client;
+    HttpClient client;
 
     @Test
     public void testIndex() throws Exception {

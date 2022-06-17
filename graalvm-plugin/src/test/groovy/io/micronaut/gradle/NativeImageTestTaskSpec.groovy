@@ -19,7 +19,7 @@ class NativeImageTestTaskSpec extends AbstractGradleBuildSpec {
             }
             
             micronaut {
-                version "2.3.4"
+                version "3.5.1"
                 runtime "netty"
                 testRuntime "junit5"
             }
@@ -29,11 +29,7 @@ class NativeImageTestTaskSpec extends AbstractGradleBuildSpec {
             dependencies {
                 runtimeOnly("org.slf4j:slf4j-simple")
                 testImplementation("io.micronaut:micronaut-http-client")
-                testImplementation("io.micronaut.test:micronaut-test-core:2.2.1") {
-                    version {
-                        strictly("2.2.1")
-                    }
-                }
+                testImplementation("io.micronaut.test:micronaut-test-core")
             }
             
             mainClassName="example.Application"
@@ -94,11 +90,11 @@ org.slf4j.simpleLogger.log.io.micronaut=info
 package example;
 
 import io.micronaut.http.*;
-import io.micronaut.http.client.RxHttpClient;
-import io.micronaut.test.annotation.MicronautTest;
+import io.micronaut.http.client.HttpClient;
+import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import org.junit.jupiter.api.Test;
 import io.micronaut.http.client.annotation.*;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import static org.junit.jupiter.api.Assertions.*;
 import io.micronaut.runtime.server.EmbeddedServer;
 import io.micronaut.test.support.server.TestExecutableEmbeddedServer;
@@ -108,7 +104,7 @@ public class FooControllerTest {
 
     @Inject
     @Client("/")
-    RxHttpClient client;
+    HttpClient client;
     
     @Inject
     EmbeddedServer embeddedServer;

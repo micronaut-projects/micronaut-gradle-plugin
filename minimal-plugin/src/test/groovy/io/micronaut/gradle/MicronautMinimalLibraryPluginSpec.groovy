@@ -13,7 +13,7 @@ class MicronautMinimalLibraryPluginSpec extends AbstractGradleBuildSpec {
             }
             
             micronaut {
-                version "2.3.3"
+                version "3.5.1"
                 testRuntime "junit"
                 processing {
                     incremental true
@@ -63,7 +63,7 @@ class FooTest {
             }
             
             micronaut {
-                version "2.3.3"
+                version "3.5.1"
                 testRuntime "junit"
                 processing {
                     incremental true
@@ -99,7 +99,7 @@ class Foo {
         testJavaFile << """
 package example;
 
-import io.micronaut.test.annotation.MicronautTest;
+import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import io.micronaut.context.annotation.*;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -107,7 +107,7 @@ import org.junit.jupiter.api.Test;
 @MicronautTest
 @Property(name="foo.name", value="Good")
 class FooTest {
-    @javax.inject.Inject
+    @jakarta.inject.Inject
     Foo foo;
     
     @Test
@@ -134,7 +134,7 @@ class FooTest {
             }
             
             micronaut {
-                version "2.3.3"
+                version "3.5.1"
             }
             
             $repositoriesBlock
@@ -172,7 +172,7 @@ public class Foo {
         result.output.contains("Creating bean classes for 1 type elements")
         new File(
                 testProjectDir.getRoot(),
-                'build/classes/java/main/example/$FooDefinition.class'
+                'build/classes/java/main/example/$Foo$Definition.class'
         ).exists()
     }
 
@@ -185,7 +185,7 @@ public class Foo {
             }
             
             micronaut {
-                version "2.3.3"
+                version "3.5.1"
                 
                 processing {
                     incremental true
@@ -195,7 +195,7 @@ public class Foo {
             $repositoriesBlock
             
             dependencies {
-                annotationProcessor "io.micronaut.configuration:micronaut-openapi"
+                annotationProcessor "io.micronaut.openapi:micronaut-openapi"
                 compileOnly "io.swagger.core.v3:swagger-annotations"
             }
             
@@ -209,7 +209,7 @@ package example;
 import io.swagger.v3.oas.annotations.*;
 import io.swagger.v3.oas.annotations.info.*;
 
-@javax.inject.Singleton
+@jakarta.inject.Singleton
 @OpenAPIDefinition(
     info = @Info(
             title = "demo",
@@ -228,7 +228,7 @@ class Foo {}
         result.output.contains("Generating OpenAPI Documentation")
         new File(
                 testProjectDir.getRoot(),
-                'build/classes/java/main/example/$FooDefinition.class'
+                'build/classes/java/main/example/$Foo$Definition.class'
         ).exists()
     }
 
@@ -241,7 +241,7 @@ class Foo {}
             }
             
             micronaut {
-                version "2.3.3"
+                version "3.5.1"
                 
                 processing {
                     incremental true
@@ -257,7 +257,7 @@ class Foo {}
         javaFile << """
 package example;
 
-@javax.inject.Singleton
+@jakarta.inject.Singleton
 class Foo {}
 """
 
@@ -269,7 +269,7 @@ class Foo {}
         result.output.contains("Creating bean classes for 1 type elements")
         new File(
                 testProjectDir.getRoot(),
-                'build/classes/java/main/example/$FooDefinition.class'
+                'build/classes/java/main/example/$Foo$Definition.class'
         ).exists()
     }
 
@@ -289,7 +289,7 @@ class Foo {}
                 }
             }            
             micronaut {
-                version "2.3.3"
+                version "3.5.1"
                 processing {
                     incremental true
                     sourceSets(
@@ -308,7 +308,7 @@ class Foo {}
         javaFile << """
 package example;
 
-@javax.inject.Singleton
+@jakarta.inject.Singleton
 class Foo {}
 """
 
@@ -320,7 +320,7 @@ class Foo {}
         result.output.contains("Creating bean classes for 1 type elements")
         new File(
                 testProjectDir.getRoot(),
-                'build/classes/java/custom/example/$FooDefinition.class'
+                'build/classes/java/custom/example/$Foo$Definition.class'
         ).exists()
     }
 
@@ -333,7 +333,7 @@ class Foo {}
             }
             
             micronaut {
-                version "2.3.3"
+                version "3.5.1"
             }
             
             $repositoriesBlock
@@ -351,11 +351,11 @@ class Foo {}
 package example;
 
 import io.micronaut.context.BeanContext;
-import io.micronaut.test.annotation.MicronautTest;
+import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Assertions;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 @MicronautTest
 class Foo {
@@ -394,7 +394,7 @@ class Foo {
                 }
             }                    
             micronaut {
-                version "2.3.3"
+                version "3.5.1"
                 processing {
                     incremental true
                     sourceSets(
@@ -415,7 +415,7 @@ class Foo {
         javaFile << """
 package example;
 
-@javax.inject.Singleton
+@jakarta.inject.Singleton
 class Foo {}
 """
 
@@ -430,7 +430,7 @@ class Foo {}
         ).exists()
         new File(
                 testProjectDir.getRoot(),
-                'build/classes/groovy/custom/example/$FooDefinition.class'
+                'build/classes/groovy/custom/example/$Foo$Definition.class'
         ).exists()
     }
 
@@ -444,7 +444,7 @@ class Foo {}
             }
             
             micronaut {
-                version "2.3.3"
+                version "3.5.1"
             }
             
             $repositoriesBlock
@@ -456,7 +456,7 @@ class Foo {}
         javaFile << """
 package example;
 
-@javax.inject.Singleton
+@jakarta.inject.Singleton
 class Foo {}
 """
 
@@ -467,7 +467,7 @@ class Foo {}
         result.task(":assemble").outcome == TaskOutcome.SUCCESS
         new File(
                 testProjectDir.getRoot(),
-                'build/classes/groovy/main/example/$FooDefinition.class'
+                'build/classes/groovy/main/example/$Foo$Definition.class'
         ).exists()
     }
 
@@ -481,13 +481,13 @@ class Foo {}
             }
             
             micronaut {
-                version "2.3.3"
+                version "3.5.1"
             }
             
             $repositoriesBlock
             
             dependencies {
-                compileOnly "io.micronaut.configuration:micronaut-openapi"
+                compileOnly "io.micronaut.openapi:micronaut-openapi"
                 compileOnly "io.swagger.core.v3:swagger-annotations"
             }
             
@@ -501,7 +501,7 @@ package example
 import io.swagger.v3.oas.annotations.*
 import io.swagger.v3.oas.annotations.info.*
 
-@javax.inject.Singleton
+@jakarta.inject.Singleton
 @OpenAPIDefinition(
     info = @Info(
             title = "demo",
@@ -518,7 +518,7 @@ class Foo {}
         result.task(":assemble").outcome == TaskOutcome.SUCCESS
         new File(
                 testProjectDir.getRoot(),
-                'build/classes/groovy/main/example/$FooDefinition.class'
+                'build/classes/groovy/main/example/$Foo$Definition.class'
         ).exists()
         result.output.contains("Generating OpenAPI Documentation")
     }
