@@ -48,6 +48,22 @@ public enum MicronautTestRuntime {
             JavaPlugin.TEST_RUNTIME_ONLY_CONFIGURATION_NAME,
             Collections.singletonList("io.kotest:kotest-runner-junit5-jvm")
     )),
+
+    /**
+     * Kotest 5.
+     */
+    KOTEST_5(MicronautExtension.mapOf(
+            "kaptTest",
+            Collections.singletonList("io.micronaut:micronaut-inject-java"),
+            JavaPlugin.TEST_IMPLEMENTATION_CONFIGURATION_NAME,
+            Arrays.asList(
+                    "io.mockk:mockk",
+                    "io.micronaut.test:micronaut-test-kotest5",
+                    "io.kotest:kotest-assertions-core-jvm"
+            ),
+            JavaPlugin.TEST_RUNTIME_ONLY_CONFIGURATION_NAME,
+            Collections.singletonList("io.kotest:kotest-runner-junit5-jvm")
+    )),
     /**
      * No test runtime.
      */
@@ -83,6 +99,9 @@ public enum MicronautTestRuntime {
                 case "KOTEST4":
                 case "KOTEST_4":
                     return MicronautTestRuntime.KOTEST_4;
+                case "KOTEST5":
+                case "KOTEST_5":
+                    return MicronautTestRuntime.KOTEST_5;
             }
         }
         return MicronautTestRuntime.NONE;
