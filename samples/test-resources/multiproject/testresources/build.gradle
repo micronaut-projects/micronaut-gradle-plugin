@@ -1,0 +1,25 @@
+plugins {
+    id("io.micronaut.test-resources")
+}
+
+version = "0.1"
+group = "demo"
+
+repositories {
+    mavenCentral()
+}
+
+micronaut {
+    testResources {
+        // app1 uses MySQL
+        additionalModules.add(JDBC_MYSQL)
+        // app2 uses PostgreSQL
+        additionalModules.add(JDBC_POSTGRESQL)
+        // app3 uses the test resources resolver provided by this project
+    }
+}
+
+dependencies {
+    testresources 'mysql:mysql-connector-java'
+    testresources 'org.postgresql:postgresql'
+}
