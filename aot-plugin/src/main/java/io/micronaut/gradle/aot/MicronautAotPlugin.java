@@ -58,7 +58,6 @@ import org.gradle.api.tasks.TaskContainer;
 import org.gradle.api.tasks.TaskProvider;
 import org.gradle.api.tasks.application.CreateStartScripts;
 import org.gradle.api.tasks.bundling.Jar;
-import org.jetbrains.annotations.NotNull;
 
 import javax.inject.Inject;
 import java.io.File;
@@ -359,7 +358,6 @@ public abstract class MicronautAotPlugin implements Plugin<Project> {
         });
     }
 
-    @NotNull
     private Configurations prepareConfigurations(Project project, AOTExtension aotExtension) {
         ConfigurationContainer configurations = project.getConfigurations();
         // Internal configurations

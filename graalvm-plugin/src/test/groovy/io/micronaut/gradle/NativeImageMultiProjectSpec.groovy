@@ -28,7 +28,7 @@ include "one"
             $repositoriesBlock
             
             dependencies {
-                implementation("io.micronaut:micronaut-core:2.4.2")
+                implementation("io.micronaut:micronaut-core:3.5.1")
             }
  
         """
@@ -36,13 +36,12 @@ include "one"
         def twoBuildFile = testProjectDir.newFile('two/build.gradle')
         twoBuildFile << """
             plugins {
-                id("com.github.johnrengelman.shadow") version "6.1.0"
                 id "io.micronaut.minimal.application"
                 id "io.micronaut.graalvm"
             }
             
             micronaut {
-                version "2.4.2"
+                version "3.5.1"
             }
             
             $repositoriesBlock

@@ -12,14 +12,14 @@ class KotlinLibraryFunctionalTest extends AbstractEagerConfiguringFunctionalTest
         buildFile.delete()
         kotlinBuildFile << """
             plugins {
-                id("org.jetbrains.kotlin.jvm") version("1.4.32")
-                id("org.jetbrains.kotlin.kapt") version("1.4.32")
-                id("org.jetbrains.kotlin.plugin.allopen") version("1.4.32")
+                id("org.jetbrains.kotlin.jvm") version("1.6.21")
+                id("org.jetbrains.kotlin.kapt") version("1.6.21")
+                id("org.jetbrains.kotlin.plugin.allopen") version("1.6.21")
                 id("io.micronaut.$plugin")
             }
             
             micronaut {
-                version("2.3.3")
+                version("3.5.1")
                 processing {
                     incremental(true)
                 }
@@ -34,7 +34,7 @@ class KotlinLibraryFunctionalTest extends AbstractEagerConfiguringFunctionalTest
         javaFile << """
 package example
 
-@javax.inject.Singleton
+@jakarta.inject.Singleton
 class Foo {}
 """
 
@@ -57,9 +57,9 @@ class Foo {}
         buildFile.delete()
         kotlinBuildFile << """
             plugins {
-                id("org.jetbrains.kotlin.jvm") version("1.4.32")
-                id("org.jetbrains.kotlin.kapt") version("1.4.32")
-                id("org.jetbrains.kotlin.plugin.allopen") version("1.4.32")
+                id("org.jetbrains.kotlin.jvm") version("1.6.21")
+                id("org.jetbrains.kotlin.kapt") version("1.6.21")
+                id("org.jetbrains.kotlin.plugin.allopen") version("1.6.21")
                 id("io.micronaut.$plugin")
             }
             
@@ -70,7 +70,7 @@ class Foo {}
                 }
             }            
             micronaut {
-                version("2.3.3")
+                version("3.5.1")
                 processing {
                     incremental(true)
                     sourceSets(
@@ -88,7 +88,7 @@ class Foo {}
         javaFile << """
 package example
 
-@javax.inject.Singleton
+@jakarta.inject.Singleton
 class Foo {}
 """
 

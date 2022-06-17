@@ -1,6 +1,5 @@
 package io.micronaut.gradle;
 
-import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Property;
