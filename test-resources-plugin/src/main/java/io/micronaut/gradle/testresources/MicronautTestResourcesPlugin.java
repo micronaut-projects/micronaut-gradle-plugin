@@ -3,6 +3,7 @@
  */
 package io.micronaut.gradle.testresources;
 
+import io.micronaut.gradle.MicronautBasePlugin;
 import io.micronaut.gradle.MicronautExtension;
 import io.micronaut.testresources.buildtools.MavenDependency;
 import io.micronaut.testresources.buildtools.ServerUtils;
@@ -19,9 +20,13 @@ import org.gradle.api.file.Directory;
 import org.gradle.api.file.DirectoryProperty;
 import org.gradle.api.file.RegularFile;
 import org.gradle.api.internal.project.ProjectInternal;
+import org.gradle.api.plugins.JavaPlugin;
+import org.gradle.api.plugins.JavaPluginExtension;
+import org.gradle.api.plugins.PluginManager;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.provider.ProviderFactory;
 import org.gradle.api.tasks.JavaExec;
+import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.TaskContainer;
 import org.gradle.api.tasks.TaskProvider;
 import org.gradle.api.tasks.testing.Test;
@@ -40,6 +45,8 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static java.util.stream.Stream.concat;
+
 /**
  * This plugin integrates with Micronaut Test Resources.
  * It handles the lifecycle of the test resources server
@@ -48,23 +55,32 @@ import java.util.stream.Stream;
  */
 public class MicronautTestResourcesPlugin implements Plugin<Project> {
     public static final String START_TEST_RESOURCES_SERVICE = "startTestResourcesService";
+    public static final String START_TEST_RESOURCES_SERVICE_INTERNAL = "internalStartTestResourcesService";
     public static final String STOP_TEST_RESOURCES_SERVICE = "stopTestResourcesService";
     public static final String GROUP = "Micronaut Test Resources";
 
     private static final int DEFAULT_CLIENT_TIMEOUT_SECONDS = 60;
 
     public void apply(Project project) {
-        project.getPluginManager().withPlugin("io.micronaut.component", unused -> configurePlugin(project));
+        PluginManager pluginManager = project.getPluginManager();
+        pluginManager.apply(JavaPlugin.class);
+        pluginManager.apply(MicronautBasePlugin.class);
+        configurePlugin(project);
     }
 
     private void configurePlugin(Project project) {
         Configuration server = createTestResourcesServerConfiguration(project);
-        Provider<Integer> explicitPort = project.getProviders().systemProperty("micronaut.test-resources.server.port").map(Integer::parseInt);
+        ProviderFactory providers = project.getProviders();
+        Provider<Integer> explicitPort = providers.systemProperty("micronaut.test-resources.server.port").map(Integer::parseInt);
         TestResourcesConfiguration config = createTestResourcesConfiguration(project, explicitPort);
+        JavaPluginExtension javaPluginExtension = project.getExtensions().findByType(JavaPluginExtension.class);
+        SourceSet testResourcesSourceSet = createTestResourcesSourceSet(javaPluginExtension);
         DependencyHandler dependencies = project.getDependencies();
-        server.getDependencies().addAllLater(buildTestResourcesDependencyList(project, dependencies, config));
+        Configuration testResourcesApi = project.getConfigurations().getByName(testResourcesSourceSet.getImplementationConfigurationName());
+        testResourcesApi.getDependencies().addLater(config.getVersion().map(v -> dependencies.create("io.micronaut.testresources:micronaut-test-resources-core:" + v)));
+        server.getDependencies().addAllLater(buildTestResourcesDependencyList(project, dependencies, config, testResourcesSourceSet));
         String accessToken = UUID.randomUUID().toString();
-        Provider<String> accessTokenProvider = project.getProviders().provider(() -> accessToken);
+        Provider<String> accessTokenProvider = providers.provider(() -> accessToken);
         Provider<Directory> settingsDirectory = config.getSharedServer().flatMap(shared -> {
             DirectoryProperty directoryProperty = project.getObjects().directoryProperty();
             if (Boolean.TRUE.equals(shared)) {
@@ -87,26 +103,38 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
             throw new GradleException("Unable to create temp file", e);
         }
         TaskContainer tasks = project.getTasks();
-        Provider<Boolean> isStandalone = config.getSharedServer().zip(project.getProviders().provider(() -> {
+        Provider<Boolean> isStandalone = config.getSharedServer().zip(providers.provider(() -> {
             boolean singleTask = project.getGradle().getStartParameter().getTaskNames().size() == 1;
             boolean onlyStartTask = project.getGradle().getTaskGraph()
                     .getAllTasks()
                     .stream()
-                    .allMatch(task -> task.getProject().equals(project) && StartTestResourcesService.class.isAssignableFrom(task.getClass()));
+                    .anyMatch(task -> task.getProject().equals(project) && task.getName().equals(START_TEST_RESOURCES_SERVICE));
             return singleTask && onlyStartTask;
         }), (shared, singleTask) -> shared || singleTask);
-        TaskProvider<StartTestResourcesService> startTestResourcesService = createStartServiceTask(server, config, settingsDirectory, accessTokenProvider, tasks, portFile, stopAtEndFile, isStandalone);
-        TaskProvider<StopTestResourcesService> stopTestResourcesService = createStopServiceTask(settingsDirectory, tasks);
-        project.afterEvaluate(p -> p.getConfigurations().all(conf -> configureDependencies(project, config, dependencies, startTestResourcesService, conf)));
+        TaskProvider<StartTestResourcesService> internalStart = createStartServiceTask(server, config, settingsDirectory, accessTokenProvider, tasks, portFile, stopAtEndFile, isStandalone);
+        tasks.register(START_TEST_RESOURCES_SERVICE, task -> {
+            task.dependsOn(internalStart);
+            task.setOnlyIf(t -> config.getEnabled().get());
+            task.setGroup(MicronautTestResourcesPlugin.GROUP);
+            task.setDescription("Starts the test resources server in standalone mode");
+        });
+        createStopServiceTask(settingsDirectory, tasks);
+        project.afterEvaluate(p -> p.getConfigurations().all(conf -> configureDependencies(project, config, dependencies, internalStart, conf)));
 
-        tasks.withType(Test.class).configureEach(t -> t.dependsOn(startTestResourcesService));
-        tasks.withType(JavaExec.class).configureEach(t -> t.dependsOn(startTestResourcesService));
+        project.getPluginManager().withPlugin("io.micronaut.component", unused -> {
+            tasks.withType(Test.class).configureEach(t -> t.dependsOn(internalStart));
+            tasks.withType(JavaExec.class).configureEach(t -> t.dependsOn(internalStart));
+        });
 
         configureServiceReset((ProjectInternal) project, settingsDirectory, stopAtEndFile);
     }
 
-    private TaskProvider<StopTestResourcesService> createStopServiceTask(Provider<Directory> settingsDirectory, TaskContainer tasks) {
-        return tasks.register(STOP_TEST_RESOURCES_SERVICE, StopTestResourcesService.class, task -> task.getSettingsDirectory().convention(settingsDirectory));
+    private SourceSet createTestResourcesSourceSet(JavaPluginExtension javaPluginExtension) {
+        return javaPluginExtension.getSourceSets().create("testResources");
+    }
+
+    private void  createStopServiceTask(Provider<Directory> settingsDirectory, TaskContainer tasks) {
+        tasks.register(STOP_TEST_RESOURCES_SERVICE, StopTestResourcesService.class, task -> task.getSettingsDirectory().convention(settingsDirectory));
     }
 
 
@@ -138,7 +166,7 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
                                                                            Provider<RegularFile> portFile,
                                                                            Path stopFile,
                                                                            Provider<Boolean> isStandalone) {
-        return tasks.register(START_TEST_RESOURCES_SERVICE, StartTestResourcesService.class, task -> {
+        return tasks.register(START_TEST_RESOURCES_SERVICE_INTERNAL, StartTestResourcesService.class, task -> {
             task.setOnlyIf(t -> config.getEnabled().get());
             task.getPortFile().convention(portFile);
             task.getSettingsDirectory().convention(settingsDirectory);
@@ -193,10 +221,10 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
         return false;
     }
 
-    private Provider<List<Dependency>> buildTestResourcesDependencyList(Project project, DependencyHandler dependencies, TestResourcesConfiguration config) {
+    private Provider<List<Dependency>> buildTestResourcesDependencyList(Project project, DependencyHandler dependencies, TestResourcesConfiguration config, SourceSet testResourcesSourceSet) {
         return config.getEnabled().zip(config.getInferClasspath(), (enabled, infer) -> {
             if (Boolean.FALSE.equals(enabled)) {
-                return Collections.<Dependency>emptyList();
+                return Collections.singletonList(dependencies.create(testResourcesSourceSet.getOutput()));
             }
             List<MavenDependency> mavenDependencies = Collections.emptyList();
             if (Boolean.TRUE.equals(infer)) {
@@ -209,14 +237,15 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
                         .collect(Collectors.toList());
             }
             String testResourcesVersion = config.getVersion().get();
-            return Stream.concat(
+            return concat(concat(
                             TestResourcesClasspath.inferTestResourcesClasspath(mavenDependencies, testResourcesVersion)
                                     .stream()
                                     .map(Object::toString),
                             config.getAdditionalModules().getOrElse(Collections.emptyList())
                                     .stream()
                                     .map(m -> "io.micronaut.testresources:micronaut-test-resources-" + m + ":" + testResourcesVersion))
-                    .map(dependencies::create)
+                            .map(dependencies::create),
+                    Stream.of(dependencies.create(testResourcesSourceSet.getOutput())))
                     .collect(Collectors.toList());
         }).orElse(Collections.emptyList());
     }
