@@ -40,6 +40,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.Collections;
 
 /**
@@ -53,6 +54,7 @@ abstract class StartTestResourcesService extends DefaultTask {
      * The classpath of the test resources server. Once
      * the test server is started, the classpath cannot
      * be updated.
+     *
      * @return the server classpath
      */
     @InputFiles
@@ -64,6 +66,7 @@ abstract class StartTestResourcesService extends DefaultTask {
      * the test resources server will be written. This
      * directory is used by clients to determine how
      * to contact the server.
+     *
      * @return the directory where to write settings
      */
     @OutputDirectory
@@ -73,6 +76,7 @@ abstract class StartTestResourcesService extends DefaultTask {
      * This file is used by the test server once started,
      * to write the port where to contact it. It is used
      * internally before we can write the settings.
+     *
      * @return the port file
      */
     @Internal
@@ -81,6 +85,7 @@ abstract class StartTestResourcesService extends DefaultTask {
     /**
      * An explicit port to use when starting the test
      * resources server.
+     *
      * @return an explicit port
      */
     @Input
@@ -90,6 +95,7 @@ abstract class StartTestResourcesService extends DefaultTask {
     /**
      * An access token which must be used by clients
      * when talking to the test resources server.
+     *
      * @return the access token
      */
     @Input
@@ -101,6 +107,7 @@ abstract class StartTestResourcesService extends DefaultTask {
      * This may have to be tweaked if spawning
      * test resources take longer than the default,
      * which is 60s.
+     *
      * @return the client timeout
      */
     @Input
@@ -111,6 +118,7 @@ abstract class StartTestResourcesService extends DefaultTask {
      * Allows starting the test server in foreground
      * instead of background, in which case the build
      * will block.
+     *
      * @return the foreground property
      */
     @Internal
@@ -120,6 +128,7 @@ abstract class StartTestResourcesService extends DefaultTask {
     /**
      * An internal file used to determine if the server
      * should be stopped at the end of a build or not.
+     *
      * @return the stop file location
      */
     @Internal
@@ -131,6 +140,7 @@ abstract class StartTestResourcesService extends DefaultTask {
      * will outlive the build (it will stay in the
      * background even if a build or a build session
      * ends)
+     *
      * @return the standalone mode property
      */
     @Internal
@@ -182,6 +192,11 @@ abstract class StartTestResourcesService extends DefaultTask {
                                 spec.setClasspath(getObjects().fileCollection().from(processParameters.getClasspath()));
                                 processParameters.getSystemProperties().forEach(spec::systemProperty);
                                 processParameters.getArguments().forEach(spec::args);
+                                spec.getJvmArgs().addAll(Arrays.asList(
+                                        "-XX:+TieredCompilation",
+                                        "-XX:TieredStopAtLevel=1"
+                                ));
+                                spec.systemProperty("com.sun.management.jmxremote", null);
                             });
                         } catch (GradleException e) {
                             getLogger().info("Test server stopped");
