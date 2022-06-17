@@ -2,8 +2,11 @@ package io.micronaut.gradle.kotlin
 
 import io.micronaut.gradle.fixtures.AbstractEagerConfiguringFunctionalTest
 import org.gradle.testkit.runner.TaskOutcome
+import spock.lang.IgnoreIf
 
+@IgnoreIf({ jvm.java8 })
 class Kotest5FunctionalTest extends AbstractEagerConfiguringFunctionalTest {
+
     def "test kotest 5 test runtime with #plugin"() {
         given:
         settingsFile << "rootProject.name = 'hello-world'"
