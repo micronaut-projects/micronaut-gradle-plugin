@@ -19,7 +19,7 @@ class DockerBuildTaskSpec extends AbstractGradleBuildSpec {
             }
             
             micronaut {
-                version "2.3.3"
+                version "3.5.1"
             }
             
             $repositoriesBlock
@@ -61,7 +61,7 @@ class Application {
             }
 
             micronaut {
-                version "2.3.3"
+                version "3.5.1"
             }
 
             $repositoriesBlock

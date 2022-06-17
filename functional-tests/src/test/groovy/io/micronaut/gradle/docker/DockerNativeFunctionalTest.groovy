@@ -24,7 +24,7 @@ class DockerNativeFunctionalTest extends AbstractEagerConfiguringFunctionalTest 
             }
             
             micronaut {
-                version "2.3.4"
+                version "3.5.1"
                 runtime "$runtime"
             }
             
@@ -110,7 +110,7 @@ micronaut:
             }
 
             micronaut {
-                version "2.3.4"
+                version "3.5.1"
 
                 runtime "$runtime"
             }
@@ -159,7 +159,7 @@ micronaut:
             }
 
             micronaut {
-                version "2.3.4"
+                version "3.5.1"
                 runtime "netty"
             }
 
@@ -200,7 +200,7 @@ micronaut:
             }
 
             micronaut {
-                version "2.3.0"
+                version "3.5.1"
                 runtime "lambda"
             }
 
@@ -241,7 +241,7 @@ micronaut:
             }
             
             micronaut {
-                version "2.3.4"
+                version "3.5.1"
                 runtime "lambda"
             }
             
@@ -295,7 +295,7 @@ class Application {
             }
             
             micronaut {
-                version "2.3.4"
+                version "3.5.1"
             }
             
             $repositoriesBlock
@@ -374,7 +374,7 @@ class Application {
             }
             
             micronaut {
-                version "2.4.2"
+                version "3.5.1"
                 runtime "netty"
                 testRuntime "junit5"
             }
@@ -414,7 +414,7 @@ class Application {
             }
             
             micronaut {
-                version "2.3.4"
+                version "3.5.1"
                 runtime "$runtime"
             }
             
