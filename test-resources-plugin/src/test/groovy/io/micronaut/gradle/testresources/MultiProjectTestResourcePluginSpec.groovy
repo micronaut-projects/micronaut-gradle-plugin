@@ -2,7 +2,9 @@ package io.micronaut.gradle.testresources
 
 import io.micronaut.gradle.AbstractGradleBuildSpec
 import org.gradle.testkit.runner.TaskOutcome
+import spock.lang.Requires
 
+@Requires({ !os.windows })
 class MultiProjectTestResourcePluginSpec extends AbstractGradleBuildSpec {
 
     def "can share a test resources service in a multiproject"() {
