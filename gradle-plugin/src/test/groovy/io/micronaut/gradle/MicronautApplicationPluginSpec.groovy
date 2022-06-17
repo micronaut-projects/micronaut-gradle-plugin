@@ -1,6 +1,5 @@
 package io.micronaut.gradle
 
-
 import org.gradle.testkit.runner.TaskOutcome
 import spock.lang.Issue
 
