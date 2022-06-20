@@ -16,16 +16,14 @@
 package io.micronaut.gradle.testresources;
 
 import io.micronaut.gradle.MicronautBasePlugin;
-import io.micronaut.gradle.MicronautExtension;
+import org.gradle.api.InvalidUserDataException;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.ProjectDependency;
-import org.gradle.api.artifacts.dsl.DependencyHandler;
+import org.gradle.api.attributes.AttributeContainer;
 import org.gradle.api.attributes.Usage;
 import org.gradle.api.plugins.PluginManager;
-
-import java.util.Collections;
 
 /**
  * A lightweight test resources plugin, which requires
@@ -39,23 +37,36 @@ public class MicronautTestResourcesConsumerPlugin implements Plugin<Project> {
     public void apply(Project project) {
         PluginManager pluginManager = project.getPluginManager();
         pluginManager.apply(MicronautBasePlugin.class);
-        TestResourcesConsumerConfiguration testResourcesExtension = createTestResourcesExtension(project);
-        pluginManager.withPlugin("io.micronaut.component", unused -> {
-            project.afterEvaluate(p -> p.getConfigurations().all(cnf -> configureDependencies(p, testResourcesExtension, project.getDependencies(), cnf)));
+        Configuration testResourcesConfiguration = createTestResourcesExtension(project);
+        pluginManager.withPlugin("io.micronaut.component", unused ->
+                project.afterEvaluate(p -> p.getConfigurations().all(cnf -> configureDependencies(testResourcesConfiguration, cnf)))
+        );
+    }
+
+    private Configuration createTestResourcesExtension(Project project) {
+        return project.getConfigurations().create(MicronautTestResourcesPlugin.TESTRESOURCES_CONFIGURATION, conf -> {
+            conf.setCanBeConsumed(false);
+            conf.setCanBeResolved(false);
+            conf.setDescription("Used to declare projects which provide test resources");
+            conf.getDependencies().whenObjectAdded(dep -> {
+                if (dep instanceof ProjectDependency) {
+                    ProjectDependency projectDependency = (ProjectDependency) dep;
+                    projectDependency.attributes(attrs -> configureUsageAttribute(project, attrs));
+                } else {
+                    throw new InvalidUserDataException("The test resources configuration can only contain project dependencies");
+                }
+            });
         });
     }
 
-    private TestResourcesConsumerConfiguration createTestResourcesExtension(Project project) {
-        MicronautExtension micronautExtension = project.getExtensions().findByType(MicronautExtension.class);
-        return micronautExtension.getExtensions().create("testResources", TestResourcesConsumerConfiguration.class);
+    private static AttributeContainer configureUsageAttribute(Project project, AttributeContainer attrs) {
+        return attrs.attribute(Usage.USAGE_ATTRIBUTE, project.getObjects().named(Usage.class, MicronautTestResourcesPlugin.MICRONAUT_TEST_RESOURCES_USAGE));
     }
 
-    private void configureDependencies(Project project, TestResourcesConsumerConfiguration config, DependencyHandler dependencies, Configuration conf) {
+    private void configureDependencies(Configuration config, Configuration conf) {
         String name = conf.getName();
         if ("developmentOnly".equals(name) || "testRuntimeOnly".equals(name)) {
-            ProjectDependency dependency = (ProjectDependency) dependencies.project(Collections.singletonMap("path", config.getTargetProject().get()));
-            dependency.attributes(attrs -> attrs.attribute(Usage.USAGE_ATTRIBUTE, project.getObjects().named(Usage.class, MicronautTestResourcesPlugin.MICRONAUT_TEST_RESOURCES_USAGE)));
-            conf.getDependencies().add(dependency);
+            conf.extendsFrom(config);
         }
     }
 

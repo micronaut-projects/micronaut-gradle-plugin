@@ -12,6 +12,8 @@ repositories {
 
 dependencies {
     annotationProcessor("io.micronaut:micronaut-http-validation")
+
+    testresources(project(":testresources"))
 }
 
 micronaut {
@@ -20,5 +22,4 @@ micronaut {
         incremental(true)
         annotations("demo.*")
     }
-    testResources.targetProject = ':testresources'
 }

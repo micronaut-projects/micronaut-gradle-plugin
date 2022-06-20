@@ -31,7 +31,6 @@ micronaut {
         incremental(true)
         annotations("demo.*")
     }
-    testResources.targetProject = ':testresources'
 }
 
 dependencies {
@@ -39,4 +38,6 @@ dependencies {
     implementation("io.micronaut.data:micronaut-data-jdbc")
     implementation("io.micronaut.sql:micronaut-jdbc-hikari")
     runtimeOnly("org.postgresql:postgresql")
+
+    testresources(project(":testresources"))
 }
