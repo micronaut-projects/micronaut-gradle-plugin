@@ -93,9 +93,19 @@
 <li><a href="#aot:optimized-native-docker-image">7.6. Building an optimized native Docker image</a></li>
 </ul>
 </li>
-<li><a href="#_upgrade_notes">8. Upgrade notes</a>
+<li><a href="#test-resources">8. Automatic test resources provisioning</a>
 <ul class="sectlevel2">
-<li><a href="#_upgrading_from_2_x">8.1. Upgrading from 2.x</a></li>
+<li><a href="#_the_test_resources_plugin">8.1. The test resources plugin</a></li>
+<li><a href="#_configuring_the_test_resources_plugin">8.2. Configuring the test resources plugin</a></li>
+<li><a href="#sec:standalone-test-resources">8.3. Standalone test resources service</a></li>
+<li><a href="#sec:test-resources-lifecycle">8.4. Test resources lifecycle</a></li>
+<li><a href="#_keeping_test_resources_alive">Keeping test resources alive</a></li>
+<li><a href="#_implementing_your_own_test_resources_resolver">Implementing your own test resources resolver</a></li>
+</ul>
+</li>
+<li><a href="#_upgrade_notes">9. Upgrade notes</a>
+<ul class="sectlevel2">
+<li><a href="#_upgrading_from_2_x">9.1. Upgrading from 2.x</a></li>
 </ul>
 </li>
 </ul>
@@ -141,7 +151,7 @@ Documentation for the 2.x branch can be found <a href="https://github.com/micron
 <p>native image configuration happens in the <code>graalvmNative</code> DSL block</p>
 </li>
 <li>
-<p>The GraalVM SDK being used depends on how you configure <a href="https://docs.gradle.org/7.2/userguide/toolchains.html">toolchains</a></p>
+<p>The GraalVM SDK being used depends on how you configure <a href="https://docs.gradle.org/7.4.1/userguide/toolchains.html">toolchains</a></p>
 </li>
 </ul>
 </div>
@@ -229,6 +239,16 @@ For example, the <code>minimal</code> plugins can be used to reduce the number o
 <td class="tableblock halign-left valign-top"><p class="tableblock"><a href="https://plugins.gradle.org/plugin/io.micronaut.application"><code>io.micronaut.application</code></a></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">A typical Micronaut Application, with support for GraalVM and Docker</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><a href="https://plugins.gradle.org/plugin/io.micronaut.minimal.application"><code>io.micronaut.minimal.application</code></a>, <a href="https://plugins.gradle.org/plugin/io.micronaut.graalvm"><code>io.micronaut.graalvm</code></a>, <a href="https://plugins.gradle.org/plugin/io.micronaut.docker"><code>io.micronaut.docker</code></a>, <code>AptEclipsePlugin</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="https://plugins.gradle.org/plugin/io.micronaut.test-resources"><code>io.micronaut.test-resources</code></a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Provides automatic test resources provisioning on a single project</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="https://plugins.gradle.org/plugin/io.micronaut.test-resources-consumer"><code>io.micronaut.test-resources-consumer</code></a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Provides ability to use test resources of other projects of multiproject builds</p></td>
+<td class="tableblock halign-left valign-top"></td>
 </tr>
 </tbody>
 </table>
@@ -356,14 +376,14 @@ $ curl https://launch.micronaut.io/demo.zip?lang=kotlin \
 <div class="title">Selecting the Micronaut version</div>
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">micronaut {
-    version "3.1.1"
+    version "3.5.1"
 }</code></pre>
 </div>
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">micronaut {
-    version.set("3.1.1")
+    version.set("3.5.1")
 }</code></pre>
 </div>
 </div>
@@ -374,7 +394,7 @@ $ curl https://launch.micronaut.io/demo.zip?lang=kotlin \
 <div class="title">Micronaut configuration options</div>
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">micronaut {
-    version "3.1.1"
+    version "3.5.1"
     processing {
         // Sets whether incremental annotation processing is enabled
         incremental true
@@ -402,7 +422,7 @@ $ curl https://launch.micronaut.io/demo.zip?lang=kotlin \
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">micronaut {
-    version.set("3.1.1")
+    version.set("3.5.1")
     processing {
         // Sets whether incremental annotation processing is enabled
         incremental.set(true)
@@ -448,8 +468,8 @@ The Micronaut Library plugin also supports Groovy and Kotlin sources.
 <div class="title">Configuring Kotlin support</div>
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">plugins {
-    id "org.jetbrains.kotlin.jvm" version "1.5.30"
-    id "org.jetbrains.kotlin.kapt" version "1.5.30"
+    id "org.jetbrains.kotlin.jvm" version "1.6.21"
+    id "org.jetbrains.kotlin.kapt" version "1.6.21"
     id "io.micronaut.library" version "3.5.0-SNAPSHOT"
 }</code></pre>
 </div>
@@ -457,8 +477,8 @@ The Micronaut Library plugin also supports Groovy and Kotlin sources.
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">plugins {
-    id("org.jetbrains.kotlin.jvm") version "1.5.30"
-    id("org.jetbrains.kotlin.kapt") version "1.5.30"
+    id("org.jetbrains.kotlin.jvm") version "1.6.21"
+    id("org.jetbrains.kotlin.kapt") version "1.6.21"
     id("io.micronaut.library") version "3.5.0-SNAPSHOT"
 }</code></pre>
 </div>
@@ -484,7 +504,7 @@ repositories {
 }
 
 micronaut {
-    version = "3.1.1"
+    version = "3.5.1"
 }
 
 dependencies {
@@ -507,7 +527,7 @@ repositories {
 }
 
 micronaut {
-    version.set("3.1.1")
+    version.set("3.5.1")
 }
 
 dependencies {
@@ -614,7 +634,7 @@ repositories {
 }
 
 micronaut {
-    version = "3.1.1"
+    version = "3.5.1"
 }
 
 dependencies {
@@ -643,7 +663,7 @@ repositories {
 }
 
 micronaut {
-    version.set("3.1.1")
+    version.set("3.5.1")
 }
 
 dependencies {
@@ -667,9 +687,9 @@ application {
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">plugins {
-    id "org.jetbrains.kotlin.jvm" version "1.5.30"
-    id "org.jetbrains.kotlin.kapt" version "1.5.30"
-    id "org.jetbrains.kotlin.plugin.allopen" version "1.5.30"
+    id "org.jetbrains.kotlin.jvm" version "1.6.21"
+    id "org.jetbrains.kotlin.kapt" version "1.6.21"
+    id "org.jetbrains.kotlin.plugin.allopen" version "1.6.21"
     id "io.micronaut.application" version "3.5.0-SNAPSHOT"
 }
 
@@ -681,13 +701,13 @@ repositories {
 }
 
 micronaut {
-    version = "3.1.1"
+    version = "3.5.1"
 }
 
 dependencies {
     implementation "io.micronaut:micronaut-http-server-netty"
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.5.30"
-    implementation "org.jetbrains.kotlin:kotlin-reflect:1.5.30")
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.6.21"
+    implementation "org.jetbrains.kotlin:kotlin-reflect:1.6.21")
     runtimeOnly "ch.qos.logback:logback-classic")
     testImplementation("io.micronaut.test:micronaut-test-junit5")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
@@ -701,9 +721,9 @@ application {
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">plugins {
-    id("org.jetbrains.kotlin.jvm") version "1.5.30"
-    id("org.jetbrains.kotlin.kapt") version "1.5.30"
-    id("org.jetbrains.kotlin.plugin.allopen") version "1.5.30"
+    id("org.jetbrains.kotlin.jvm") version "1.6.21"
+    id("org.jetbrains.kotlin.kapt") version "1.6.21"
+    id("org.jetbrains.kotlin.plugin.allopen") version "1.6.21"
     id("io.micronaut.application") version "3.5.0-SNAPSHOT"
 }
 
@@ -715,13 +735,13 @@ repositories {
 }
 
 micronaut {
-    version.set("3.1.1")
+    version.set("3.5.1")
 }
 
 dependencies {
     implementation("io.micronaut:micronaut-http-server-netty")
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.5.30")
-    implementation("org.jetbrains.kotlin:kotlin-reflect:1.5.30")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.6.21")
+    implementation("org.jetbrains.kotlin:kotlin-reflect:1.6.21")
     runtimeOnly("ch.qos.logback:logback-classic")
     testImplementation("io.micronaut.test:micronaut-test-junit5")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
@@ -739,7 +759,7 @@ application {
 <p>Since version 3.0.0, the Micronaut plugins rely on the <a href="https://graalvm.github.io/native-build-tools/0.9.11/gradle-plugin.html">official GraalVM plugin</a> to build native images.</p>
 </div>
 <div class="paragraph">
-<p>Those plugins make use of the <a href="https://docs.gradle.org/7.2/userguide/toolchains.html">Gradle toolchains</a> support, which means that the SDK which is used to build the native is decorrelated from the JVM which is used to launch Gradle itself.
+<p>Those plugins make use of the <a href="https://docs.gradle.org/7.4.1/userguide/toolchains.html">Gradle toolchains</a> support, which means that the SDK which is used to build the native is decorrelated from the JVM which is used to launch Gradle itself.
 Said differently, you can run Gradle with OpenJDK, while still building native images using the GraalVM SDK.</p>
 </div>
 <div class="paragraph">
@@ -951,7 +971,7 @@ This feature only works in combination with <code>micronaut-test-core</code> ver
 </ul>
 </div>
 <div class="paragraph">
-<p>If you wish to split your native image tests from your regular tests you can <a href="https://docs.gradle.org/7.2/userguide/java_testing.html#sec:configuring_java_integration_tests">create an additional source set for integration tests</a> and the plugin will add an additional task suffixed with <code>*NativeImage</code> to run the native image tests, for example: <code>gradle integrationTestNativeImage</code>.</p>
+<p>If you wish to split your native image tests from your regular tests you can <a href="https://docs.gradle.org/7.4.1/userguide/java_testing.html#sec:configuring_java_integration_tests">create an additional source set for integration tests</a> and the plugin will add an additional task suffixed with <code>*NativeImage</code> to run the native image tests, for example: <code>gradle integrationTestNativeImage</code>.</p>
 </div>
 </div>
 <div class="sect2">
@@ -1118,7 +1138,7 @@ repositories {
 }
 
 micronaut {
-    version = "3.1.1"
+    version = "3.5.1"
     runtime "netty"
 }
 
@@ -1144,7 +1164,7 @@ repositories {
 }
 
 micronaut {
-    version.set("3.1.1")
+    version.set("3.5.1")
     runtime.set("netty")
 }
 
@@ -1250,7 +1270,7 @@ Keep in mind that copying the only <code>.jar</code> file to another directory w
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">plugins {
     ...
-    id "com.github.johnrengelman.shadow" version "7.0.0"
+    id "com.github.johnrengelman.shadow" version "7.1.2"
     ...
 }</code></pre>
 </div>
@@ -1259,7 +1279,7 @@ Keep in mind that copying the only <code>.jar</code> file to another directory w
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">plugins {
     ...
-    id("com.github.johnrengelman.shadow") version "7.0.0"
+    id("com.github.johnrengelman.shadow") version "7.1.2"
     ...
 }</code></pre>
 </div>
@@ -1565,7 +1585,7 @@ If you want to run the application with the resulting jar, you will need to call
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">plugins {
     ...
-    id "com.github.johnrengelman.shadow" version "7.0.0"
+    id "com.github.johnrengelman.shadow" version "7.1.2"
     ...
 }</code></pre>
 </div>
@@ -1574,7 +1594,7 @@ If you want to run the application with the resulting jar, you will need to call
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">plugins {
     ...
-    id("com.github.johnrengelman.shadow") version "7.0.0"
+    id("com.github.johnrengelman.shadow") version "7.1.2"
     ...
 }</code></pre>
 </div>
@@ -1640,10 +1660,420 @@ It will produce a docker image that you can start using <code>docker run</code>.
 </div>
 </div>
 <div class="sect1">
-<h2 id="_upgrade_notes"><a class="anchor" href="#_upgrade_notes"></a>8. Upgrade notes</h2>
+<h2 id="test-resources"><a class="anchor" href="#test-resources"></a>8. Automatic test resources provisioning</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The Micronaut Gradle plugin integrates with <a href="https://github.com/micronaut-projects/micronaut-test-resources">Micronaut Test Resources</a> to automatically provision test resources.
+In particular, it makes use of <a href="https://testcontainers.org/">Testcontainers</a> to automatically provide resources like databases or other external services like Kafka or RabbitMQ.</p>
+</div>
+<div class="paragraph">
+<p>Test resources are handled by a "test resources service" which is a server accepting requests for test resources, which <a href="#sec:test-resources-lifecycle">lifecycle</a> is handled by the Gradle plugin.
+A test resources request is, to simplify, a request to resolve a <em>missing configuration property</em>.
+For example, if the <code>kafka.bootstrap-servers</code> property isn&#8217;t set, Micronaut will query the test resources service for the value of this property.
+This will trigger the creaton of a a Kafka test container, and the service will answer with the URI to the bootstrap server.</p>
+</div>
+<div class="sect2">
+<h3 id="_the_test_resources_plugin"><a class="anchor" href="#_the_test_resources_plugin"></a>8.1. The test resources plugin</h3>
+<div class="paragraph">
+<p>The easiest way to add test resources support is to apply the <code>io.micronaut.test-resources</code> plugin:</p>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">plugins {
+    id "io.micronaut.application" version "3.5.1"
+    id "io.micronaut.test-resources" version "3.5.1"
+    ...
+}</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">plugins {
+    id("io.micronaut.application") version "3.5.1"
+    id("io.micronaut.test-resources") version "3.5.1"
+    ...
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Adding this plugin will be sufficient for most use cases.
+This will let Gradle automatically start containers, for example, when a particular property is not present in your configuration and that you run tests (<code>./gradlew test</code>) or the application in development mode (<code>./gradlew run</code> or <code>./gradlew -t run</code>).</p>
+</div>
+<div class="paragraph">
+<p>For example, if the <code>datasources.default.url</code> configuration property is missing, and that your configuration contains:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="yaml" class="language-yaml hljs">datasources:
+  default:
+    dialect: MYSQL</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Then a MySQL database will automatically be started and available for use in your tests: the <code>url</code>, <code>username</code> and <code>password</code> configuration properties will automatically be injected to your application.</p>
+</div>
+<div class="paragraph">
+<p>Please refer to the <a href="https://micronaut-projects.github.io/micronaut-test-resources/latest/guide/">Micronaut Test Resources documentation</a> for a list of all supported modules and their configuration options.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_configuring_the_test_resources_plugin"><a class="anchor" href="#_configuring_the_test_resources_plugin"></a>8.2. Configuring the test resources plugin</h3>
+<div class="paragraph">
+<p>In addition, the plugin will add a <code>testResources</code> extension to the <code>micronaut</code> configuration block, providing a number of options:</p>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">micronaut {
+    testResources {
+        enabled = true // true by default
+        version = "1.0.0" // override Micronaut Test Resources version
+        explicitPort = 15471 // by default, uses a random port
+        inferClasspath = true // true by default
+        additionalModules.add(JDBC_MYSQL) // empty by default
+        clientTimeout = 60 // in seconds, maximum time to wait for resources to be available, 60s by default
+        sharedServer = true // false by default
+    }
+}</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">micronaut {
+    testResources {
+        enabled.set(true) // true by default
+        version.set("1.0.0") // override Micronaut Test Resources version
+        explicitPort.set(15471) // by default, uses a random port
+        inferClasspath.set(true) // true by default
+        additionalModules.add(JDBC_MYSQL) // empty by default
+        clientTimeout.set(60) // in seconds, maximum time to wait for resources to be available, 60s by default
+        sharedServer.set(true) // false by default
+    }
+}</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>the <code>version</code> property will let you override the default version of Micronaut Test Resources that the plugin uses.</p>
+</li>
+<li>
+<p>the <code>enabled</code> property can let you disable test resources provisioning (for example depending on the environment).</p>
+</li>
+<li>
+<p>by default, a test resources server will be started. This server uses a randomly available port, but you can override this by setting the <code>explicitPort</code> property instead.</p>
+</li>
+<li>
+<p>by default, the plugin will automatically determine which modules to add to the test resources support, by inspecting the dependencies declared in the project. For example, if you use both <code>micronaut-data-jdbc</code> and <code>mysql-connector-java</code>, it will automatically add support for MySQL provisioning. Under some circumstances, you might want to disable this behavior by setting the <code>inferClasspath</code> property to <code>false</code>.</p>
+</li>
+<li>
+<p>the <code>additionalModules</code> property can be used to explicitly declare test resources modules to be loaded. This is useful if inference failed to detect a module, or if you want to use <a href="#sec:standalone-test-resources">a standalone test resources service</a>.</p>
+</li>
+<li>
+<p>if set to <code>true</code>, then the test server which is used by the project can be shared between independent builds (e.g different Git repositories): this can be useful in conjunction with a <a href="#sec:standalone-test-resources">a standalone test resources service</a>, where for example a producer is used in one project, and a consumer is defined in another, but both need to use the same messaging server.</p>
+</li>
+</ul>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Note</div>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>The <code>additionalModules</code> property can be used to declare <a href="https://micronaut-projects.github.io/micronaut-test-resources/latest/guide">Micronaut Test Resources</a> modules. However, it might be necessary to add more libraries on the test resources classpath. For example, you may need to add additional JDBC drivers. For this, you can use the <code>testresources</code> configuration:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">dependencies {
+    // declare an additional dependency on test resources classpath
+    testresources "my:jdbc-driver:1.0"
+}</code></pre>
+</div>
+</div>
+</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect2">
+<h3 id="sec:standalone-test-resources"><a class="anchor" href="#sec:standalone-test-resources"></a>8.3. Standalone test resources service</h3>
+<div class="paragraph">
+<p>The <code>io.micronaut.test-resources</code> plugin works particularly well in single-module projects, or in multi-projects where test resources are not shared between modules.
+However, in some cases, you may want to reuse test containers for multiple projects of the same multi-project build, in order to save startup times for example.</p>
+</div>
+<div class="paragraph">
+<p>For this purpose, the <code>io.micronaut.test-resources</code> plugin can be applied on a project independently of the application or library plugins.</p>
+</div>
+<div class="paragraph">
+<p>For example, imagine a multi-project build which consists of :</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>a Kafka consumer</p>
+</li>
+<li>
+<p>a Kafka producer</p>
+</li>
+<li>
+<p>functional tests integrating both</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>If each project applies the <code>io.micronaut.test-resources</code> plugin independently, then each project will use its own test server, independently of the others.</p>
+</div>
+<div class="paragraph">
+<p>However, you might want to run the consumer in one terminal, and the producer in another, and still want them to talk to the <em>same</em> Kafka cluster.
+For this you have a couple options:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>you can use a shared test server, by setting the <code>sharedServer</code> property to <code>true</code> in the <code>testResources</code> extension.</p>
+</li>
+<li>
+<p>you can define a distinct project which role is to handle the test resources lifecycle</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>The first solution comes with a major drawback: <em>shared servers</em> are shared by all projects in the multi-project build, but also between projects of the same build. However the configuration of the server will depend on the <em>first one started</em>.</p>
+</div>
+<div class="paragraph">
+<p>To avoid this problem it is recommended to declare a distinct project to handle test resources.
+Here, we&#8217;re going to add a project called <code>shared-testresources</code> which is going to be a <em>test resources provider</em>:</p>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">// shared-testresources/build.gradle
+plugins {
+    id "io.micronaut.test-resources" version "3.5.1" // <b class="conum">(1)</b>
+}
+
+micronaut {
+    testResources {
+        additionalModules.add(KAFKA)                 // <b class="conum">(2)</b>
+    }
+}</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">// shared-testresources/build.gradle.kts
+plugins {
+    id("io.micronaut.test-resources") version "3.5.1" // <b class="conum">(1)</b>
+}
+
+micronaut {
+    testResources {
+        additionalModules.add(KAFKA)                  // <b class="conum">(2)</b>
+    }
+}</code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<ol>
+<li>
+<p>use <code>test-resources</code> as a standalone plugin</p>
+</li>
+<li>
+<p>declare that it will provide Kafka containers</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>Then each consumer of test resources need to apply the <code>io.micronaut.test-resources-consumer</code> plugin instead:</p>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">plugins {
+    id "io.micronaut.application" version "3.5.1"
+    id "io.micronaut.test-resources-consumer" version "3.5.1" // <b class="conum">(1)</b>
+}
+
+dependencies {
+    testresources project(':shared-testresources')           // <b class="conum">(2)</b>
+}</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">plugins {
+    id("io.micronaut.application") version "3.5.1"
+    id("io.micronaut.test-resources-consumer") version "3.5.1" // <b class="conum">(1)</b>
+}
+
+dependencies {
+    testresources(project(":shared-testresources"))           // <b class="conum">(2)</b>
+}</code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<ol>
+<li>
+<p>Use the test resources consumer plugin instead</p>
+</li>
+<li>
+<p>Declare that it consumes test resources provided by the <code>:testresources</code> project</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>Now Gradle will automatically start test resources when one of the project needs them, and reuse them in all consumer projects.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="sec:test-resources-lifecycle"><a class="anchor" href="#sec:test-resources-lifecycle"></a>8.4. Test resources lifecycle</h3>
+<div class="paragraph">
+<p>Test resources are handled by a service which is, by default, started at the beginning of a build, and stopped at the end.</p>
+</div>
+<div class="paragraph">
+<p>For example, if you invoke:</p>
+</div>
+<div class="paragraph">
+<p><code>./gradlew test</code></p>
+</div>
+<div class="paragraph">
+<p>Then the test resources service will be started before tests are executed, then tests will share the resources provided by the service.
+Any test resource started during the test will be stopped <em>when the build finishes</em>.</p>
+</div>
+<div class="paragraph">
+<p>In <a href="https://docs.gradle.org/current/userguide/userguide.html#sec:continuous_build">continuous mode</a>, the test resources are shared between builds.
+For example, if you run:</p>
+</div>
+<div class="paragraph">
+<p><code>./gradlew -t test</code> (run test in continuous mode)</p>
+</div>
+<div class="paragraph">
+<p>Then the test resources will be spawned during the first execution of tests.
+If you make any change to sources (production or test) and save the files, Gradle will rebuild the project and run the tests <em>using the same test resources</em>.
+This behavior can be extremely useful to save time since typically Docker containers would only be spawned once.
+If you interrupt the continuous build, the test resources will be stopped.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_keeping_test_resources_alive"><a class="anchor" href="#_keeping_test_resources_alive"></a>Keeping test resources alive</h3>
+<div class="paragraph">
+<p>We have seen that running in continous mode allows keeping test resources alive as long as a continous build runs.
+However, what if you want to start the test resources service in the background, and keep it alive for multiple, independent builds (different invocations on the command line for example) ?</p>
+</div>
+<div class="paragraph">
+<p>You can achieve this behavior by running the <code>startTestResourcesService</code> command:</p>
+</div>
+<div class="paragraph">
+<p><code>./gradlew startTestResourcesService</code></p>
+</div>
+<div class="paragraph">
+<p>This command <strong>must</strong> be the only command executed: it will start a test resources service in the background, which will be shared between builds.
+Therefore, it&#8217;s your responsibility to stop the service when you are done by running:</p>
+</div>
+<div class="paragraph">
+<p><code>./gradlew stopTestResourcesService</code></p>
+</div>
+<div class="admonitionblock warning">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Warning</div>
+</td>
+<td class="content">
+When keeping a test resources service alive, you must understand that any change to the test resources configuration will be ignored until you stop the service.
+</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_implementing_your_own_test_resources_resolver"><a class="anchor" href="#_implementing_your_own_test_resources_resolver"></a>Implementing your own test resources resolver</h3>
+<div class="paragraph">
+<p><a href="https://github.com/micronaut-projects/micronaut-test-resources">Micronaut Test Resources</a> provides integration with a lot of databases and services, and also supports a <a href="https://micronaut-projects.github.io/micronaut-test-resources/latest/guide/#modules-testcontainers">fully declarative way</a> to spawn test containers.
+However, there are cases where you might need to implement your own test resources resolver.</p>
+</div>
+<div class="paragraph">
+<p>The plugin makes it extremely straightforward: it declares an additional source set called <code>testResources</code>.
+You therefore write your test resources directly in <code>src/testResources/java</code> for example, and the test resource will be automatically made available.</p>
+</div>
+<div class="paragraph">
+<p>For example, let&#8217;s write a test resource which provides the value of the <code>greeting.message</code> property.</p>
+</div>
+<div class="paragraph">
+<p>First, let&#8217;s create the <code>src/testResources/java/demo/GreetingTestResource.java</code> file:</p>
+</div>
+<div class="listingblock">
+<div class="title">src/testResources/java/demo/GreetingTestResource.java</div>
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">package demo;
+
+import io.micronaut.testresources.core.TestResourcesResolver;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
+public class GreetingTestResource implements TestResourcesResolver {
+
+    public static final String PROPERTY = "greeting.message";
+
+    @Override
+    public List&lt;String&gt; getResolvableProperties(Map&lt;String, Collection&lt;String&gt;&gt; propertyEntries, Map&lt;String, Object&gt; testResourcesConfig) {
+        return Collections.singletonList(PROPERTY);
+    }
+
+    @Override
+    public Optional&lt;String&gt; resolve(String propertyName, Map&lt;String, Object&gt; properties, Map&lt;String, Object&gt; testResourcesConfiguration) {
+        if (PROPERTY.equals(propertyName)) {
+            return Optional.of("Hello from my test resource!");
+        }
+        return Optional.empty();
+    }
+
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Then you need to declare the test resource in the service file descriptor:</p>
+</div>
+<div class="listingblock">
+<div class="title">src/testResources/resources/META-INF/services/io.micronaut.testresources.core.TestResourcesResolver</div>
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="text" class="language-text hljs">demo.GreetingTestResource</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Now the value of the <code>greeting.message</code> property will be available in your tests:</p>
+</div>
+<div class="listingblock">
+<div class="title">src/test/java/demo/DemoTest.java</div>
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">@MicronautTest
+class DemoTest {
+
+    @Value("${greeting.message}")
+    String greeting;
+
+    @Test
+    void testItWorks() {
+        assertEquals("Hello from my test resource!", greeting);
+    }
+
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You can learn more about custom test resource resolvers in the <a href="https://micronaut-projects.github.io/micronaut-test-resources/latest/guide/#implementing-test-resources">Micronaut Test Resources</a> documentation.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_upgrade_notes"><a class="anchor" href="#_upgrade_notes"></a>9. Upgrade notes</h2>
 <div class="sectionbody">
 <div class="sect2">
-<h3 id="_upgrading_from_2_x"><a class="anchor" href="#_upgrading_from_2_x"></a>8.1. Upgrading from 2.x</h3>
+<h3 id="_upgrading_from_2_x"><a class="anchor" href="#_upgrading_from_2_x"></a>9.1. Upgrading from 2.x</h3>
 <div class="paragraph">
 <p>When upgrading from the 2.x version of the plugins, you will need to change the configuration of the GraalVM native image builds if you use them.</p>
 </div>
