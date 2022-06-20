@@ -19,6 +19,7 @@ import io.micronaut.testresources.buildtools.ServerFactory;
 import io.micronaut.testresources.buildtools.ServerUtils;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.GradleException;
+import org.gradle.api.JavaVersion;
 import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.file.DirectoryProperty;
 import org.gradle.api.file.RegularFileProperty;
@@ -35,12 +36,14 @@ import org.gradle.api.tasks.options.Option;
 import org.gradle.process.ExecOperations;
 
 import javax.inject.Inject;
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.time.Duration;
 import java.util.Collections;
+import java.util.stream.Collectors;
 
 /**
  * A task responsible for starting a test resources server.
@@ -48,6 +51,9 @@ import java.util.Collections;
  * build, for a continuous build, or outlive a single build.
  */
 public abstract class StartTestResourcesService extends DefaultTask {
+
+    public static final String CDS_FILE = "cds.jsa";
+    public static final String CDS_CLASS_LST = "cds.classlist";
 
     /**
      * The classpath of the test resources server. Once
@@ -145,6 +151,12 @@ public abstract class StartTestResourcesService extends DefaultTask {
     @Internal
     abstract Property<Boolean> getStandalone();
 
+    @Internal
+    abstract Property<Boolean> getUseClassDataSharing();
+
+    @Internal
+    abstract DirectoryProperty getClassDataSharingDir();
+
     @Inject
     protected abstract ExecOperations getExecOperations();
 
@@ -155,6 +167,7 @@ public abstract class StartTestResourcesService extends DefaultTask {
     public StartTestResourcesService() {
         setGroup(MicronautTestResourcesPlugin.GROUP);
         setDescription("Starts the test resources server");
+        getUseClassDataSharing().convention(JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_17));
     }
 
     @TaskAction
@@ -186,9 +199,35 @@ public abstract class StartTestResourcesService extends DefaultTask {
 
                     private void startService(ServerUtils.ProcessParameters processParameters) {
                         try {
+                            File cdsDir = getClassDataSharingDir().get().getAsFile();
+                            Boolean useCDS = getUseClassDataSharing().get();
+                            if (Boolean.TRUE.equals(useCDS)) {
+                                useCDS = cdsDir.isDirectory() || cdsDir.mkdirs();
+                            }
+                            boolean cdsEnabled = Boolean.TRUE.equals(useCDS);
+                            File cdsFile = getClassDataSharingDir().file(CDS_FILE).get().getAsFile();
+                            File cdsClassList = getClassDataSharingDir().file(CDS_CLASS_LST).get().getAsFile();
+                            if (cdsClassList.exists() && !cdsFile.exists()) {
+                                getExecOperations().javaexec(spec -> {
+                                    spec.setWorkingDir(cdsDir);
+                                    spec.getMainClass().set("dummy");
+                                    spec.jvmArgs("-Xlog:cds",
+                                            "-Xshare:dump",
+                                            "-XX:SharedClassListFile=" + CDS_CLASS_LST,
+                                            "-XX:SharedArchiveFile=" + CDS_FILE);
+                                });
+                            }
                             getExecOperations().javaexec(spec -> {
                                 spec.getMainClass().set(processParameters.getMainClass());
-                                spec.setClasspath(getObjects().fileCollection().from(processParameters.getClasspath()));
+                                if (cdsEnabled) {
+                                    spec.setWorkingDir(cdsDir);
+                                    if (cdsFile.exists()) {
+                                        spec.jvmArgs("-Xlog:cds", "-XX:SharedArchiveFile=" + CDS_FILE);
+                                    } else {
+                                        spec.jvmArgs("-Xlog:cds", "-XX:DumpLoadedClassList=" + CDS_CLASS_LST);
+                                    }
+                                }
+                                spec.setClasspath(getObjects().fileCollection().from(processParameters.getClasspath().stream().filter(File::isFile).collect(Collectors.toList())));
                                 spec.getJvmArgs().addAll(processParameters.getJvmArguments());
                                 processParameters.getSystemProperties().forEach(spec::systemProperty);
                                 processParameters.getArguments().forEach(spec::args);
