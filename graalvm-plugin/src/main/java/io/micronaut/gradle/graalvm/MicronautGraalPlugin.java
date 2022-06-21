@@ -40,6 +40,8 @@ import java.util.stream.Collectors;
  */
 public class MicronautGraalPlugin implements Plugin<Project> {
 
+    public static final String RICH_OUTPUT_PROPERTY = "io.micronaut.graalvm.rich.output";
+
     private static final Set<String> SOURCE_SETS = Collections.unmodifiableSet(new HashSet<>(Arrays.asList("main", "test")));
 
     @Override
@@ -56,11 +58,17 @@ public class MicronautGraalPlugin implements Plugin<Project> {
         });
         GraalVMExtension graal = project.getExtensions().findByType(GraalVMExtension.class);
         graal.getBinaries().configureEach(options ->
-                options.resources(rsrc -> rsrc.autodetection(inf -> {
-                    inf.getEnabled().convention(true);
-                    inf.getIgnoreExistingResourcesConfigFile().convention(true);
-                    inf.getRestrictToProjectDependencies().convention(true);
-                }))
+                {
+                    options.resources(rsrc -> rsrc.autodetection(inf -> {
+                        inf.getEnabled().convention(true);
+                        inf.getIgnoreExistingResourcesConfigFile().convention(true);
+                        inf.getRestrictToProjectDependencies().convention(true);
+                    }));
+                    Provider<String> richOutput = project.getProviders().systemProperty(RICH_OUTPUT_PROPERTY);
+                    if (richOutput.isPresent()) {
+                        options.getRichOutput().convention(richOutput.map(Boolean::parseBoolean));
+                    }
+                }
         );
         project.getPluginManager().withPlugin("application", plugin -> {
             TaskContainer tasks = project.getTasks();

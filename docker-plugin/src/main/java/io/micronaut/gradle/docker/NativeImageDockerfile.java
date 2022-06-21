@@ -2,9 +2,9 @@ package io.micronaut.gradle.docker;
 
 import com.bmuschko.gradle.docker.tasks.image.Dockerfile;
 import org.graalvm.buildtools.gradle.NativeImagePlugin;
-import org.graalvm.buildtools.gradle.dsl.AgentConfiguration;
 import org.graalvm.buildtools.gradle.dsl.NativeImageOptions;
 import org.graalvm.buildtools.gradle.dsl.NativeResourcesOptions;
+import org.graalvm.buildtools.gradle.dsl.agent.DeprecatedAgentOptions;
 import org.graalvm.buildtools.gradle.internal.BaseNativeImageOptions;
 import org.graalvm.buildtools.gradle.internal.NativeImageCommandLineProvider;
 import org.graalvm.buildtools.gradle.tasks.BuildNativeImageTask;
@@ -220,24 +220,29 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
                             return delegate.getVerbose();
                         }
 
-                        /**
-                         * Configures the GraalVM agent options.
-                         *
-                         * @param spec the agent configuration.
-                         */
                         @Override
-                        public void agent(Action<? super AgentConfiguration> spec) {
+                        public Property<Boolean> getQuickBuild() {
+                            return delegate.getQuickBuild();
+                        }
+
+                        @Override
+                        public Property<Boolean> getRichOutput() {
+                            return delegate.getRichOutput();
+                        }
+
+                        @Override
+                        public MapProperty<Object, List<String>> getExcludeConfig() {
+                            return delegate.getExcludeConfig();
+                        }
+
+                        @Override
+                        public void agent(Action<? super DeprecatedAgentOptions> spec) {
                             delegate.agent(spec);
                         }
 
-                        /**
-                         * Returns the GraalVM agent configuration.
-                         *
-                         * @return the configuration.
-                         */
                         @Override
-                        public AgentConfiguration getAgent() {
-                            return delegate.getAgent();
+                        public ListProperty<String> getExcludeConfigArgs() {
+                            return delegate.getExcludeConfigArgs();
                         }
 
                         @Override
@@ -326,6 +331,11 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
                         @Override
                         public Property<Boolean> getUseFatJar() {
                             return delegate.getUseFatJar();
+                        }
+
+                        @Override
+                        public DeprecatedAgentOptions getAgent() {
+                            return delegate.getAgent();
                         }
                     };
                 })
@@ -503,7 +513,6 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
     private List<String> buildNativeImageCommandLineArgs(Provider<String> executable, NativeImageOptions options) {
         List<String> args = new NativeImageCommandLineProvider(
                 getProviders().provider(() -> options),
-                getProviders().provider(() -> false),
                 executable,
                 getObjects().property(String.class),
                 getObjects().fileProperty(),
@@ -539,6 +548,7 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
         options.getVerbose().set(originalOptions.flatMap(NativeImageOptions::getVerbose));
         options.getFallback().set(originalOptions.flatMap(NativeImageOptions::getFallback));
         options.getSystemProperties().set(originalOptions.flatMap(NativeImageOptions::getSystemProperties));
+        options.getRichOutput().set(false); // no need in docker images
         Provider<List<String>> remappedConfigDirectories = originalOptions.map(orig -> orig.getConfigurationFileDirectories()
                 .getFiles()
                 .stream()

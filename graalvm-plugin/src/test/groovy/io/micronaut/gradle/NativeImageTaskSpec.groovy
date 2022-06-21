@@ -78,6 +78,7 @@ class Application {
                     main {
                         imageName = "basic-app"
                         buildArgs('-Dfoo=bar')
+                        useArgFile = true
                     }
                 }
             }            
