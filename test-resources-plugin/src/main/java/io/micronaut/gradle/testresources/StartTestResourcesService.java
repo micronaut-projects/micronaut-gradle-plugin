@@ -40,7 +40,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.time.Duration;
-import java.util.Arrays;
 import java.util.Collections;
 
 /**
@@ -190,13 +189,9 @@ abstract class StartTestResourcesService extends DefaultTask {
                             getExecOperations().javaexec(spec -> {
                                 spec.getMainClass().set(processParameters.getMainClass());
                                 spec.setClasspath(getObjects().fileCollection().from(processParameters.getClasspath()));
+                                spec.getJvmArgs().addAll(processParameters.getJvmArguments());
                                 processParameters.getSystemProperties().forEach(spec::systemProperty);
                                 processParameters.getArguments().forEach(spec::args);
-                                spec.getJvmArgs().addAll(Arrays.asList(
-                                        "-XX:+TieredCompilation",
-                                        "-XX:TieredStopAtLevel=1"
-                                ));
-                                spec.systemProperty("com.sun.management.jmxremote", null);
                             });
                         } catch (GradleException e) {
                             getLogger().info("Test server stopped");
