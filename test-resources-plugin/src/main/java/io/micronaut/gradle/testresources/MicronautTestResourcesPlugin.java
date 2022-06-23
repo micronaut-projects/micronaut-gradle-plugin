@@ -4,7 +4,10 @@
 package io.micronaut.gradle.testresources;
 
 import io.micronaut.gradle.MicronautBasePlugin;
+import io.micronaut.gradle.MicronautComponentPlugin;
 import io.micronaut.gradle.MicronautExtension;
+import io.micronaut.gradle.testresources.internal.TestResourcesAOT;
+import io.micronaut.gradle.testresources.internal.TestResourcesGraalVM;
 import io.micronaut.testresources.buildtools.MavenDependency;
 import io.micronaut.testresources.buildtools.ServerUtils;
 import io.micronaut.testresources.buildtools.TestResourcesClasspath;
@@ -16,21 +19,22 @@ import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.Dependency;
 import org.gradle.api.artifacts.ModuleDependency;
 import org.gradle.api.artifacts.dsl.DependencyHandler;
+import org.gradle.api.attributes.Bundling;
+import org.gradle.api.attributes.LibraryElements;
 import org.gradle.api.attributes.Usage;
 import org.gradle.api.file.Directory;
 import org.gradle.api.file.DirectoryProperty;
 import org.gradle.api.file.RegularFile;
 import org.gradle.api.internal.project.ProjectInternal;
+import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.plugins.JavaPluginExtension;
 import org.gradle.api.plugins.PluginManager;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.provider.ProviderFactory;
-import org.gradle.api.tasks.JavaExec;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.TaskContainer;
 import org.gradle.api.tasks.TaskProvider;
-import org.gradle.api.tasks.testing.Test;
 import org.gradle.internal.event.ListenerManager;
 import org.gradle.internal.service.ServiceRegistry;
 import org.gradle.internal.session.BuildSessionLifecycleListener;
@@ -65,6 +69,30 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
 
     private static final int DEFAULT_CLIENT_TIMEOUT_SECONDS = 60;
 
+    public static void addTestResourcesClientDependencies(Project project, TestResourcesConfiguration config, DependencyHandler dependencies, TaskProvider<StartTestResourcesService> writeTestProperties, Configuration conf) {
+        // Would be cleaner to use `config.getEnabled().zip(...)` but for some unclear reason it fails
+        conf.getDependencies().addAllLater(config.getVersion().map(v -> {
+            if (Boolean.TRUE.equals(config.getEnabled().get())) {
+                return Collections.singleton(dependencies.create("io.micronaut.testresources:micronaut-test-resources-client:" + v));
+            }
+            return Collections.emptyList();
+        }));
+        conf.getDependencies().addAllLater(config.getEnabled().map(enabled -> {
+            if (Boolean.TRUE.equals(enabled)) {
+                return Collections.singleton(dependencies.create(project.files(writeTestProperties)));
+            }
+            return Collections.emptyList();
+        }));
+        conf.getDependencyConstraints().addAllLater(MicronautComponentPlugin.findMicronautExtension(project).getVersion().map(v ->
+                Stream.of("micronaut-http-client", "micronaut-bom", "micronaut-inject")
+                        .map(artifact -> dependencies.getConstraints().create("io.micronaut:" + artifact, dc -> {
+                            dc.because("Aligning version of Micronaut the current Micronaut version");
+                            dc.version(version -> version.strictly(v));
+                        }))
+                        .collect(Collectors.toList())
+        ));
+    }
+
     public void apply(Project project) {
         PluginManager pluginManager = project.getPluginManager();
         pluginManager.apply(JavaPlugin.class);
@@ -78,7 +106,7 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
         ProviderFactory providers = project.getProviders();
         Provider<Integer> explicitPort = providers.systemProperty("micronaut.test-resources.server.port").map(Integer::parseInt);
         TestResourcesConfiguration config = createTestResourcesConfiguration(project, explicitPort);
-        JavaPluginExtension javaPluginExtension = project.getExtensions().findByType(JavaPluginExtension.class);
+        JavaPluginExtension javaPluginExtension = project.getExtensions().getByType(JavaPluginExtension.class);
         SourceSet testResourcesSourceSet = createTestResourcesSourceSet(javaPluginExtension);
         DependencyHandler dependencies = project.getDependencies();
         Configuration testResourcesApi = project.getConfigurations().getByName(testResourcesSourceSet.getImplementationConfigurationName());
@@ -115,12 +143,25 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
         project.afterEvaluate(p -> p.getConfigurations().all(conf -> configureDependencies(project, config, dependencies, internalStart, conf)));
         outgoing.getOutgoing().artifact(internalStart);
         outgoing.getDependencies().addLater(config.getVersion().map(v -> dependencies.create("io.micronaut.testresources:micronaut-test-resources-client:" + v)));
-        project.getPluginManager().withPlugin("io.micronaut.component", unused -> {
-            tasks.withType(Test.class).configureEach(t -> t.dependsOn(internalStart));
-            tasks.withType(JavaExec.class).configureEach(t -> t.dependsOn(internalStart));
-        });
-
+        Configuration testResourcesClasspathConfig = createTestResourcesClasspathConfig(project, config, internalStart);
+        PluginManager pluginManager = project.getPluginManager();
+        pluginManager.withPlugin("org.graalvm.buildtools.native", unused -> TestResourcesGraalVM.configure(project, tasks, testResourcesClasspathConfig));
+        pluginManager.withPlugin("io.micronaut.aot", unused -> TestResourcesAOT.configure(project, config, dependencies, tasks, internalStart, testResourcesClasspathConfig));
         configureServiceReset((ProjectInternal) project, settingsDirectory, stopAtEndFile);
+    }
+
+    private Configuration createTestResourcesClasspathConfig(Project project, TestResourcesConfiguration config, TaskProvider<StartTestResourcesService> startTestResourcesServiceTaskProvider) {
+        return project.getConfigurations().create("testResourcesClasspath", conf -> {
+            conf.setCanBeResolved(true);
+            conf.setCanBeConsumed(false);
+            conf.attributes(attrs -> {
+                ObjectFactory objects = project.getObjects();
+                attrs.attribute(Usage.USAGE_ATTRIBUTE, objects.named(Usage.class, Usage.JAVA_RUNTIME));
+                attrs.attribute(Bundling.BUNDLING_ATTRIBUTE, objects.named(Bundling.class, Bundling.EXTERNAL));
+                attrs.attribute(LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE, objects.named(LibraryElements.class, LibraryElements.CLASSES_AND_RESOURCES));
+            });
+            addTestResourcesClientDependencies(project, config, project.getDependencies(), startTestResourcesServiceTaskProvider, conf);
+        });
     }
 
     private Path createStopFile(Project project) {
@@ -145,27 +186,14 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
         return javaPluginExtension.getSourceSets().create("testResources");
     }
 
-    private void  createStopServiceTask(Provider<Directory> settingsDirectory, TaskContainer tasks) {
+    private void createStopServiceTask(Provider<Directory> settingsDirectory, TaskContainer tasks) {
         tasks.register(STOP_TEST_RESOURCES_SERVICE, StopTestResourcesService.class, task -> task.getSettingsDirectory().convention(settingsDirectory));
     }
 
     private void configureDependencies(Project project, TestResourcesConfiguration config, DependencyHandler dependencies, TaskProvider<StartTestResourcesService> writeTestProperties, Configuration conf) {
         String name = conf.getName();
         if ("developmentOnly".equals(name) || "testRuntimeOnly".equals(name)) {
-            // Would be cleaner to use `config.getEnabled().zip(...)` but for some
-            // reason it fails
-            conf.getDependencies().addAllLater(config.getVersion().map(v -> {
-                if (Boolean.TRUE.equals(config.getEnabled().get())) {
-                    return Collections.singleton(dependencies.create("io.micronaut.testresources:micronaut-test-resources-client:" + v));
-                }
-                return Collections.emptyList();
-            }));
-            conf.getDependencies().addAllLater(config.getEnabled().map(enabled -> {
-                if (Boolean.TRUE.equals(enabled)) {
-                    return Collections.singleton(dependencies.create(project.files(writeTestProperties)));
-                }
-                return Collections.emptyList();
-            }));
+            addTestResourcesClientDependencies(project, config, dependencies, writeTestProperties, conf);
         }
     }
 
@@ -192,7 +220,7 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
     }
 
     private TestResourcesConfiguration createTestResourcesConfiguration(Project project, Provider<Integer> explicitPort) {
-        MicronautExtension micronautExtension = project.getExtensions().getByType(MicronautExtension.class);
+        MicronautExtension micronautExtension = MicronautComponentPlugin.findMicronautExtension(project);
         TestResourcesConfiguration testResources = micronautExtension.getExtensions().create("testResources", TestResourcesConfiguration.class);
         ProviderFactory providers = project.getProviders();
         testResources.getEnabled().convention(
@@ -305,9 +333,7 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
             conf.setDescription("Provides the Micronaut Test Resources client configuration files");
             conf.setCanBeConsumed(true);
             conf.setCanBeResolved(false);
-            conf.attributes(attr -> {
-                attr.attribute(Usage.USAGE_ATTRIBUTE, project.getObjects().named(Usage.class, MICRONAUT_TEST_RESOURCES_USAGE));
-            });
+            conf.attributes(attr -> attr.attribute(Usage.USAGE_ATTRIBUTE, project.getObjects().named(Usage.class, MICRONAUT_TEST_RESOURCES_USAGE)));
         });
     }
 
