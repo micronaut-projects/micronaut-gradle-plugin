@@ -30,7 +30,7 @@ class ApplicationTestResourcesPluginSpec extends AbstractGradleBuildSpec {
         def result = fails 'test'
 
         then:
-        result.task(":internalStartTestResourcesService").outcome == TaskOutcome.SKIPPED
+        result.task(":internalStartTestResourcesService") == null
         result.task(':test').outcome == TaskOutcome.FAILED
         !result.output.contains("Loaded 1 test resources resolvers: io.micronaut.testresources.testcontainers.GenericTestContainerProvider")
     }
