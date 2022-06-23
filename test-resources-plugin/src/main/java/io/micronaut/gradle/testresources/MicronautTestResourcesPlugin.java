@@ -263,7 +263,7 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
     private Provider<List<Dependency>> buildTestResourcesDependencyList(Project project, DependencyHandler dependencies, TestResourcesConfiguration config, SourceSet testResourcesSourceSet) {
         return config.getEnabled().zip(config.getInferClasspath(), (enabled, infer) -> {
             if (Boolean.FALSE.equals(enabled)) {
-                return Collections.singletonList(dependencies.create(testResourcesSourceSet.getOutput()));
+                return Collections.singletonList(dependencies.create(testResourcesSourceSet.getRuntimeClasspath()));
             }
             List<MavenDependency> mavenDependencies = Collections.emptyList();
             if (Boolean.TRUE.equals(infer)) {
@@ -284,7 +284,7 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
                                     .stream()
                                     .map(m -> "io.micronaut.testresources:micronaut-test-resources-" + m + ":" + testResourcesVersion))
                             .map(dependencies::create),
-                    Stream.of(dependencies.create(testResourcesSourceSet.getOutput())))
+                    Stream.of(dependencies.create(testResourcesSourceSet.getRuntimeClasspath())))
                     .collect(Collectors.toList());
         }).orElse(Collections.emptyList());
     }
