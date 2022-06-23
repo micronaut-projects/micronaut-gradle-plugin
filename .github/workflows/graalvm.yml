@@ -42,13 +42,7 @@ jobs:
           java-version: ${{ matrix.java }}
           components: 'native-image'
       - name: Build with Gradle
-        run: |
-          if ./gradlew tasks --no-daemon --all | grep -w "testNativeImage"
-          then
-            ./gradlew check testNativeImage --continue --no-daemon
-          else
-            ./gradlew check --continue --no-daemon
-          fi
+        run: ./gradlew check --continue --no-daemon --no-parallel
         env:
            TESTCONTAINERS_RYUK_DISABLED: true
            GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GRADLE_ENTERPRISE_ACCESS_KEY }}

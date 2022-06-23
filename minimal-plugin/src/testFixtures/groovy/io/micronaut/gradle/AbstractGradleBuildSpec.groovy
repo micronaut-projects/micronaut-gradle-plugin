@@ -127,6 +127,7 @@ abstract class AbstractGradleBuildSpec extends Specification {
                                 "-Porg.gradle.java.installations.auto-download=false",
                                 "-Porg.gradle.java.installations.auto-detect=false",
                                 "-Porg.gradle.java.installations.fromEnv=GRAALVM_HOME",
+                                "-Dio.micronaut.graalvm.rich.output=false",
                                 *args])
                 .forwardStdOutput(System.out.newWriter())
                 .forwardStdError(System.err.newWriter())
