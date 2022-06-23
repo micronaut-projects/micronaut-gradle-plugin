@@ -111,6 +111,14 @@ class MicronautGraalPluginSpec extends AbstractEagerConfiguringFunctionalTest {
             $repositoriesBlock
             group = "example.micronaut"
             mainClassName="example.Application"
+
+            graalvmNative {
+                binaries {
+                    main {
+                        useArgFile = true
+                    }
+                }
+            }
         """
         testProjectDir.newFolder("src", "main", "java", "example")
         def javaFile = testProjectDir.newFile("src/main/java/example/Application.java")
@@ -155,6 +163,14 @@ class Application {
             $repositoriesBlock
             group = "example.micronaut"
             mainClassName="example.Application"
+
+            graalvmNative {
+                binaries {
+                    main {
+                        useArgFile = true
+                    }
+                }
+            }
         """
         testProjectDir.newFolder("src", "main", "java", "example")
         def javaFile = testProjectDir.newFile("src/main/java/example/Application.java")
