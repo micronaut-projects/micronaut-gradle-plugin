@@ -100,7 +100,7 @@ public abstract class MicronautAotPlugin implements Plugin<Project> {
             "io.micronaut.core.async.publisher.Publishers.JustPublisher",
             "io.micronaut.core.async.subscriber.Completable"));
 
-    static final List<String> SERVICE_TYPES = Collections.unmodifiableList(Arrays.asList(
+    public static final List<String> SERVICE_TYPES = Collections.unmodifiableList(Arrays.asList(
             "io.micronaut.context.env.PropertySourceLoader",
             "io.micronaut.inject.BeanConfiguration",
             "io.micronaut.inject.BeanDefinitionReference",
@@ -108,6 +108,7 @@ public abstract class MicronautAotPlugin implements Plugin<Project> {
             "io.micronaut.http.HttpResponseFactory",
             "io.micronaut.core.beans.BeanIntrospectionReference"
     ));
+    public static final String AOT_APPLICATION_CLASSPATH = "aotApplicationClasspath";
 
     @Inject
     protected abstract ArchiveOperations getArchiveOperations();
@@ -377,7 +378,7 @@ public abstract class MicronautAotPlugin implements Plugin<Project> {
             c.setCanBeResolved(false);
             c.setCanBeConsumed(false);
         });
-        Configuration aotApplicationClasspath = configurations.create("aotApplicationClasspath", c -> {
+        Configuration aotApplicationClasspath = configurations.create(AOT_APPLICATION_CLASSPATH, c -> {
             configureAsRuntimeClasspath(configurations, c);
             Configuration runtimeClasspath = configurations.findByName(JavaPlugin.RUNTIME_CLASSPATH_CONFIGURATION_NAME);
             runtimeClasspath.getExtendsFrom().forEach(c::extendsFrom);

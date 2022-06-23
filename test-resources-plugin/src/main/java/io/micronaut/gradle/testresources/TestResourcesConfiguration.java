@@ -15,33 +15,14 @@
  */
 package io.micronaut.gradle.testresources;
 
+import io.micronaut.testresources.buildtools.KnownModules;
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Property;
 
 /**
  * Configuration for the test resources plugin.
  */
-public interface TestResourcesConfiguration {
-    // JDBC databases
-    String JDBC_MARIADB = "jdbc-mariadb";
-    String JDBC_MYSQL = "jdbc-mysql";
-    String JDBC_ORACLE_XE = "jdbc-oracle-xe";
-    String JDBC_POSTGRESQL = "jdbc-postgresql";
-
-    // Reactive databases
-    String R2DBC_MARIADB = "r2dbc-mariadb";
-    String R2DBC_MYSQL = "r2dbc-mysql";
-    String R2DBC_ORACLE_XE = "r2dbc-oracle-xe";
-    String R2DBC_POSTGRESQL = "r2dbc-postgresql";
-
-    // Other modules
-    String HIVEMQ = "hivemq";
-    String KAFKA = "kafka";
-    String MONGODB = "mongodb";
-    String NEO4J = "neo4j";
-
-    // Generic Testcontainers support
-    String TESTCONTAINERS = "testcontainers";
+public interface TestResourcesConfiguration extends KnownModules {
 
     /**
      * If set to false, test resources support will be disabled.

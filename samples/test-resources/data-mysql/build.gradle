@@ -45,7 +45,7 @@ dependencies {
     // TEST_DEPENDENCIES_MARKER
 }
 
-tasks.named("run") {
+tasks.withType(JavaExec) {
     if (System.getProperty("interruptStartup")) {
         systemProperty "interruptStartup", "true"
     }

@@ -47,7 +47,7 @@ import java.util.Collections;
  * The test resources server can be started for a single
  * build, for a continuous build, or outlive a single build.
  */
-abstract class StartTestResourcesService extends DefaultTask {
+public abstract class StartTestResourcesService extends DefaultTask {
 
     /**
      * The classpath of the test resources server. Once
