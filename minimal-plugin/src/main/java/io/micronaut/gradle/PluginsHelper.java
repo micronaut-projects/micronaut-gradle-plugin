@@ -19,6 +19,7 @@ import org.gradle.api.InvalidUserCodeException;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.DependencySet;
 import org.gradle.api.artifacts.dsl.DependencyHandler;
+import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.SourceSet;
 
 import java.io.File;
@@ -57,6 +58,15 @@ public abstract class PluginsHelper {
         return v;
     }
 
+    public static Provider<String> findMicronautVersionAsProvider(Project p) {
+        return findMicronautExtension(p)
+                .getVersion()
+                .orElse(p.getProviders().gradleProperty("micronautVersion"))
+                .orElse(p.getProviders().provider( () -> {
+                    throw new InvalidUserCodeException("Micronaut version not set. Use micronaut { version '..'} or 'micronautVersion' in gradle.properties to set the version");
+                }));
+    }
+
     static void configureAnnotationProcessors(
             Project project,
             String implementationScope,
@@ -93,7 +103,7 @@ public abstract class PluginsHelper {
         });
     }
 
-    static void applyAdditionalProcessors(Project project, String ... configurations) {
+    static void applyAdditionalProcessors(Project project, String... configurations) {
         Stream.of(IMPLEMENTATION_CONFIGURATION_NAME, COMPILE_ONLY_CONFIGURATION_NAME).forEach(config -> {
             // Need to do in an afterEvaluate because this will add dependencies only if the user didn't do it
             project.afterEvaluate(p -> {
@@ -125,5 +135,9 @@ public abstract class PluginsHelper {
             micronautRuntime = ext.getRuntime().getOrElse(MicronautRuntime.NONE);
         }
         return micronautRuntime;
+    }
+
+    public static MicronautExtension findMicronautExtension(Project project) {
+        return project.getExtensions().getByType(MicronautExtension.class);
     }
 }

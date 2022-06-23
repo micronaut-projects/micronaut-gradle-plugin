@@ -67,10 +67,6 @@ public class MicronautComponentPlugin implements Plugin<Project> {
     }});
     public static final String MICRONAUT_BOMS_CONFIGURATION = "micronautBoms";
 
-    public static MicronautExtension findMicronautExtension(Project project) {
-        return project.getExtensions().getByType(MicronautExtension.class);
-    }
-
     @Override
     public void apply(Project project) {
         PluginManager plugins = project.getPluginManager();

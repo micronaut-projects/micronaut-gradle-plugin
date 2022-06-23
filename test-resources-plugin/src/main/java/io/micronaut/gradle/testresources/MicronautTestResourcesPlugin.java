@@ -4,8 +4,8 @@
 package io.micronaut.gradle.testresources;
 
 import io.micronaut.gradle.MicronautBasePlugin;
-import io.micronaut.gradle.MicronautComponentPlugin;
 import io.micronaut.gradle.MicronautExtension;
+import io.micronaut.gradle.PluginsHelper;
 import io.micronaut.gradle.testresources.internal.TestResourcesAOT;
 import io.micronaut.gradle.testresources.internal.TestResourcesGraalVM;
 import io.micronaut.testresources.buildtools.MavenDependency;
@@ -83,7 +83,7 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
             }
             return Collections.emptyList();
         }));
-        conf.getDependencyConstraints().addAllLater(MicronautComponentPlugin.findMicronautExtension(project).getVersion().map(v ->
+        conf.getDependencyConstraints().addAllLater(PluginsHelper.findMicronautVersionAsProvider(project).map(v ->
                 Stream.of("micronaut-http-client", "micronaut-bom", "micronaut-inject")
                         .map(artifact -> dependencies.getConstraints().create("io.micronaut:" + artifact, dc -> {
                             dc.because("Aligning version of Micronaut the current Micronaut version");
@@ -220,7 +220,7 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
     }
 
     private TestResourcesConfiguration createTestResourcesConfiguration(Project project, Provider<Integer> explicitPort) {
-        MicronautExtension micronautExtension = MicronautComponentPlugin.findMicronautExtension(project);
+        MicronautExtension micronautExtension = PluginsHelper.findMicronautExtension(project);
         TestResourcesConfiguration testResources = micronautExtension.getExtensions().create("testResources", TestResourcesConfiguration.class);
         ProviderFactory providers = project.getProviders();
         testResources.getEnabled().convention(

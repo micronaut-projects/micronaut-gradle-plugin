@@ -15,7 +15,7 @@
  */
 package io.micronaut.gradle.testresources.internal;
 
-import io.micronaut.gradle.MicronautComponentPlugin;
+import io.micronaut.gradle.PluginsHelper;
 import io.micronaut.gradle.aot.AOTExtension;
 import io.micronaut.gradle.aot.MicronautAotPlugin;
 import io.micronaut.gradle.testresources.MicronautTestResourcesPlugin;
@@ -40,7 +40,7 @@ import java.util.stream.Stream;
 public final class TestResourcesAOT {
 
     public static void configure(Project project, TestResourcesConfiguration config, DependencyHandler dependencies, TaskContainer tasks, TaskProvider<StartTestResourcesService> internalStart, Configuration testResourcesClasspathConfig) {
-        AOTExtension aot = MicronautComponentPlugin.findMicronautExtension(project).getExtensions().getByType(AOTExtension.class);
+        AOTExtension aot = PluginsHelper.findMicronautExtension(project).getExtensions().getByType(AOTExtension.class);
         Configuration aotAppClasspath = project.getConfigurations().getByName(MicronautAotPlugin.AOT_APPLICATION_CLASSPATH);
         MicronautTestResourcesPlugin.addTestResourcesClientDependencies(project, config, dependencies, internalStart, aotAppClasspath);
         project.afterEvaluate(p -> {
