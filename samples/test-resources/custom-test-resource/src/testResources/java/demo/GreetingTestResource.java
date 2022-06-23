@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import org.apache.commons.lang3.StringUtils;
+
 public class GreetingTestResource implements TestResourcesResolver {
 
     public static final String PROPERTY = "greeting.message";
@@ -20,7 +22,7 @@ public class GreetingTestResource implements TestResourcesResolver {
     @Override
     public Optional<String> resolve(String propertyName, Map<String, Object> properties, Map<String, Object> testResourcesConfiguration) {
         if (PROPERTY.equals(propertyName)) {
-            return Optional.of("Hello from my test resource!");
+            return Optional.of(StringUtils.capitalize("hello from my test resource!"));
         }
         return Optional.empty();
     }
