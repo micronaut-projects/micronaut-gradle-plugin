@@ -73,13 +73,13 @@ var activeTableTab = "activeTableTab";
 <ul class="subNavList">
 <li>Summary:&nbsp;</li>
 <li>Nested&nbsp;|&nbsp;</li>
-<li><a href="#field.summary">Field</a>&nbsp;|&nbsp;</li>
+<li>Field&nbsp;|&nbsp;</li>
 <li>Constr&nbsp;|&nbsp;</li>
 <li><a href="#method.summary">Method</a></li>
 </ul>
 <ul class="subNavList">
 <li>Detail:&nbsp;</li>
-<li><a href="#field.detail">Field</a>&nbsp;|&nbsp;</li>
+<li>Field&nbsp;|&nbsp;</li>
 <li>Constr&nbsp;|&nbsp;</li>
 <li><a href="#method.detail">Method</a></li>
 </ul>
@@ -97,9 +97,14 @@ var activeTableTab = "activeTableTab";
 <div class="description">
 <ul class="blockList">
 <li class="blockList">
+<dl>
+<dt>All Superinterfaces:</dt>
+<dd>io.micronaut.testresources.buildtools.KnownModules</dd>
+</dl>
 <hr>
 <br>
-<pre>public interface <span class="typeNameLabel">TestResourcesConfiguration</span></pre>
+<pre>public interface <span class="typeNameLabel">TestResourcesConfiguration</span>
+extends io.micronaut.testresources.buildtools.KnownModules</pre>
 <div class="block">Configuration for the test resources plugin.</div>
 </li>
 </ul>
@@ -113,65 +118,13 @@ var activeTableTab = "activeTableTab";
 <!--   -->
 </a>
 <h3>Field Summary</h3>
-<table class="memberSummary" border="0" cellpadding="3" cellspacing="0" summary="Field Summary table, listing fields, and an explanation">
-<caption><span>Fields</span><span class="tabEnd">&nbsp;</span></caption>
-<tr>
-<th class="colFirst" scope="col">Modifier and Type</th>
-<th class="colLast" scope="col">Field and Description</th>
-</tr>
-<tr class="altColor">
-<td class="colFirst"><code>static java.lang.String</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../io/micronaut/gradle/testresources/TestResourcesConfiguration.html#HIVEMQ">HIVEMQ</a></span></code>&nbsp;</td>
-</tr>
-<tr class="rowColor">
-<td class="colFirst"><code>static java.lang.String</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../io/micronaut/gradle/testresources/TestResourcesConfiguration.html#JDBC_MARIADB">JDBC_MARIADB</a></span></code>&nbsp;</td>
-</tr>
-<tr class="altColor">
-<td class="colFirst"><code>static java.lang.String</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../io/micronaut/gradle/testresources/TestResourcesConfiguration.html#JDBC_MYSQL">JDBC_MYSQL</a></span></code>&nbsp;</td>
-</tr>
-<tr class="rowColor">
-<td class="colFirst"><code>static java.lang.String</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../io/micronaut/gradle/testresources/TestResourcesConfiguration.html#JDBC_ORACLE_XE">JDBC_ORACLE_XE</a></span></code>&nbsp;</td>
-</tr>
-<tr class="altColor">
-<td class="colFirst"><code>static java.lang.String</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../io/micronaut/gradle/testresources/TestResourcesConfiguration.html#JDBC_POSTGRESQL">JDBC_POSTGRESQL</a></span></code>&nbsp;</td>
-</tr>
-<tr class="rowColor">
-<td class="colFirst"><code>static java.lang.String</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../io/micronaut/gradle/testresources/TestResourcesConfiguration.html#KAFKA">KAFKA</a></span></code>&nbsp;</td>
-</tr>
-<tr class="altColor">
-<td class="colFirst"><code>static java.lang.String</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../io/micronaut/gradle/testresources/TestResourcesConfiguration.html#MONGODB">MONGODB</a></span></code>&nbsp;</td>
-</tr>
-<tr class="rowColor">
-<td class="colFirst"><code>static java.lang.String</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../io/micronaut/gradle/testresources/TestResourcesConfiguration.html#NEO4J">NEO4J</a></span></code>&nbsp;</td>
-</tr>
-<tr class="altColor">
-<td class="colFirst"><code>static java.lang.String</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../io/micronaut/gradle/testresources/TestResourcesConfiguration.html#R2DBC_MARIADB">R2DBC_MARIADB</a></span></code>&nbsp;</td>
-</tr>
-<tr class="rowColor">
-<td class="colFirst"><code>static java.lang.String</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../io/micronaut/gradle/testresources/TestResourcesConfiguration.html#R2DBC_MYSQL">R2DBC_MYSQL</a></span></code>&nbsp;</td>
-</tr>
-<tr class="altColor">
-<td class="colFirst"><code>static java.lang.String</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../io/micronaut/gradle/testresources/TestResourcesConfiguration.html#R2DBC_ORACLE_XE">R2DBC_ORACLE_XE</a></span></code>&nbsp;</td>
-</tr>
-<tr class="rowColor">
-<td class="colFirst"><code>static java.lang.String</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../io/micronaut/gradle/testresources/TestResourcesConfiguration.html#R2DBC_POSTGRESQL">R2DBC_POSTGRESQL</a></span></code>&nbsp;</td>
-</tr>
-<tr class="altColor">
-<td class="colFirst"><code>static java.lang.String</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../io/micronaut/gradle/testresources/TestResourcesConfiguration.html#TESTCONTAINERS">TESTCONTAINERS</a></span></code>&nbsp;</td>
-</tr>
-</table>
+<ul class="blockList">
+<li class="blockList"><a name="fields.inherited.from.class.io.micronaut.testresources.buildtools.KnownModules">
+<!--   -->
+</a>
+<h3>Fields inherited from interface&nbsp;io.micronaut.testresources.buildtools.KnownModules</h3>
+<code>BOM, CLIENT, CORE, ELASTICSEARCH, EMBEDDED, HIVEMQ, JDBC_CORE, JDBC_MARIADB, JDBC_MSSQL, JDBC_MYSQL, JDBC_ORACLE_XE, JDBC_POSTGRESQL, KAFKA, MONGODB, NEO4J, R2DBC_CORE, R2DBC_MARIADB, R2DBC_MSSQL, R2DBC_MYSQL, R2DBC_ORACLE_XE, R2DBC_POSTGRESQL, RABBITMQ, REDIS, SERVER, TESTCONTAINERS</code></li>
+</ul>
 </li>
 </ul>
 <!-- ========== METHOD SUMMARY =========== -->
@@ -246,183 +199,6 @@ var activeTableTab = "activeTableTab";
 <div class="details">
 <ul class="blockList">
 <li class="blockList">
-<!-- ============ FIELD DETAIL =========== -->
-<ul class="blockList">
-<li class="blockList"><a name="field.detail">
-<!--   -->
-</a>
-<h3>Field Detail</h3>
-<a name="JDBC_MARIADB">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>JDBC_MARIADB</h4>
-<pre>static final&nbsp;java.lang.String JDBC_MARIADB</pre>
-<dl>
-<dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="../../../../constant-values.html#io.micronaut.gradle.testresources.TestResourcesConfiguration.JDBC_MARIADB">Constant Field Values</a></dd>
-</dl>
-</li>
-</ul>
-<a name="JDBC_MYSQL">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>JDBC_MYSQL</h4>
-<pre>static final&nbsp;java.lang.String JDBC_MYSQL</pre>
-<dl>
-<dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="../../../../constant-values.html#io.micronaut.gradle.testresources.TestResourcesConfiguration.JDBC_MYSQL">Constant Field Values</a></dd>
-</dl>
-</li>
-</ul>
-<a name="JDBC_ORACLE_XE">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>JDBC_ORACLE_XE</h4>
-<pre>static final&nbsp;java.lang.String JDBC_ORACLE_XE</pre>
-<dl>
-<dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="../../../../constant-values.html#io.micronaut.gradle.testresources.TestResourcesConfiguration.JDBC_ORACLE_XE">Constant Field Values</a></dd>
-</dl>
-</li>
-</ul>
-<a name="JDBC_POSTGRESQL">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>JDBC_POSTGRESQL</h4>
-<pre>static final&nbsp;java.lang.String JDBC_POSTGRESQL</pre>
-<dl>
-<dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="../../../../constant-values.html#io.micronaut.gradle.testresources.TestResourcesConfiguration.JDBC_POSTGRESQL">Constant Field Values</a></dd>
-</dl>
-</li>
-</ul>
-<a name="R2DBC_MARIADB">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>R2DBC_MARIADB</h4>
-<pre>static final&nbsp;java.lang.String R2DBC_MARIADB</pre>
-<dl>
-<dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="../../../../constant-values.html#io.micronaut.gradle.testresources.TestResourcesConfiguration.R2DBC_MARIADB">Constant Field Values</a></dd>
-</dl>
-</li>
-</ul>
-<a name="R2DBC_MYSQL">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>R2DBC_MYSQL</h4>
-<pre>static final&nbsp;java.lang.String R2DBC_MYSQL</pre>
-<dl>
-<dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="../../../../constant-values.html#io.micronaut.gradle.testresources.TestResourcesConfiguration.R2DBC_MYSQL">Constant Field Values</a></dd>
-</dl>
-</li>
-</ul>
-<a name="R2DBC_ORACLE_XE">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>R2DBC_ORACLE_XE</h4>
-<pre>static final&nbsp;java.lang.String R2DBC_ORACLE_XE</pre>
-<dl>
-<dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="../../../../constant-values.html#io.micronaut.gradle.testresources.TestResourcesConfiguration.R2DBC_ORACLE_XE">Constant Field Values</a></dd>
-</dl>
-</li>
-</ul>
-<a name="R2DBC_POSTGRESQL">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>R2DBC_POSTGRESQL</h4>
-<pre>static final&nbsp;java.lang.String R2DBC_POSTGRESQL</pre>
-<dl>
-<dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="../../../../constant-values.html#io.micronaut.gradle.testresources.TestResourcesConfiguration.R2DBC_POSTGRESQL">Constant Field Values</a></dd>
-</dl>
-</li>
-</ul>
-<a name="HIVEMQ">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>HIVEMQ</h4>
-<pre>static final&nbsp;java.lang.String HIVEMQ</pre>
-<dl>
-<dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="../../../../constant-values.html#io.micronaut.gradle.testresources.TestResourcesConfiguration.HIVEMQ">Constant Field Values</a></dd>
-</dl>
-</li>
-</ul>
-<a name="KAFKA">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>KAFKA</h4>
-<pre>static final&nbsp;java.lang.String KAFKA</pre>
-<dl>
-<dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="../../../../constant-values.html#io.micronaut.gradle.testresources.TestResourcesConfiguration.KAFKA">Constant Field Values</a></dd>
-</dl>
-</li>
-</ul>
-<a name="MONGODB">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>MONGODB</h4>
-<pre>static final&nbsp;java.lang.String MONGODB</pre>
-<dl>
-<dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="../../../../constant-values.html#io.micronaut.gradle.testresources.TestResourcesConfiguration.MONGODB">Constant Field Values</a></dd>
-</dl>
-</li>
-</ul>
-<a name="NEO4J">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>NEO4J</h4>
-<pre>static final&nbsp;java.lang.String NEO4J</pre>
-<dl>
-<dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="../../../../constant-values.html#io.micronaut.gradle.testresources.TestResourcesConfiguration.NEO4J">Constant Field Values</a></dd>
-</dl>
-</li>
-</ul>
-<a name="TESTCONTAINERS">
-<!--   -->
-</a>
-<ul class="blockListLast">
-<li class="blockList">
-<h4>TESTCONTAINERS</h4>
-<pre>static final&nbsp;java.lang.String TESTCONTAINERS</pre>
-<dl>
-<dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="../../../../constant-values.html#io.micronaut.gradle.testresources.TestResourcesConfiguration.TESTCONTAINERS">Constant Field Values</a></dd>
-</dl>
-</li>
-</ul>
-</li>
-</ul>
 <!-- ============ METHOD DETAIL ========== -->
 <ul class="blockList">
 <li class="blockList"><a name="method.detail">
@@ -600,13 +376,13 @@ var activeTableTab = "activeTableTab";
 <ul class="subNavList">
 <li>Summary:&nbsp;</li>
 <li>Nested&nbsp;|&nbsp;</li>
-<li><a href="#field.summary">Field</a>&nbsp;|&nbsp;</li>
+<li>Field&nbsp;|&nbsp;</li>
 <li>Constr&nbsp;|&nbsp;</li>
 <li><a href="#method.summary">Method</a></li>
 </ul>
 <ul class="subNavList">
 <li>Detail:&nbsp;</li>
-<li><a href="#field.detail">Field</a>&nbsp;|&nbsp;</li>
+<li>Field&nbsp;|&nbsp;</li>
 <li>Constr&nbsp;|&nbsp;</li>
 <li><a href="#method.detail">Method</a></li>
 </ul>

@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":9};
+var methods = {"i0":9,"i1":9,"i2":9};
 var tabs = {65535:["t0","All Methods"],1:["t1","Static Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -145,6 +145,14 @@ extends java.lang.Object</pre>
 <th class="colLast" scope="col">Method and Description</th>
 </tr>
 <tr id="i0" class="altColor">
+<td class="colFirst"><code>static <a href="../../../io/micronaut/gradle/MicronautExtension.html" title="class in io.micronaut.gradle">MicronautExtension</a></code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../io/micronaut/gradle/PluginsHelper.html#findMicronautExtension-org.gradle.api.Project-">findMicronautExtension</a></span>(org.gradle.api.Project&nbsp;project)</code>&nbsp;</td>
+</tr>
+<tr id="i1" class="rowColor">
+<td class="colFirst"><code>static org.gradle.api.provider.Provider&lt;java.lang.String&gt;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../io/micronaut/gradle/PluginsHelper.html#findMicronautVersionAsProvider-org.gradle.api.Project-">findMicronautVersionAsProvider</a></span>(org.gradle.api.Project&nbsp;p)</code>&nbsp;</td>
+</tr>
+<tr id="i2" class="altColor">
 <td class="colFirst"><code>static <a href="../../../io/micronaut/gradle/MicronautRuntime.html" title="enum in io.micronaut.gradle">MicronautRuntime</a></code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../io/micronaut/gradle/PluginsHelper.html#resolveRuntime-org.gradle.api.Project-">resolveRuntime</a></span>(org.gradle.api.Project&nbsp;p)</code>&nbsp;</td>
 </tr>
@@ -187,13 +195,31 @@ extends java.lang.Object</pre>
 <!--   -->
 </a>
 <h3>Method Detail</h3>
+<a name="findMicronautVersionAsProvider-org.gradle.api.Project-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>findMicronautVersionAsProvider</h4>
+<pre>public static&nbsp;org.gradle.api.provider.Provider&lt;java.lang.String&gt;&nbsp;findMicronautVersionAsProvider(org.gradle.api.Project&nbsp;p)</pre>
+</li>
+</ul>
 <a name="resolveRuntime-org.gradle.api.Project-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>resolveRuntime</h4>
+<pre>public static&nbsp;<a href="../../../io/micronaut/gradle/MicronautRuntime.html" title="enum in io.micronaut.gradle">MicronautRuntime</a>&nbsp;resolveRuntime(org.gradle.api.Project&nbsp;p)</pre>
+</li>
+</ul>
+<a name="findMicronautExtension-org.gradle.api.Project-">
 <!--   -->
 </a>
 <ul class="blockListLast">
 <li class="blockList">
-<h4>resolveRuntime</h4>
-<pre>public static&nbsp;<a href="../../../io/micronaut/gradle/MicronautRuntime.html" title="enum in io.micronaut.gradle">MicronautRuntime</a>&nbsp;resolveRuntime(org.gradle.api.Project&nbsp;p)</pre>
+<h4>findMicronautExtension</h4>
+<pre>public static&nbsp;<a href="../../../io/micronaut/gradle/MicronautExtension.html" title="class in io.micronaut.gradle">MicronautExtension</a>&nbsp;findMicronautExtension(org.gradle.api.Project&nbsp;project)</pre>
 </li>
 </ul>
 </li>
