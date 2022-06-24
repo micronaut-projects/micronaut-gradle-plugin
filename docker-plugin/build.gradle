@@ -10,7 +10,7 @@ micronautPlugins {
 
 dependencies {
     api project(":micronaut-minimal-plugin")
-    implementation libs.dockerPlug
+    api libs.dockerPlug
 
     compileOnly libs.graalvmPlugin
 
