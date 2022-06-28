@@ -1,0 +1,23 @@
+plugins {
+    id("io.micronaut.minimal.application")
+    id("io.micronaut.test-resources")
+}
+
+version = "0.1"
+group = "demo"
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    annotationProcessor("io.micronaut:micronaut-http-validation")
+}
+
+micronaut {
+    testRuntime("junit5")
+    processing {
+        incremental(true)
+        annotations("demo.*")
+    }
+}
