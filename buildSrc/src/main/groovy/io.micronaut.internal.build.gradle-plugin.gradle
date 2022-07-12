@@ -16,7 +16,7 @@ repositories {
     gradlePluginPortal()
 }
 
-project.extensions.create("micronautPlugins", MicronautPluginExtension, pluginBundle, gradlePlugin)
+project.extensions.create("micronautPlugins", MicronautPluginExtension, gradlePlugin)
 
 configurations {
     security {
