@@ -15,7 +15,6 @@
  */
 package io.micronaut.internal.build.plugin;
 
-import com.gradle.publish.PluginBundleExtension;
 import org.codehaus.groovy.runtime.StringGroovyMethods;
 import org.gradle.plugin.devel.GradlePluginDevelopmentExtension;
 
@@ -23,12 +22,10 @@ import javax.inject.Inject;
 
 public abstract class MicronautPluginExtension {
 
-    private final PluginBundleExtension pluginBundle;
     private final GradlePluginDevelopmentExtension gradlePlugin;
 
     @Inject
-    public MicronautPluginExtension(PluginBundleExtension pluginBundle, GradlePluginDevelopmentExtension gradlePlugin) {
-        this.pluginBundle = pluginBundle;
+    public MicronautPluginExtension(GradlePluginDevelopmentExtension gradlePlugin) {
         this.gradlePlugin = gradlePlugin;
     }
 
@@ -45,7 +42,5 @@ public abstract class MicronautPluginExtension {
             decl.setDescription(description);
             decl.setDisplayName(description);
         });
-
-        pluginBundle.getPlugins().named(prettyName, pluginConfig -> pluginConfig.setDisplayName(description));
     }
 }
