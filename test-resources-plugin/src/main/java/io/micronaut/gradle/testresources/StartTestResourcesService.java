@@ -234,7 +234,6 @@ public abstract class StartTestResourcesService extends DefaultTask {
                                 }
                             }
                             getExecOperations().javaexec(spec -> {
-                                spec.getMainClass().set(processParameters.getMainClass());
                                 configureJavaExec(processParameters, spec);
                                 if (cdsEnabled) {
                                     spec.setWorkingDir(cdsDir);
@@ -262,6 +261,7 @@ public abstract class StartTestResourcesService extends DefaultTask {
     }
 
     private void configureJavaExec(ServerUtils.ProcessParameters processParameters, JavaExecSpec spec) {
+        spec.getMainClass().set(processParameters.getMainClass());
         spec.setClasspath(getObjects().fileCollection().from(processParameters.getClasspath().stream().filter(File::isFile).collect(Collectors.toList())));
         spec.getJvmArgs().addAll(processParameters.getJvmArguments());
         processParameters.getSystemProperties().forEach(spec::systemProperty);
