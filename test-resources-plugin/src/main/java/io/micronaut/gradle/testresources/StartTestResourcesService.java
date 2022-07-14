@@ -211,9 +211,9 @@ public abstract class StartTestResourcesService extends DefaultTask {
                                 if (cdsEnabled) {
                                     spec.setWorkingDir(cdsDir);
                                     if (cdsFile.exists()) {
-                                        spec.jvmArgs("-Xshare:on", "-XX:SharedArchiveFile=" + CDS_FILE);
+                                        spec.jvmArgs("-Xlog:cds", "-Xshare:on", "-XX:SharedArchiveFile=" + CDS_FILE);
                                     } else {
-                                        spec.jvmArgs("-XX:ArchiveClassesAtExit=" + CDS_FILE);
+                                        spec.jvmArgs("-Xlog:cds", "-XX:ArchiveClassesAtExit=" + CDS_FILE);
                                     }
                                 }
                                 spec.setClasspath(getObjects().fileCollection().from(processParameters.getClasspath().stream().filter(File::isFile).collect(Collectors.toList())));
