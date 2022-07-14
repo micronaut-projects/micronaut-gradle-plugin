@@ -228,7 +228,7 @@ public abstract class StartTestResourcesService extends DefaultTask {
                                 getExecOperations().javaexec(spec -> {
                                     spec.setWorkingDir(cdsDir);
                                     configureJavaExec(processParameters, spec);
-                                    spec.jvmArgs("-Xlog:cds",
+                                    spec.jvmArgs(
                                             "-Xshare:dump",
                                             "-XX:SharedClassListFile=" + CDS_CLASS_LST,
                                             "-XX:SharedArchiveFile=" + CDS_FILE);
@@ -240,9 +240,9 @@ public abstract class StartTestResourcesService extends DefaultTask {
                                 if (cdsEnabled) {
                                     spec.setWorkingDir(cdsDir);
                                     if (!cdsClassList.exists()) {
-                                        spec.jvmArgs("-Xlog:cds", "-Xshare:off", "-XX:DumpLoadedClassList=" + CDS_CLASS_LST);
+                                        spec.jvmArgs("-Xshare:off", "-XX:DumpLoadedClassList=" + CDS_CLASS_LST);
                                     } else {
-                                        spec.jvmArgs("-Xlog:cds", "-XX:SharedArchiveFile=" + CDS_FILE);
+                                        spec.jvmArgs("-XX:SharedArchiveFile=" + CDS_FILE);
                                     }
                                 }
 
