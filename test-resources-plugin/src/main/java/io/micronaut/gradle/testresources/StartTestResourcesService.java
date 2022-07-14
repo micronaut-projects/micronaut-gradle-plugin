@@ -206,14 +206,17 @@ public abstract class StartTestResourcesService extends DefaultTask {
                             }
                             boolean cdsEnabled = Boolean.TRUE.equals(useCDS);
                             File cdsFile = getClassDataSharingDir().file(CDS_FILE).get().getAsFile();
+                            File cdsClassList = getClassDataSharingDir().file(CDS_CLASS_LST).get().getAsFile();
                             getExecOperations().javaexec(spec -> {
                                 spec.getMainClass().set(processParameters.getMainClass());
                                 if (cdsEnabled) {
                                     spec.setWorkingDir(cdsDir);
-                                    if (cdsFile.exists()) {
-                                        spec.jvmArgs("-Xlog:cds", "-Xshare:on", "-XX:SharedArchiveFile=" + CDS_FILE);
+                                    if (!cdsClassList.exists()) {
+                                        spec.jvmArgs("-Xlog:cds", "-Xshare:off", "-XX:DumpLoadedClassList=" + CDS_CLASS_LST);
+                                    } else if (!cdsFile.exists()) {
+                                        spec.jvmArgs("-Xlog:cds", "-Xshare:dump", "-XX:SharedClassListFile=" + CDS_CLASS_LST, "-XX:SharedArchiveFile=" + CDS_FILE);
                                     } else {
-                                        spec.jvmArgs("-Xlog:cds", "-XX:ArchiveClassesAtExit=" + CDS_FILE);
+                                        spec.jvmArgs("-Xlog:cds", "-XX:SharedArchiveFile=" + CDS_FILE);
                                     }
                                 }
                                 spec.setClasspath(getObjects().fileCollection().from(processParameters.getClasspath().stream().filter(File::isFile).collect(Collectors.toList())));
