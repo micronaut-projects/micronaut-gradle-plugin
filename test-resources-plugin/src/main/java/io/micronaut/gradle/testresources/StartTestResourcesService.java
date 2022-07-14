@@ -34,15 +34,20 @@ import org.gradle.api.tasks.OutputDirectory;
 import org.gradle.api.tasks.TaskAction;
 import org.gradle.api.tasks.options.Option;
 import org.gradle.process.ExecOperations;
+import org.gradle.process.JavaExecSpec;
 
 import javax.inject.Inject;
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
 import java.util.stream.Collectors;
 
 /**
@@ -207,8 +212,30 @@ public abstract class StartTestResourcesService extends DefaultTask {
                             boolean cdsEnabled = Boolean.TRUE.equals(useCDS);
                             File cdsFile = getClassDataSharingDir().file(CDS_FILE).get().getAsFile();
                             File cdsClassList = getClassDataSharingDir().file(CDS_CLASS_LST).get().getAsFile();
+                            if (cdsClassList.exists() && !cdsFile.exists()) {
+                                getExecOperations().javaexec(spec -> {
+                                    spec.setWorkingDir(cdsDir);
+                                    configureJavaExec(processParameters, spec);
+                                    spec.jvmArgs("-Xlog:cds",
+                                            "-Xshare:dump",
+                                            "-XX:SharedClassListFile=" + CDS_CLASS_LST,
+                                            "-XX:SharedArchiveFile=" + CDS_FILE);
+                                });
+
+                                if (cdsClassList.exists()) {
+                                    try {
+                                        Path cdsListPath = cdsClassList.toPath();
+                                        List<String> fileContent = new ArrayList<>(Files.readAllLines(cdsListPath, StandardCharsets.UTF_8));
+                                        fileContent.removeIf(content -> content.contains("SingleThreadedBufferingProcessor"));
+                                        Files.write(cdsListPath, fileContent, StandardCharsets.UTF_8);
+                                    } catch (IOException e) {
+                                        // ignore
+                                    }
+                                }
+                            }
                             getExecOperations().javaexec(spec -> {
                                 spec.getMainClass().set(processParameters.getMainClass());
+                                configureJavaExec(processParameters, spec);
                                 if (cdsEnabled) {
                                     spec.setWorkingDir(cdsDir);
                                     if (!cdsClassList.exists()) {
@@ -219,10 +246,7 @@ public abstract class StartTestResourcesService extends DefaultTask {
                                         spec.jvmArgs("-Xlog:cds", "-XX:SharedArchiveFile=" + CDS_FILE);
                                     }
                                 }
-                                spec.setClasspath(getObjects().fileCollection().from(processParameters.getClasspath().stream().filter(File::isFile).collect(Collectors.toList())));
-                                spec.getJvmArgs().addAll(processParameters.getJvmArguments());
-                                processParameters.getSystemProperties().forEach(spec::systemProperty);
-                                processParameters.getArguments().forEach(spec::args);
+
                             });
                         } catch (GradleException e) {
                             getLogger().info("Test server stopped");
@@ -235,6 +259,13 @@ public abstract class StartTestResourcesService extends DefaultTask {
                     }
                 }
         );
+    }
+
+    private void configureJavaExec(ServerUtils.ProcessParameters processParameters, JavaExecSpec spec) {
+        spec.setClasspath(getObjects().fileCollection().from(processParameters.getClasspath().stream().filter(File::isFile).collect(Collectors.toList())));
+        spec.getJvmArgs().addAll(processParameters.getJvmArguments());
+        processParameters.getSystemProperties().forEach(spec::systemProperty);
+        processParameters.getArguments().forEach(spec::args);
     }
 
 }
