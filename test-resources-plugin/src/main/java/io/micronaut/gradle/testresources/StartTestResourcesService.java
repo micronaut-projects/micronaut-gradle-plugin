@@ -229,7 +229,8 @@ public abstract class StartTestResourcesService extends DefaultTask {
                                         fileContent.removeIf(content ->
                                                 content.contains("SingleThreadedBufferingProcessor") ||
                                                 content.contains("HandlerPublisher") ||
-                                                content.contains("SingleThreadedBufferingSubscriber"));
+                                                content.contains("SingleThreadedBufferingSubscriber") ||
+                                                content.contains("jdk/proxy"));
                                         Files.write(cdsListPath, fileContent, StandardCharsets.UTF_8);
                                     } catch (IOException e) {
                                         // ignore
@@ -242,8 +243,6 @@ public abstract class StartTestResourcesService extends DefaultTask {
                                     spec.setWorkingDir(cdsDir);
                                     if (!cdsClassList.exists()) {
                                         spec.jvmArgs("-Xlog:cds", "-Xshare:off", "-XX:DumpLoadedClassList=" + CDS_CLASS_LST);
-                                    } else if (!cdsFile.exists()) {
-                                        spec.jvmArgs("-Xlog:cds", "-Xshare:dump", "-XX:SharedClassListFile=" + CDS_CLASS_LST, "-XX:SharedArchiveFile=" + CDS_FILE);
                                     } else {
                                         spec.jvmArgs("-Xlog:cds", "-XX:SharedArchiveFile=" + CDS_FILE);
                                     }
