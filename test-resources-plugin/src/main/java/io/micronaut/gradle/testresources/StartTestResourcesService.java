@@ -226,7 +226,10 @@ public abstract class StartTestResourcesService extends DefaultTask {
                                     try {
                                         Path cdsListPath = cdsClassList.toPath();
                                         List<String> fileContent = new ArrayList<>(Files.readAllLines(cdsListPath, StandardCharsets.UTF_8));
-                                        fileContent.removeIf(content -> content.contains("SingleThreadedBufferingProcessor") || content.contains("HandlerPublisher"));
+                                        fileContent.removeIf(content ->
+                                                content.contains("SingleThreadedBufferingProcessor") ||
+                                                content.contains("HandlerPublisher") ||
+                                                content.contains("SingleThreadedBufferingSubscriber"));
                                         Files.write(cdsListPath, fileContent, StandardCharsets.UTF_8);
                                     } catch (IOException e) {
                                         // ignore
