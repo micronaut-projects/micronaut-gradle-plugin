@@ -218,8 +218,11 @@ public abstract class StartTestResourcesService extends DefaultTask {
                                     List<String> fileContent = new ArrayList<>(Files.readAllLines(cdsListPath, StandardCharsets.UTF_8));
                                     fileContent.removeIf(content ->
                                             content.contains("SingleThreadedBufferingProcessor") ||
-                                                    content.contains("HandlerPublisher") ||
-                                                    content.contains("SingleThreadedBufferingSubscriber") ||
+//                                                    content.contains("HandlerPublisher") ||
+//                                                    content.contains("SingleThreadedBufferingSubscriber") ||
+                                                    content.contains("org/testcontainers") ||
+                                                    content.contains("org/graalvm") ||
+                                                    content.contains("io/netty/handler") ||
                                                     content.contains("jdk/proxy"));
                                     Files.write(cdsListPath, fileContent, StandardCharsets.UTF_8);
                                 } catch (IOException e) {
