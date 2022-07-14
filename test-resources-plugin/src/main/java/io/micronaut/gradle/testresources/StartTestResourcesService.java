@@ -213,6 +213,18 @@ public abstract class StartTestResourcesService extends DefaultTask {
                             File cdsFile = getClassDataSharingDir().file(CDS_FILE).get().getAsFile();
                             File cdsClassList = getClassDataSharingDir().file(CDS_CLASS_LST).get().getAsFile();
                             if (cdsClassList.exists() && !cdsFile.exists()) {
+                                try {
+                                    Path cdsListPath = cdsClassList.toPath();
+                                    List<String> fileContent = new ArrayList<>(Files.readAllLines(cdsListPath, StandardCharsets.UTF_8));
+                                    fileContent.removeIf(content ->
+                                            content.contains("SingleThreadedBufferingProcessor") ||
+                                                    content.contains("HandlerPublisher") ||
+                                                    content.contains("SingleThreadedBufferingSubscriber") ||
+                                                    content.contains("jdk/proxy"));
+                                    Files.write(cdsListPath, fileContent, StandardCharsets.UTF_8);
+                                } catch (IOException e) {
+                                    // ignore
+                                }
                                 getExecOperations().javaexec(spec -> {
                                     spec.setWorkingDir(cdsDir);
                                     configureJavaExec(processParameters, spec);
@@ -222,20 +234,6 @@ public abstract class StartTestResourcesService extends DefaultTask {
                                             "-XX:SharedArchiveFile=" + CDS_FILE);
                                 });
 
-                                if (cdsClassList.exists()) {
-                                    try {
-                                        Path cdsListPath = cdsClassList.toPath();
-                                        List<String> fileContent = new ArrayList<>(Files.readAllLines(cdsListPath, StandardCharsets.UTF_8));
-                                        fileContent.removeIf(content ->
-                                                content.contains("SingleThreadedBufferingProcessor") ||
-                                                content.contains("HandlerPublisher") ||
-                                                content.contains("SingleThreadedBufferingSubscriber") ||
-                                                content.contains("jdk/proxy"));
-                                        Files.write(cdsListPath, fileContent, StandardCharsets.UTF_8);
-                                    } catch (IOException e) {
-                                        // ignore
-                                    }
-                                }
                             }
                             getExecOperations().javaexec(spec -> {
                                 configureJavaExec(processParameters, spec);
