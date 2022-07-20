@@ -1203,6 +1203,27 @@ A test resources request is, to simplify, a request to resolve a _missing config
 For example, if the `kafka.bootstrap-servers` property isn't set, Micronaut will query the test resources service for the value of this property.
 This will trigger the creaton of a a Kafka test container, and the service will answer with the URI to the bootstrap server.
 
+[NOTE]
+====
+The test resources service makes use of https://docs.oracle.com/en/java/javase/17/vm/class-data-sharing.html[Class Data Sharing] on Java 17+ in order to make startup faster.
+In general, this shouldn't be a problem but there may be cases where the test resources service fails to load because of a https://bugs.openjdk.org/browse/JDK-8290417[bug in the JDK].
+Should this happen to you, you can disable class data sharing explicitly using this configuration:
+
+[source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
+----
+tasks.withType(StartTestResourcesService).configureEach {
+    useClassDataSharing = false
+}
+----
+
+[source, kotlin, subs="verbatim,attributes", role="multi-language-sample"]
+----
+tasks.withType<StartTestResourcesService>().configureEach {
+    useClassDataSharing.set(false)
+}
+----
+====
+
 === The test resources plugin
 
 The easiest way to add test resources support is to apply the `io.micronaut.test-resources` plugin:

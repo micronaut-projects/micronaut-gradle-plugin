@@ -33,14 +33,17 @@ import org.gradle.api.tasks.OutputDirectory;
 import org.gradle.api.tasks.TaskAction;
 import org.gradle.api.tasks.options.Option;
 import org.gradle.process.ExecOperations;
+import org.gradle.work.Incremental;
 
 import javax.inject.Inject;
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.time.Duration;
 import java.util.Collections;
+import java.util.List;
 
 /**
  * A task responsible for starting a test resources server.
@@ -58,6 +61,7 @@ public abstract class StartTestResourcesService extends DefaultTask {
      */
     @InputFiles
     @Classpath
+    @Incremental
     abstract ConfigurableFileCollection getClasspath();
 
     /**
@@ -145,6 +149,12 @@ public abstract class StartTestResourcesService extends DefaultTask {
     @Internal
     abstract Property<Boolean> getStandalone();
 
+    @Internal
+    abstract Property<Boolean> getUseClassDataSharing();
+
+    @Internal
+    abstract DirectoryProperty getClassDataSharingDir();
+
     @Inject
     protected abstract ExecOperations getExecOperations();
 
@@ -159,51 +169,57 @@ public abstract class StartTestResourcesService extends DefaultTask {
 
     @TaskAction
     public void startService() throws IOException {
+        Path cdsDir = null;
+        if (getUseClassDataSharing().get()) {
+            cdsDir = getClassDataSharingDir().get().getAsFile().toPath();
+        }
+        ServerFactory serverFactory = new ServerFactory() {
+            @Override
+            public void startServer(ServerUtils.ProcessParameters processParameters) throws IOException {
+                Path stopFilePath = getStopFile().getAsFile().get().toPath();
+                if (!Files.exists(stopFilePath)) {
+                    if (Boolean.TRUE.equals(getStandalone().get())) {
+                        getLogger().lifecycle("Test resources server started in standalone mode. You can stop it by running the " + MicronautTestResourcesPlugin.STOP_TEST_RESOURCES_SERVICE + " task.");
+                    }
+                    String stop = getStandalone().map(v -> String.valueOf(!v)).get();
+                    Files.write(stopFilePath, Collections.singletonList(stop), StandardOpenOption.CREATE);
+                }
+                if (Boolean.TRUE.equals(getForeground().get()) || processParameters.isCDSDumpInvocation()) {
+                    startService(processParameters);
+                } else {
+                    new Thread(() -> startService(processParameters)).start();
+                }
+            }
+
+            private void startService(ServerUtils.ProcessParameters processParameters) {
+                try {
+                    getExecOperations().javaexec(spec -> {
+                        spec.getMainClass().set(processParameters.getMainClass());
+                        List<File> classpath = processParameters.getClasspath();
+                        spec.setClasspath(getObjects().fileCollection().from(classpath));
+                        spec.setJvmArgs(processParameters.getJvmArguments());
+                        processParameters.getSystemProperties().forEach(spec::systemProperty);
+                        processParameters.getArguments().forEach(spec::args);
+                    });
+                } catch (GradleException e) {
+                    getLogger().info("Test server stopped");
+                }
+            }
+
+            @Override
+            public void waitFor(Duration duration) throws InterruptedException {
+                Thread.sleep(duration.toMillis());
+            }
+        };
         ServerUtils.startOrConnectToExistingServer(
                 getExplicitPort().getOrNull(),
                 getPortFile().map(f -> f.getAsFile().toPath()).getOrNull(),
                 getSettingsDirectory().get().getAsFile().toPath(),
                 getAccessToken().getOrNull(),
+                cdsDir,
                 getClasspath().getFiles(),
                 getClientTimeout().getOrNull(),
-                new ServerFactory() {
-                    @Override
-                    public void startServer(ServerUtils.ProcessParameters processParameters) throws IOException {
-                        Path stopFilePath = getStopFile().getAsFile().get().toPath();
-                        if (!Files.exists(stopFilePath)) {
-                            if (Boolean.TRUE.equals(getStandalone().get())) {
-                                getLogger().lifecycle("Test resources server started in standalone mode. You can stop it by running the " + MicronautTestResourcesPlugin.STOP_TEST_RESOURCES_SERVICE + " task.");
-                            }
-                            String stop = getStandalone().map(v -> String.valueOf(!v)).get();
-                            Files.write(stopFilePath, Collections.singletonList(stop), StandardOpenOption.CREATE);
-                        }
-                        if (Boolean.TRUE.equals(getForeground().get())) {
-                            startService(processParameters);
-                        } else {
-                            new Thread(() -> startService(processParameters)).start();
-                        }
-                    }
-
-                    private void startService(ServerUtils.ProcessParameters processParameters) {
-                        try {
-                            getExecOperations().javaexec(spec -> {
-                                spec.getMainClass().set(processParameters.getMainClass());
-                                spec.setClasspath(getObjects().fileCollection().from(processParameters.getClasspath()));
-                                spec.getJvmArgs().addAll(processParameters.getJvmArguments());
-                                processParameters.getSystemProperties().forEach(spec::systemProperty);
-                                processParameters.getArguments().forEach(spec::args);
-                            });
-                        } catch (GradleException e) {
-                            getLogger().info("Test server stopped");
-                        }
-                    }
-
-                    @Override
-                    public void waitFor(Duration duration) throws InterruptedException {
-                        Thread.sleep(duration.toMillis());
-                    }
-                }
-        );
+                serverFactory);
     }
 
 }
