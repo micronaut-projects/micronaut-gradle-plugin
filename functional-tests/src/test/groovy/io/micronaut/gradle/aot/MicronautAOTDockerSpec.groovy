@@ -82,7 +82,7 @@ COPY layers/resources /home/app/resources
 COPY layers/application.jar /home/app/application.jar
 RUN mkdir /home/app/config-dirs
 COPY config-dirs/generateResourcesConfigFile /home/app/config-dirs/generateResourcesConfigFile
-RUN native-image -cp /home/app/libs/*.jar:/home/app/resources:/home/app/application.jar --no-fallback -H:Name=application -H:ConfigurationFileDirectories=/home/app/config-dirs/generateResourcesConfigFile -H:Class=demo.app.Application
+RUN native-image -cp /home/app/libs/*.jar:/home/app/resources:/home/app/application.jar --no-fallback -H:Name=application -J--add-exports=org.graalvm.nativeimage.builder/com.oracle.svm.core.jdk=ALL-UNNAMED -H:ConfigurationFileDirectories=/home/app/config-dirs/generateResourcesConfigFile -H:Class=demo.app.Application
 FROM frolvlad/alpine-glibc:alpine-3.12
 RUN apk update && apk add libstdc++
 COPY --from=graalvm /home/app/application /app/application

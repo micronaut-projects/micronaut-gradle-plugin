@@ -64,6 +64,7 @@ public class MicronautGraalPlugin implements Plugin<Project> {
                         inf.getIgnoreExistingResourcesConfigFile().convention(true);
                         inf.getRestrictToProjectDependencies().convention(true);
                     }));
+                    options.jvmArgs("--add-exports=org.graalvm.nativeimage.builder/com.oracle.svm.core.jdk=ALL-UNNAMED");
                     Provider<String> richOutput = project.getProviders().systemProperty(RICH_OUTPUT_PROPERTY);
                     if (richOutput.isPresent()) {
                         options.getRichOutput().convention(richOutput.map(Boolean::parseBoolean));
