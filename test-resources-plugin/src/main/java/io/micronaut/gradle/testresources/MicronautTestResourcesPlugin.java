@@ -13,6 +13,7 @@ import io.micronaut.testresources.buildtools.ServerUtils;
 import io.micronaut.testresources.buildtools.TestResourcesClasspath;
 import io.micronaut.testresources.buildtools.VersionInfo;
 import org.gradle.api.GradleException;
+import org.gradle.api.JavaVersion;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
@@ -63,7 +64,7 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
     public static final String START_TEST_RESOURCES_SERVICE_INTERNAL = "internalStartTestResourcesService";
     public static final String STOP_TEST_RESOURCES_SERVICE = "stopTestResourcesService";
     public static final String GROUP = "Micronaut Test Resources";
-    public static final String TESTRESOURCES_CONFIGURATION = "testresources";
+    public static final String TESTRESOURCES_CONFIGURATION = "testResourcesService";
     public static final String TESTRESOURCES_ELEMENTS_CONFIGURATION = "testresourcesSettingsElements";
     public static final String MICRONAUT_TEST_RESOURCES_USAGE = "micronaut.test.resources";
 
@@ -114,14 +115,15 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
         server.getDependencies().addAllLater(buildTestResourcesDependencyList(project, dependencies, config, testResourcesSourceSet));
         String accessToken = UUID.randomUUID().toString();
         Provider<String> accessTokenProvider = providers.provider(() -> accessToken);
+        DirectoryProperty buildDirectory = project.getLayout().getBuildDirectory();
         Provider<Directory> settingsDirectory = config.getSharedServer().flatMap(shared -> {
             DirectoryProperty directoryProperty = project.getObjects().directoryProperty();
             if (Boolean.TRUE.equals(shared)) {
                 directoryProperty.set(ServerUtils.getDefaultSharedSettingsPath().toFile());
             }
             return directoryProperty;
-        }).orElse(project.getLayout().getBuildDirectory().dir("test-resources-settings"));
-        Provider<RegularFile> portFile = project.getLayout().getBuildDirectory().file("test-resources-port.txt");
+        }).orElse(buildDirectory.dir("test-resources-settings"));
+        Provider<RegularFile> portFile = buildDirectory.file("test-resources-port.txt");
         Path stopAtEndFile = createStopFile(project);
         TaskContainer tasks = project.getTasks();
         Provider<Boolean> isStandalone = config.getSharedServer().zip(providers.provider(() -> {
@@ -132,7 +134,8 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
                     .anyMatch(task -> task.getProject().equals(project) && task.getName().equals(START_TEST_RESOURCES_SERVICE));
             return singleTask && onlyStartTask;
         }), (shared, singleTask) -> shared || singleTask);
-        TaskProvider<StartTestResourcesService> internalStart = createStartServiceTask(server, config, settingsDirectory, accessTokenProvider, tasks, portFile, stopAtEndFile, isStandalone);
+        Provider<Directory> cdsDir = buildDirectory.dir("test-resources/cds");
+        TaskProvider<StartTestResourcesService> internalStart = createStartServiceTask(server, config, settingsDirectory, accessTokenProvider, tasks, portFile, stopAtEndFile, isStandalone, cdsDir);
         tasks.register(START_TEST_RESOURCES_SERVICE, task -> {
             task.dependsOn(internalStart);
             task.setOnlyIf(t -> config.getEnabled().get());
@@ -204,7 +207,7 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
                                                                            TaskContainer tasks,
                                                                            Provider<RegularFile> portFile,
                                                                            Path stopFile,
-                                                                           Provider<Boolean> isStandalone) {
+                                                                           Provider<Boolean> isStandalone, Provider<Directory> cdsDir) {
         return tasks.register(START_TEST_RESOURCES_SERVICE_INTERNAL, StartTestResourcesService.class, task -> {
             task.setOnlyIf(t -> config.getEnabled().get());
             task.getPortFile().convention(portFile);
@@ -216,6 +219,8 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
             task.getForeground().convention(false);
             task.getStopFile().set(stopFile.toFile());
             task.getStandalone().set(isStandalone);
+            task.getClassDataSharingDir().convention(cdsDir);
+            task.getUseClassDataSharing().convention(JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_17));
         });
     }
 
@@ -321,7 +326,14 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
     }
 
     private static Configuration createTestResourcesServerConfiguration(Project project) {
+        // Legacy configuration was only used in 3.5.0 so it's relatively safe
+        Configuration legacyConf = project.getConfigurations().create("testresources", conf -> {
+            conf.setCanBeConsumed(false);
+            conf.setCanBeResolved(false);
+            conf.setDescription("[deprecated] Please use " + MicronautTestResourcesPlugin.TESTRESOURCES_CONFIGURATION + " instead.");
+        });
         return project.getConfigurations().create(TESTRESOURCES_CONFIGURATION, conf -> {
+            conf.extendsFrom(legacyConf);
             conf.setDescription("Dependencies for the Micronaut test resources service");
             conf.setCanBeConsumed(false);
             conf.setCanBeResolved(true);

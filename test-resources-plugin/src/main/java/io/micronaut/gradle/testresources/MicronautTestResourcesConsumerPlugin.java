@@ -44,7 +44,14 @@ public class MicronautTestResourcesConsumerPlugin implements Plugin<Project> {
     }
 
     private Configuration createTestResourcesExtension(Project project) {
+        // Legacy configuration was only used in 3.5.0 so it's relatively safe
+        Configuration legacyConf = project.getConfigurations().create("testresources", conf -> {
+            conf.setCanBeConsumed(false);
+            conf.setCanBeResolved(false);
+            conf.setDescription("[deprecated] Please use " + MicronautTestResourcesPlugin.TESTRESOURCES_CONFIGURATION + " instead.");
+        });
         return project.getConfigurations().create(MicronautTestResourcesPlugin.TESTRESOURCES_CONFIGURATION, conf -> {
+            conf.extendsFrom(legacyConf);
             conf.setCanBeConsumed(false);
             conf.setCanBeResolved(false);
             conf.setDescription("Used to declare projects which provide test resources");

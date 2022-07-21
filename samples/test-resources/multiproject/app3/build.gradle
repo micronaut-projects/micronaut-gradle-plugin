@@ -13,7 +13,7 @@ repositories {
 dependencies {
     annotationProcessor("io.micronaut:micronaut-http-validation")
 
-    testresources(project(":testresources"))
+    testResourcesService(project(":testresources"))
 }
 
 micronaut {

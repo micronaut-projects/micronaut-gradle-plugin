@@ -20,6 +20,6 @@ micronaut {
 }
 
 dependencies {
-    testresources 'mysql:mysql-connector-java'
-    testresources 'org.postgresql:postgresql'
+    testResourcesService 'mysql:mysql-connector-java'
+    testResourcesService 'org.postgresql:postgresql'
 }

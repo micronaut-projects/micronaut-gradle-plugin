@@ -27,6 +27,7 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -43,6 +44,10 @@ public class MicronautGraalPlugin implements Plugin<Project> {
     public static final String RICH_OUTPUT_PROPERTY = "io.micronaut.graalvm.rich.output";
 
     private static final Set<String> SOURCE_SETS = Collections.unmodifiableSet(new HashSet<>(Arrays.asList("main", "test")));
+    private static final List<String> GRAALVM_MODULE_EXPORTS = Collections.unmodifiableList(Arrays.asList(
+            "com.oracle.svm.core.jdk",
+            "com.oracle.svm.core.configure"
+    ));
 
     @Override
     public void apply(Project project) {
@@ -64,7 +69,7 @@ public class MicronautGraalPlugin implements Plugin<Project> {
                         inf.getIgnoreExistingResourcesConfigFile().convention(true);
                         inf.getRestrictToProjectDependencies().convention(true);
                     }));
-                    options.jvmArgs("--add-exports=org.graalvm.nativeimage.builder/com.oracle.svm.core.jdk=ALL-UNNAMED");
+                    options.jvmArgs(getGraalVMBuilderExports());
                     Provider<String> richOutput = project.getProviders().systemProperty(RICH_OUTPUT_PROPERTY);
                     if (richOutput.isPresent()) {
                         options.getRichOutput().convention(richOutput.map(Boolean::parseBoolean));
@@ -174,5 +179,11 @@ public class MicronautGraalPlugin implements Plugin<Project> {
                     "io.micronaut:micronaut-graal"
             );
         }
+    }
+
+    public static List<String> getGraalVMBuilderExports() {
+        return GRAALVM_MODULE_EXPORTS.stream()
+                .map(module -> "--add-exports=org.graalvm.nativeimage.builder/" + module + "=ALL-UNNAMED")
+                .collect(Collectors.toList());
     }
 }
