@@ -572,8 +572,8 @@ For example you can add options to the main image by doing:
 graalvmNative {
     binaries {
         main {
-            buildArgs << "-H:-DeleteLocalSymbols"
-            buildArgs << "-H:+PreserveFramePointer"
+            buildArgs.add("-H:-DeleteLocalSymbols")
+            buildArgs.add("-H:+PreserveFramePointer")
         }
     }
 }
