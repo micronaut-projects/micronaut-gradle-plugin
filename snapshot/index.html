@@ -1672,6 +1672,36 @@ A test resources request is, to simplify, a request to resolve a <em>missing con
 For example, if the <code>kafka.bootstrap-servers</code> property isn&#8217;t set, Micronaut will query the test resources service for the value of this property.
 This will trigger the creaton of a a Kafka test container, and the service will answer with the URI to the bootstrap server.</p>
 </div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Note</div>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>The test resources service makes use of <a href="https://docs.oracle.com/en/java/javase/17/vm/class-data-sharing.html">Class Data Sharing</a> on Java 17+ in order to make startup faster.
+In general, this shouldn&#8217;t be a problem but there may be cases where the test resources service fails to load because of a <a href="https://bugs.openjdk.org/browse/JDK-8290417">bug in the JDK</a>.
+Should this happen to you, you can disable class data sharing explicitly using this configuration:</p>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">tasks.withType(StartTestResourcesService).configureEach {
+    useClassDataSharing = false
+}</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">tasks.withType&lt;StartTestResourcesService&gt;().configureEach {
+    useClassDataSharing.set(false)
+}</code></pre>
+</div>
+</div>
+</td>
+</tr>
+</table>
+</div>
 <div class="sect2">
 <h3 id="_the_test_resources_plugin"><a class="anchor" href="#_the_test_resources_plugin"></a>8.1. The test resources plugin</h3>
 <div class="paragraph">
@@ -1781,13 +1811,13 @@ This will let Gradle automatically start containers, for example, when a particu
 </td>
 <td class="content">
 <div class="paragraph">
-<p>The <code>additionalModules</code> property can be used to declare <a href="https://micronaut-projects.github.io/micronaut-test-resources/latest/guide">Micronaut Test Resources</a> modules. However, it might be necessary to add more libraries on the test resources classpath. For example, you may need to add additional JDBC drivers. For this, you can use the <code>testresources</code> configuration:</p>
+<p>The <code>additionalModules</code> property can be used to declare <a href="https://micronaut-projects.github.io/micronaut-test-resources/latest/guide">Micronaut Test Resources</a> modules. However, it might be necessary to add more libraries on the test resources classpath. For example, you may need to add additional JDBC drivers. For this, you can use the <code>testResourcesService</code> configuration:</p>
 </div>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">dependencies {
     // declare an additional dependency on test resources classpath
-    testresources "my:jdbc-driver:1.0"
+    testResourcesService "my:jdbc-driver:1.0"
 }</code></pre>
 </div>
 </div>
@@ -1894,7 +1924,7 @@ micronaut {
 }
 
 dependencies {
-    testresources project(':shared-testresources')           // <b class="conum">(2)</b>
+    testResourcesService project(':shared-testresources')           // <b class="conum">(2)</b>
 }</code></pre>
 </div>
 </div>
