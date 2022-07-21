@@ -58,7 +58,7 @@ class ApplicationTestResourcesPluginSpec extends AbstractGradleBuildSpec {
             additionalModules.addAll(JDBC_MYSQL, KAFKA)
         """
         withDependencies """
-            testresources "mysql:mysql-connector-java"
+            testResourcesService "mysql:mysql-connector-java"
         """
 
         when:

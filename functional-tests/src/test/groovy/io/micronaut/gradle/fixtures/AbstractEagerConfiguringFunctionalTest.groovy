@@ -7,4 +7,12 @@ class AbstractEagerConfiguringFunctionalTest extends AbstractFunctionalTest {
     BuildResult build(String... args) {
         return super.build("tasks", *args)
     }
+
+
+    String getGraalVMBuilderExports() {
+        ["com.oracle.svm.core.jdk",
+         "com.oracle.svm.core.configure"].collect {
+            "-J--add-exports=org.graalvm.nativeimage.builder/$it=ALL-UNNAMED"
+        }.join(" ")
+    }
 }
