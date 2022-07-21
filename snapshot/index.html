@@ -849,8 +849,8 @@ org.gradle.java.installations.fromEnv=JAVA_HOME</code></pre>
 <pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">graalvmNative {
     binaries {
         main {
-            buildArgs &lt;&lt; "-H:-DeleteLocalSymbols"
-            buildArgs &lt;&lt; "-H:+PreserveFramePointer"
+            buildArgs.add("-H:-DeleteLocalSymbols")
+            buildArgs.add("-H:+PreserveFramePointer")
         }
     }
 }</code></pre>
