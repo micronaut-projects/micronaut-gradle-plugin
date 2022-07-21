@@ -1,7 +1,7 @@
 [versions]
 kotlin = "1.6.21"
 docker = "6.7.0"
-diffplug = "3.36.2"
+diffplug = "3.37.1"
 shadow = "7.1.2"
 groovy = "3.0.11"
 spock = "2.1-groovy-3.0"
