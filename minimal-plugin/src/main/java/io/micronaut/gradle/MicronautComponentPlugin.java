@@ -104,7 +104,7 @@ public class MicronautComponentPlugin implements Plugin<Project> {
 
             if (testRuntime != MicronautTestRuntime.NONE) {
                 // set JUnit 5 platform
-                project.getTasks().withType(Test.class, test -> {
+                project.getTasks().withType(Test.class).configureEach(test -> {
                     if (!test.getTestFramework().getClass().getName().contains("JUnitPlatform")) {
                         test.useJUnitPlatform();
                     }
@@ -125,7 +125,7 @@ public class MicronautComponentPlugin implements Plugin<Project> {
                     })
                     .isEmpty();
             if (hasJunit5) {
-                project.getTasks().withType(Test.class, test -> {
+                project.getTasks().withType(Test.class).configureEach(test -> {
                     if (!test.getTestFramework().getClass().getName().contains("JUnitPlatform")) {
                         test.useJUnitPlatform();
                     }
