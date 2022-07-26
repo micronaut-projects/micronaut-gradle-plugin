@@ -106,7 +106,7 @@ public class MicronautGraalPlugin implements Plugin<Project> {
                 project.afterEvaluate(unused -> {
                     // Workaround for https://github.com/graalvm/native-build-tools/issues/175
                     // and https://github.com/micronaut-projects/micronaut-gradle-plugin/issues/306
-                    project.getTasks().withType(ProcessResources.class, task -> {
+                    project.getTasks().withType(ProcessResources.class).configureEach(task -> {
                         // yes we do this at config time, because otherwise the workaround
                         // simply doesn't work because there would be no inputs so that
                         // task would never be executed. So yes, this is incorrect because
