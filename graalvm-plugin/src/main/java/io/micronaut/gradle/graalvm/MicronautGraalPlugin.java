@@ -1,5 +1,6 @@
 package io.micronaut.gradle.graalvm;
 
+import io.micronaut.gradle.MicronautBasePlugin;
 import io.micronaut.gradle.MicronautExtension;
 import io.micronaut.gradle.MicronautRuntime;
 import io.micronaut.gradle.PluginsHelper;
@@ -46,12 +47,14 @@ public class MicronautGraalPlugin implements Plugin<Project> {
     private static final Set<String> SOURCE_SETS = Collections.unmodifiableSet(new HashSet<>(Arrays.asList("main", "test")));
     private static final List<String> GRAALVM_MODULE_EXPORTS = Collections.unmodifiableList(Arrays.asList(
             "com.oracle.svm.core.jdk",
-            "com.oracle.svm.core.configure"
+            "com.oracle.svm.core.configure",
+            "javax.sql"
     ));
 
     @Override
     public void apply(Project project) {
         project.getPluginManager().apply(NativeImagePlugin.class);
+        project.getPluginManager().apply(MicronautBasePlugin.class);
         workaroundForResourcesDirectoryMissing(project);
         project.getPluginManager().withPlugin("io.micronaut.minimal.library", plugin -> {
             MicronautExtension extension = project.getExtensions().findByType(MicronautExtension.class);
