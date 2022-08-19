@@ -1,0 +1,17 @@
+plugins {
+    id "io.micronaut.internal.build.gradle-plugin"
+}
+
+description = "Micronaut CRaC Gradle plugin"
+
+micronautPlugins {
+    register('crac', 'io.micronaut.gradle.crac.MicronautCRaCPlugin', 'Micronaut CRaC Plugin')
+}
+
+dependencies {
+    api project(":micronaut-minimal-plugin")
+
+    implementation project(":micronaut-docker-plugin")
+
+    testImplementation testFixtures(project(":micronaut-minimal-plugin"))
+}
