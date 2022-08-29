@@ -9,7 +9,7 @@ import java.nio.file.Path;
 public interface CRaCConfiguration {
 
     /**
-     * If set to false, test resources support will be disabled.
+     * If set to false, CRaC support will be disabled.
      * @return the enabled property
      */
     Property<Boolean> getEnabled();
