@@ -20,7 +20,7 @@ public class TeeStringWriter extends Writer {
     @SuppressWarnings("java:S2629") // This is done by Gradle
     public void write(char[] cbuf, int off, int len) throws IOException {
         delegate.write(cbuf, off, len);
-        logger.info(new String(cbuf, off, len).trim());
+        logger.lifecycle(new String(cbuf, off, len).trim());
     }
 
     @Override

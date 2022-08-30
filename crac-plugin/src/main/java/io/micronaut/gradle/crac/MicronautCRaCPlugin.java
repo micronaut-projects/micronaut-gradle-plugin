@@ -1,9 +1,6 @@
 package io.micronaut.gradle.crac;
 
-import com.bmuschko.gradle.docker.tasks.container.DockerCreateContainer;
-import com.bmuschko.gradle.docker.tasks.container.DockerLogsContainer;
-import com.bmuschko.gradle.docker.tasks.container.DockerRemoveContainer;
-import com.bmuschko.gradle.docker.tasks.container.DockerStartContainer;
+import com.bmuschko.gradle.docker.tasks.container.*;
 import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage;
 import com.bmuschko.gradle.docker.tasks.image.DockerPushImage;
 import com.bmuschko.gradle.docker.tasks.image.Dockerfile;
@@ -15,7 +12,6 @@ import io.micronaut.gradle.crac.tasks.CheckpointScriptTask;
 import io.micronaut.gradle.docker.DockerBuildStrategy;
 import io.micronaut.gradle.docker.model.MicronautDockerImage;
 import io.micronaut.gradle.docker.tasks.BuildLayersTask;
-import org.gradle.api.DefaultTask;
 import org.gradle.api.GradleException;
 import org.gradle.api.NamedDomainObjectContainer;
 import org.gradle.api.Plugin;
@@ -126,6 +122,7 @@ public class MicronautCRaCPlugin implements Plugin<Project> {
             task.getBaseImage().set(configuration.getBaseImage());
             task.setupDockerfileInstructions();
         });
+
         TaskProvider<DockerBuildImage> dockerBuildTask = tasks.register(adaptTaskName("checkpointBuildImage", imageName), DockerBuildImage.class, task -> {
             task.dependsOn(buildLayersTask, scriptTask);
             task.setGroup(CRAC_TASK_GROUP);
@@ -139,6 +136,7 @@ public class MicronautCRaCPlugin implements Plugin<Project> {
             task.getInputDir().set(dockerFileTask.flatMap(Dockerfile::getDestDir));
             task.getImages().set(Collections.singletonList("checkpoint"));
         });
+
         TaskProvider<DockerRemoveContainer> removeContainer = tasks.register(adaptTaskName("checkpointRemoveContainer", imageName), DockerRemoveContainer.class, task -> {
             task.setGroup(CRAC_TASK_GROUP);
             task.setDescription("Removes the checkpoint:latest CRaC checkpoint Docker Image");
@@ -152,7 +150,9 @@ public class MicronautCRaCPlugin implements Plugin<Project> {
             task.setDescription("Runs the checkpoint:latest CRaC checkpoint Docker Image");
             task.targetImageId("checkpoint:latest");
             task.getContainerName().set(CRAC_CHECKPOINT);
-            task.getVolumes().add(project.getLayout().getBuildDirectory().dir("docker/" + imageName + "/cr").map(d -> d.getAsFile().getAbsolutePath() + ":/home/app/cr"));
+            task.getHostConfig().getPrivileged().set(true);
+            String local = project.getLayout().getBuildDirectory().dir("docker/" + imageName + "/cr").map(d -> d.getAsFile().getAbsolutePath()).get();
+            task.getHostConfig().getBinds().put(local, "/home/app/cr");
         });
         TaskProvider<DockerStartContainer> start = tasks.register(adaptTaskName("checkpointDockerRun", imageName), DockerStartContainer.class, task -> {
             task.dependsOn(checkpointContainer);
@@ -167,7 +167,7 @@ public class MicronautCRaCPlugin implements Plugin<Project> {
             task.finalizedBy(removeContainer);
             task.getFollow().set(true);
             task.getTailAll().set(true);
-            task.getContainerId().set(CRAC_CHECKPOINT);
+            task.getContainerId().set(start.flatMap(DockerExistingContainer::getContainerId));
             task.setSink(stringWriter);
             task.doLast(t -> {
                 if (stringWriter.toString().contains("failed")) {
@@ -209,7 +209,7 @@ public class MicronautCRaCPlugin implements Plugin<Project> {
         });
         TaskProvider<DockerBuildImage> dockerBuildTask = tasks.register(adaptTaskName("dockerBuildCrac", imageName), DockerBuildImage.class, task -> {
             task.dependsOn(buildLayersTask, scriptTask);
-            task.getInputs().dir(start.map(DefaultTask::getOutputs));
+            task.getInputs().dir(start.map(t -> t.getOutputs().getFiles().getSingleFile()));
             task.setGroup(CRAC_TASK_GROUP);
             task.setDescription("Builds a CRaC checkpoint Docker Image (image " + imageName + ")");
             if (f.exists()) {

@@ -5,8 +5,6 @@ import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.PathSensitive;
 import org.gradle.api.tasks.PathSensitivity;
 
-import java.nio.file.Path;
-
 public interface CRaCConfiguration {
 
     /**
