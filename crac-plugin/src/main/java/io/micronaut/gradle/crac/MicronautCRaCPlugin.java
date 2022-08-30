@@ -35,6 +35,7 @@ public class MicronautCRaCPlugin implements Plugin<Project> {
     public static final String CRAC_DEFAULT_BASE_IMAGE = "ubuntu:18.04";
     private static final String CRAC_TASK_GROUP = "CRaC";
     public static final String CRAC_CHECKPOINT = "crac_checkpoint";
+    public static final String BUILD_DOCKER_DIRECTORY = "docker/";
 
     @Override
     public void apply(Project project) {
@@ -76,7 +77,7 @@ public class MicronautCRaCPlugin implements Plugin<Project> {
             task.setDescription("Copies the scripts required for use in the CRaC checkpoint container (" + imageName + " image)");
             task.getCheckpointFile().set(configuration.getCheckpointScript());
             task.getWarmupFile().set(configuration.getWarmupScript());
-            task.getOutputDir().convention(project.getLayout().getBuildDirectory().dir("docker/" + imageName + "/checkpoint"));
+            task.getOutputDir().convention(project.getLayout().getBuildDirectory().dir(BUILD_DOCKER_DIRECTORY + imageName + "/checkpoint"));
         });
         TaskProvider<BuildLayersTask> buildLayersTask = tasks.named("buildLayers", BuildLayersTask.class);
         CheckpointTasksOfNote checkpointDockerBuild = configureCheckpointDockerBuild(project, tasks, scriptTask, buildLayersTask, configuration, imageName);
@@ -114,7 +115,7 @@ public class MicronautCRaCPlugin implements Plugin<Project> {
                                                                  String imageName) {
         File f = project.file(adaptTaskName("DockerfileCracCheckpoint", imageName));
         String dockerFileTaskName = adaptTaskName("checkpointDockerfile", imageName);
-        Provider<RegularFile> targetCheckpointDockerFile = project.getLayout().getBuildDirectory().file("docker/" + imageName + "/Dockerfile.CRaCCheckpoint");
+        Provider<RegularFile> targetCheckpointDockerFile = project.getLayout().getBuildDirectory().file(BUILD_DOCKER_DIRECTORY + imageName + "/Dockerfile.CRaCCheckpoint");
         TaskProvider<CRaCCheckpointDockerfile> dockerFileTask = tasks.register(dockerFileTaskName, CRaCCheckpointDockerfile.class, task -> {
             task.setGroup(CRAC_TASK_GROUP);
             task.setDescription("Builds a Checkpoint Docker File for image " + imageName);
@@ -151,14 +152,14 @@ public class MicronautCRaCPlugin implements Plugin<Project> {
             task.targetImageId("checkpoint:latest");
             task.getContainerName().set(CRAC_CHECKPOINT);
             task.getHostConfig().getPrivileged().set(true);
-            String local = project.getLayout().getBuildDirectory().dir("docker/" + imageName + "/cr").map(d -> d.getAsFile().getAbsolutePath()).get();
+            String local = project.getLayout().getBuildDirectory().dir(BUILD_DOCKER_DIRECTORY + imageName + "/cr").map(d -> d.getAsFile().getAbsolutePath()).get();
             task.getHostConfig().getBinds().put(local, "/home/app/cr");
         });
         TaskProvider<DockerStartContainer> start = tasks.register(adaptTaskName("checkpointDockerRun", imageName), DockerStartContainer.class, task -> {
             task.dependsOn(checkpointContainer);
             task.setGroup(CRAC_TASK_GROUP);
             task.setDescription("Runs the checkpoint:latest CRaC checkpoint Docker Image");
-            task.getOutputs().dir(project.getLayout().getBuildDirectory().dir("docker/" + imageName + "/checkpoint"));
+            task.getOutputs().dir(project.getLayout().getBuildDirectory().dir(BUILD_DOCKER_DIRECTORY + imageName + "/checkpoint"));
             task.targetContainerId(checkpointContainer.flatMap(DockerCreateContainer::getContainerId));
         });
         TaskProvider<DockerLogsContainer> await = tasks.register("checkpointAwaitSuccess", DockerLogsContainer.class, task -> {
@@ -199,7 +200,7 @@ public class MicronautCRaCPlugin implements Plugin<Project> {
                                                                                   String imageName) {
         File f = project.file(adaptTaskName("Dockerfile", imageName));
         String dockerFileTaskName = adaptTaskName("dockerfileCrac", imageName);
-        Provider<RegularFile> targetCheckpointDockerFile = project.getLayout().getBuildDirectory().file("docker/" + imageName + "/Dockerfile");
+        Provider<RegularFile> targetCheckpointDockerFile = project.getLayout().getBuildDirectory().file(BUILD_DOCKER_DIRECTORY + imageName + "/Dockerfile");
         TaskProvider<CRaCFinalDockerfile> dockerFileTask = tasks.register(dockerFileTaskName, CRaCFinalDockerfile.class, task -> {
             task.setGroup(CRAC_TASK_GROUP);
             task.setDescription("Builds a Docker File for CRaC checkpointed image " + imageName);

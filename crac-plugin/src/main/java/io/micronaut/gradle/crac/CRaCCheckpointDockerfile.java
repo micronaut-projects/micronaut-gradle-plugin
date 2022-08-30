@@ -45,6 +45,7 @@ public class CRaCCheckpointDockerfile extends Dockerfile {
 
     @TaskAction
     @Override
+    @SuppressWarnings("java:S106") // System.out
     public void create() {
         super.create();
         System.out.println("Dockerfile written to: " + getDestFile().get().getAsFile().getAbsolutePath());

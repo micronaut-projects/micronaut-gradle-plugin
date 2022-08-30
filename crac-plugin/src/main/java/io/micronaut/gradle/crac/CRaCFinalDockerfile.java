@@ -60,19 +60,19 @@ public class CRaCFinalDockerfile extends Dockerfile implements DockerBuildOption
 
     @TaskAction
     @Override
+    @SuppressWarnings("java:S106") // System.out
     public void create() {
         super.create();
         System.out.println("Dockerfile written to: " + getDestFile().get().getAsFile().getAbsolutePath());
     }
 
     private void setupInstructions(List<Instruction> additionalInstructions) {
-        String workDir = getTargetWorkingDirectory().get();
-        DockerBuildStrategy buildStrategy = this.buildStrategy.getOrElse(DockerBuildStrategy.DEFAULT);
+        DockerBuildStrategy effectiveBuildStrategy = this.buildStrategy.getOrElse(DockerBuildStrategy.DEFAULT);
         String from = getBaseImage().getOrNull();
         if ("none".equalsIgnoreCase(from)) {
             from = null;
         }
-        switch (buildStrategy) {
+        switch (effectiveBuildStrategy) {
             case ORACLE_FUNCTION:
                 throw new GradleException("Oracle Functions are not supported for the CRaC plugin");
             case LAMBDA:
