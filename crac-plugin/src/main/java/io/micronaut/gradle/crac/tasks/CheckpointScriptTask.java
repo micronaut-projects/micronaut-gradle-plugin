@@ -36,7 +36,7 @@ public abstract class CheckpointScriptTask extends DefaultTask {
     @Optional
     @InputFile
     @PathSensitive(PathSensitivity.RELATIVE)
-    public abstract Property<Path> getWarmupFile();
+    public abstract RegularFileProperty getWarmupFile();
 
     @OutputDirectory
     public abstract DirectoryProperty getOutputDir();
@@ -57,7 +57,7 @@ public abstract class CheckpointScriptTask extends DefaultTask {
         if (!getCheckpointFile().isPresent()) {
             Files.copy(CheckpointScriptTask.class.getResourceAsStream("/warmup.sh"), warmupScriptPath, StandardCopyOption.REPLACE_EXISTING);
         } else {
-            Files.copy(getWarmupFile().get(), warmupScriptPath, StandardCopyOption.REPLACE_EXISTING);
+            Files.copy(getWarmupFile().get().getAsFile().toPath(), warmupScriptPath, StandardCopyOption.REPLACE_EXISTING);
         }
         Files.setPosixFilePermissions(warmupScriptPath, POSIX_FILE_PERMISSIONS);
     }

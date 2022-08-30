@@ -32,7 +32,7 @@ public interface CRaCConfiguration {
      * @return The script to add to the checkpoint image.
      */
     @PathSensitive(PathSensitivity.RELATIVE)
-    Property<Path> getWarmupScript();
+    RegularFileProperty getWarmupScript();
 
     /**
      * The checkpoint script to copy in to the checkpoint image and execute prior to snapshotting.
