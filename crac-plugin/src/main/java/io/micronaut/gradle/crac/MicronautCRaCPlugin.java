@@ -152,7 +152,7 @@ public class MicronautCRaCPlugin implements Plugin<Project> {
             task.setDescription("Runs the checkpoint:latest CRaC checkpoint Docker Image");
             task.targetImageId("checkpoint:latest");
             task.getContainerName().set(CRAC_CHECKPOINT);
-            task.getVolumes().add(project.getLayout().getBuildDirectory().dir("docker/" + imageName + "/layers/cr").map(d -> d.getAsFile().getAbsolutePath() + ":/home/app/cr"));
+            task.getVolumes().add(project.getLayout().getBuildDirectory().dir("docker/" + imageName + "/cr").map(d -> d.getAsFile().getAbsolutePath() + ":/home/app/cr"));
         });
         TaskProvider<DockerStartContainer> start = tasks.register(adaptTaskName("checkpointDockerRun", imageName), DockerStartContainer.class, task -> {
             task.dependsOn(checkpointContainer);

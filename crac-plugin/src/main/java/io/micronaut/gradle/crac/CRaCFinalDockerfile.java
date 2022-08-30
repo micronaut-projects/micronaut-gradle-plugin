@@ -168,7 +168,7 @@ public class CRaCFinalDockerfile extends Dockerfile implements DockerBuildOption
         task.instruction("# Copy CRaC JDK from the checkpoint image (to save a download)");
         task.copyFile("--from=checkpoint /azul-crac-jdk", "/azul-crac-jdk");
         task.instruction("# Copy layers");
-        task.copyFile("layers/cr", workDir + "/cr");
+        task.copyFile("cr", workDir + "/cr");
         task.copyFile("layers/libs", workDir + "/libs");
         task.copyFile("layers/classes", workDir + "/classes");
         task.copyFile("layers/resources", workDir + "/resources");
