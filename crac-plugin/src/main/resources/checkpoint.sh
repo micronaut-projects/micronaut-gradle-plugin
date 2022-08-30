@@ -56,6 +56,8 @@ if [ $OK -eq 1 ]; then
   wait $PROCESS
   echo "EXITED WITH $?"
   echo "Snapshotting complete"
+  # Make the snapshot files readable to the host
+  chmod 666 cr/*
 else
   echo "Snapshotting failed"
   exit 1

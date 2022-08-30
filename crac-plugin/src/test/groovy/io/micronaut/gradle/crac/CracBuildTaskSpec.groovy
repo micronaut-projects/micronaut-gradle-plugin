@@ -1,5 +1,6 @@
-package io.micronaut.gradle
+package io.micronaut.gradle.crac
 
+import io.micronaut.gradle.AbstractGradleBuildSpec
 import org.gradle.testkit.runner.TaskOutcome
 import spock.lang.IgnoreIf
 
