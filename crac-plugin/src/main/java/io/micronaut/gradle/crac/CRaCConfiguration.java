@@ -1,5 +1,6 @@
 package io.micronaut.gradle.crac;
 
+import org.gradle.api.file.RegularFileProperty;
 import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.PathSensitive;
 import org.gradle.api.tasks.PathSensitivity;
@@ -38,5 +39,5 @@ public interface CRaCConfiguration {
      * @return The script to add to the checkpoint image.
      */
     @PathSensitive(PathSensitivity.RELATIVE)
-    Property<Path> getCheckpointScript();
+    RegularFileProperty getCheckpointScript();
 }
