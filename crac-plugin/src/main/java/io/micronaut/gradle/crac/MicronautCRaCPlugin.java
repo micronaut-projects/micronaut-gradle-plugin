@@ -23,6 +23,7 @@ import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.TaskContainer;
 import org.gradle.api.tasks.TaskProvider;
 
+import javax.annotation.Nullable;
 import java.io.File;
 import java.util.Collections;
 import java.util.Optional;
@@ -83,7 +84,7 @@ public class MicronautCRaCPlugin implements Plugin<Project> {
         CheckpointTasksOfNote checkpointDockerBuild = configureCheckpointDockerBuild(project, tasks, scriptTask, buildLayersTask, configuration, imageName);
         Optional<TaskProvider<CRaCFinalDockerfile>> finalDockerBuild = configureFinalDockerBuild(project, tasks, scriptTask, buildLayersTask, checkpointDockerBuild.start, configuration, imageName);
         withBuildStrategy(project, buildStrategy -> {
-            checkpointDockerBuild.checkpointDockerBuild.ifPresent(t -> t.configure(it -> {
+            checkpointDockerBuild.getCheckpointDockerBuild().ifPresent(t -> t.configure(it -> {
                 buildStrategy.ifPresent(bs -> it.getBuildStrategy().set(buildStrategy.get()));
                 it.setupTaskPostEvaluate();
             }));
@@ -182,12 +183,19 @@ public class MicronautCRaCPlugin implements Plugin<Project> {
 
     private static class CheckpointTasksOfNote {
 
-        private final Optional<TaskProvider<CRaCCheckpointDockerfile>> checkpointDockerBuild;
+        private final TaskProvider<CRaCCheckpointDockerfile> checkpointDockerBuild;
         private final TaskProvider<DockerStartContainer> start;
 
-        private CheckpointTasksOfNote(TaskProvider<CRaCCheckpointDockerfile> checkpointDockerBuild, TaskProvider<DockerStartContainer> start) {
-            this.checkpointDockerBuild = Optional.ofNullable(checkpointDockerBuild);
+        private CheckpointTasksOfNote(
+                @Nullable TaskProvider<CRaCCheckpointDockerfile> checkpointDockerBuild,
+                TaskProvider<DockerStartContainer> start
+        ) {
+            this.checkpointDockerBuild = checkpointDockerBuild;
             this.start = start;
+        }
+
+        Optional<TaskProvider<CRaCCheckpointDockerfile>> getCheckpointDockerBuild() {
+            return Optional.ofNullable(checkpointDockerBuild);
         }
     }
 
@@ -223,7 +231,7 @@ public class MicronautCRaCPlugin implements Plugin<Project> {
             task.getInputDir().set(dockerFileTask.flatMap(Dockerfile::getDestDir));
         });
 
-        TaskProvider<DockerPushImage> pushDockerImage = tasks.register(adaptTaskName("dockerPushCrac", imageName), DockerPushImage.class, task -> {
+        tasks.register(adaptTaskName("dockerPushCrac", imageName), DockerPushImage.class, task -> {
             task.dependsOn(dockerBuildTask);
             task.setGroup("upload");
             task.setDescription("Pushes the " + imageName + " Docker Image");
