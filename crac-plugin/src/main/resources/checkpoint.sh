@@ -18,7 +18,7 @@ echo "Started application as process $PROCESS"
 # Wait for the app to be started
 echo "Waiting 10s for application to start"
 retries=5
-until $(curl --output /dev/null --silent --head --fail http://localhost:8080); do
+until $(curl --output /dev/null --silent --head http://localhost:8080); do
   if [ $retries -le 0 ]; then
     echo "failed"
     exit 1
