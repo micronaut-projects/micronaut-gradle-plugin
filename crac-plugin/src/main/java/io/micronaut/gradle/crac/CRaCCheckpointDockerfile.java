@@ -127,10 +127,12 @@ public class CRaCCheckpointDockerfile extends Dockerfile {
                 "    && tar xzf \"$name\" \\\n" +
                 "    && mv ${name%%.tar.gz} /azul-crac-jdk \\\n" +
                 "    && rm \"$name\"");
+        task.instruction("# Copy layers");
         task.copyFile("layers/libs", workDir + "/libs");
         task.copyFile("layers/classes", workDir + "/classes");
         task.copyFile("layers/resources", workDir + "/resources");
         task.copyFile("layers/application.jar", workDir + "/application.jar");
+        task.instruction("# Add build scripts");
         task.copyFile("checkpoint/checkpoint.sh", workDir + "/checkpoint.sh");
         task.copyFile("checkpoint/warmup.sh", workDir + "/warmup.sh");
     }
