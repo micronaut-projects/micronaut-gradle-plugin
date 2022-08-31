@@ -116,8 +116,10 @@ public class CRaCCheckpointDockerfile extends Dockerfile {
         String workDir = DEFAULT_WORKING_DIR;
         task.workingDir(workDir);
         task.instruction("# Add required libraries");
-        task.runCommand("apt-get update \\\n" +
-                "    && apt-get install -y curl jq libnl-3-200");
+        task.runCommand("apt-get update && apt-get install -y \\\n" +
+                "        curl \\" +
+                "        jq \\" +
+                "        libnl-3-200");
         task.instruction("# Install latest CRaC OpenJDK");
         task.runCommand("release=\"$(curl -sL https://api.github.com/repos/CRaC/openjdk-builds/releases/latest)\" \\\n" +
                 "    && asset=\"$(echo $release | jq '.assets[] | select(.name | test(\"jdk[0-9]+-crac\\\\+[0-9]+\\\\.tar\\\\.gz\"))')\" \\\n" +
