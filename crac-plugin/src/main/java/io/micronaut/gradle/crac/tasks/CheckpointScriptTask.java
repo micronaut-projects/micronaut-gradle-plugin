@@ -53,7 +53,7 @@ public abstract class CheckpointScriptTask extends DefaultTask {
 
         Provider<RegularFile> warmupFile = getOutputDir().file("warmup.sh");
         Path warmupScriptPath = warmupFile.get().getAsFile().toPath();
-        if (!getCheckpointFile().isPresent()) {
+        if (!getWarmupFile().isPresent()) {
             Files.copy(CheckpointScriptTask.class.getResourceAsStream("/warmup.sh"), warmupScriptPath, StandardCopyOption.REPLACE_EXISTING);
         } else {
             Files.copy(getWarmupFile().get().getAsFile().toPath(), warmupScriptPath, StandardCopyOption.REPLACE_EXISTING);
