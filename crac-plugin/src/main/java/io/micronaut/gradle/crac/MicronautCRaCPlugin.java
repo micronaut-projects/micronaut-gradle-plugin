@@ -171,7 +171,7 @@ public class MicronautCRaCPlugin implements Plugin<Project> {
             task.getContainerId().set(start.flatMap(DockerExistingContainer::getContainerId));
             task.setSink(stringWriter);
             task.doLast(t -> {
-                if (stringWriter.toString().contains("failed")) {
+                if (!stringWriter.toString().contains("Snapshotting complete")) {
                     throw new GradleException("Checkpoint container failed");
                 }
             });
