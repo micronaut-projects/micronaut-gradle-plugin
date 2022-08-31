@@ -8,7 +8,7 @@ spock = "2.1-groovy-3.0"
 graalvmPlugin = "0.9.13"
 micronaut = "3.2.0"
 micronaut-aot = "1.1.0"
-micronaut-testresources = "1.0.1"
+micronaut-testresources = "1.1.0"
 log4j2 = { require = "2.17.1", reject = ["]0, 2.17["] }
 
 [libraries]
