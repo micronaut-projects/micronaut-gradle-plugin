@@ -1,0 +1,8 @@
+io.micronaut.gradle
+io.micronaut.gradle.aot
+io.micronaut.gradle.docker
+io.micronaut.gradle.docker.model
+io.micronaut.gradle.docker.tasks
+io.micronaut.gradle.graalvm
+io.micronaut.gradle.testresources
+io.micronaut.gradle.testresources.internal
