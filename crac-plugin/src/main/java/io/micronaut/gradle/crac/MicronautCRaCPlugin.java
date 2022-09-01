@@ -4,7 +4,6 @@ import com.bmuschko.gradle.docker.tasks.container.*;
 import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage;
 import com.bmuschko.gradle.docker.tasks.image.DockerPushImage;
 import com.bmuschko.gradle.docker.tasks.image.Dockerfile;
-import io.micronaut.gradle.MicronautBasePlugin;
 import io.micronaut.gradle.MicronautExtension;
 import io.micronaut.gradle.MicronautRuntime;
 import io.micronaut.gradle.PluginsHelper;
@@ -18,7 +17,6 @@ import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.file.RegularFile;
 import org.gradle.api.plugins.ExtensionContainer;
-import org.gradle.api.plugins.PluginManager;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.TaskContainer;
 import org.gradle.api.tasks.TaskProvider;
@@ -40,8 +38,6 @@ public class MicronautCRaCPlugin implements Plugin<Project> {
 
     @Override
     public void apply(Project project) {
-        PluginManager pluginManager = project.getPluginManager();
-        pluginManager.apply(MicronautBasePlugin.class);
         configurePlugin(project);
     }
 
