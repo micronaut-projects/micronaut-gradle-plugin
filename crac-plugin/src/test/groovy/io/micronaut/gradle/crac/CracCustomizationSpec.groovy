@@ -61,7 +61,7 @@ class CracCustomizationSpec extends BaseCracGradleBuildSpec {
 
         then:
         result.output.contains("BUILD SUCCESSFUL")
-        fileTextContents("build/docker/main/checkpoint/checkpoint.sh") == "And another test"
+        fileTextContents("build/docker/main/checkpoint/checkpoint.sh") == "And another test\n"
     }
 
     void "base image default is as expected"() {
