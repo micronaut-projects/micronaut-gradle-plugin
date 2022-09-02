@@ -38,13 +38,14 @@ class CracCustomizationSpec extends BaseCracGradleBuildSpec {
         given:
         settingsFile << "rootProject.name = 'hello-world'"
         buildFile << buildFileBlock
+        def expected = CracCustomizationSpec.getResourceAsStream("/checkpoint.sh").text.replace("@READINESS@", MicronautCRaCPlugin.CRAC_DEFAULT_READINESS_COMMAND)
 
         when:
         def result = build('checkpointScripts', '-s')
 
         then:
         result.output.contains("BUILD SUCCESSFUL")
-        fileTextContents("build/docker/main/checkpoint/checkpoint.sh") == CracCustomizationSpec.getResourceAsStream("/checkpoint.sh").text
+        fileTextContents("build/docker/main/checkpoint/checkpoint.sh") == expected
     }
 
     void "checkpoint script is customizable"() {

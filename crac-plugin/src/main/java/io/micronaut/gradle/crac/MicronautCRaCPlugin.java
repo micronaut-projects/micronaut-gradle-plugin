@@ -1,6 +1,10 @@
 package io.micronaut.gradle.crac;
 
-import com.bmuschko.gradle.docker.tasks.container.*;
+import com.bmuschko.gradle.docker.tasks.container.DockerCreateContainer;
+import com.bmuschko.gradle.docker.tasks.container.DockerExistingContainer;
+import com.bmuschko.gradle.docker.tasks.container.DockerLogsContainer;
+import com.bmuschko.gradle.docker.tasks.container.DockerRemoveContainer;
+import com.bmuschko.gradle.docker.tasks.container.DockerStartContainer;
 import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage;
 import com.bmuschko.gradle.docker.tasks.image.DockerPushImage;
 import com.bmuschko.gradle.docker.tasks.image.Dockerfile;
@@ -36,6 +40,7 @@ public class MicronautCRaCPlugin implements Plugin<Project> {
 
     public static final String CRAC_DEFAULT_BASE_IMAGE = "ubuntu:18.04";
     public static final String CRAC_DEFAULT_BASE_IMAGE_PLATFORM = "linux/amd64";
+    public static final String CRAC_DEFAULT_READINESS_COMMAND = "curl --output /dev/null --silent --head http://localhost:8080";
     private static final String CRAC_TASK_GROUP = "CRaC";
     public static final String CRAC_CHECKPOINT = "crac_checkpoint";
     public static final String BUILD_DOCKER_DIRECTORY = "docker/";
@@ -62,6 +67,7 @@ public class MicronautCRaCPlugin implements Plugin<Project> {
         crac.getEnabled().convention(true);
         crac.getBaseImage().convention(CRAC_DEFAULT_BASE_IMAGE);
         crac.getPlatform().convention(CRAC_DEFAULT_BASE_IMAGE_PLATFORM);
+        crac.getPreCheckpointReadinessCommand().convention(CRAC_DEFAULT_READINESS_COMMAND);
         return crac;
     }
 
@@ -81,6 +87,7 @@ public class MicronautCRaCPlugin implements Plugin<Project> {
             task.setDescription("Copies the scripts required for use in the CRaC checkpoint container (" + imageName + " image)");
             task.getCheckpointFile().set(configuration.getCheckpointScript());
             task.getWarmupFile().set(configuration.getWarmupScript());
+            task.getPreCheckpointReadinessCommand().set(configuration.getPreCheckpointReadinessCommand());
             task.getOutputDir().convention(project.getLayout().getBuildDirectory().dir(BUILD_DOCKER_DIRECTORY + imageName + "/checkpoint"));
         });
         TaskProvider<BuildLayersTask> buildLayersTask = tasks.named("buildLayers", BuildLayersTask.class);

@@ -45,4 +45,12 @@ public interface CRaCConfiguration {
      */
     @PathSensitive(PathSensitivity.RELATIVE)
     RegularFileProperty getCheckpointScript();
+
+    /**
+     * Prior to creating a checkpoint and running the warmup script, we require to know if the application is up.
+     * This property allows you to define your own check for this if the default {@value MicronautCRaCPlugin#CRAC_DEFAULT_READINESS_COMMAND} is not sufficient.
+     *
+     * @return the bash command to run to check the app is running, it should exit with 0 if the app is up.
+     */
+    Property<String> getPreCheckpointReadinessCommand();
 }
