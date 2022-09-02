@@ -8,6 +8,7 @@ import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.plugins.BasePlugin;
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Property;
+import org.gradle.api.tasks.CacheableTask;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.Optional;
 import org.gradle.api.tasks.TaskAction;
@@ -15,6 +16,7 @@ import org.gradle.api.tasks.TaskAction;
 import java.util.ArrayList;
 import java.util.List;
 
+@CacheableTask
 public class CRaCCheckpointDockerfile extends Dockerfile {
     public static final String DEFAULT_WORKING_DIR = "/home/app";
 

@@ -4,12 +4,14 @@ import io.micronaut.gradle.docker.DockerBuildStrategy;
 import io.micronaut.gradle.docker.MicronautDockerfile;
 import org.gradle.api.GradleException;
 import org.gradle.api.provider.Property;
+import org.gradle.api.tasks.CacheableTask;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.Optional;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@CacheableTask
 public class CRaCFinalDockerfile extends MicronautDockerfile {
 
     @Input
