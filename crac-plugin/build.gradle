@@ -13,5 +13,6 @@ dependencies {
 
     api project(":micronaut-docker-plugin")
 
+    testCompileOnly(libs.jetbrains.annotations)
     testImplementation testFixtures(project(":micronaut-minimal-plugin"))
 }
