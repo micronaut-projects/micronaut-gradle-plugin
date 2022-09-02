@@ -33,12 +33,6 @@ public interface CRaCConfiguration {
     ListProperty<String> getFinalArgs();
 
     /**
-     * The resultant image name
-     * @return the final image name
-     */
-    Property<String> getImageName();
-
-    /**
      * The warmup script to copy in to the checkpoint image and execute prior to snapshotting.
      * @return The script to add to the checkpoint image.
      */

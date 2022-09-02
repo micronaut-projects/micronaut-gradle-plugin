@@ -54,7 +54,6 @@ public class MicronautCRaCPlugin implements Plugin<Project> {
         MicronautExtension micronautExtension = PluginsHelper.findMicronautExtension(project);
         CRaCConfiguration crac = micronautExtension.getExtensions().create("crac", CRaCConfiguration.class);
         crac.getEnabled().convention(true);
-        crac.getImageName().convention("Woo");
         crac.getBaseImage().convention(CRAC_DEFAULT_BASE_IMAGE);
         crac.getPlatform().convention(CRAC_DEFAULT_BASE_IMAGE_PLATFORM);
         return crac;
