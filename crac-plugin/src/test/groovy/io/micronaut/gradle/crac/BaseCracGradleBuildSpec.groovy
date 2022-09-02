@@ -40,8 +40,7 @@ abstract class BaseCracGradleBuildSpec extends AbstractGradleBuildSpec {
     String getPluginsBlock() {
         """
             plugins {
-                id "io.micronaut.minimal.application"
-                id "io.micronaut.docker"
+                id "io.micronaut.application"
                 id "io.micronaut.crac"
             }""".stripIndent()
     }
