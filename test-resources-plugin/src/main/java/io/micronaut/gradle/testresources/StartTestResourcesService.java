@@ -182,6 +182,7 @@ public abstract class StartTestResourcesService extends DefaultTask {
                         getLogger().lifecycle("Test resources server started in standalone mode. You can stop it by running the " + MicronautTestResourcesPlugin.STOP_TEST_RESOURCES_SERVICE + " task.");
                     }
                     String stop = getStandalone().map(v -> String.valueOf(!v)).get();
+                    Files.createDirectories(stopFilePath.getParent());
                     Files.write(stopFilePath, Collections.singletonList(stop), StandardOpenOption.CREATE);
                 }
                 if (Boolean.TRUE.equals(getForeground().get()) || processParameters.isCDSDumpInvocation()) {
