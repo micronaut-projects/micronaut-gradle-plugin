@@ -32,6 +32,7 @@ import static io.micronaut.gradle.Strings.capitalize;
 public class MicronautCRaCPlugin implements Plugin<Project> {
 
     public static final String CRAC_DEFAULT_BASE_IMAGE = "ubuntu:18.04";
+    public static final String CRAC_DEFAULT_BASE_IMAGE_PLATFORM = "linux/amd64";
     private static final String CRAC_TASK_GROUP = "CRaC";
     public static final String CRAC_CHECKPOINT = "crac_checkpoint";
     public static final String BUILD_DOCKER_DIRECTORY = "docker/";
@@ -55,6 +56,7 @@ public class MicronautCRaCPlugin implements Plugin<Project> {
         crac.getEnabled().convention(true);
         crac.getImageName().convention("Woo");
         crac.getBaseImage().convention(CRAC_DEFAULT_BASE_IMAGE);
+        crac.getPlatform().convention(CRAC_DEFAULT_BASE_IMAGE_PLATFORM);
         return crac;
     }
 
@@ -118,6 +120,7 @@ public class MicronautCRaCPlugin implements Plugin<Project> {
             task.setDescription("Builds a Checkpoint Docker File for image " + imageName);
             task.getDestFile().set(targetCheckpointDockerFile);
             task.getBaseImage().set(configuration.getBaseImage());
+            task.getPlatform().set(configuration.getPlatform());
             task.setupDockerfileInstructions();
         });
 
@@ -210,6 +213,7 @@ public class MicronautCRaCPlugin implements Plugin<Project> {
             task.setDescription("Builds a Docker File for CRaC checkpointed image " + imageName);
             task.getDestFile().set(targetCheckpointDockerFile);
             task.getBaseImage().set(configuration.getBaseImage());
+            task.getPlatform().set(configuration.getPlatform());
             task.getArgs().set(configuration.getFinalArgs());
             task.setupDockerfileInstructions();
         });

@@ -21,6 +21,12 @@ public interface CRaCConfiguration {
     Property<String> getBaseImage();
 
     /**
+     * The platform to specifu in the FROM instruction.
+     * @return the platform (can be set to an empty string to remove it)
+     */
+    Property<String> getPlatform();
+
+    /**
      * Any arguments passed to java in the final image
      * @return list of arguments
      */

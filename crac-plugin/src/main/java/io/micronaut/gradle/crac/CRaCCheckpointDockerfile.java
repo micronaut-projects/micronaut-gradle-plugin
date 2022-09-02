@@ -20,6 +20,8 @@ public class CRaCCheckpointDockerfile extends Dockerfile {
     @Input
     private final Property<String> baseImage;
     @Input
+    private final Property<String> platform;
+    @Input
     private final ListProperty<String> args;
     @Input
     private final Property<DockerBuildStrategy> buildStrategy;
@@ -35,6 +37,7 @@ public class CRaCCheckpointDockerfile extends Dockerfile {
         this.buildStrategy = objects.property(DockerBuildStrategy.class)
                                     .convention(DockerBuildStrategy.DEFAULT);
         this.baseImage = objects.property(String.class).convention("none");
+        this.platform = objects.property(String.class);
         this.args = objects.listProperty(String.class);
         this.targetWorkingDirectory = objects.property(String.class).convention(DEFAULT_WORKING_DIR);
     }
@@ -63,7 +66,7 @@ public class CRaCCheckpointDockerfile extends Dockerfile {
             case LAMBDA:
                 throw new GradleException("Lambda Functions are not supported for the CRaC plugin");
             default:
-                from("--platform=linux/amd64 " + from);
+                from(platform.map(p -> p.isEmpty() ? "" : ("--platform=" + p + " ")).getOrElse("") + from);
                 setupResources(this);
                 getInstructions().addAll(additionalInstructions);
                 if (getInstructions().get().stream().noneMatch(instruction -> instruction.getKeyword().equals(EntryPointInstruction.KEYWORD))) {
@@ -99,6 +102,10 @@ public class CRaCCheckpointDockerfile extends Dockerfile {
 
     public Property<String> getBaseImage() {
         return baseImage;
+    }
+
+    public Property<String> getPlatform() {
+        return platform;
     }
 
     /**
