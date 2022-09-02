@@ -37,12 +37,18 @@ abstract class BaseCracGradleBuildSpec extends AbstractGradleBuildSpec {
         new File(testProjectDir.root, filename).text
     }
 
-    String getPluginsBlock() {
-        """
+    String getPluginsBlock(boolean switchOrder = false) {
+        switchOrder ? """
             plugins {
-                id "io.micronaut.application"
+                id "io.micronaut.minimal.application"
+                id "io.micronaut.docker"
                 id "io.micronaut.crac"
-            }""".stripIndent()
+            }""".stripIndent() : """
+            plugins {
+                id "io.micronaut.crac"
+                id "io.micronaut.minimal.application"
+                id "io.micronaut.docker"
+            }"""
     }
 
     String getRepositoriesBlock(boolean allowSnapshots = true) {
@@ -74,8 +80,12 @@ ${cracConfig.readLines().collect {"                ${it}"}.join("\n")}
             }""".stripIndent()
     }
 
-    String getBuildFileBlock(String micronautConfig = getMicronautConfigBlock()) {
-        """$pluginsBlock
+    String getBuildFileBlockWithMicronautConfig(String micronautConfig) {
+        getBuildFileBlock(false, micronautConfig)
+    }
+
+    String getBuildFileBlock(boolean switchPluginOrder = false, String micronautConfig = getMicronautConfigBlock()) {
+        """${getPluginsBlock(switchPluginOrder)}
           |$repositoriesBlock
           |$dependenciesBlock
           |$micronautConfig

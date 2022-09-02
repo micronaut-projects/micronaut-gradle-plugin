@@ -6,10 +6,10 @@ import spock.lang.IgnoreIf
 @IgnoreIf({ os.windows })
 class CracBuildTaskSpec extends BaseCracGradleBuildSpec {
 
-    def "test build docker image"() {
+    def "test build docker image when #desc"() {
         given:
         settingsFile << "rootProject.name = 'hello-world'"
-        buildFile << buildFileBlock
+        buildFile << getBuildFileBlock(switchPluginOrder)
 
         writeJavaFile("src/main/java/example/Application.java", """package example;
 
@@ -67,10 +67,15 @@ netty:
 
         when:
         def result = build('dockerBuildCrac', '-s')
-
         def task = result.task(":dockerBuildCrac")
+
         then:
         result.output.contains("Successfully tagged hello-world:latest")
         task.outcome == TaskOutcome.SUCCESS
+
+        where:
+        desc                   | switchPluginOrder
+        'crac plugin is first' | true
+        'crac plugin is last'  | false
     }
 }

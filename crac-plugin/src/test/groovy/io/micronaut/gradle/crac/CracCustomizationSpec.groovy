@@ -21,7 +21,7 @@ class CracCustomizationSpec extends BaseCracGradleBuildSpec {
     void "warmup script is customizable"() {
         given:
         settingsFile << "rootProject.name = 'hello-world'"
-        buildFile << getBuildFileBlock(getMicronautConfigBlock("""crac {
+        buildFile << getBuildFileBlockWithMicronautConfig(getMicronautConfigBlock("""crac {
     warmupScript.set(project.layout.projectDirectory.dir("src").file("test.sh"))
 }"""))
         writeFile("src/test.sh", "This is a test")
@@ -51,7 +51,7 @@ class CracCustomizationSpec extends BaseCracGradleBuildSpec {
     void "checkpoint script is customizable"() {
         given:
         settingsFile << "rootProject.name = 'hello-world'"
-        buildFile << getBuildFileBlock(getMicronautConfigBlock("""crac {
+        buildFile << getBuildFileBlockWithMicronautConfig(getMicronautConfigBlock("""crac {
     checkpointScript.set(project.layout.projectDirectory.dir("src").file("test.sh"))
 }"""))
         writeFile("src/test.sh", "And another test")
@@ -81,7 +81,7 @@ class CracCustomizationSpec extends BaseCracGradleBuildSpec {
     void "base image is customizable"() {
         given:
         settingsFile << "rootProject.name = 'hello-world'"
-        buildFile << getBuildFileBlock(getMicronautConfigBlock("""crac {
+        buildFile << getBuildFileBlockWithMicronautConfig(getMicronautConfigBlock("""crac {
     baseImage.set("timyates:latest")
 }"""))
 
@@ -97,7 +97,7 @@ class CracCustomizationSpec extends BaseCracGradleBuildSpec {
     void "platform can be removed"() {
         given:
         settingsFile << "rootProject.name = 'hello-world'"
-        buildFile << getBuildFileBlock(getMicronautConfigBlock("""crac {
+        buildFile << getBuildFileBlockWithMicronautConfig(getMicronautConfigBlock("""crac {
     platform.convention(null)
     baseImage.set("timyates:latest")
 }"""))
@@ -114,7 +114,7 @@ class CracCustomizationSpec extends BaseCracGradleBuildSpec {
     void "platform can be customized"() {
         given:
         settingsFile << "rootProject.name = 'hello-world'"
-        buildFile << getBuildFileBlock(getMicronautConfigBlock("""crac {
+        buildFile << getBuildFileBlockWithMicronautConfig(getMicronautConfigBlock("""crac {
     platform.set("raspberry-pi/arm64")
     baseImage.set("timyates:latest")
 }"""))
