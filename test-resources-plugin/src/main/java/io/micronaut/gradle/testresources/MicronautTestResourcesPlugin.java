@@ -207,7 +207,8 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
                                                                            TaskContainer tasks,
                                                                            Provider<RegularFile> portFile,
                                                                            Path stopFile,
-                                                                           Provider<Boolean> isStandalone, Provider<Directory> cdsDir) {
+                                                                           Provider<Boolean> isStandalone,
+                                                                           Provider<Directory> cdsDir) {
         return tasks.register(START_TEST_RESOURCES_SERVICE_INTERNAL, StartTestResourcesService.class, task -> {
             task.setOnlyIf(t -> config.getEnabled().get());
             task.getPortFile().convention(portFile);
