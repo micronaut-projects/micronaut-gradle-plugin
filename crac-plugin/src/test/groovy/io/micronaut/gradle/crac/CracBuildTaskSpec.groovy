@@ -1,9 +1,7 @@
 package io.micronaut.gradle.crac
 
 import org.gradle.testkit.runner.TaskOutcome
-import spock.lang.IgnoreIf
 
-@IgnoreIf({ os.windows })
 class CracBuildTaskSpec extends BaseCracGradleBuildSpec {
 
     def "test build docker image"() {
