@@ -20,6 +20,19 @@ class ApplicationTestResourcesPluginSpec extends AbstractGradleBuildSpec {
         result.output.contains "io.micronaut.testresources.testcontainers.GenericTestContainerProvider"
     }
 
+    def "creates temp test-resources directory when running 'clean build'"() {
+        withSample("test-resources/data-mysql")
+
+        when:
+        def result = build 'clean', 'build'
+
+        then:
+        result.task(':test').outcome == TaskOutcome.SUCCESS
+        result.output.contains "Loaded 2 test resources resolvers"
+        result.output.contains "io.micronaut.testresources.mysql.MySQLTestResourceProvider"
+        result.output.contains "io.micronaut.testresources.testcontainers.GenericTestContainerProvider"
+    }
+
     def "fails if test resources support is disabled"() {
         withSample("test-resources/data-mysql")
         withTestResourcesConfiguration """
