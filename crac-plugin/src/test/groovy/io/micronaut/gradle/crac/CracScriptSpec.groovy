@@ -1,5 +1,8 @@
 package io.micronaut.gradle.crac
 
+import spock.lang.IgnoreIf
+
+@IgnoreIf({ os.windows })
 class CracScriptSpec extends BaseCracGradleBuildSpec {
 
     void "default warmup script is used by default"() {

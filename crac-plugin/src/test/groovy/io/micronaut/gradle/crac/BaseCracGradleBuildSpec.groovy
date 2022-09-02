@@ -2,9 +2,7 @@ package io.micronaut.gradle.crac
 
 import io.micronaut.gradle.AbstractGradleBuildSpec
 import org.intellij.lang.annotations.Language
-import spock.lang.IgnoreIf
 
-@IgnoreIf({ os.windows })
 abstract class BaseCracGradleBuildSpec extends AbstractGradleBuildSpec {
 
     File writeGroovyFile(String fileName, @Language("java") String content) {
