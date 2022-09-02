@@ -5,6 +5,7 @@ import io.micronaut.gradle.docker.MicronautDockerfile;
 import org.gradle.api.GradleException;
 import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.Input;
+import org.gradle.api.tasks.Optional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,6 +13,7 @@ import java.util.List;
 public class CRaCFinalDockerfile extends MicronautDockerfile {
 
     @Input
+    @Optional
     private final Property<String> platform;
 
     public static final String DEFAULT_WORKING_DIR = "/home/app";
@@ -38,7 +40,7 @@ public class CRaCFinalDockerfile extends MicronautDockerfile {
             case LAMBDA:
                 throw new GradleException("Lambda Functions are not supported for the CRaC plugin");
             default:
-                from(platform.map(p -> p.isEmpty() ? "" : ("--platform=" + p + " ")).getOrElse("") + from);
+                from(platform.map(p -> "--platform=" + p + " ").getOrElse("") + from);
                 setupResources();
                 exposePort(exposedPorts);
                 getInstructions().addAll(additionalInstructions);

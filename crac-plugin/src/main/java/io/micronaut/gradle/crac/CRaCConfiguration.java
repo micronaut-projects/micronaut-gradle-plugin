@@ -21,8 +21,8 @@ public interface CRaCConfiguration {
     Property<String> getBaseImage();
 
     /**
-     * The platform to specifu in the FROM instruction.
-     * @return the platform (can be set to an empty string to remove it)
+     * The platform to specify in the FROM instruction defaults to {@value MicronautCRaCPlugin#CRAC_DEFAULT_BASE_IMAGE_PLATFORM}.
+     * @return the platform (can be removed with {@code platform.convention(null)} in the {@link CRaCConfiguration} extension)
      */
     Property<String> getPlatform();
 

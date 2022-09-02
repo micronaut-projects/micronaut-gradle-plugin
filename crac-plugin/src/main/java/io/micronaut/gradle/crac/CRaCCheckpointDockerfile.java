@@ -9,6 +9,7 @@ import org.gradle.api.plugins.BasePlugin;
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.Input;
+import org.gradle.api.tasks.Optional;
 import org.gradle.api.tasks.TaskAction;
 
 import java.util.ArrayList;
@@ -20,6 +21,7 @@ public class CRaCCheckpointDockerfile extends Dockerfile {
     @Input
     private final Property<String> baseImage;
     @Input
+    @Optional
     private final Property<String> platform;
     @Input
     private final ListProperty<String> args;
@@ -66,7 +68,7 @@ public class CRaCCheckpointDockerfile extends Dockerfile {
             case LAMBDA:
                 throw new GradleException("Lambda Functions are not supported for the CRaC plugin");
             default:
-                from(platform.map(p -> p.isEmpty() ? "" : ("--platform=" + p + " ")).getOrElse("") + from);
+                from(platform.map(p -> "--platform=" + p + " ").getOrElse("") + from);
                 setupResources(this);
                 getInstructions().addAll(additionalInstructions);
                 if (getInstructions().get().stream().noneMatch(instruction -> instruction.getKeyword().equals(EntryPointInstruction.KEYWORD))) {

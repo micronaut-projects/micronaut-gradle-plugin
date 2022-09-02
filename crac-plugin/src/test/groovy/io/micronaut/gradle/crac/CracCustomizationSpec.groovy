@@ -97,7 +97,7 @@ class CracCustomizationSpec extends BaseCracGradleBuildSpec {
         given:
         settingsFile << "rootProject.name = 'hello-world'"
         buildFile << getBuildFileBlock(getMicronautConfigBlock("""crac {
-    platform.set("")
+    platform.convention(null)
     baseImage.set("timyates:latest")
 }"""))
 
