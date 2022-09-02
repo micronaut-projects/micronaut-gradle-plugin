@@ -56,7 +56,7 @@ class LambdaNativeImageSpec extends AbstractFunctionalTest {
 
     void 'native lambdas build in docker fetch the correct graalvm for #desc'() {
         given:
-        def graalVersion = '22.1.0'
+        def graalVersion = '22.2.0'
         settingsFile << "rootProject.name = 'hello-world'"
         buildFile << """
             plugins {
