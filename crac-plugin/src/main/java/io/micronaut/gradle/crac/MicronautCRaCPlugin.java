@@ -14,7 +14,6 @@ import io.micronaut.gradle.MicronautRuntime;
 import io.micronaut.gradle.PluginsHelper;
 import io.micronaut.gradle.crac.tasks.CheckpointScriptTask;
 import io.micronaut.gradle.docker.DockerBuildStrategy;
-import io.micronaut.gradle.docker.MicronautDockerPlugin;
 import io.micronaut.gradle.docker.model.MicronautDockerImage;
 import io.micronaut.gradle.docker.tasks.BuildLayersTask;
 import org.gradle.api.GradleException;
@@ -49,8 +48,9 @@ public class MicronautCRaCPlugin implements Plugin<Project> {
     public void apply(Project project) {
         PluginManager pluginManager = project.getPluginManager();
         pluginManager.apply(MicronautBasePlugin.class);
-        pluginManager.apply(MicronautDockerPlugin.class);
-        configurePlugin(project);
+        pluginManager.withPlugin("io.micronaut.docker", plugin -> {
+            configurePlugin(project);
+        });
     }
 
     private void configurePlugin(Project project) {
