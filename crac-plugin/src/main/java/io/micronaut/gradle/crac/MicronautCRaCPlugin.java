@@ -48,9 +48,7 @@ public class MicronautCRaCPlugin implements Plugin<Project> {
     public void apply(Project project) {
         PluginManager pluginManager = project.getPluginManager();
         pluginManager.apply(MicronautBasePlugin.class);
-        pluginManager.withPlugin("io.micronaut.docker", plugin -> {
-            configurePlugin(project);
-        });
+        pluginManager.withPlugin("io.micronaut.docker", plugin -> configurePlugin(project));
     }
 
     private void configurePlugin(Project project) {
