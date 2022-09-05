@@ -12,21 +12,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 @CacheableTask
-public class CRaCFinalDockerfile extends MicronautDockerfile {
+public abstract class CRaCFinalDockerfile extends MicronautDockerfile {
 
     @Input
     @Optional
-    private final Property<String> platform;
+    public abstract Property<String> getPlatform();
 
     public static final String DEFAULT_WORKING_DIR = "/home/app";
 
+    @SuppressWarnings("java:S5993") // Gradle API
     public CRaCFinalDockerfile() {
         setDescription("Builds a Docker File for a CRaC checkpointed Micronaut application");
-        this.platform = getProject().getObjects().property(String.class);
-    }
-
-    public Property<String> getPlatform() {
-        return platform;
     }
 
     @Override
@@ -42,7 +38,7 @@ public class CRaCFinalDockerfile extends MicronautDockerfile {
             case LAMBDA:
                 throw new GradleException("Lambda Functions are not supported for the CRaC plugin");
             default:
-                from(platform.map(p -> "--platform=" + p + " ").getOrElse("") + from);
+                from(getPlatform().map(p -> "--platform=" + p + " ").getOrElse("") + from);
                 setupResources();
                 exposePort(exposedPorts);
                 getInstructions().addAll(additionalInstructions);

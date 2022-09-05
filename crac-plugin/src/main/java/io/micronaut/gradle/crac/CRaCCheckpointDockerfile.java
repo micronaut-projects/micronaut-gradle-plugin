@@ -3,8 +3,6 @@ package io.micronaut.gradle.crac;
 import com.bmuschko.gradle.docker.tasks.image.Dockerfile;
 import io.micronaut.gradle.docker.DockerBuildStrategy;
 import org.gradle.api.GradleException;
-import org.gradle.api.Project;
-import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.plugins.BasePlugin;
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Property;
@@ -17,37 +15,32 @@ import java.util.ArrayList;
 import java.util.List;
 
 @CacheableTask
-public class CRaCCheckpointDockerfile extends Dockerfile {
+public abstract class CRaCCheckpointDockerfile extends Dockerfile {
     public static final String DEFAULT_WORKING_DIR = "/home/app";
 
     @Input
-    private final Property<String> baseImage;
+    public abstract Property<String> getBaseImage();
+
     @Input
     @Optional
-    private final Property<String> platform;
-    @Input
-    private final ListProperty<String> args;
-    @Input
-    private final Property<DockerBuildStrategy> buildStrategy;
+    public abstract Property<String> getPlatform();
 
     @Input
-    private final Property<String> targetWorkingDirectory;
+    public abstract ListProperty<String> getArgs();
 
+    @Input
+    public abstract Property<DockerBuildStrategy> getBuildStrategy();
+
+    @Input
+    public abstract Property<String> getTargetWorkingDirectory();
+
+    @SuppressWarnings("java:S5993") // Gradle API
     public CRaCCheckpointDockerfile() {
-        Project project = getProject();
         setGroup(BasePlugin.BUILD_GROUP);
         setDescription("Builds the CRaC checkpoint Docker File for a Micronaut application");
-        ObjectFactory objects = project.getObjects();
-        this.buildStrategy = objects.property(DockerBuildStrategy.class)
-                                    .convention(DockerBuildStrategy.DEFAULT);
-        this.baseImage = objects.property(String.class).convention("none");
-        this.platform = objects.property(String.class);
-        this.args = objects.listProperty(String.class);
-        this.targetWorkingDirectory = objects.property(String.class).convention(DEFAULT_WORKING_DIR);
-    }
-
-    public Property<String> getTargetWorkingDirectory() {
-        return targetWorkingDirectory;
+        this.getBuildStrategy().convention(DockerBuildStrategy.DEFAULT);
+        this.getBaseImage().convention("none");
+        this.getTargetWorkingDirectory().convention(DEFAULT_WORKING_DIR);
     }
 
     @TaskAction
@@ -55,12 +48,12 @@ public class CRaCCheckpointDockerfile extends Dockerfile {
     @SuppressWarnings("java:S106") // System.out
     public void create() {
         super.create();
-        System.out.println("Dockerfile written to: " + getDestFile().get().getAsFile().getAbsolutePath());
+        System.out.println("CRaC checkpoint Dockerfile written to: " + getDestFile().get().getAsFile().getAbsolutePath());
     }
 
     private void setupInstructions(List<Instruction> additionalInstructions) {
-        DockerBuildStrategy strategy = this.buildStrategy.getOrElse(DockerBuildStrategy.DEFAULT);
-        String from = baseImage.getOrNull();
+        DockerBuildStrategy strategy = this.getBuildStrategy().getOrElse(DockerBuildStrategy.DEFAULT);
+        String from = getBaseImage().getOrNull();
         if ("none".equalsIgnoreCase(from)) {
             from = null;
         }
@@ -70,7 +63,7 @@ public class CRaCCheckpointDockerfile extends Dockerfile {
             case LAMBDA:
                 throw new GradleException("Lambda Functions are not supported for the CRaC plugin");
             default:
-                from(platform.map(p -> "--platform=" + p + " ").getOrElse("") + from);
+                from(getPlatform().map(p -> "--platform=" + p + " ").getOrElse("") + from);
                 setupResources(this);
                 getInstructions().addAll(additionalInstructions);
                 if (getInstructions().get().stream().noneMatch(instruction -> instruction.getKeyword().equals(EntryPointInstruction.KEYWORD))) {
@@ -102,25 +95,6 @@ public class CRaCCheckpointDockerfile extends Dockerfile {
         // Reset the instructions to empty
         getInstructions().set(new ArrayList<>());
         setupInstructions(additionalInstructions);
-    }
-
-    public Property<String> getBaseImage() {
-        return baseImage;
-    }
-
-    public Property<String> getPlatform() {
-        return platform;
-    }
-
-    /**
-     * @return The build strategy.
-     */
-    public Property<DockerBuildStrategy> getBuildStrategy() {
-        return buildStrategy;
-    }
-
-    public ListProperty<String> getArgs() {
-        return args;
     }
 
     static void setupResources(Dockerfile task) {
