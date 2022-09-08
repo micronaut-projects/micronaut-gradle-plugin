@@ -108,7 +108,7 @@ public abstract class CRaCCheckpointDockerfile extends Dockerfile {
                 "    && rm -rf /var/lib/apt/lists/*");
         task.instruction("# Install latest CRaC OpenJDK");
         task.runCommand("release=\"$(curl -sL https://api.github.com/repos/CRaC/openjdk-builds/releases/latest)\" \\\n" +
-                "    && asset=\"$(echo $release | jq '.assets[] | select(.name | test(\"jdk[0-9]+-crac\\\\+[0-9]+\\\\.tar\\\\.gz\"))')\" \\\n" +
+                "    && asset=\"$(echo $release | sed -e 's/\\r//g' | sed -e 's/\\x09//g' | tr '\\n' ' ' | jq '.assets[] | select(.name | test(\"openjdk-[0-9]+-crac\\\\+[0-9]+_linux-x64\\\\.tar\\\\.gz\"))')\" \\\n" +
                 "    && id=\"$(echo $asset | jq .id)\" \\\n" +
                 "    && name=\"$(echo $asset | jq -r .name)\" \\\n" +
                 "    && curl -LJOH 'Accept: application/octet-stream' \"https://api.github.com/repos/CRaC/openjdk-builds/releases/assets/$id\" >&2 \\\n" +
