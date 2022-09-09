@@ -3,10 +3,8 @@ package io.micronaut.gradle
 import org.gradle.testkit.runner.TaskOutcome
 import spock.lang.IgnoreIf
 import spock.lang.Issue
-import spock.lang.Requires
 
 @IgnoreIf({ os.windows })
-@Requires({ jvm.isJava11Compatible() })
 class DockerBuildTaskSpec extends AbstractGradleBuildSpec {
 
     def "test build docker image"() {

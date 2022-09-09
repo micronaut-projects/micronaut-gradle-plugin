@@ -168,7 +168,7 @@ public class MicronautGraalPlugin implements Plugin<Project> {
         addGraalVMAnnotationProcessorDependency(project,
                 sourceSets.stream()
                         .filter(sourceSet -> SOURCE_SETS.contains(sourceSet.getName()))
-                        .collect(Collectors.toList())
+                        .toList()
         );
     }
 
@@ -184,6 +184,6 @@ public class MicronautGraalPlugin implements Plugin<Project> {
     public static List<String> getGraalVMBuilderExports() {
         return GRAALVM_MODULE_EXPORTS.stream()
                 .map(module -> "--add-exports=org.graalvm.nativeimage.builder/" + module + "=ALL-UNNAMED")
-                .collect(Collectors.toList());
+                .toList();
     }
 }

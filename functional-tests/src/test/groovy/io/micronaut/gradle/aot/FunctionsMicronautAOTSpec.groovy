@@ -4,7 +4,6 @@ import io.micronaut.gradle.AbstractGradleBuildSpec
 import org.gradle.testkit.runner.TaskOutcome
 import spock.lang.Requires
 
-@Requires({ jvm.isJava11Compatible() })
 class FunctionsMicronautAOTSpec extends AbstractAOTPluginSpec {
     private static final List<String> PROVIDERS = ["aws"]
     private static final List<String> RUNTIMES = ["jit", "native"]

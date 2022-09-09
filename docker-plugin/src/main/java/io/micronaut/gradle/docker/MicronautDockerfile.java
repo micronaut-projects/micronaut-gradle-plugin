@@ -175,16 +175,16 @@ public class MicronautDockerfile extends Dockerfile implements DockerBuildOption
 
     private String getProjectFnVersion() {
         JavaVersion javaVersion = Jvm.current().getJavaVersion();
-        if (javaVersion != null && javaVersion.isJava11Compatible()) {
-            return "jre11-latest";
+        if (javaVersion != null && javaVersion.isCompatibleWith(JavaVersion.VERSION_17)) {
+            return "jre17-latest";
         }
         return "latest";
     }
 
     static void setupResources(Dockerfile task) {
         String workDir = DEFAULT_WORKING_DIR;
-        if (task instanceof DockerBuildOptions) {
-            workDir = ((DockerBuildOptions) task).getTargetWorkingDirectory().get();
+        if (task instanceof DockerBuildOptions dbo) {
+            workDir = dbo.getTargetWorkingDirectory().get();
         }
         task.workingDir(workDir);
         task.copyFile("layers/libs", workDir + "/libs");

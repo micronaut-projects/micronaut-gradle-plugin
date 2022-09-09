@@ -5,7 +5,6 @@ import org.gradle.testkit.runner.TaskOutcome
 import spock.lang.Requires
 
 @Requires({ AbstractGradleBuildSpec.graalVmAvailable && !os.windows })
-@Requires({ jvm.isJava11Compatible() })
 class TestResourcesWithAotAndGraalVMSpec extends AbstractTestResourcesSpec {
 
     def "runs optimized binary"() {

@@ -2,9 +2,7 @@ package io.micronaut.gradle.aot
 
 import org.gradle.testkit.runner.TaskOutcome
 import spock.lang.Issue
-import spock.lang.Requires
 
-@Requires({ jvm.isJava11Compatible() })
 class BasicMicronautAOTSpec extends AbstractAOTPluginSpec {
 
     def "generates optimizations for #runtime (#kind)"() {
