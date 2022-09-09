@@ -82,5 +82,13 @@ public abstract class CheckpointScriptTask extends DefaultTask {
             Files.copy(getWarmupFile().get().getAsFile().toPath(), warmupScriptPath, StandardCopyOption.REPLACE_EXISTING);
         }
         Files.setPosixFilePermissions(warmupScriptPath, POSIX_FILE_PERMISSIONS);
+
+        Path runScriptPath = getOutputDir().file("run.sh").get().getAsFile().toPath();
+        Files.copy(
+                CheckpointScriptTask.class.getResourceAsStream("/run.sh"),
+                runScriptPath,
+                StandardCopyOption.REPLACE_EXISTING
+        );
+        Files.setPosixFilePermissions(runScriptPath, POSIX_FILE_PERMISSIONS);
     }
 }

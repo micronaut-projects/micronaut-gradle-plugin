@@ -121,7 +121,7 @@ public abstract class CRaCCheckpointDockerfile extends Dockerfile {
         task.copyFile("layers/resources", workDir + "/resources");
         task.copyFile("layers/application.jar", workDir + "/application.jar");
         task.instruction("# Add build scripts");
-        task.copyFile("checkpoint/checkpoint.sh", workDir + "/checkpoint.sh");
-        task.copyFile("checkpoint/warmup.sh", workDir + "/warmup.sh");
+        task.copyFile("scripts/checkpoint.sh", workDir + "/checkpoint.sh");
+        task.copyFile("scripts/warmup.sh", workDir + "/warmup.sh");
     }
 }

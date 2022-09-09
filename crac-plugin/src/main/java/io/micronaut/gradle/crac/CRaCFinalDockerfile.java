@@ -45,9 +45,8 @@ public abstract class CRaCFinalDockerfile extends MicronautDockerfile {
                 if (getInstructions().get().stream().noneMatch(instruction -> instruction.getKeyword().equals(EntryPointInstruction.KEYWORD))) {
                     entryPoint(getArgs().map(strings -> {
                         List<String> newList = new ArrayList<>(strings.size() + 3);
-                        newList.add("/azul-crac-jdk/bin/java");
+                        newList.add("/home/app/run.sh");
                         newList.addAll(strings);
-                        newList.add("-XX:CRaCRestoreFrom=cr");
                         return newList;
                     }));
                 }
@@ -69,5 +68,6 @@ public abstract class CRaCFinalDockerfile extends MicronautDockerfile {
         copyFile("layers/classes", workDir + "/classes");
         copyFile("layers/resources", workDir + "/resources");
         copyFile("layers/application.jar", workDir + "/application.jar");
+        copyFile("scripts/run.sh", workDir + "/run.sh");
     }
 }

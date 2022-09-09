@@ -37,7 +37,7 @@ import static io.micronaut.gradle.Strings.capitalize;
 
 public class MicronautCRaCPlugin implements Plugin<Project> {
 
-    public static final String CRAC_DEFAULT_BASE_IMAGE = "ubuntu:18.04";
+    public static final String CRAC_DEFAULT_BASE_IMAGE = "ubuntu:20.04";
     public static final String CRAC_DEFAULT_BASE_IMAGE_PLATFORM = "linux/amd64";
     public static final String CRAC_DEFAULT_READINESS_COMMAND = "curl --output /dev/null --silent --head http://localhost:8080";
     private static final String CRAC_TASK_GROUP = "CRaC";
@@ -86,7 +86,7 @@ public class MicronautCRaCPlugin implements Plugin<Project> {
             task.getCheckpointFile().set(configuration.getCheckpointScript());
             task.getWarmupFile().set(configuration.getWarmupScript());
             task.getPreCheckpointReadinessCommand().set(configuration.getPreCheckpointReadinessCommand());
-            task.getOutputDir().convention(project.getLayout().getBuildDirectory().dir(BUILD_DOCKER_DIRECTORY + imageName + "/checkpoint"));
+            task.getOutputDir().convention(project.getLayout().getBuildDirectory().dir(BUILD_DOCKER_DIRECTORY + imageName + "/scripts"));
         });
         TaskProvider<BuildLayersTask> buildLayersTask = tasks.named("buildLayers", BuildLayersTask.class);
         CheckpointTasksOfNote checkpointDockerBuild = configureCheckpointDockerBuild(project, tasks, scriptTask, buildLayersTask, configuration, imageName);

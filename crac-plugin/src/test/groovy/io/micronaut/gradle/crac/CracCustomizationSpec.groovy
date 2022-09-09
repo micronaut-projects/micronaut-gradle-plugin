@@ -5,6 +5,19 @@ import spock.lang.IgnoreIf
 @IgnoreIf({ os.windows })
 class CracCustomizationSpec extends BaseCracGradleBuildSpec {
 
+    void "run script is created"() {
+        given:
+        settingsFile << "rootProject.name = 'hello-world'"
+        buildFile << buildFileBlock
+
+        when:
+        def result = build('checkpointScripts', '-s')
+
+        then:
+        result.output.contains("BUILD SUCCESSFUL")
+        fileTextContents("build/docker/main/scripts/run.sh") == CracCustomizationSpec.getResourceAsStream("/run.sh").text
+    }
+
     void "default warmup script is used by default"() {
         given:
         settingsFile << "rootProject.name = 'hello-world'"
@@ -15,7 +28,7 @@ class CracCustomizationSpec extends BaseCracGradleBuildSpec {
 
         then:
         result.output.contains("BUILD SUCCESSFUL")
-        fileTextContents("build/docker/main/checkpoint/warmup.sh") == CracCustomizationSpec.getResourceAsStream("/warmup.sh").text
+        fileTextContents("build/docker/main/scripts/warmup.sh") == CracCustomizationSpec.getResourceAsStream("/warmup.sh").text
     }
 
     void "warmup script is customizable"() {
@@ -31,7 +44,7 @@ class CracCustomizationSpec extends BaseCracGradleBuildSpec {
 
         then:
         result.output.contains("BUILD SUCCESSFUL")
-        fileTextContents("build/docker/main/checkpoint/warmup.sh") == "This is a test"
+        fileTextContents("build/docker/main/scripts/warmup.sh") == "This is a test"
     }
 
     void "default checkpoint script is used by default"() {
@@ -45,7 +58,7 @@ class CracCustomizationSpec extends BaseCracGradleBuildSpec {
 
         then:
         result.output.contains("BUILD SUCCESSFUL")
-        fileTextContents("build/docker/main/checkpoint/checkpoint.sh") == expected
+        fileTextContents("build/docker/main/scripts/checkpoint.sh") == expected
     }
 
     void "checkpoint script is customizable"() {
@@ -61,7 +74,7 @@ class CracCustomizationSpec extends BaseCracGradleBuildSpec {
 
         then:
         result.output.contains("BUILD SUCCESSFUL")
-        fileTextContents("build/docker/main/checkpoint/checkpoint.sh") == "And another test\n"
+        fileTextContents("build/docker/main/scripts/checkpoint.sh") == "And another test\n"
     }
 
     void "base image default is as expected"() {
