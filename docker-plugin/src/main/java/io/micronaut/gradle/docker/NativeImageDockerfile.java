@@ -122,6 +122,13 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
     @Optional
     public abstract Property<String> getDefaultCommand();
 
+    /**
+     * @return URL of the Graal releases location
+     */
+    @Input
+    @Optional
+    public abstract Property<String> getGraalReleasesUrl();
+
     @Input
     @Override
     public abstract Property<String> getTargetWorkingDirectory();
@@ -387,7 +394,8 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
             String graalVersion = getGraalVersion().get();
             String graalArch = getGraalArch().get();
             String fileName = "graalvm-ce-" + jdkVersion + "-linux-" + graalArch + "-" + graalVersion + ".tar.gz";
-            runCommand("curl -4 -L https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-" + graalVersion + "/" + fileName + " -o /tmp/" + fileName);
+            String releasesUrl = getGraalReleasesUrl().getOrElse("https://github.com/graalvm/graalvm-ce-builds/releases/download");
+            runCommand("curl -4 -L " + releasesUrl + "/vm-" + graalVersion + "/" + fileName + " -o /tmp/" + fileName);
             runCommand("tar -zxf /tmp/" + fileName + " -C /tmp && mv /tmp/graalvm-ce-" + jdkVersion + "-" + graalVersion + " /usr/lib/graalvm");
             runCommand("rm -rf /tmp/*");
             runCommand("/usr/lib/graalvm/bin/gu install native-image");
