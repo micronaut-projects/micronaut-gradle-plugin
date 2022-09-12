@@ -9,7 +9,6 @@ import spock.lang.Requires
 
 @Requires({ AbstractGradleBuildSpec.graalVmAvailable })
 @IgnoreIf({ os.windows })
-@Requires({ jvm.isJava11Compatible() })
 class DockerNativeFunctionalTest extends AbstractEagerConfiguringFunctionalTest {
 
     def "test build docker native image for runtime #runtime"() {
@@ -33,8 +32,8 @@ class DockerNativeFunctionalTest extends AbstractEagerConfiguringFunctionalTest 
             mainClassName="example.Application"
             
             java {
-                sourceCompatibility = JavaVersion.toVersion('11')
-                targetCompatibility = JavaVersion.toVersion('11')
+                sourceCompatibility = JavaVersion.toVersion('17')
+                targetCompatibility = JavaVersion.toVersion('17')
             }
             
             dockerfileNative {
@@ -122,8 +121,8 @@ micronaut:
             }
 
             java {
-                sourceCompatibility = JavaVersion.toVersion('11')
-                targetCompatibility = JavaVersion.toVersion('11')
+                sourceCompatibility = JavaVersion.toVersion('17')
+                targetCompatibility = JavaVersion.toVersion('17')
             }
 
             dockerfileNative {
@@ -170,8 +169,8 @@ micronaut:
             }
 
             java {
-                sourceCompatibility = JavaVersion.toVersion('11')
-                targetCompatibility = JavaVersion.toVersion('11')
+                sourceCompatibility = JavaVersion.toVersion('17')
+                targetCompatibility = JavaVersion.toVersion('17')
             }
         """
 
@@ -211,8 +210,8 @@ micronaut:
             }
 
             java {
-                sourceCompatibility = JavaVersion.toVersion('11')
-                targetCompatibility = JavaVersion.toVersion('11')
+                sourceCompatibility = JavaVersion.toVersion('17')
+                targetCompatibility = JavaVersion.toVersion('17')
             }
         """
 
@@ -256,8 +255,8 @@ micronaut:
             }
             
             java {
-                sourceCompatibility = JavaVersion.toVersion('11')
-                targetCompatibility = JavaVersion.toVersion('11')
+                sourceCompatibility = JavaVersion.toVersion('17')
+                targetCompatibility = JavaVersion.toVersion('17')
             }
             
             mainClassName="example.Application"
@@ -429,8 +428,8 @@ class Application {
             }
                     
             java {
-                sourceCompatibility = JavaVersion.toVersion('11')
-                targetCompatibility = JavaVersion.toVersion('11')
+                sourceCompatibility = JavaVersion.toVersion('17')
+                targetCompatibility = JavaVersion.toVersion('17')
             }
             
             dockerfile {
@@ -510,8 +509,8 @@ class Application {
             mainClassName="example.Application"
             
             java {
-                sourceCompatibility = JavaVersion.toVersion('11')
-                targetCompatibility = JavaVersion.toVersion('11')
+                sourceCompatibility = JavaVersion.toVersion('17')
+                targetCompatibility = JavaVersion.toVersion('17')
             }
             
             dockerfileNative {
@@ -565,7 +564,7 @@ micronaut:
         expect:
         task.outcome == TaskOutcome.SUCCESS
         dockerFile == """
-FROM ghcr.io/graalvm/native-image:ol7-java11-22.2.0 AS graalvm
+FROM ghcr.io/graalvm/native-image:ol7-java17-22.2.0 AS graalvm
 WORKDIR /home/alternate
 COPY layers/libs /home/alternate/libs
 COPY layers/classes /home/alternate/classes

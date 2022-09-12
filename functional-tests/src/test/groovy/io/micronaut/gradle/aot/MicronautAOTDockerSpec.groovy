@@ -2,10 +2,8 @@ package io.micronaut.gradle.aot
 
 import org.gradle.testkit.runner.TaskOutcome
 import spock.lang.IgnoreIf
-import spock.lang.Requires
 
 @IgnoreIf({ os.windows })
-@Requires({ jvm.isJava11() })
 class MicronautAOTDockerSpec extends AbstractAOTPluginSpec {
 
     def "generates an optimized docker file"() {
@@ -74,7 +72,7 @@ ENTRYPOINT ["java", "-jar", "/home/app/application.jar"]
         result.task(":optimizedDockerBuildNative").outcome == TaskOutcome.SUCCESS
 
         def dockerFile = normalizeLineEndings(file("build/docker/native-optimized/DockerfileNative").text)
-        dockerFile == """FROM ghcr.io/graalvm/native-image:ol7-java11-22.2.0 AS graalvm
+        dockerFile == """FROM ghcr.io/graalvm/native-image:ol7-java17-22.2.0 AS graalvm
 WORKDIR /home/app
 COPY layers/libs /home/app/libs
 COPY layers/classes /home/app/classes

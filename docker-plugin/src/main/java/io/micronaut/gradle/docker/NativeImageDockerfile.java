@@ -54,7 +54,7 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
 
     private static final List<Integer> SUPPORTED_JAVA_VERSIONS = Collections.unmodifiableList(
             // keep those in descending order
-            Arrays.asList(17, 11)
+            Arrays.asList(17)
     );
     private static final String ARM_ARCH = "aarch64";
     private static final String X86_64_ARCH = "amd64";
@@ -361,7 +361,7 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
                 return javaVersion;
             }
         }
-        return SUPPORTED_JAVA_VERSIONS.stream().reduce((x, y) -> y).orElse(11);
+        return SUPPORTED_JAVA_VERSIONS.stream().reduce((x, y) -> y).orElse(17);
     }
 
     @TaskAction
@@ -408,7 +408,7 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
                         .getFiles()
                         .stream()
                         .map(this::toCopyResourceDirectoryInstruction)
-                        .collect(Collectors.toList())
+                        .toList()
         ));
         runCommand(getProviders().provider(() -> String.join(" ", buildActualCommandLine(executable, buildStrategy, imageResolver))));
         switch (buildStrategy) {
@@ -530,7 +530,7 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
                         }
                         return arg;
                     })
-                    .collect(Collectors.toList());
+                    .toList();
         }
         return args;
     }
@@ -553,7 +553,7 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
                 .getFiles()
                 .stream()
                 .map(f -> getTargetWorkingDirectory().get() + "/config-dirs/" + f.getName())
-                .collect(Collectors.toList())
+                .toList()
         );
         options.getConfigurationFileDirectories().setFrom(
                 remappedConfigDirectories
@@ -609,8 +609,8 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
 
     private String getProjectFnVersion() {
         JavaVersion javaVersion = Jvm.current().getJavaVersion();
-        if (javaVersion != null && javaVersion.isJava11Compatible()) {
-            return "jre11-latest";
+        if (javaVersion != null && javaVersion.isCompatibleWith(JavaVersion.VERSION_17)) {
+            return "jre17-latest";
         }
         return "latest";
     }
