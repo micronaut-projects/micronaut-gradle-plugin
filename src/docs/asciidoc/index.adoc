@@ -2,7 +2,7 @@
 :native-build-tools-version: 0.9.13
 :kotlin-version: 1.6.21
 :micronaut-version: 3.5.1
-:gradle-version: 7.4.1
+:gradle-version: 7.5.1
 :shadow-version: 7.1.2
 :native-gradle-plugin: https://graalvm.github.io/native-build-tools/{native-build-tools-version}/gradle-plugin.html
 :gradle-docs: https://docs.gradle.org/{gradle-version}/userguide
