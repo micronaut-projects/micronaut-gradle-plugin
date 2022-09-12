@@ -6,11 +6,9 @@ import org.gradle.testkit.runner.TaskOutcome
 import spock.lang.IgnoreIf
 import spock.lang.Issue
 import spock.lang.Requires
-import spock.util.environment.RestoreSystemProperties
 
 @Requires({ AbstractGradleBuildSpec.graalVmAvailable })
 @IgnoreIf({ os.windows })
-@Requires({ jvm.isJava11Compatible() })
 class LambdaNativeImageSpec extends AbstractFunctionalTest {
 
     void 'mainclass is set correctly for an application deployed as GraalVM and Lambda'() {
@@ -35,8 +33,8 @@ class LambdaNativeImageSpec extends AbstractFunctionalTest {
             }
             
             java {
-                sourceCompatibility = JavaVersion.toVersion('11')
-                targetCompatibility = JavaVersion.toVersion('11')
+                sourceCompatibility = JavaVersion.toVersion('17')
+                targetCompatibility = JavaVersion.toVersion('17')
             }
         """
 
@@ -77,8 +75,8 @@ class LambdaNativeImageSpec extends AbstractFunctionalTest {
             }
 
             java {
-                sourceCompatibility = JavaVersion.toVersion('11')
-                targetCompatibility = JavaVersion.toVersion('11')
+                sourceCompatibility = JavaVersion.toVersion('17')
+                targetCompatibility = JavaVersion.toVersion('17')
             }
 
             dockerfileNative {
@@ -126,8 +124,8 @@ class LambdaNativeImageSpec extends AbstractFunctionalTest {
             }
             
             java {
-                sourceCompatibility = JavaVersion.toVersion('11')
-                targetCompatibility = JavaVersion.toVersion('11')
+                sourceCompatibility = JavaVersion.toVersion('17')
+                targetCompatibility = JavaVersion.toVersion('17')
             }
             
             graalvmNative {
@@ -185,8 +183,8 @@ class LambdaNativeImageSpec extends AbstractFunctionalTest {
             }
 
             java {
-                sourceCompatibility = JavaVersion.toVersion('11')
-                targetCompatibility = JavaVersion.toVersion('11')
+                sourceCompatibility = JavaVersion.toVersion('17')
+                targetCompatibility = JavaVersion.toVersion('17')
             }
         """
 
@@ -234,8 +232,8 @@ class LambdaNativeImageSpec extends AbstractFunctionalTest {
             }
 
             java {
-                sourceCompatibility = JavaVersion.toVersion('11')
-                targetCompatibility = JavaVersion.toVersion('11')
+                sourceCompatibility = JavaVersion.toVersion('17')
+                targetCompatibility = JavaVersion.toVersion('17')
             }
 
             dockerfileNative {
@@ -286,8 +284,8 @@ class LambdaNativeImageSpec extends AbstractFunctionalTest {
             }
 
             java {
-                sourceCompatibility = JavaVersion.toVersion('11')
-                targetCompatibility = JavaVersion.toVersion('11')
+                sourceCompatibility = JavaVersion.toVersion('17')
+                targetCompatibility = JavaVersion.toVersion('17')
             }
         """
 

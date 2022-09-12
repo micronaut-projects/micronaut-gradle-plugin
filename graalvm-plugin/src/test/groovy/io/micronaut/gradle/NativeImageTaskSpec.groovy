@@ -6,7 +6,6 @@ import spock.lang.IgnoreIf
 import spock.lang.Requires
 
 @Requires({ AbstractGradleBuildSpec.graalVmAvailable })
-@Requires({ jvm.isJava11() })
 class NativeImageTaskSpec extends AbstractGradleBuildSpec {
 
     @IgnoreIf({ os.isWindows() })

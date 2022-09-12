@@ -1,8 +1,5 @@
 package io.micronaut.gradle.aot
 
-import spock.lang.Requires
-
-@Requires({ jvm.isJava11Compatible() })
 class ShadowMicronautAOTSpec extends AbstractAOTPluginSpec {
 
     def "builds a fatjar optimized flavor"() {

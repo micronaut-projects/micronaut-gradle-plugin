@@ -20,7 +20,6 @@ import org.gradle.api.Named;
 import org.gradle.api.provider.ListProperty;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Represents a Micronaut docker image, represented
@@ -36,7 +35,7 @@ public interface MicronautDockerImage extends Named {
     default List<Layer> findLayers(RuntimeKind runtimeKind) {
         return getLayers().map(layers -> layers.stream()
                 .filter(layer -> layer.getRuntimeKind().get().isCompatibleWith(runtimeKind))
-                .collect(Collectors.toList()))
+                .toList())
                 .get();
     }
 }

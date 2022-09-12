@@ -90,7 +90,7 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
                             dc.because("Aligning version of Micronaut the current Micronaut version");
                             dc.version(version -> version.strictly(v));
                         }))
-                        .collect(Collectors.toList())
+                        .toList()
         ));
     }
 
@@ -279,7 +279,7 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
                         .filter(ModuleDependency.class::isInstance)
                         .map(ModuleDependency.class::cast)
                         .map(d -> new MavenDependency(d.getGroup(), d.getName(), d.getVersion()))
-                        .collect(Collectors.toList());
+                        .toList();
             }
             String testResourcesVersion = config.getVersion().get();
             return concat(concat(
@@ -291,7 +291,7 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
                                     .map(m -> "io.micronaut.testresources:micronaut-test-resources-" + m + ":" + testResourcesVersion))
                             .map(dependencies::create),
                     Stream.of(dependencies.create(testResourcesSourceSet.getRuntimeClasspath())))
-                    .collect(Collectors.toList());
+                    .toList();
         }).orElse(Collections.emptyList());
     }
 
