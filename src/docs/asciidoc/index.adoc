@@ -1,5 +1,5 @@
 = Micronaut Gradle plugin
-:native-build-tools-version: 0.9.11
+:native-build-tools-version: 0.9.13
 :kotlin-version: 1.6.21
 :micronaut-version: 3.5.1
 :gradle-version: 7.4.1
