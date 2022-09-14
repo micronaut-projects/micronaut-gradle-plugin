@@ -163,11 +163,11 @@ public class MicronautDockerPlugin implements Plugin<Project> {
                     Configuration runtimeClasspath = project.getConfigurations()
                             .getByName(RUNTIME_CLASSPATH_CONFIGURATION_NAME);
 
+                    classpath.add("resources/");
+                    classpath.add("classes/");
                     for (File file : runtimeClasspath) {
                         classpath.add("libs/" + file.getName());
                     }
-                    classpath.add("resources/");
-                    classpath.add("classes/");
                     return String.join(" ", classpath);
                 }));
                 manifest.attributes(attrs);
