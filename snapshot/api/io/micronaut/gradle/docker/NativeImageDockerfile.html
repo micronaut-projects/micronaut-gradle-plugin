@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":6,"i6":6,"i7":6,"i8":6,"i9":6,"i10":6,"i11":6,"i12":6,"i13":6,"i14":6,"i15":6,"i16":6,"i17":6,"i18":6,"i19":6,"i20":6,"i21":6};
+var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":6,"i6":6,"i7":6,"i8":6,"i9":6,"i10":6,"i11":6,"i12":6,"i13":6,"i14":6,"i15":6,"i16":6,"i17":6,"i18":6,"i19":6,"i20":6,"i21":6,"i22":6};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],4:["t3","Abstract Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -268,37 +268,41 @@ implements <a href="../../../../io/micronaut/gradle/docker/DockerBuildOptions.ht
 </tr>
 <tr id="i13" class="rowColor">
 <td class="colFirst"><code>abstract org.gradle.api.provider.Property&lt;java.lang.String&gt;</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../io/micronaut/gradle/docker/NativeImageDockerfile.html#getGraalVersion--">getGraalVersion</a></span>()</code>&nbsp;</td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../io/micronaut/gradle/docker/NativeImageDockerfile.html#getGraalReleasesUrl--">getGraalReleasesUrl</a></span>()</code>&nbsp;</td>
 </tr>
 <tr id="i14" class="altColor">
+<td class="colFirst"><code>abstract org.gradle.api.provider.Property&lt;java.lang.String&gt;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../io/micronaut/gradle/docker/NativeImageDockerfile.html#getGraalVersion--">getGraalVersion</a></span>()</code>&nbsp;</td>
+</tr>
+<tr id="i15" class="rowColor">
 <td class="colFirst"><code>abstract org.gradle.jvm.toolchain.JavaToolchainService</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../io/micronaut/gradle/docker/NativeImageDockerfile.html#getJavaToolchainService--">getJavaToolchainService</a></span>()</code>&nbsp;</td>
 </tr>
-<tr id="i15" class="rowColor">
+<tr id="i16" class="altColor">
 <td class="colFirst"><code>abstract org.gradle.api.provider.Property&lt;java.lang.String&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../io/micronaut/gradle/docker/NativeImageDockerfile.html#getJdkVersion--">getJdkVersion</a></span>()</code>&nbsp;</td>
 </tr>
-<tr id="i16" class="altColor">
+<tr id="i17" class="rowColor">
 <td class="colFirst"><code>protected abstract org.gradle.api.file.ProjectLayout</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../io/micronaut/gradle/docker/NativeImageDockerfile.html#getLayout--">getLayout</a></span>()</code>&nbsp;</td>
 </tr>
-<tr id="i17" class="rowColor">
+<tr id="i18" class="altColor">
 <td class="colFirst"><code>abstract org.gradle.api.provider.Property&lt;org.graalvm.buildtools.gradle.dsl.NativeImageOptions&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../io/micronaut/gradle/docker/NativeImageDockerfile.html#getNativeImageOptions--">getNativeImageOptions</a></span>()</code>&nbsp;</td>
 </tr>
-<tr id="i18" class="altColor">
+<tr id="i19" class="rowColor">
 <td class="colFirst"><code>protected abstract org.gradle.api.model.ObjectFactory</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../io/micronaut/gradle/docker/NativeImageDockerfile.html#getObjects--">getObjects</a></span>()</code>&nbsp;</td>
 </tr>
-<tr id="i19" class="rowColor">
+<tr id="i20" class="altColor">
 <td class="colFirst"><code>protected abstract org.gradle.api.provider.ProviderFactory</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../io/micronaut/gradle/docker/NativeImageDockerfile.html#getProviders--">getProviders</a></span>()</code>&nbsp;</td>
 </tr>
-<tr id="i20" class="altColor">
+<tr id="i21" class="rowColor">
 <td class="colFirst"><code>abstract org.gradle.api.provider.Property&lt;java.lang.Boolean&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../io/micronaut/gradle/docker/NativeImageDockerfile.html#getRequireGraalSdk--">getRequireGraalSdk</a></span>()</code>&nbsp;</td>
 </tr>
-<tr id="i21" class="rowColor">
+<tr id="i22" class="altColor">
 <td class="colFirst"><code>abstract org.gradle.api.provider.Property&lt;java.lang.String&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../io/micronaut/gradle/docker/NativeImageDockerfile.html#getTargetWorkingDirectory--">getTargetWorkingDirectory</a></span>()</code>
 <div class="block">The working directory to use in the container.</div>
@@ -544,6 +548,21 @@ public abstract&nbsp;org.gradle.api.provider.Property&lt;java.lang.String&gt;&nb
 <dd><code><a href="../../../../io/micronaut/gradle/docker/DockerBuildOptions.html#getDefaultCommand--">getDefaultCommand</a></code>&nbsp;in interface&nbsp;<code><a href="../../../../io/micronaut/gradle/docker/DockerBuildOptions.html" title="interface in io.micronaut.gradle.docker">DockerBuildOptions</a></code></dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>The default command to use</dd>
+</dl>
+</li>
+</ul>
+<a name="getGraalReleasesUrl--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getGraalReleasesUrl</h4>
+<pre>@Input
+ @Optional
+public abstract&nbsp;org.gradle.api.provider.Property&lt;java.lang.String&gt;&nbsp;getGraalReleasesUrl()</pre>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>URL of the Graal releases location</dd>
 </dl>
 </li>
 </ul>

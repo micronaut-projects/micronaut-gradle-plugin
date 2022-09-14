@@ -73,6 +73,8 @@
 <ul class="horizontal">
 <li><a href="io/micronaut/gradle/package-tree.html">io.micronaut.gradle</a>, </li>
 <li><a href="io/micronaut/gradle/aot/package-tree.html">io.micronaut.gradle.aot</a>, </li>
+<li><a href="io/micronaut/gradle/crac/package-tree.html">io.micronaut.gradle.crac</a>, </li>
+<li><a href="io/micronaut/gradle/crac/tasks/package-tree.html">io.micronaut.gradle.crac.tasks</a>, </li>
 <li><a href="io/micronaut/gradle/docker/package-tree.html">io.micronaut.gradle.docker</a>, </li>
 <li><a href="io/micronaut/gradle/docker/model/package-tree.html">io.micronaut.gradle.docker.model</a>, </li>
 <li><a href="io/micronaut/gradle/docker/tasks/package-tree.html">io.micronaut.gradle.docker.tasks</a>, </li>
@@ -91,9 +93,15 @@
 <li type="circle">org.gradle.api.DefaultTask (implements org.gradle.api.Task)
 <ul>
 <li type="circle">io.micronaut.gradle.docker.tasks.<a href="io/micronaut/gradle/docker/tasks/BuildLayersTask.html" title="class in io.micronaut.gradle.docker.tasks"><span class="typeNameLink">BuildLayersTask</span></a></li>
+<li type="circle">io.micronaut.gradle.crac.tasks.<a href="io/micronaut/gradle/crac/tasks/CheckpointScriptTask.html" title="class in io.micronaut.gradle.crac.tasks"><span class="typeNameLink">CheckpointScriptTask</span></a></li>
 <li type="circle">com.bmuschko.gradle.docker.tasks.image.Dockerfile (implements groovy.lang.GroovyObject)
 <ul>
-<li type="circle">io.micronaut.gradle.docker.<a href="io/micronaut/gradle/docker/MicronautDockerfile.html" title="class in io.micronaut.gradle.docker"><span class="typeNameLink">MicronautDockerfile</span></a> (implements io.micronaut.gradle.docker.<a href="io/micronaut/gradle/docker/DockerBuildOptions.html" title="interface in io.micronaut.gradle.docker">DockerBuildOptions</a>)</li>
+<li type="circle">io.micronaut.gradle.crac.<a href="io/micronaut/gradle/crac/CRaCCheckpointDockerfile.html" title="class in io.micronaut.gradle.crac"><span class="typeNameLink">CRaCCheckpointDockerfile</span></a></li>
+<li type="circle">io.micronaut.gradle.docker.<a href="io/micronaut/gradle/docker/MicronautDockerfile.html" title="class in io.micronaut.gradle.docker"><span class="typeNameLink">MicronautDockerfile</span></a> (implements io.micronaut.gradle.docker.<a href="io/micronaut/gradle/docker/DockerBuildOptions.html" title="interface in io.micronaut.gradle.docker">DockerBuildOptions</a>)
+<ul>
+<li type="circle">io.micronaut.gradle.crac.<a href="io/micronaut/gradle/crac/CRaCFinalDockerfile.html" title="class in io.micronaut.gradle.crac"><span class="typeNameLink">CRaCFinalDockerfile</span></a></li>
+</ul>
+</li>
 <li type="circle">io.micronaut.gradle.docker.<a href="io/micronaut/gradle/docker/NativeImageDockerfile.html" title="class in io.micronaut.gradle.docker"><span class="typeNameLink">NativeImageDockerfile</span></a> (implements io.micronaut.gradle.docker.<a href="io/micronaut/gradle/docker/DockerBuildOptions.html" title="interface in io.micronaut.gradle.docker">DockerBuildOptions</a>)</li>
 </ul>
 </li>
@@ -118,6 +126,7 @@
 <li type="circle">io.micronaut.gradle.aot.<a href="io/micronaut/gradle/aot/MicronautAotPlugin.html" title="class in io.micronaut.gradle.aot"><span class="typeNameLink">MicronautAotPlugin</span></a> (implements org.gradle.api.Plugin&lt;T&gt;)</li>
 <li type="circle">io.micronaut.gradle.<a href="io/micronaut/gradle/MicronautBasePlugin.html" title="class in io.micronaut.gradle"><span class="typeNameLink">MicronautBasePlugin</span></a> (implements org.gradle.api.Plugin&lt;T&gt;)</li>
 <li type="circle">io.micronaut.gradle.<a href="io/micronaut/gradle/MicronautComponentPlugin.html" title="class in io.micronaut.gradle"><span class="typeNameLink">MicronautComponentPlugin</span></a> (implements org.gradle.api.Plugin&lt;T&gt;)</li>
+<li type="circle">io.micronaut.gradle.crac.<a href="io/micronaut/gradle/crac/MicronautCRaCPlugin.html" title="class in io.micronaut.gradle.crac"><span class="typeNameLink">MicronautCRaCPlugin</span></a> (implements org.gradle.api.Plugin&lt;T&gt;)</li>
 <li type="circle">io.micronaut.gradle.docker.<a href="io/micronaut/gradle/docker/MicronautDockerPlugin.html" title="class in io.micronaut.gradle.docker"><span class="typeNameLink">MicronautDockerPlugin</span></a> (implements org.gradle.api.Plugin&lt;T&gt;)</li>
 <li type="circle">io.micronaut.gradle.<a href="io/micronaut/gradle/MicronautExtension.html" title="class in io.micronaut.gradle"><span class="typeNameLink">MicronautExtension</span></a> (implements org.gradle.api.plugins.ExtensionAware)</li>
 <li type="circle">io.micronaut.gradle.graalvm.<a href="io/micronaut/gradle/graalvm/MicronautGraalPlugin.html" title="class in io.micronaut.gradle.graalvm"><span class="typeNameLink">MicronautGraalPlugin</span></a> (implements org.gradle.api.Plugin&lt;T&gt;)</li>
@@ -137,6 +146,11 @@
 <li type="circle">io.micronaut.gradle.<a href="io/micronaut/gradle/Strings.html" title="class in io.micronaut.gradle"><span class="typeNameLink">Strings</span></a></li>
 <li type="circle">io.micronaut.gradle.testresources.internal.<a href="io/micronaut/gradle/testresources/internal/TestResourcesAOT.html" title="class in io.micronaut.gradle.testresources.internal"><span class="typeNameLink">TestResourcesAOT</span></a></li>
 <li type="circle">io.micronaut.gradle.testresources.internal.<a href="io/micronaut/gradle/testresources/internal/TestResourcesGraalVM.html" title="class in io.micronaut.gradle.testresources.internal"><span class="typeNameLink">TestResourcesGraalVM</span></a></li>
+<li type="circle">java.io.Writer (implements java.lang.Appendable, java.io.Closeable, java.io.Flushable)
+<ul>
+<li type="circle">io.micronaut.gradle.crac.<a href="io/micronaut/gradle/crac/TeeStringWriter.html" title="class in io.micronaut.gradle.crac"><span class="typeNameLink">TeeStringWriter</span></a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -148,6 +162,7 @@
 <li type="circle">io.micronaut.gradle.aot.<a href="io/micronaut/gradle/aot/AOTExtension.html" title="interface in io.micronaut.gradle.aot"><span class="typeNameLink">AOTExtension</span></a></li>
 </ul>
 </li>
+<li type="circle">io.micronaut.gradle.crac.<a href="io/micronaut/gradle/crac/CRaCConfiguration.html" title="interface in io.micronaut.gradle.crac"><span class="typeNameLink">CRaCConfiguration</span></a></li>
 <li type="circle">io.micronaut.gradle.docker.<a href="io/micronaut/gradle/docker/DockerBuildOptions.html" title="interface in io.micronaut.gradle.docker"><span class="typeNameLink">DockerBuildOptions</span></a></li>
 <li type="circle">io.micronaut.testresources.buildtools.KnownModules
 <ul>

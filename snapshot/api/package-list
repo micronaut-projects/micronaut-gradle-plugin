@@ -1,5 +1,7 @@
 io.micronaut.gradle
 io.micronaut.gradle.aot
+io.micronaut.gradle.crac
+io.micronaut.gradle.crac.tasks
 io.micronaut.gradle.docker
 io.micronaut.gradle.docker.model
 io.micronaut.gradle.docker.tasks

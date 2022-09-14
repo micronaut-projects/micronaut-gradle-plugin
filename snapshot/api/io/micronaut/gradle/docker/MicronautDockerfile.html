@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10};
+var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10,"i10":10,"i11":10,"i12":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -124,6 +124,10 @@ var activeTableTab = "activeTableTab";
 <dt>All Implemented Interfaces:</dt>
 <dd>groovy.lang.GroovyObject, <a href="../../../../io/micronaut/gradle/docker/DockerBuildOptions.html" title="interface in io.micronaut.gradle.docker">DockerBuildOptions</a>, java.lang.Comparable&lt;org.gradle.api.Task&gt;, org.gradle.api.internal.DynamicObjectAware, org.gradle.api.internal.TaskInternal, org.gradle.api.plugins.ExtensionAware, org.gradle.api.Task, org.gradle.util.Configurable&lt;org.gradle.api.Task&gt;</dd>
 </dl>
+<dl>
+<dt>Direct Known Subclasses:</dt>
+<dd><a href="../../../../io/micronaut/gradle/crac/CRaCFinalDockerfile.html" title="class in io.micronaut.gradle.crac">CRaCFinalDockerfile</a></dd>
+</dl>
 <hr>
 <br>
 <pre>public class <span class="typeNameLabel">MicronautDockerfile</span>
@@ -170,8 +174,16 @@ implements <a href="../../../../io/micronaut/gradle/docker/DockerBuildOptions.ht
 <th class="colLast" scope="col">Field and Description</th>
 </tr>
 <tr class="altColor">
+<td class="colFirst"><code>protected org.gradle.api.provider.Property&lt;<a href="../../../../io/micronaut/gradle/docker/DockerBuildStrategy.html" title="enum in io.micronaut.gradle.docker">DockerBuildStrategy</a>&gt;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../io/micronaut/gradle/docker/MicronautDockerfile.html#buildStrategy">buildStrategy</a></span></code>&nbsp;</td>
+</tr>
+<tr class="rowColor">
 <td class="colFirst"><code>static java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../io/micronaut/gradle/docker/MicronautDockerfile.html#DEFAULT_WORKING_DIR">DEFAULT_WORKING_DIR</a></span></code>&nbsp;</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>protected org.gradle.api.provider.ListProperty&lt;java.lang.Integer&gt;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../io/micronaut/gradle/docker/MicronautDockerfile.html#exposedPorts">exposedPorts</a></span></code>&nbsp;</td>
 </tr>
 </table>
 <ul class="blockList">
@@ -258,6 +270,24 @@ implements <a href="../../../../io/micronaut/gradle/docker/DockerBuildOptions.ht
 <div class="block">The working directory to use in the container.</div>
 </td>
 </tr>
+<tr id="i10" class="altColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../io/micronaut/gradle/docker/MicronautDockerfile.html#setupDockerfileInstructions--">setupDockerfileInstructions</a></span>()</code>
+<div class="block">The Dockerfile task requires a 'from' at least, but this
+ will be replaced in setupTaskPostEvaluate where we also
+ incorporate commands supplied by the build.gradle file (if required)</div>
+</td>
+</tr>
+<tr id="i11" class="rowColor">
+<td class="colFirst"><code>protected void</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../io/micronaut/gradle/docker/MicronautDockerfile.html#setupInstructions-java.util.List-">setupInstructions</a></span>(java.util.List&lt;com.bmuschko.gradle.docker.tasks.image.Dockerfile.Instruction&gt;&nbsp;additionalInstructions)</code>&nbsp;</td>
+</tr>
+<tr id="i12" class="altColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../io/micronaut/gradle/docker/MicronautDockerfile.html#setupTaskPostEvaluate--">setupTaskPostEvaluate</a></span>()</code>
+<div class="block">This is executed post project evaluation</div>
+</td>
+</tr>
 </table>
 <ul class="blockList">
 <li class="blockList"><a name="methods.inherited.from.class.com.bmuschko.gradle.docker.tasks.image.Dockerfile">
@@ -318,7 +348,7 @@ implements <a href="../../../../io/micronaut/gradle/docker/DockerBuildOptions.ht
 <a name="DEFAULT_WORKING_DIR">
 <!--   -->
 </a>
-<ul class="blockListLast">
+<ul class="blockList">
 <li class="blockList">
 <h4>DEFAULT_WORKING_DIR</h4>
 <pre>public static final&nbsp;java.lang.String DEFAULT_WORKING_DIR</pre>
@@ -326,6 +356,26 @@ implements <a href="../../../../io/micronaut/gradle/docker/DockerBuildOptions.ht
 <dt><span class="seeLabel">See Also:</span></dt>
 <dd><a href="../../../../constant-values.html#io.micronaut.gradle.docker.MicronautDockerfile.DEFAULT_WORKING_DIR">Constant Field Values</a></dd>
 </dl>
+</li>
+</ul>
+<a name="exposedPorts">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>exposedPorts</h4>
+<pre>@Input
+protected final&nbsp;org.gradle.api.provider.ListProperty&lt;java.lang.Integer&gt; exposedPorts</pre>
+</li>
+</ul>
+<a name="buildStrategy">
+<!--   -->
+</a>
+<ul class="blockListLast">
+<li class="blockList">
+<h4>buildStrategy</h4>
+<pre>@Input
+protected final&nbsp;org.gradle.api.provider.Property&lt;<a href="../../../../io/micronaut/gradle/docker/DockerBuildStrategy.html" title="enum in io.micronaut.gradle.docker">DockerBuildStrategy</a>&gt; buildStrategy</pre>
 </li>
 </ul>
 </li>
@@ -397,6 +447,37 @@ implements <a href="../../../../io/micronaut/gradle/docker/DockerBuildOptions.ht
 <dt><span class="overrideSpecifyLabel">Overrides:</span></dt>
 <dd><code>create</code>&nbsp;in class&nbsp;<code>com.bmuschko.gradle.docker.tasks.image.Dockerfile</code></dd>
 </dl>
+</li>
+</ul>
+<a name="setupInstructions-java.util.List-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>setupInstructions</h4>
+<pre>protected&nbsp;void&nbsp;setupInstructions(java.util.List&lt;com.bmuschko.gradle.docker.tasks.image.Dockerfile.Instruction&gt;&nbsp;additionalInstructions)</pre>
+</li>
+</ul>
+<a name="setupDockerfileInstructions--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>setupDockerfileInstructions</h4>
+<pre>public&nbsp;void&nbsp;setupDockerfileInstructions()</pre>
+<div class="block">The Dockerfile task requires a 'from' at least, but this
+ will be replaced in setupTaskPostEvaluate where we also
+ incorporate commands supplied by the build.gradle file (if required)</div>
+</li>
+</ul>
+<a name="setupTaskPostEvaluate--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>setupTaskPostEvaluate</h4>
+<pre>public&nbsp;void&nbsp;setupTaskPostEvaluate()</pre>
+<div class="block">This is executed post project evaluation</div>
 </li>
 </ul>
 <a name="getBuildStrategy--">

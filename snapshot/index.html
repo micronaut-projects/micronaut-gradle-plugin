@@ -103,9 +103,14 @@
 <li><a href="#_implementing_your_own_test_resources_resolver">Implementing your own test resources resolver</a></li>
 </ul>
 </li>
-<li><a href="#_upgrade_notes">9. Upgrade notes</a>
+<li><a href="#_micronaut_crac_plugin">9. Micronaut CRaC Plugin</a>
 <ul class="sectlevel2">
-<li><a href="#_upgrading_from_2_x">9.1. Upgrading from 2.x</a></li>
+<li><a href="#_configuration_2">9.1. Configuration</a></li>
+</ul>
+</li>
+<li><a href="#_upgrade_notes">10. Upgrade notes</a>
+<ul class="sectlevel2">
+<li><a href="#_upgrading_from_2_x">10.1. Upgrading from 2.x</a></li>
 </ul>
 </li>
 </ul>
@@ -2102,10 +2107,157 @@ class DemoTest {
 </div>
 </div>
 <div class="sect1">
-<h2 id="_upgrade_notes"><a class="anchor" href="#_upgrade_notes"></a>9. Upgrade notes</h2>
+<h2 id="_micronaut_crac_plugin"><a class="anchor" href="#_micronaut_crac_plugin"></a>9. Micronaut CRaC Plugin</h2>
+<div class="sectionbody">
+<div class="admonitionblock warning">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Warning</div>
+</td>
+<td class="content">
+The Micronaut CRaC module is in experimental stages. Use at your own risk!
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>The <code>io.micronaut.crac</code> plugin provides extra integration with <a href="https://micronaut-projects.github.io/micronaut-crac/latest/guide/">Micronaut CRaC</a>.
+Micronaut CRaC is a module which adds support for <a href="https://openjdk.org/projects/crac/">Coordinated Restore at Checkpoint</a> to Micronaut applications.</p>
+</div>
+<div class="paragraph">
+<p>It is capable of generating a docker image containing a CRaC enabled JDK and a pre-warmed, checkpointed application via a new task <code>cracDockerBuild</code>.</p>
+</div>
+<div class="admonitionblock important">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Important</div>
+</td>
+<td class="content">
+Currently CRaC support has only been tested on Ubuntu 18.04 and 20.04.  It also requires an x86 machine architecture.
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>When executed, this task will:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Create a layered docker image containing the latest CRaC enabled JDK and your application.</p>
+</li>
+<li>
+<p>Wait for it to start</p>
+</li>
+<li>
+<p>Run a warmup script to get the instance of your application "hot".</p>
+</li>
+<li>
+<p>Take a checkpoint of the application, and copy this locally.</p>
+</li>
+<li>
+<p>Create a new docker image containing the CRaC enabled JDK your application and the checkpoint files.</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>You will then be able to run your image via:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="bash" class="language-bash hljs">docker run --privileged -p 8080:8080 &lt;image-name&gt;</code></pre>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_configuration_2"><a class="anchor" href="#_configuration_2"></a>9.1. Configuration</h3>
+<div class="paragraph">
+<p>The <code>io.micronaut.crac</code> plugin is a standalone plugin which requires the following minimal configuration.</p>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">plugins {
+    ...
+    id "io.micronaut.minimal.application" version "3.6.0-SNAPSHOT"
+    id "io.micronaut.docker" version "3.6.0-SNAPSHOT"
+    id "io.micronaut.crac" version "3.6.0-SNAPSHOT"
+    ...
+}</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">plugins {
+    ...
+    id("io.micronaut.minimal.application") version "3.6.0-SNAPSHOT"
+    id("io.micronaut.docker") version "3.6.0-SNAPSHOT"
+    id("io.micronaut.crac") version "3.6.0-SNAPSHOT"
+    ...
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This will add a <code>crac</code> DSL block to the <code>micronaut</code> extension, which can be used to configure the image building:</p>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">micronaut {
+    ...
+    crac {
+        // is the plugin enabled or not
+        enabled = true
+
+        // the base docker image to use for the Checkpoint and final images
+        baseImage = "ubuntu:20.04"
+
+        // The platform to build the image for (currently must be linux/amd64)
+        platform = "linux/amd64"
+
+        // A command to run that will be successful when the application is ready to be checkpointed.
+        preCheckpointReadinessCheck = "curl --output /dev/null --silent --head http://localhost:8080"
+
+        // You can use these to replace the script that generates a checkpoint, and the script that warms up the
+        // application prior to checkpointing
+        warmupScript = file("customWarmupScript.sh")
+        checkpointScript = file("customCheckpointScript.sh")
+    }
+}</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">micronaut {
+    ...
+    crac {
+        // is the plugin enabled or not
+        enabled.set(true)
+
+        // the base docker image to use for the Checkpoint and final images
+        baseImage.set("ubuntu:20.04")
+
+        // The platform to build the image for (currently must be linux/amd64)
+        platform.set("linux/amd64")
+
+        // A command to run that will be successful when the application is ready to be checkpointed.
+        preCheckpointReadinessCheck.set("curl --output /dev/null --silent --head http://localhost:8080")
+
+        // You can use these to replace the script that generates a checkpoint, and the script that warms up the
+        // application prior to checkpointing
+        warmupScript.set(file("customWarmupScript.sh"))
+        checkpointScript.set(file("customCheckpointScript.sh"))
+    }
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_upgrade_notes"><a class="anchor" href="#_upgrade_notes"></a>10. Upgrade notes</h2>
 <div class="sectionbody">
 <div class="sect2">
-<h3 id="_upgrading_from_2_x"><a class="anchor" href="#_upgrading_from_2_x"></a>9.1. Upgrading from 2.x</h3>
+<h3 id="_upgrading_from_2_x"><a class="anchor" href="#_upgrading_from_2_x"></a>10.1. Upgrading from 2.x</h3>
 <div class="paragraph">
 <p>When upgrading from the 2.x version of the plugins, you will need to change the configuration of the GraalVM native image builds if you use them.</p>
 </div>
