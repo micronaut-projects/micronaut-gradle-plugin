@@ -6,7 +6,6 @@ import org.gradle.testkit.runner.TaskOutcome
 import spock.lang.IgnoreIf
 import spock.lang.Issue
 import spock.lang.Requires
-import spock.util.environment.RestoreSystemProperties
 
 @Requires({ AbstractGradleBuildSpec.graalVmAvailable })
 @IgnoreIf({ os.windows })
@@ -303,4 +302,59 @@ class LambdaNativeImageSpec extends AbstractFunctionalTest {
         and:
         dockerFileNative.find() { it.contains('amazonlinux:latest')}
     }
+
+    @Issue("https://github.com/micronaut-projects/micronaut-gradle-plugin/pull/537")
+    void 'it is possible to define the GraalVM releases URL for a dockerfile native'() {
+        given:
+        settingsFile << "rootProject.name = 'hello-world'"
+        buildFile << """
+            plugins {
+                id "io.micronaut.minimal.application"
+                id "io.micronaut.graalvm"
+                id "io.micronaut.docker"
+            }
+            
+            micronaut {
+                version "3.5.1"
+                runtime "lambda"
+            }
+            
+            $repositoriesBlock
+            
+            application {
+                mainClass.set("com.example.Application")
+            }
+            
+            java {
+                sourceCompatibility = JavaVersion.toVersion('11')
+                targetCompatibility = JavaVersion.toVersion('11')
+            }
+            
+            graalvmNative {
+                binaries {
+                    main {
+                        mainClass.set("my.own.main.class")
+                    }
+                }
+            }
+
+            tasks.named("dockerfileNative") {
+                graalReleasesUrl = "https://releases.company.com/downloads"
+            }
+        """
+
+        when:
+        def result = build('dockerfileNative')
+
+        def dockerfileNativeTask = result.task(':dockerfileNative')
+        def dockerFileNative = new File(testProjectDir.root, 'build/docker/native-main/DockerfileNative').readLines('UTF-8')
+
+        then:
+        dockerfileNativeTask.outcome == TaskOutcome.SUCCESS
+
+        and:
+        !dockerFileNative.find() { it.contains('https://github.com/graalvm/graalvm-ce-builds/releases/download')}
+        dockerFileNative.find() { it.contains('https://releases.company.com/downloads')}
+    }
+
 }
