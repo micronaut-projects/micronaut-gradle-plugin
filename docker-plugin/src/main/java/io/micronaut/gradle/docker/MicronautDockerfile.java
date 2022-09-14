@@ -26,9 +26,9 @@ public class MicronautDockerfile extends Dockerfile implements DockerBuildOption
     @Input
     private final ListProperty<String> args;
     @Input
-    private final ListProperty<Integer> exposedPorts;
+    protected final ListProperty<Integer> exposedPorts;
     @Input
-    private final Property<DockerBuildStrategy> buildStrategy;
+    protected final Property<DockerBuildStrategy> buildStrategy;
     @Input
     private final Property<String> defaultCommand;
 
@@ -66,7 +66,7 @@ public class MicronautDockerfile extends Dockerfile implements DockerBuildOption
         System.out.println("Dockerfile written to: " + getDestFile().get().getAsFile().getAbsolutePath());
     }
 
-    private void setupInstructions(List<Instruction> additionalInstructions) {
+    protected void setupInstructions(List<Instruction> additionalInstructions) {
         String workDir = getTargetWorkingDirectory().get();
         DockerBuildStrategy buildStrategy = this.buildStrategy.getOrElse(DockerBuildStrategy.DEFAULT);
         JavaApplication javaApplication = getProject().getExtensions().getByType(JavaApplication.class);
@@ -116,14 +116,14 @@ public class MicronautDockerfile extends Dockerfile implements DockerBuildOption
      * will be replaced in setupTaskPostEvaluate where we also
      * incorporate commands supplied by the build.gradle file (if required)
      */
-    void setupDockerfileInstructions() {
+    public void setupDockerfileInstructions() {
         from("placeholder");
     }
 
     /**
      * This is executed post project evaluation
      */
-    void setupTaskPostEvaluate() {
+    public void setupTaskPostEvaluate() {
         // Get any custom instructions the user may or may not have entered, but ignoring our 'from' placeholder
         List<Instruction> additionalInstructions = new ArrayList<>(getInstructions().get().subList(1, getInstructions().get().size()));
         // Reset the instructions to empty
