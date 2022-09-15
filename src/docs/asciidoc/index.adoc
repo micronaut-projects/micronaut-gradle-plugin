@@ -1478,6 +1478,110 @@ include::samples/test-resources/custom-test-resource/src/test/java/demo/DemoTest
 
 You can learn more about custom test resource resolvers in the {testresources-guide}/#implementing-test-resources[Micronaut Test Resources] documentation.
 
+== Micronaut CRaC Plugin
+
+WARNING: The Micronaut CRaC module is in experimental stages. Use at your own risk!
+
+The `io.micronaut.crac` plugin provides extra integration with https://micronaut-projects.github.io/micronaut-crac/latest/guide/[Micronaut CRaC].
+Micronaut CRaC is a module which adds support for https://openjdk.org/projects/crac/[Coordinated Restore at Checkpoint] to Micronaut applications.
+
+It is capable of generating a docker image containing a CRaC enabled JDK and a pre-warmed, checkpointed application via a new task `cracDockerBuild`.
+
+IMPORTANT: Currently CRaC support has only been tested on Ubuntu 18.04 and 20.04.  It also requires an x86 machine architecture.
+
+When executed, this task will:
+
+. Create a layered docker image containing the latest CRaC enabled JDK and your application.
+. Wait for it to start
+. Run a warmup script to get the instance of your application "hot".
+. Take a checkpoint of the application, and copy this locally.
+. Create a new docker image containing the CRaC enabled JDK your application and the checkpoint files.
+
+You will then be able to run your image via:
+
+[source, bash]
+----
+docker run --privileged -p 8080:8080 <image-name>
+----
+
+=== Configuration
+
+The `io.micronaut.crac` plugin is a standalone plugin which requires the following minimal configuration.
+
+[source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
+----
+plugins {
+    ...
+    id "io.micronaut.minimal.application" version "{gradle-project-version}"
+    id "io.micronaut.docker" version "{gradle-project-version}"
+    id "io.micronaut.crac" version "{gradle-project-version}"
+    ...
+}
+----
+
+[source, kotlin, subs="verbatim,attributes", role="multi-language-sample"]
+----
+plugins {
+    ...
+    id("io.micronaut.minimal.application") version "{gradle-project-version}"
+    id("io.micronaut.docker") version "{gradle-project-version}"
+    id("io.micronaut.crac") version "{gradle-project-version}"
+    ...
+}
+----
+
+This will add a `crac` DSL block to the `micronaut` extension, which can be used to configure the image building:
+
+[source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
+----
+micronaut {
+    ...
+    crac {
+        // is the plugin enabled or not
+        enabled = true
+
+        // the base docker image to use for the Checkpoint and final images
+        baseImage = "ubuntu:20.04"
+
+        // The platform to build the image for (currently must be linux/amd64)
+        platform = "linux/amd64"
+
+        // A command to run that will be successful when the application is ready to be checkpointed.
+        preCheckpointReadinessCheck = "curl --output /dev/null --silent --head http://localhost:8080"
+
+        // You can use these to replace the script that generates a checkpoint, and the script that warms up the
+        // application prior to checkpointing
+        warmupScript = file("customWarmupScript.sh")
+        checkpointScript = file("customCheckpointScript.sh")
+    }
+}
+----
+
+[source, kotlin, subs="verbatim,attributes", role="multi-language-sample"]
+----
+micronaut {
+    ...
+    crac {
+        // is the plugin enabled or not
+        enabled.set(true)
+
+        // the base docker image to use for the Checkpoint and final images
+        baseImage.set("ubuntu:20.04")
+
+        // The platform to build the image for (currently must be linux/amd64)
+        platform.set("linux/amd64")
+
+        // A command to run that will be successful when the application is ready to be checkpointed.
+        preCheckpointReadinessCheck.set("curl --output /dev/null --silent --head http://localhost:8080")
+
+        // You can use these to replace the script that generates a checkpoint, and the script that warms up the
+        // application prior to checkpointing
+        warmupScript.set(file("customWarmupScript.sh"))
+        checkpointScript.set(file("customCheckpointScript.sh"))
+    }
+}
+----
+
 == Upgrade notes
 
 === Upgrading from 2.x
