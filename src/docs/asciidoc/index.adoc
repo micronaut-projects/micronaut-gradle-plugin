@@ -366,6 +366,7 @@ The following additional tasks are provided by this plugin:
 * `testNativeImage` (since 1.1.0) - Builds a GraalVM Native Image, starts the native server and runs tests against the server
 * `dockerPush` - Pushes a Docker Image to configured container registry
 * `dockerPushNative` - Pushes a Docker Image built with GraalVM Native Image to configured container registry
+* `dockerPushCrac` - Pushes a Docker Image built with a CRaC enabled JDK and a pre-warmed, checkpointed application to configured container registry
 
 To run an application with continuous build use the `run` task with the `-t` parameter:
 
@@ -692,7 +693,6 @@ $ ./gradlew dockerBuildNative
 
 Note that for this to work you must build the application with the same GraalVM SDK as used to build the image.
 
-To push the container to the currently configured container registry you can use either `dockerPush` or `dockerPushNative` for the native image:
 To build a docker image containing a CRaC enabled JDK and a pre-warmed, checkpointed application, you can run:
 
 [source,bash]
@@ -700,6 +700,7 @@ To build a docker image containing a CRaC enabled JDK and a pre-warmed, checkpoi
 $ ./gradlew dockerBuildCrac
 ----
 
+To push the container to the currently configured container registry you can use either `dockerPush`, `dockerPushNative` for the native image,  or `dockerPushCrac` for CRaC image:
 
 [source, bash]
 ----
