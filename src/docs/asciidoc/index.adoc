@@ -361,6 +361,7 @@ The following additional tasks are provided by this plugin:
 * `dockerBuild` - Builds a Docker Image using the https://github.com/bmuschko/gradle-docker-plugin[Docker Gradle plugin]
 * `dockerfileNative` - Builds a Docker File for for GraalVM Native Image
 * `dockerBuildNative` - Builds a Native Docker Image using GraalVM Native Image
+* `dockerBuildCrac` - Builds a docker Image containing a CRaC enabled JDK and a pre-warmed, checkpointed application.
 * `nativeCompile` - Builds a GraalVM Native Image
 * `testNativeImage` (since 1.1.0) - Builds a GraalVM Native Image, starts the native server and runs tests against the server
 * `dockerPush` - Pushes a Docker Image to configured container registry
@@ -692,6 +693,13 @@ $ ./gradlew dockerBuildNative
 Note that for this to work you must build the application with the same GraalVM SDK as used to build the image.
 
 To push the container to the currently configured container registry you can use either `dockerPush` or `dockerPushNative` for the native image:
+To build a docker image containing a CRaC enabled JDK and a pre-warmed, checkpointed application, you can run:
+
+[source,bash]
+----
+$ ./gradlew dockerBuildCrac
+----
+
 
 [source, bash]
 ----
@@ -711,6 +719,10 @@ tasks.named("dockerBuild") {
 tasks.named("dockerBuildNative") {
     images = ["eu-frankfurt-1.ocir.io/xyzzyz/repo/my-image-native:$project.version"]
 }
+
+tasks.named("dockerBuildCrac") {
+    images = ["eu-frankfurt-1.ocir.io/xyzzyz/repo/my-image-crac:$project.version"]
+}
 ----
 
 [source, kotlin, subs="verbatim,attributes", role="multi-language-sample"]
@@ -721,6 +733,10 @@ tasks.named<DockerBuildImage>("dockerBuild") {
 
 tasks.named<DockerBuildImage>("dockerBuildNative") {
     images.add("eu-frankfurt-1.ocir.io/xyzzyz/repo/my-image-native:$project.version")
+}
+
+tasks.named<DockerBuildImage>("dockerBuildCrac") {
+    images.add("eu-frankfurt-1.ocir.io/xyzzyz/repo/my-image-crac:$project.version")
 }
 ----
 
