@@ -463,7 +463,7 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
                 // mandatory dependency for alpine-glibc docker images
                 runCommand(getProviders().provider(() -> {
                     if (baseImageProvider.get().getImage().contains("alpine-glibc")) {
-                        return "apk update && apk add libstdc++";
+                        return "apk --no-cache update && apk add libstdc++";
                     }
                     return "";
                 }));
