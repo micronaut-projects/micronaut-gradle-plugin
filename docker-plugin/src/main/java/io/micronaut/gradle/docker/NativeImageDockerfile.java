@@ -153,6 +153,7 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
         getDestFile().set(project.getLayout().getBuildDirectory().file("docker/DockerfileNative"));
         getBuildStrategy().convention(DockerBuildStrategy.DEFAULT);
         getRequireGraalSdk().convention(true);
+        getExposedPorts().convention(Collections.singletonList(8080));
         getJdkVersion().convention(
                 javaExtension.getToolchain()
                         .getLanguageVersion()
