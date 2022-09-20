@@ -599,6 +599,9 @@ dependencies {
 <p><code>dockerBuildNative</code> - Builds a Native Docker Image using GraalVM Native Image</p>
 </li>
 <li>
+<p><code>dockerBuildCrac</code> - Builds a docker Image containing a CRaC enabled JDK and a pre-warmed, checkpointed application.</p>
+</li>
+<li>
 <p><code>nativeCompile</code> - Builds a GraalVM Native Image</p>
 </li>
 <li>
@@ -609,6 +612,9 @@ dependencies {
 </li>
 <li>
 <p><code>dockerPushNative</code> - Pushes a Docker Image built with GraalVM Native Image to configured container registry</p>
+</li>
+<li>
+<p><code>dockerPushCrac</code> - Pushes a Docker Image built with a CRaC enabled JDK and a pre-warmed, checkpointed application to configured container registry</p>
 </li>
 </ul>
 </div>
@@ -1027,7 +1033,15 @@ This feature only works in combination with <code>micronaut-test-core</code> ver
 <p>Note that for this to work you must build the application with the same GraalVM SDK as used to build the image.</p>
 </div>
 <div class="paragraph">
-<p>To push the container to the currently configured container registry you can use either <code>dockerPush</code> or <code>dockerPushNative</code> for the native image:</p>
+<p>To build a docker image containing a CRaC enabled JDK and a pre-warmed, checkpointed application, you can run:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="bash" class="language-bash hljs">$ ./gradlew dockerBuildCrac</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>To push the container to the currently configured container registry you can use either <code>dockerPush</code>, <code>dockerPushNative</code> for the native image,  or <code>dockerPushCrac</code> for CRaC image:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -1048,6 +1062,10 @@ This feature only works in combination with <code>micronaut-test-core</code> ver
 
 tasks.named("dockerBuildNative") {
     images = ["eu-frankfurt-1.ocir.io/xyzzyz/repo/my-image-native:$project.version"]
+}
+
+tasks.named("dockerBuildCrac") {
+    images = ["eu-frankfurt-1.ocir.io/xyzzyz/repo/my-image-crac:$project.version"]
 }</code></pre>
 </div>
 </div>
@@ -1059,6 +1077,10 @@ tasks.named("dockerBuildNative") {
 
 tasks.named&lt;DockerBuildImage&gt;("dockerBuildNative") {
     images.add("eu-frankfurt-1.ocir.io/xyzzyz/repo/my-image-native:$project.version")
+}
+
+tasks.named&lt;DockerBuildImage&gt;("dockerBuildCrac") {
+    images.add("eu-frankfurt-1.ocir.io/xyzzyz/repo/my-image-crac:$project.version")
 }</code></pre>
 </div>
 </div>
@@ -2126,7 +2148,7 @@ The Micronaut CRaC module is in experimental stages. Use at your own risk!
 Micronaut CRaC is a module which adds support for <a href="https://openjdk.org/projects/crac/">Coordinated Restore at Checkpoint</a> to Micronaut applications.</p>
 </div>
 <div class="paragraph">
-<p>It is capable of generating a docker image containing a CRaC enabled JDK and a pre-warmed, checkpointed application via a new task <code>cracDockerBuild</code>.</p>
+<p>It is capable of generating a docker image containing a CRaC enabled JDK and a pre-warmed, checkpointed application via a new task <code>dockerCracBuild</code>.</p>
 </div>
 <div class="admonitionblock important">
 <table>
