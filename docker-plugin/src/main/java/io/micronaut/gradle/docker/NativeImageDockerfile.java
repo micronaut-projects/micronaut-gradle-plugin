@@ -165,6 +165,7 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
         String osArch = System.getProperty("os.arch");
         getGraalArch().convention(ARM_ARCH.equals(osArch) ? ARM_ARCH : X86_64_ARCH);
         getTargetWorkingDirectory().convention(DEFAULT_WORKING_DIR);
+        getExposedPorts().convention(Collections.singletonList(8080));
         getGraalImage().convention(getGraalVersion().zip(getJdkVersion(), NativeImageDockerfile::toGraalVMBaseImageName));
         getNativeImageOptions().convention(project
                 .getTasks()
@@ -463,7 +464,7 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
                 // mandatory dependency for alpine-glibc docker images
                 runCommand(getProviders().provider(() -> {
                     if (baseImageProvider.get().getImage().contains("alpine-glibc")) {
-                        return "apk update && apk add libstdc++";
+                        return "apk --no-cache update && apk add libstdc++";
                     }
                     return "";
                 }));
