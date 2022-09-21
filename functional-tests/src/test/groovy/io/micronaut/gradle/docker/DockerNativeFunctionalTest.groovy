@@ -574,7 +574,8 @@ RUN mkdir /home/alternate/config-dirs
 COPY config-dirs/generateResourcesConfigFile /home/alternate/config-dirs/generateResourcesConfigFile
 RUN native-image -cp /home/alternate/libs/*.jar:/home/alternate/resources:/home/alternate/application.jar --no-fallback -H:Name=application $graalVMBuilderExports -H:ConfigurationFileDirectories=/home/alternate/config-dirs/generateResourcesConfigFile -H:Class=example.Application
 FROM frolvlad/alpine-glibc:alpine-3.12
-RUN apk update && apk add libstdc++
+RUN apk --no-cache update && apk add libstdc++
+EXPOSE 8080
 HEALTHCHECK CMD curl -s localhost:8090/health | grep '"status":"UP"'
 COPY --from=graalvm /home/alternate/application /app/application
 ENTRYPOINT ["/app/application", "-Xmx64m"]
