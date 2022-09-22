@@ -1789,6 +1789,7 @@ This will let Gradle automatically start containers, for example, when a particu
         additionalModules.add(JDBC_MYSQL) // empty by default
         clientTimeout = 60 // in seconds, maximum time to wait for resources to be available, 60s by default
         sharedServer = true // false by default
+        sharedServerNamespace = 'custom' // unset by default
     }
 }</code></pre>
 </div>
@@ -1804,6 +1805,7 @@ This will let Gradle automatically start containers, for example, when a particu
         additionalModules.add(JDBC_MYSQL) // empty by default
         clientTimeout.set(60) // in seconds, maximum time to wait for resources to be available, 60s by default
         sharedServer.set(true) // false by default
+        sharedServerNamespace.set("custom") // unset by default
     }
 }</code></pre>
 </div>
@@ -1827,6 +1829,9 @@ This will let Gradle automatically start containers, for example, when a particu
 </li>
 <li>
 <p>if set to <code>true</code>, then the test server which is used by the project can be shared between independent builds (e.g different Git repositories): this can be useful in conjunction with a <a href="#sec:standalone-test-resources">a standalone test resources service</a>, where for example a producer is used in one project, and a consumer is defined in another, but both need to use the same messaging server.</p>
+</li>
+<li>
+<p>if set, the <code>sharedServerNamespace</code> property will let you declare that the shared test resources service but be executed in a particular namespace. This can be useful if you need multiple shared servers (the default assumes a single shared server)</p>
 </li>
 </ul>
 </div>
