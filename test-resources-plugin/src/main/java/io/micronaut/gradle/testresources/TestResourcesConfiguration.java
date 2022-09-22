@@ -92,4 +92,13 @@ public interface TestResourcesConfiguration extends KnownModules {
      * @return the shared server property
      */
     Property<Boolean> getSharedServer();
+
+    /**
+     * Allows configuring a namespace for the shared test resources
+     * server. This can be used in case it makes sense to have
+     * different instances of shared services, for example when
+     * independent builds sets share different services.
+     * @return the namespace
+     */
+    Property<String> getSharedServerNamespace();
 }
