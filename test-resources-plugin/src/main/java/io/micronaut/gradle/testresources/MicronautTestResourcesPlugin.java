@@ -119,7 +119,8 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
         Provider<Directory> settingsDirectory = config.getSharedServer().flatMap(shared -> {
             DirectoryProperty directoryProperty = project.getObjects().directoryProperty();
             if (Boolean.TRUE.equals(shared)) {
-                directoryProperty.set(ServerUtils.getDefaultSharedSettingsPath().toFile());
+                String namespace = config.getSharedServerNamespace().getOrNull();
+                directoryProperty.set(ServerUtils.getDefaultSharedSettingsPath(namespace).toFile());
             }
             return directoryProperty;
         }).orElse(buildDirectory.dir("test-resources-settings"));
@@ -250,6 +251,7 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
                             return Boolean.parseBoolean(str);
                         })
         );
+        testResources.getSharedServerNamespace().convention(providers.environmentVariable("SHARED_TEST_RESOURCES_NAMESPACE"));
         return testResources;
     }
 
