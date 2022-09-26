@@ -57,7 +57,7 @@ For example, the `minimal` plugins can be used to reduce the number of tasks, fo
 |`application`
 
 |https://plugins.gradle.org/plugin/io.micronaut.graalvm[`io.micronaut.graalvm`]
-|Adds support for building native images
+|Adds support for building native executables
 |
 
 |https://plugins.gradle.org/plugin/io.micronaut.docker[`io.micronaut.docker`]
@@ -359,11 +359,11 @@ The following additional tasks are provided by this plugin:
 * `buildLayers` - Builds application layers for use in a Docker container
 * `dockerfile` - Builds a Docker File for a Micronaut application
 * `dockerBuild` - Builds a Docker Image using the https://github.com/bmuschko/gradle-docker-plugin[Docker Gradle plugin]
-* `dockerfileNative` - Builds a Docker File for for GraalVM Native Image
+* `dockerfileNative` - Builds a Docker File for GraalVM Native Image
 * `dockerBuildNative` - Builds a Native Docker Image using GraalVM Native Image
 * `dockerBuildCrac` - Builds a docker Image containing a CRaC enabled JDK and a pre-warmed, checkpointed application.
-* `nativeCompile` - Builds a GraalVM Native Image
-* `testNativeImage` (since 1.1.0) - Builds a GraalVM Native Image, starts the native server and runs tests against the server
+* `nativeCompile` - Builds a GraalVM Native Executable
+* `testNativeImage` (since 1.1.0) - Builds a GraalVM Native Executable, starts the native server and runs tests against the server
 * `dockerPush` - Pushes a Docker Image to configured container registry
 * `dockerPushNative` - Pushes a Docker Image built with GraalVM Native Image to configured container registry
 * `dockerPushCrac` - Pushes a Docker Image built with a CRaC enabled JDK and a pre-warmed, checkpointed application to configured container registry
@@ -512,15 +512,15 @@ application {
 [[native-image]]
 === GraalVM Native Image
 
-Since version 3.0.0, the Micronaut plugins rely on the {native-gradle-plugin}[official GraalVM plugin] to build native images.
+Since version 3.0.0, the Micronaut plugins rely on the {native-gradle-plugin}[official GraalVM plugin] to build native executables.
 
-Those plugins make use of the {gradle-toolchains}[Gradle toolchains] support, which means that the SDK which is used to build the native is decorrelated from the JVM which is used to launch Gradle itself.
-Said differently, you can run Gradle with OpenJDK, while still building native images using the GraalVM SDK.
+Those plugins make use of {gradle-toolchains}[Gradle toolchains] support, which means that the SDK which is used to build the native is decorrelated from the JVM which is used to launch Gradle itself.
+Said differently, you can run Gradle with OpenJDK, while still building native executables using the GraalVM SDK.
 
 The Micronaut Gradle plugin will automatically configure the toolchains support for you, but there are a few things that you should be aware of:
 
-- running Gradle with a GraalVM SDK doesn't necessarily imply that Gradle will use the same SDK to build native images
-- Gradle will try to locate a _compatible GraalVM toolchain_ to build images. You can tweak what GraalVM version to use by following the {native-gradle-plugin}#_selecting_the_graalvm_toolchain[official documentation].
+- running Gradle with a GraalVM SDK doesn't necessarily imply that Gradle will use the same SDK to build native executables
+- Gradle will try to locate a _compatible GraalVM toolchain_ to build executables. You can tweak what GraalVM version to use by following the {native-gradle-plugin}#_selecting_the_graalvm_toolchain[official documentation].
 
 [[toolchain-behavior]]
 IMPORTANT: While the toolchain selection will properly select a GraalVM SDK which matches your language version requirements, it will **not** let you pick a particular GraalVM version (say, prefer 21.3 over 21.1). If your application depends on a specific GraalVM version, you will have to disable automatic detection like explained below.
@@ -551,7 +551,7 @@ Alternatively you can pass those options from the command line:
   build
 ----
 
-You can build a native image by running the following task:
+You can build a native executable by running the following task:
 
 [source, bash]
 ----
@@ -565,9 +565,9 @@ And you can run it by calling the following task:
 $ ./gradlew nativeRun
 ----
 
-You can tweak the native image options by configuring the `graalvmNative` extension as explained in the {native-gradle-plugin}[plugin documentation].
+You can tweak the native executable options by configuring the `graalvmNative` extension as explained in the {native-gradle-plugin}[plugin documentation].
 
-For example you can add options to the main image by doing:
+For example, you can add options to the main executable by doing:
 
 [source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
 ----
@@ -595,9 +595,9 @@ graalvmNative {
 
 IMPORTANT: If you update an existing Micronaut application that contains the file `src/main/resources/META-INF/native-image/xxxxx/native-image.properties`, please make sure to delete the properties `-H:Name` and `-H:Class` from the file because they are managed automatically by the plugin.
 
-==== Build "mostly static" native images
+==== Build "mostly static" native executables
 
-Since GraalVM 21.0 it is possible to create "mostly static" native images that can run in a _distroless_ docker image. You only need to configure the appropriate _baseImage_ and the plugin will automatically configure GraalVM:
+Since GraalVM 21.0, it is possible to create "mostly static" native images that can run in a _distroless_ docker image. You only need to configure the appropriate _baseImage_ and the plugin will automatically configure GraalVM:
 
 [source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
 ----
@@ -631,9 +631,9 @@ tasks.named<io.micronaut.gradle.docker.NativeImageDockerfile>("dockerfileNative"
 }
 ----
 
-=== Testing Native Images
+=== Testing Native Executables
 
-NOTE: This feature is independent from the official GraalVM testing support, which actually runs a test suite _within a native image_. Micronaut native test support launches a JVM test suite _against a native image server_.
+NOTE: This feature is independent from the official GraalVM testing support, which actually runs a test suite _within a native executable_. Micronaut native test support launches a JVM test suite _against a native executable server_.
 
 Since 1.1.x of the plugin, you can also use the `testNativeImage` task to start the Micronaut native server and run tests against it.
 
@@ -651,11 +651,11 @@ It is important to note that there are some limitations to this approach in that
 * It is not possible to mock components using `@MockBean` or replace beans using `@Replaces` since the native server starts in a separate process and beans injected into or defined by the test are no longer shared with the application under test since it is running in a separate process.
 * The native server starts with the `test` environment active, however the classpath of the application is the runtime classpath not the test classpath. This has the implication that certain testing features (like for example Testcontainers' usage of JDBC URLs to start containers) won't work and you have to explicitly start any test containers in the test itself.
 
-If you wish to split your native image tests from your regular tests you can {gradle-docs}/java_testing.html#sec:configuring_java_integration_tests[create an additional source set for integration tests] and the plugin will add an additional task suffixed with `*NativeImage` to run the native image tests, for example: `gradle integrationTestNativeImage`.
+If you wish to split your native executable tests from your regular tests you can {gradle-docs}/java_testing.html#sec:configuring_java_integration_tests[create an additional source set for integration tests] and the plugin will add an additional task suffixed with `*NativeImage` to run the native executable tests, for example: `gradle integrationTestNativeImage`.
 
 === Docker Support
 
-The Micronaut plugin includes integration with the https://bmuschko.github.io/gradle-docker-plugin[Gradle Docker plugin] allowing you to easily build applications and native images using Docker containers.
+The Micronaut plugin includes integration with the https://bmuschko.github.io/gradle-docker-plugin[Gradle Docker plugin] allowing you to easily build applications and native executables using Docker containers.
 
 Applications are built as layered JARs using the `buildLayers` task ensuring optimized Docker images for Java applications.
 
@@ -666,7 +666,7 @@ To build a regular Java application into a Docker container that is ready to be 
 $ ./gradlew dockerBuild
 ----
 
-The default uses an `{default-docker-image}` base image, however you can easily switch the base image to use by using the `baseImage` property of the `dockerfile` task:
+The default uses an `{default-docker-image}` base image, however you can easily switch the base image to use with the `baseImage` property of the `dockerfile` task:
 
 [source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
 ----
@@ -684,14 +684,14 @@ tasks.named<MicronautDockerfile>("dockerfile") {
 
 The above examples switches to use GraalVM CE 22.2.0 as a base image.
 
-To build the application into a Native Image you can run:
+To build the application into a Native Executable you can run:
 
 [source,bash]
 ----
 $ ./gradlew dockerBuildNative
 ----
 
-Note that for this to work you must build the application with the same GraalVM SDK as used to build the image.
+Note that for this to work you must build the application with the same GraalVM SDK as used to build the executable.
 
 To build a docker image containing a CRaC enabled JDK and a pre-warmed, checkpointed application, you can run:
 
@@ -700,7 +700,7 @@ To build a docker image containing a CRaC enabled JDK and a pre-warmed, checkpoi
 $ ./gradlew dockerBuildCrac
 ----
 
-To push the container to the currently configured container registry you can use either `dockerPush`, `dockerPushNative` for the native image,  or `dockerPushCrac` for CRaC image:
+To push the container to the currently configured container registry you can use either `dockerPush`, `dockerPushNative` for the native executable,  or `dockerPushCrac` for CRaC image:
 
 [source, bash]
 ----
@@ -745,7 +745,7 @@ Notice that you can supply two different image names to push to for the JVM vers
 
 If you wish to customize the docker builds that are used, the easiest way is to run `./gradlew dockerfile` (or `dockerfileNative` for the native version) and copy the generated `Dockerfile` from `build/docker` to your root directory and modify as required.
 
-If you wish to customize the JVM arguments or native image arguments then it is possible to do so with the `args` method of the `dockerfile` and `dockerfileNative` tasks:
+To customize the JVM arguments or native executable arguments, use the `args` method of the `dockerfile` and `dockerfileNative` tasks:
 
 [source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
 ----
@@ -767,7 +767,7 @@ tasks.named<io.micronaut.gradle.docker.NativeImageDockerfile>("dockerfileNative"
 }
 ----
 
-The above configuration uses a max heap setting of `128m` for Java and `64m` for native image for the application.
+The above configuration uses a max heap setting of `128m` for Java and `64m` for native executable for the application.
 
 To add additional docker instructions to the generated Dockerfile, such as adding a HEALTHCHECK, you can do the following. The additional instructions will be added at the end of the `Dockerfile` just before the `ENTRYPOINT`.
 
@@ -877,13 +877,13 @@ The available runtimes are:
 
 The advantage of allowing your dependencies to be dictated by the runtime is that you can potentially take the same application and deploy it to any of the above runtimes without changes.
 
-==== Deploying to AWS Lambda as GraalVM native image
+==== Deploying to AWS Lambda as GraalVM native executable
 
-If you are interested in deploying your Micronaut application to AWS Lambda using GraalVM you only need to set the runtime to `lambda` and execute `./gradlew buildNativeLambda`.
-This task will generate a GraalVM native image inside a Docker container and then it will create the file `build/libs/your-app.zip` file ready to be deployed to AWS Lambda using a custom runtime. See more information in {aws-docs}[Micronaut AWS documentation].
+If you are interested in deploying your Micronaut application to AWS Lambda using GraalVM, you only need to set the runtime to `lambda` and execute `./gradlew buildNativeLambda`.
+This task will generate a GraalVM native executable inside a Docker container, and create the file `build/libs/your-app.zip` file ready to be deployed to AWS Lambda using a custom runtime. See more information in {aws-docs}[Micronaut AWS documentation].
 
 The plugin will detect the host operating system architecture (based on the `os.arch` Java system property) and will install the corresponding GraalVM  binary distribution inside the Docker image.
-This means that when running packaging from an X86_64 (Intel/AMD) machine, the produced native image will be an `amd64` binary, whilst on an ARM host (such as the new Mac M1) it will be an `aarch64` binary.
+This means that when running packaging from an X86_64 (Intel/AMD) machine, the produced native executable will be an `amd64` binary, whilst on an ARM host (such as the new Mac M1) it will be an `aarch64` binary.
 
 To override this automatic selection, you can configure the `graalArch` property in a `dockerfileNative` configuration block in your build:
 
@@ -931,7 +931,7 @@ plugins {
 
 The https://plugins.gradle.org/plugin/io.micronaut.graalvm[Micronaut GraalVM plugin] is applied automatically by the
 https://github.com/micronaut-projects/micronaut-gradle-plugin#micronaut-application-plugin[Micronaut application plugin] (see below)
-and it provides tasks to generate a GraalVM native image and also creates the GraalVM `resource-config.json` automatically with all the resources from the application.
+and it provides tasks to generate a GraalVM native executable and also creates the GraalVM `resource-config.json` automatically with all the resources from the application.
 
 This plugin can be applied separately if you use the `application` plugin without the `io.micronaut.application` plugin (but we strongly recommend to switch to the `io.micronaut.application` plugin in this case).
 
@@ -947,11 +947,11 @@ It is capable of generating a number of things:
 
 - an <<#aot:running-jit-mode,optimized jar>>, which is a jar corresponding to the regular application jar, except that it contains some optimizations computed at build time. It may contain, for example, additional classes, or even have different resources.
 - an <<#aot:running-optimized-fat-jar,optimized fat jar>>, which is the same as the previous one, except that it also embeds all transitive dependencies and is a standalone executable.
-- an <<#aot:running-optimized-native-binary,optimized native binary>> which is a GraalVM image compiled with Micronaut AOT optimizations
+- an <<#aot:running-optimized-native-binary,optimized native binary>> which is a GraalVM executable compiled with Micronaut AOT optimizations
 - an <<#aot:optimized-docker-image,optimized docker image>> which is a Docker image containing the optimized application
-- an <<aot:optimized-docker-image,optimized native docker image>> which is a Docker image containing the optimized application compiled as a native image
+- an <<aot:optimized-docker-image,optimized native docker image>> which is a Docker image containing the optimized application compiled as a native executable
 
-IMPORTANT: Micronaut AOT is a _deployment_ optimization: it adds to build time, in order to make the final application faster to start, or the native images smaller. Therefore, if you use the AOT tasks during development, your feedback cycle will be slower (but the application will start faster). It is a good idea, however, to check the result of the optimization locally, similarly to what you'd do for a native image.
+IMPORTANT: Micronaut AOT is a _deployment_ optimization: it adds to build time, in order to make the final application faster to start, or the native executables smaller. Therefore, if you use the AOT tasks during development, your feedback cycle will be slower (but the application will start faster). It is a good idea, however, to check the result of the optimization locally, similarly to what you'd do for a native executable.
 
 === Configuration
 
@@ -1097,7 +1097,7 @@ yaml.to.java.config.enabled = true
 sealed.property.source.enabled = true
 ----
 
-Another file, `build/generated/aot/samples/native/native.properties` will contain the same, but with the options which are relevant to an application compiled to a _native image_:
+Another file, `build/generated/aot/samples/native/native.properties` will contain the same, but with the options which are relevant to an application compiled to a _native executable_:
 
 ----
 # Generates GraalVM configuration files required to load the AOT optimizations
@@ -1136,7 +1136,7 @@ yaml.to.java.config.enabled = true
 sealed.property.source.enabled = true
 ----
 
-For native images, it is important to always have the `graalvm.config.enabled` option set to `true`, otherwise the AOT optimizations will not be loaded. The plugin takes care of setting this flag to `true` for you.
+For native executables, it is important to always have the `graalvm.config.enabled` option set to `true`, otherwise the AOT optimizations will not be loaded. The plugin takes care of setting this flag to `true` for you.
 
 It is important to understand that Micronaut AOT works _at build time_.
 Therefore, some optimizations like conversion of YAML files to Java configuration will effectively disable the ability to change the configuration at runtime.
@@ -1184,8 +1184,8 @@ The task will generate a fat jar in the `build/libs` directory, that you can run
 The plugin creates a new native binary called `optimized`.
 The GraalVM plugin will then automatically create a couple of tasks for you:
 
-- the `nativeOptimizedCompile` task will compile a native image with the AOT optimizations
-- the `nativeOptimizedRun` task will run the optimized native image (you can call this task directly, it will precompile the native image before)
+- the `nativeOptimizedCompile` task will compile a native executable with the AOT optimizations
+- the `nativeOptimizedRun` task will run the optimized native executable (you can call this task directly, it will precompile the native executable before)
 
 [[aot:optimized-docker-image]]
 === Building an optimized Docker image
@@ -1603,9 +1603,9 @@ micronaut {
 
 === Upgrading from 2.x
 
-When upgrading from the 2.x version of the plugins, you will need to change the configuration of the GraalVM native image builds if you use them.
+When upgrading from the 2.x version of the plugins, you will need to change the configuration of the GraalVM native executable builds if you use them.
 
-Typically, instead of configuring image compilation using the _task_:
+Typically, instead of configuring executable compilation using the _task_:
 
 [source,groovy]
 ----
@@ -1614,7 +1614,7 @@ nativeImage {
 }
 ----
 
-You now need to use the `graalvmNative` extension. This extension supports building multiple native images, and the main one is named `main` (there is another one for tests, called `test`, which runs unit tests natively):
+You now need to use the `graalvmNative` extension. This extension supports building multiple native executables, and the main one is named `main` (there is another one for tests, called `test`, which runs unit tests natively):
 
 [source,groovy]
 ----
@@ -1627,7 +1627,7 @@ graalvmNative {
 }
 ----
 
-Similarly, to compile the native image, you now need to run `nativeCompile` instead of `nativeImage`.
+Similarly, to compile the native executable, you now need to run `nativeCompile` instead of `nativeImage`.
 
 In addition, the official GraalVM plugin makes use of Gradle toolchains support, which can lead to surprising behavior if you are used to switching between local JDKs. If you are facing errors like this one:
 
