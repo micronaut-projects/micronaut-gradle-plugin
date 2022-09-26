@@ -10,9 +10,11 @@ class AbstractEagerConfiguringFunctionalTest extends AbstractFunctionalTest {
 
 
     String getGraalVMBuilderExports() {
-        ["com.oracle.svm.core.jdk",
-         "com.oracle.svm.core.configure"].collect {
-            "-J--add-exports=org.graalvm.nativeimage.builder/$it=ALL-UNNAMED"
+        ["org.graalvm.nativeimage.builder/com.oracle.svm.core.jdk",
+         "org.graalvm.nativeimage.builder/com.oracle.svm.core.configure",
+         "org.graalvm.sdk/org.graalvm.nativeimage.impl"
+        ].collect {
+            "-J--add-exports=$it=ALL-UNNAMED"
         }.join(" ")
     }
 }
