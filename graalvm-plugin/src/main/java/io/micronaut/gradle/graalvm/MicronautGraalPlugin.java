@@ -45,8 +45,9 @@ public class MicronautGraalPlugin implements Plugin<Project> {
 
     private static final Set<String> SOURCE_SETS = Collections.unmodifiableSet(new HashSet<>(Arrays.asList("main", "test")));
     private static final List<String> GRAALVM_MODULE_EXPORTS = Collections.unmodifiableList(Arrays.asList(
-            "com.oracle.svm.core.jdk",
-            "com.oracle.svm.core.configure"
+            "org.graalvm.nativeimage.builder/com.oracle.svm.core.jdk",
+            "org.graalvm.nativeimage.builder/com.oracle.svm.core.configure",
+            "org.graalvm.sdk/org.graalvm.nativeimage.impl"
     ));
 
     @Override
@@ -183,7 +184,7 @@ public class MicronautGraalPlugin implements Plugin<Project> {
 
     public static List<String> getGraalVMBuilderExports() {
         return GRAALVM_MODULE_EXPORTS.stream()
-                .map(module -> "--add-exports=org.graalvm.nativeimage.builder/" + module + "=ALL-UNNAMED")
+                .map(module -> "--add-exports=" + module + "=ALL-UNNAMED")
                 .collect(Collectors.toList());
     }
 }
