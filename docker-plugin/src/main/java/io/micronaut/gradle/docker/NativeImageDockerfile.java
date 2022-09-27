@@ -199,6 +199,11 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
                         }
 
                         @Override
+                        public MapProperty<String, Object> getEnvironmentVariables() {
+                            return delegate.getEnvironmentVariables();
+                        }
+
+                        @Override
                         public ConfigurableFileCollection getClasspath() {
                             return delegate.getClasspath();
                         }
@@ -523,6 +528,7 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
         List<String> args = new NativeImageCommandLineProvider(
                 getProviders().provider(() -> options),
                 executable,
+                getObjects().property(String.class),
                 getObjects().property(String.class),
                 getObjects().fileProperty(),
                 getProviders().provider(() -> false) // in a docker container we don't use the @arg file

@@ -142,7 +142,10 @@ abstract class AbstractGradleBuildSpec extends Specification {
         result.output.lines().filter {
             it.contains('Starting process') && it.contains('bin/native-image')
         }.map {
-            new File(it.substring(it.lastIndexOf('@') + 1))
+            int workingDirIdx = it.indexOf('Working directory: ')
+            int commandIdx = it.indexOf('Command: ')
+            String workingDirectory = it.substring(workingDirIdx + 'Working directory: '.length(), commandIdx).trim()
+            new File(new File(workingDirectory), it.substring(it.lastIndexOf('@') + 1))
         }.findFirst()
                 .map { it.text }
                 .orElse("")
