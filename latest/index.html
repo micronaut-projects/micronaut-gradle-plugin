@@ -125,7 +125,7 @@
 <div class="sectionbody">
 
 <div class="paragraph">
-<p>Version 3.6.0</p>
+<p>Version 3.6.1</p>
 </div>
 </div>
 </div>
@@ -263,14 +263,14 @@ For example, the <code>minimal</code> plugins can be used to reduce the number o
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">plugins {
-  id 'io.micronaut.application' version '3.6.0'
+  id 'io.micronaut.application' version '3.6.1'
 }</code></pre>
 </div>
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">plugins {
-  id("io.micronaut.application") version "3.6.0"
+  id("io.micronaut.application") version "3.6.1"
 }</code></pre>
 </div>
 </div>
@@ -280,9 +280,9 @@ For example, the <code>minimal</code> plugins can be used to reduce the number o
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">plugins {
-  id 'io.micronaut.minimal.application' version '3.6.0'
-  id 'io.micronaut.docker' version '3.6.0'
-  id 'io.micronaut.graalvm' version '3.6.0'
+  id 'io.micronaut.minimal.application' version '3.6.1'
+  id 'io.micronaut.docker' version '3.6.1'
+  id 'io.micronaut.graalvm' version '3.6.1'
 }
 apply plugin: com.diffplug.gradle.eclipse.apt.AptEclipsePlugin</code></pre>
 </div>
@@ -290,9 +290,9 @@ apply plugin: com.diffplug.gradle.eclipse.apt.AptEclipsePlugin</code></pre>
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">plugins {
-  id("io.micronaut.application") version "3.6.0"
-  id("io.micronaut.docker") version "3.6.0"
-  id("io.micronaut.graalvm") version "3.6.0"
+  id("io.micronaut.application") version "3.6.1"
+  id("io.micronaut.docker") version "3.6.1"
+  id("io.micronaut.graalvm") version "3.6.1"
 }
 apply(plugin=com.diffplug.gradle.eclipse.apt.AptEclipsePlugin::class.java)</code></pre>
 </div>
@@ -344,14 +344,14 @@ $ curl https://launch.micronaut.io/demo.zip?lang=kotlin \
 <div class="title">Applying the plugin</div>
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">plugins {
-  id 'io.micronaut.library' version '3.6.0'
+  id 'io.micronaut.library' version '3.6.1'
 }</code></pre>
 </div>
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">plugins {
-  id("io.micronaut.library") version "3.6.0"
+  id("io.micronaut.library") version "3.6.1"
 }</code></pre>
 </div>
 </div>
@@ -475,7 +475,7 @@ The Micronaut Library plugin also supports Groovy and Kotlin sources.
 <pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">plugins {
     id "org.jetbrains.kotlin.jvm" version "1.6.21"
     id "org.jetbrains.kotlin.kapt" version "1.6.21"
-    id "io.micronaut.library" version "3.6.0"
+    id "io.micronaut.library" version "3.6.1"
 }</code></pre>
 </div>
 </div>
@@ -484,7 +484,7 @@ The Micronaut Library plugin also supports Groovy and Kotlin sources.
 <pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">plugins {
     id("org.jetbrains.kotlin.jvm") version "1.6.21"
     id("org.jetbrains.kotlin.kapt") version "1.6.21"
-    id("io.micronaut.library") version "3.6.0"
+    id("io.micronaut.library") version "3.6.1"
 }</code></pre>
 </div>
 </div>
@@ -498,7 +498,7 @@ The Micronaut Library plugin also supports Groovy and Kotlin sources.
 <div class="title">A minimal build file</div>
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">plugins {
-    id 'io.micronaut.library' version '3.6.0'
+    id 'io.micronaut.library' version '3.6.1'
 }
 
 version "0.1"
@@ -521,7 +521,7 @@ dependencies {
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">plugins {
-    id("io.micronaut.library") version "3.6.0"
+    id("io.micronaut.library") version "3.6.1"
 }
 
 version = "0.1"
@@ -551,14 +551,14 @@ dependencies {
 <div class="title">Applying the Micronaut Application plugin</div>
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">plugins {
-  id "io.micronaut.application" version "3.6.0"
+  id "io.micronaut.application" version "3.6.1"
 }</code></pre>
 </div>
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">plugins {
-  id("io.micronaut.application") version "3.6.0"
+  id("io.micronaut.application") version "3.6.1"
 }</code></pre>
 </div>
 </div>
@@ -599,6 +599,9 @@ dependencies {
 <p><code>dockerBuildNative</code> - Builds a Native Docker Image using GraalVM Native Image</p>
 </li>
 <li>
+<p><code>dockerBuildCrac</code> - Builds a docker Image containing a CRaC enabled JDK and a pre-warmed, checkpointed application.</p>
+</li>
+<li>
 <p><code>nativeCompile</code> - Builds a GraalVM Native Image</p>
 </li>
 <li>
@@ -609,6 +612,9 @@ dependencies {
 </li>
 <li>
 <p><code>dockerPushNative</code> - Pushes a Docker Image built with GraalVM Native Image to configured container registry</p>
+</li>
+<li>
+<p><code>dockerPushCrac</code> - Pushes a Docker Image built with a CRaC enabled JDK and a pre-warmed, checkpointed application to configured container registry</p>
 </li>
 </ul>
 </div>
@@ -628,7 +634,7 @@ dependencies {
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">plugins {
-    id 'io.micronaut.application' version '3.6.0'
+    id 'io.micronaut.application' version '3.6.1'
 }
 
 version "0.1"
@@ -657,7 +663,7 @@ application {
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">plugins {
-    id("io.micronaut.application") version "3.6.0"
+    id("io.micronaut.application") version "3.6.1"
 }
 
 version = "0.1"
@@ -695,7 +701,7 @@ application {
     id "org.jetbrains.kotlin.jvm" version "1.6.21"
     id "org.jetbrains.kotlin.kapt" version "1.6.21"
     id "org.jetbrains.kotlin.plugin.allopen" version "1.6.21"
-    id "io.micronaut.application" version "3.6.0"
+    id "io.micronaut.application" version "3.6.1"
 }
 
 version "0.1"
@@ -729,7 +735,7 @@ application {
     id("org.jetbrains.kotlin.jvm") version "1.6.21"
     id("org.jetbrains.kotlin.kapt") version "1.6.21"
     id("org.jetbrains.kotlin.plugin.allopen") version "1.6.21"
-    id("io.micronaut.application") version "3.6.0"
+    id("io.micronaut.application") version "3.6.1"
 }
 
 version = "0.1"
@@ -1027,7 +1033,15 @@ This feature only works in combination with <code>micronaut-test-core</code> ver
 <p>Note that for this to work you must build the application with the same GraalVM SDK as used to build the image.</p>
 </div>
 <div class="paragraph">
-<p>To push the container to the currently configured container registry you can use either <code>dockerPush</code> or <code>dockerPushNative</code> for the native image:</p>
+<p>To build a docker image containing a CRaC enabled JDK and a pre-warmed, checkpointed application, you can run:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="bash" class="language-bash hljs">$ ./gradlew dockerBuildCrac</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>To push the container to the currently configured container registry you can use either <code>dockerPush</code>, <code>dockerPushNative</code> for the native image,  or <code>dockerPushCrac</code> for CRaC image:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -1048,6 +1062,10 @@ This feature only works in combination with <code>micronaut-test-core</code> ver
 
 tasks.named("dockerBuildNative") {
     images = ["eu-frankfurt-1.ocir.io/xyzzyz/repo/my-image-native:$project.version"]
+}
+
+tasks.named("dockerBuildCrac") {
+    images = ["eu-frankfurt-1.ocir.io/xyzzyz/repo/my-image-crac:$project.version"]
 }</code></pre>
 </div>
 </div>
@@ -1059,6 +1077,10 @@ tasks.named("dockerBuildNative") {
 
 tasks.named&lt;DockerBuildImage&gt;("dockerBuildNative") {
     images.add("eu-frankfurt-1.ocir.io/xyzzyz/repo/my-image-native:$project.version")
+}
+
+tasks.named&lt;DockerBuildImage&gt;("dockerBuildCrac") {
+    images.add("eu-frankfurt-1.ocir.io/xyzzyz/repo/my-image-crac:$project.version")
 }</code></pre>
 </div>
 </div>
@@ -1133,7 +1155,7 @@ tasks.named&lt;io.micronaut.gradle.docker.NativeImageDockerfile&gt;("dockerfileN
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">plugins {
-     id 'io.micronaut.application' version '3.6.0'
+     id 'io.micronaut.application' version '3.6.1'
 }
 version "0.1"
 group "com.example"
@@ -1159,7 +1181,7 @@ application {
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">plugins {
-     id("io.micronaut.application") version "3.6.0"
+     id("io.micronaut.application") version "3.6.1"
 }
 version = "0.1"
 group = "com.example"
@@ -1369,8 +1391,8 @@ Micronaut AOT is a <em>deployment</em> optimization: it adds to build time, in o
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">plugins {
     ...
-    id "io.micronaut.application" version "3.6.0"
-    id "io.micronaut.aot" version "3.6.0"
+    id "io.micronaut.application" version "3.6.1"
+    id "io.micronaut.aot" version "3.6.1"
     ...
 }</code></pre>
 </div>
@@ -1379,8 +1401,8 @@ Micronaut AOT is a <em>deployment</em> optimization: it adds to build time, in o
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">plugins {
     ...
-    id("io.micronaut.application") version "3.6.0"
-    id("io.micronaut.aot") version "3.6.0"
+    id("io.micronaut.application") version "3.6.1"
+    id("io.micronaut.aot") version "3.6.1"
     ...
 }</code></pre>
 </div>
@@ -1767,6 +1789,7 @@ This will let Gradle automatically start containers, for example, when a particu
         additionalModules.add(JDBC_MYSQL) // empty by default
         clientTimeout = 60 // in seconds, maximum time to wait for resources to be available, 60s by default
         sharedServer = true // false by default
+        sharedServerNamespace = 'custom' // unset by default
     }
 }</code></pre>
 </div>
@@ -1782,6 +1805,7 @@ This will let Gradle automatically start containers, for example, when a particu
         additionalModules.add(JDBC_MYSQL) // empty by default
         clientTimeout.set(60) // in seconds, maximum time to wait for resources to be available, 60s by default
         sharedServer.set(true) // false by default
+        sharedServerNamespace.set("custom") // unset by default
     }
 }</code></pre>
 </div>
@@ -1805,6 +1829,9 @@ This will let Gradle automatically start containers, for example, when a particu
 </li>
 <li>
 <p>if set to <code>true</code>, then the test server which is used by the project can be shared between independent builds (e.g different Git repositories): this can be useful in conjunction with a <a href="#sec:standalone-test-resources">a standalone test resources service</a>, where for example a producer is used in one project, and a consumer is defined in another, but both need to use the same messaging server.</p>
+</li>
+<li>
+<p>if set, the <code>sharedServerNamespace</code> property will let you declare that the shared test resources service but be executed in a particular namespace. This can be useful if you need multiple shared servers (the default assumes a single shared server)</p>
 </li>
 </ul>
 </div>
@@ -2126,7 +2153,7 @@ The Micronaut CRaC module is in experimental stages. Use at your own risk!
 Micronaut CRaC is a module which adds support for <a href="https://openjdk.org/projects/crac/">Coordinated Restore at Checkpoint</a> to Micronaut applications.</p>
 </div>
 <div class="paragraph">
-<p>It is capable of generating a docker image containing a CRaC enabled JDK and a pre-warmed, checkpointed application via a new task <code>cracDockerBuild</code>.</p>
+<p>It is capable of generating a docker image containing a CRaC enabled JDK and a pre-warmed, checkpointed application via a new task <code>dockerCracBuild</code>.</p>
 </div>
 <div class="admonitionblock important">
 <table>
@@ -2179,9 +2206,9 @@ Currently CRaC support has only been tested on Ubuntu 18.04 and 20.04.  It also 
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">plugins {
     ...
-    id "io.micronaut.minimal.application" version "3.6.0"
-    id "io.micronaut.docker" version "3.6.0"
-    id "io.micronaut.crac" version "3.6.0"
+    id "io.micronaut.minimal.application" version "3.6.1"
+    id "io.micronaut.docker" version "3.6.1"
+    id "io.micronaut.crac" version "3.6.1"
     ...
 }</code></pre>
 </div>
@@ -2190,9 +2217,9 @@ Currently CRaC support has only been tested on Ubuntu 18.04 and 20.04.  It also 
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">plugins {
     ...
-    id("io.micronaut.minimal.application") version "3.6.0"
-    id("io.micronaut.docker") version "3.6.0"
-    id("io.micronaut.crac") version "3.6.0"
+    id("io.micronaut.minimal.application") version "3.6.1"
+    id("io.micronaut.docker") version "3.6.1"
+    id("io.micronaut.crac") version "3.6.1"
     ...
 }</code></pre>
 </div>
