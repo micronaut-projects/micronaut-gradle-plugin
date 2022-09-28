@@ -59,12 +59,16 @@ public class MicronautKotlinSupport {
      */
     public static void configureKotlin(Project project) {
         PluginManager pluginManager = project.getPluginManager();
-        pluginManager.withPlugin("org.jetbrains.kotlin.plugin.allopen", unused -> {
-            AllOpenExtension allOpen = project.getExtensions().getByType(AllOpenExtension.class);
-            allOpen.annotation("io.micronaut.aop.Around");
+        final TaskContainer tasks = project.getTasks();
+        tasks.withType(KotlinCompile.class).configureEach(kotlinCompile -> {
+            final KotlinJvmOptions kotlinOptions = (KotlinJvmOptions) kotlinCompile.getKotlinOptions();
+            kotlinOptions.setJavaParameters(true);
         });
+        pluginManager.withPlugin("org.jetbrains.kotlin.plugin.allopen", unused -> configureAllOpen(project));
+        pluginManager.withPlugin("org.jetbrains.kotlin.kapt", unused -> configureKapt(project));
+    }
 
-
+    private static void configureKapt(Project project) {
         // add inject-java to kapt scopes
         DependencyHandler dependencies = project.getDependencies();
         PluginsHelper.registerAnnotationProcessors(dependencies, KAPT_CONFIGURATIONS);
@@ -134,43 +138,40 @@ public class MicronautKotlinSupport {
             }
         });
 
-        final TaskContainer tasks = project.getTasks();
-        tasks.withType(KotlinCompile.class).configureEach(kotlinCompile -> {
-            final KotlinJvmOptions kotlinOptions = (KotlinJvmOptions) kotlinCompile.getKotlinOptions();
-            kotlinOptions.setJavaParameters(true);
-        });
+        final ExtensionContainer extensions = project.getExtensions();
+        extensions.configure(KaptExtension.class, kaptExtension -> {
+            final MicronautExtension micronautExtension = extensions.getByType(MicronautExtension.class);
+            AnnotationProcessing processingConfig = micronautExtension.getProcessing();
+            final boolean isIncremental = processingConfig.getIncremental().getOrElse(true);
+            final String group = processingConfig.getGroup().getOrElse(project.getGroup().toString());
+            final String module = processingConfig.getModule().getOrElse(project.getName());
+            if (isIncremental) {
 
-        project.getPluginManager().withPlugin("org.jetbrains.kotlin.kapt", unused -> {
-            final ExtensionContainer extensions = project.getExtensions();
-            extensions.configure(KaptExtension.class, kaptExtension -> {
-                final MicronautExtension micronautExtension = extensions.getByType(MicronautExtension.class);
-                AnnotationProcessing processingConfig = micronautExtension.getProcessing();
-                final boolean isIncremental = processingConfig.getIncremental().getOrElse(true);
-                final String group = processingConfig.getGroup().getOrElse(project.getGroup().toString());
-                final String module = processingConfig.getModule().getOrElse(project.getName());
-                if (isIncremental) {
-
-                    kaptExtension.arguments(options -> {
-                        options.arg("micronaut.processing.incremental", true);
-                        final List<String> annotations = processingConfig.getAnnotations().getOrElse(Collections.emptyList());
-                        if (!annotations.isEmpty()) {
-                            options.arg("micronaut.processing.annotations", String.join(",", annotations));
-                        } else {
-                            if (group.length() > 0) {
-                                options.arg("micronaut.processing.annotations", group + ".*");
-                            }
-                        }
-
+                kaptExtension.arguments(options -> {
+                    options.arg("micronaut.processing.incremental", true);
+                    final List<String> annotations = processingConfig.getAnnotations().getOrElse(Collections.emptyList());
+                    if (!annotations.isEmpty()) {
+                        options.arg("micronaut.processing.annotations", String.join(",", annotations));
+                    } else {
                         if (group.length() > 0) {
-                            options.arg("micronaut.processing.group,", group);
+                            options.arg("micronaut.processing.annotations", group + ".*");
                         }
-                        options.arg("micronaut.processing.module", module);
+                    }
 
-                        return null;
-                    });
-                }
-            });
+                    if (group.length() > 0) {
+                        options.arg("micronaut.processing.group,", group);
+                    }
+                    options.arg("micronaut.processing.module", module);
+
+                    return null;
+                });
+            }
         });
+    }
+
+    private static void configureAllOpen(Project project) {
+        AllOpenExtension allOpen = project.getExtensions().getByType(AllOpenExtension.class);
+        allOpen.annotation("io.micronaut.aop.Around");
     }
 
 }
