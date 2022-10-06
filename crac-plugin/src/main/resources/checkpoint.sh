@@ -1,7 +1,7 @@
 #!/bin/bash
 
 
-# Bump pid to avoid pid conflicts when restroing
+# Bump pid to avoid pid conflicts when restoring
 echo 599 > /proc/sys/kernel/ns_last_pid
 
 # Set a trap to close the app once the script finishes
