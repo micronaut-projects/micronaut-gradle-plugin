@@ -1521,7 +1521,7 @@ You will then be able to run your image via:
 
 [source, bash]
 ----
-docker run --privileged -p 8080:8080 <image-name>
+docker run --cap-add=cap_sys_ptrace -p 8080:8080 <image-name>
 ----
 
 === Configuration
