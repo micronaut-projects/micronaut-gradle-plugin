@@ -33,6 +33,7 @@ import org.gradle.api.plugins.JavaPluginExtension;
 import org.gradle.api.plugins.PluginManager;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.provider.ProviderFactory;
+import org.gradle.api.tasks.JavaExec;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.TaskContainer;
 import org.gradle.api.tasks.TaskProvider;
@@ -48,7 +49,6 @@ import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static java.util.stream.Stream.concat;
@@ -69,6 +69,8 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
     public static final String MICRONAUT_TEST_RESOURCES_USAGE = "micronaut.test.resources";
 
     private static final int DEFAULT_CLIENT_TIMEOUT_SECONDS = 60;
+    // Intellij creates synthetic run tasks which name ends with this suffix
+    private static final String IDEA_RUN_TASK_SUFFIX = ".main()";
 
     public static void addTestResourcesClientDependencies(Project project, TestResourcesConfiguration config, DependencyHandler dependencies, TaskProvider<StartTestResourcesService> writeTestProperties, Configuration conf) {
         // Would be cleaner to use `config.getEnabled().zip(...)` but for some unclear reason it fails
@@ -152,6 +154,21 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
         pluginManager.withPlugin("org.graalvm.buildtools.native", unused -> TestResourcesGraalVM.configure(project, tasks, testResourcesClasspathConfig));
         pluginManager.withPlugin("io.micronaut.aot", unused -> TestResourcesAOT.configure(project, config, dependencies, tasks, internalStart, testResourcesClasspathConfig));
         configureServiceReset((ProjectInternal) project, settingsDirectory, stopAtEndFile);
+
+        workaroundForIntellij(project);
+    }
+
+    private static void workaroundForIntellij(Project project) {
+        // Fix "run" tasks in IDEA. Must use `afterEvaluate`, because the `configureEach`
+        // action would otherwise be executed before the configuration of the task in
+        // the init script which IDEA uses, overwriting our classpath
+        project.afterEvaluate(unused ->
+                project.getTasks().withType(JavaExec.class).configureEach(javaExec -> {
+                    if (javaExec.getName().endsWith(IDEA_RUN_TASK_SUFFIX)) {
+                        javaExec.setClasspath(javaExec.getClasspath().plus(project.getConfigurations().getByName("developmentOnly")));
+                    }
+                })
+        );
     }
 
     private Configuration createTestResourcesClasspathConfig(Project project, TestResourcesConfiguration config, TaskProvider<StartTestResourcesService> startTestResourcesServiceTaskProvider) {
