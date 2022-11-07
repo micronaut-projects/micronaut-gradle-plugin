@@ -350,6 +350,11 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
                         public DeprecatedAgentOptions getAgent() {
                             return delegate.getAgent();
                         }
+
+                        @Override
+                        public Property<String> getRequiredVersion() {
+                            return delegate.getRequiredVersion();
+                        }
                     };
                 })
         );
