@@ -8,6 +8,10 @@ echo 599 > /proc/sys/kernel/ns_last_pid
 trap 'echo "Killing $PROCESS" && kill -0 $PROCESS 2>/dev/null && kill $PROCESS' EXIT
 
 echo "Starting application"
+
+# Fix for WSL and OS X Docker Kernels
+GLIBC_TUNABLES=glibc.pthread.rseq=0
+
 # Run the app in the background
 /azul-crac-jdk/bin/java \
   -XX:CRaCCheckpointTo=cr \

@@ -37,7 +37,7 @@ import static io.micronaut.gradle.Strings.capitalize;
 
 public class MicronautCRaCPlugin implements Plugin<Project> {
 
-    public static final String CRAC_DEFAULT_BASE_IMAGE = "ubuntu:20.04";
+    public static final String CRAC_DEFAULT_BASE_IMAGE = "ubuntu:22.04";
     public static final String CRAC_DEFAULT_BASE_IMAGE_PLATFORM = "linux/amd64";
     public static final String CRAC_DEFAULT_READINESS_COMMAND = "curl --output /dev/null --silent --head http://localhost:8080";
     private static final String CRAC_TASK_GROUP = "CRaC";
