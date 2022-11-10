@@ -27,6 +27,12 @@ public interface CRaCConfiguration {
     Property<String> getPlatform();
 
     /**
+     * The optional docker network name to use during building
+     * @return the network name
+     */
+    Property<String> getNetwork();
+
+    /**
      * Any arguments passed to java in the final image
      * @return list of arguments
      */
