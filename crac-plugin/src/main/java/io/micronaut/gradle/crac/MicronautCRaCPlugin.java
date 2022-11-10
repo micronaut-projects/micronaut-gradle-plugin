@@ -162,9 +162,7 @@ public class MicronautCRaCPlugin implements Plugin<Project> {
             task.targetImageId("checkpoint:latest");
             task.getContainerName().set(CRAC_CHECKPOINT);
             task.getHostConfig().getPrivileged().set(true);
-            if (configuration.getNetwork().isPresent()) {
-                task.getHostConfig().getNetwork().set(configuration.getNetwork());
-            }
+            task.getHostConfig().getNetwork().convention(configuration.getNetwork());
             String local = project.getLayout().getBuildDirectory().dir(BUILD_DOCKER_DIRECTORY + imageName + "/cr").map(d -> d.getAsFile().getAbsolutePath()).get();
             task.getHostConfig().getBinds().put(local, "/home/app/cr");
         });
