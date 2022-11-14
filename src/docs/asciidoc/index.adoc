@@ -173,7 +173,7 @@ plugins {
 
 The https://plugins.gradle.org/plugin/io.micronaut.library[Micronaut library plugin] applies the following modifications to the build:
 
-* Applies the https://search.maven.org/artifact/io.micronaut/micronaut-bom[Micronaut Bill of Materials (BOM)]
+* Applies the https://search.maven.org/artifact/io.micronaut.bom/micronaut-bom[Micronaut Bill of Materials (BOM)]
 * Applies the `java-library` plugin
 * Configures annotation processing for the current language (Groovy, Java or Kotlin)
 

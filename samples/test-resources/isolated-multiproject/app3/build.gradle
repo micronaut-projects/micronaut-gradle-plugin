@@ -12,6 +12,7 @@ repositories {
 
 dependencies {
     annotationProcessor("io.micronaut:micronaut-http-validation")
+    runtimeOnly("io.micronaut:micronaut-jackson-databind")
 }
 
 micronaut {

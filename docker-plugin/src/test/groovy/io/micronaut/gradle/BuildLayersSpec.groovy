@@ -15,7 +15,7 @@ class BuildLayersSpec extends AbstractGradleBuildSpec {
             }
             
             micronaut {
-                version "3.5.1"
+                version "$micronautVersion"
                 runtime "netty"
                 testRuntime "junit5"
             }
@@ -52,7 +52,7 @@ class BuildLayersSpec extends AbstractGradleBuildSpec {
             }
             
             micronaut {
-                version "3.5.1"
+                version "$micronautVersion"
                 runtime "netty"
                 testRuntime "junit5"
             }

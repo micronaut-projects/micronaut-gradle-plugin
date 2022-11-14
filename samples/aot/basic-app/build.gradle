@@ -11,7 +11,6 @@ repositories {
 }
 
 micronaut {
-    version = "3.3.0"
     runtime("netty")
     testRuntime("junit5")
     processing {
@@ -44,6 +43,7 @@ dependencies {
     implementation("javax.annotation:javax.annotation-api")
     runtimeOnly("ch.qos.logback:logback-classic")
     implementation("io.micronaut:micronaut-validation")
+    runtimeOnly("org.yaml:snakeyaml")
 }
 
 

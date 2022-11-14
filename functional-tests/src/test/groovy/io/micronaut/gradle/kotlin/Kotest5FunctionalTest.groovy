@@ -29,13 +29,14 @@ class Kotest5FunctionalTest extends AbstractEagerConfiguringFunctionalTest {
                        |}
                        |
                        |micronaut {
-                       |    version "3.5.1"
+                       |    version "$micronautVersion"
                        |    runtime "netty"
                        |    testRuntime "kotest5"
                        |}
                        |
                        |dependencies {
                        |    implementation("io.micronaut.kotlin:micronaut-kotlin-runtime")
+                       |    runtimeOnly("io.micronaut.serde:micronaut-serde-jackson")
                        |}
                        |
                        |$repositoriesBlock

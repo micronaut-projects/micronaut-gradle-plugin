@@ -23,7 +23,7 @@ class DockerNativeFunctionalTest extends AbstractEagerConfiguringFunctionalTest 
             }
             
             micronaut {
-                version "3.5.1"
+                version "$micronautVersion"
                 runtime "$runtime"
             }
             
@@ -109,7 +109,7 @@ micronaut:
             }
 
             micronaut {
-                version "3.5.1"
+                version "$micronautVersion"
 
                 runtime "$runtime"
             }
@@ -158,7 +158,7 @@ micronaut:
             }
 
             micronaut {
-                version "3.5.1"
+                version "$micronautVersion"
                 runtime "netty"
             }
 
@@ -199,7 +199,7 @@ micronaut:
             }
 
             micronaut {
-                version "3.5.1"
+                version "$micronautVersion"
                 runtime "lambda"
             }
 
@@ -240,7 +240,7 @@ micronaut:
             }
             
             micronaut {
-                version "3.5.1"
+                version "$micronautVersion"
                 runtime "lambda"
             }
             
@@ -294,7 +294,7 @@ class Application {
             }
             
             micronaut {
-                version "3.5.1"
+                version "$micronautVersion"
             }
             
             $repositoriesBlock
@@ -308,8 +308,8 @@ class Application {
             }
             
             java {
-                sourceCompatibility = JavaVersion.toVersion('8')
-                targetCompatibility = JavaVersion.toVersion('8')
+                sourceCompatibility = JavaVersion.toVersion('17')
+                targetCompatibility = JavaVersion.toVersion('17')
             }
             
             dockerfile {
@@ -373,7 +373,7 @@ class Application {
             }
             
             micronaut {
-                version "3.5.1"
+                version "$micronautVersion"
                 runtime "netty"
                 testRuntime "junit5"
             }
@@ -413,7 +413,7 @@ class Application {
             }
             
             micronaut {
-                version "3.5.1"
+                version "$micronautVersion"
                 runtime "$runtime"
             }
             
@@ -500,7 +500,7 @@ class Application {
             }
             
             micronaut {
-                version "3.4.0"
+                version "$micronautVersion"
                 runtime "netty"
             }
             
@@ -594,7 +594,7 @@ ENTRYPOINT ["/app/application", "-Xmx64m"]
 }
 
 micronaut {
-    version "3.4.0"
+    version "$micronautVersion"
     runtime "netty"
 }
             

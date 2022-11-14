@@ -90,8 +90,11 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
             return Collections.emptyList();
         }));
         conf.getDependencyConstraints().addAllLater(PluginsHelper.findMicronautVersionAsProvider(project).map(v ->
-                Stream.of("micronaut-http-client", "micronaut-bom", "micronaut-inject")
-                        .map(artifact -> dependencies.getConstraints().create("io.micronaut:" + artifact, dc -> {
+                Stream.of("io.micronaut:micronaut-http-client",
+                                "io.micronaut:micronaut-core-bom",
+                                "io.micronaut.bom:micronaut-bom",
+                                "io.micronaut:micronaut-inject")
+                        .map(artifact -> dependencies.getConstraints().create(artifact, dc -> {
                             dc.because("Aligning version of Micronaut the current Micronaut version");
                             dc.version(version -> version.strictly(v));
                         }))

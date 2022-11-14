@@ -19,6 +19,14 @@ abstract class AbstractGradleBuildSpec extends Specification {
         return GraalUtil.isGraalJVM() || System.getenv("GRAALVM_HOME")
     }
 
+    boolean allowSnapshots = true
+    // This flag is only for local tests, do not push with this flag set to true
+    boolean allowMavenLocal = false
+
+    String getMicronautVersion() {
+        System.getProperty("micronautVersion")
+    }
+
     boolean containsDependency(String mavenCoordinate, String configuration) {
         BuildResult result = build('dependencies', "--configuration", configuration)
         BuildTask task = result.task(":dependencies")
@@ -57,11 +65,24 @@ abstract class AbstractGradleBuildSpec extends Specification {
     protected void withSample(String name) {
         File sampleDir = new File("../samples/$name").canonicalFile
         copySample(sampleDir.toPath(), baseDir)
-
+        buildFile << """
+            $repositoriesBlock
+        """
         def jacocoConf = AbstractGradleBuildSpec.classLoader.getResourceAsStream("testkit-gradle.properties")?.text
         if (jacocoConf) {
             println "Configuring Code Coverage support: ${jacocoConf}"
             file("gradle.properties") << jacocoConf
+        }
+        File gradleProperties = file("gradle.properties")
+        if (gradleProperties.exists() && micronautVersion != null) {
+            def writer = new StringWriter()
+            gradleProperties.newReader().transformLine(writer) { line ->
+                if (line.startsWith("micronautVersion=")) {
+                    return "micronautVersion=$micronautVersion"
+                }
+                return line
+            }
+            gradleProperties.text = writer.toString()
         }
     }
 
@@ -80,9 +101,19 @@ abstract class AbstractGradleBuildSpec extends Specification {
         baseDir.resolve(relativePath).toFile()
     }
 
+    protected static String guardString(String s, boolean flag) {
+        if (flag) {
+            s
+        } else {
+            ""
+        }
+    }
+
     def getRepositoriesBlock(String dsl = 'groovy') {
         """repositories {
+    ${guardString('mavenLocal()', allowMavenLocal)}
     mavenCentral()
+    ${guardString('maven { url = "https://s01.oss.sonatype.org/content/repositories/snapshots" }', allowSnapshots)}
 }"""
     }
 
@@ -149,5 +180,13 @@ abstract class AbstractGradleBuildSpec extends Specification {
         }.findFirst()
                 .map { it.text }
                 .orElse("")
+    }
+
+    String getWithSerde() {
+        """
+            dependencies {
+                runtimeOnly 'io.micronaut.serde:micronaut-serde-jackson'
+            }
+        """
     }
 }

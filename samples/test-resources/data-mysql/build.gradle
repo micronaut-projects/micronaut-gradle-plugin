@@ -25,7 +25,6 @@ application {
 }
 
 micronaut {
-    version = "3.5.1"
     runtime("netty")
     testRuntime("junit5")
     processing {
@@ -42,6 +41,7 @@ dependencies {
     implementation("io.micronaut.data:micronaut-data-jdbc")
     implementation("io.micronaut.sql:micronaut-jdbc-hikari")
     runtimeOnly("mysql:mysql-connector-java")
+    runtimeOnly("io.micronaut:micronaut-jackson-databind")
     // TEST_DEPENDENCIES_MARKER
 }
 

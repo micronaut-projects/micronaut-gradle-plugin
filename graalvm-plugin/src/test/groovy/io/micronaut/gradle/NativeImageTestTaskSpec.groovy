@@ -18,7 +18,7 @@ class NativeImageTestTaskSpec extends AbstractGradleBuildSpec {
             }
             
             micronaut {
-                version "3.5.1"
+                version "$micronautVersion"
                 runtime "netty"
                 testRuntime "junit5"
             }
@@ -31,11 +31,13 @@ class NativeImageTestTaskSpec extends AbstractGradleBuildSpec {
                 testImplementation("io.micronaut.test:micronaut-test-core")
             }
             
+            $withSerde            
+
             mainClassName="example.Application"
             
             java {
-                sourceCompatibility = JavaVersion.toVersion('1.8')
-                targetCompatibility = JavaVersion.toVersion('1.8')
+                sourceCompatibility = '17'
+                targetCompatibility = '17'
             }            
             testlogger {
                showStandardStreams true
