@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":6,"i1":6,"i2":6,"i3":6,"i4":6,"i5":6,"i6":6};
+var methods = {"i0":6,"i1":6,"i2":6,"i3":6,"i4":6,"i5":6,"i6":6,"i7":6};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],4:["t3","Abstract Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -144,17 +144,23 @@ var activeTableTab = "activeTableTab";
 </tr>
 <tr id="i4" class="altColor">
 <td class="colFirst"><code>org.gradle.api.provider.Property&lt;java.lang.String&gt;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../io/micronaut/gradle/crac/CRaCConfiguration.html#getNetwork--">getNetwork</a></span>()</code>
+<div class="block">The optional docker network name to use during building</div>
+</td>
+</tr>
+<tr id="i5" class="rowColor">
+<td class="colFirst"><code>org.gradle.api.provider.Property&lt;java.lang.String&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../io/micronaut/gradle/crac/CRaCConfiguration.html#getPlatform--">getPlatform</a></span>()</code>
 <div class="block">The platform to specify in the FROM instruction defaults to .</div>
 </td>
 </tr>
-<tr id="i5" class="rowColor">
+<tr id="i6" class="altColor">
 <td class="colFirst"><code>org.gradle.api.provider.Property&lt;java.lang.String&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../io/micronaut/gradle/crac/CRaCConfiguration.html#getPreCheckpointReadinessCommand--">getPreCheckpointReadinessCommand</a></span>()</code>
 <div class="block">Prior to creating a checkpoint and running the warmup script, we require to know if the application is up.</div>
 </td>
 </tr>
-<tr id="i6" class="altColor">
+<tr id="i7" class="rowColor">
 <td class="colFirst"><code>org.gradle.api.file.RegularFileProperty</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../io/micronaut/gradle/crac/CRaCConfiguration.html#getWarmupScript--">getWarmupScript</a></span>()</code>
 <div class="block">The warmup script to copy in to the checkpoint image and execute prior to snapshotting.</div>
@@ -214,6 +220,21 @@ var activeTableTab = "activeTableTab";
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>the platform (can be removed with <code>platform.convention(null)</code> in the <a href="../../../../io/micronaut/gradle/crac/CRaCConfiguration.html" title="interface in io.micronaut.gradle.crac"><code>CRaCConfiguration</code></a> extension)</dd>
+</dl>
+</li>
+</ul>
+<a name="getNetwork--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getNetwork</h4>
+<pre>@Optional
+org.gradle.api.provider.Property&lt;java.lang.String&gt;&nbsp;getNetwork()</pre>
+<div class="block">The optional docker network name to use during building</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>the network name</dd>
 </dl>
 </li>
 </ul>
