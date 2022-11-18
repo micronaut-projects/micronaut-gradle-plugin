@@ -987,6 +987,8 @@ This feature only works in combination with <code>micronaut-test-core</code> ver
 </div>
 <div class="sect2">
 <h3 id="_docker_support"><a class="anchor" href="#_docker_support"></a>5.5. Docker Support</h3>
+<div class="sect3">
+<h4 id="_building_docker_images"><a class="anchor" href="#_building_docker_images"></a>5.5.1. Building docker images</h4>
 <div class="paragraph">
 <p>The Micronaut plugin includes integration with the <a href="https://bmuschko.github.io/gradle-docker-plugin">Gradle Docker plugin</a> allowing you to easily build applications and native images using Docker containers.</p>
 </div>
@@ -1087,6 +1089,9 @@ tasks.named&lt;DockerBuildImage&gt;("dockerBuildCrac") {
 <div class="paragraph">
 <p>Notice that you can supply two different image names to push to for the JVM version and the native version of the application.</p>
 </div>
+</div>
+<div class="sect3">
+<h4 id="_customized_docker_files"><a class="anchor" href="#_customized_docker_files"></a>5.5.2. Customized docker files</h4>
 <div class="paragraph">
 <p>If you wish to customize the docker builds that are used, the easiest way is to run <code>./gradlew dockerfile</code> (or <code>dockerfileNative</code> for the native version) and copy the generated <code>Dockerfile</code> from <code>build/docker</code> to your root directory and modify as required.</p>
 </div>
@@ -1116,6 +1121,9 @@ tasks.named&lt;io.micronaut.gradle.docker.NativeImageDockerfile&gt;("dockerfileN
 <div class="paragraph">
 <p>The above configuration uses a max heap setting of <code>128m</code> for Java and <code>64m</code> for native image for the application.</p>
 </div>
+</div>
+<div class="sect3">
+<h4 id="_adding_additional_instructions"><a class="anchor" href="#_adding_additional_instructions"></a>5.5.3. Adding additional instructions</h4>
 <div class="paragraph">
 <p>To add additional docker instructions to the generated Dockerfile, such as adding a HEALTHCHECK, you can do the following. The additional instructions will be added at the end of the <code>Dockerfile</code> just before the <code>ENTRYPOINT</code>.</p>
 </div>
@@ -1145,6 +1153,29 @@ tasks.named&lt;io.micronaut.gradle.docker.NativeImageDockerfile&gt;("dockerfileN
 </div>
 <div class="paragraph">
 <p>You can also add any of the other instructions/commands that the docker plugin supports, see <a href="https://github.com/bmuschko/gradle-docker-plugin/blob/master/src/main/groovy/com/bmuschko/gradle/docker/tasks/image/Dockerfile.groovy">the Dockerfile task documentation</a>.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_duplicates_on_classpath"><a class="anchor" href="#_duplicates_on_classpath"></a>5.5.4. Duplicates on classpath</h4>
+<div class="paragraph">
+<p>In some projects, it may happen that different transitive dependencies have the same file name.
+In this case, the task which builds the layers will fail with a duplicate error.
+You can workaround this issue by configuring the duplicates strategy on the task:</p>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">tasks.withType&lt;io.micronaut.gradle.docker.tasks.BuildLayersTask&gt; {
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+}</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">tasks.withType(io.micronaut.gradle.docker.tasks.BuildLayersTask) {
+    duplicatesStrategy.set(DuplicatesStrategy.INCLUDE)
+}</code></pre>
+</div>
+</div>
 </div>
 </div>
 <div class="sect2">
