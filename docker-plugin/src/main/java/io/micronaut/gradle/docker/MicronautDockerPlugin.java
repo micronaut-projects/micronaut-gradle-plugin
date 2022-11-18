@@ -203,14 +203,8 @@ public class MicronautDockerPlugin implements Plugin<Project> {
             task.dependsOn(buildLayersTask);
             task.setGroup(BasePlugin.BUILD_GROUP);
             task.setDescription("Builds a Docker Image (image " + imageName + ")");
-            if (f.exists()) {
-                task.getDockerFile().set(f);
-            } else {
-                task.getDockerFile()
-                        .convention(dockerFileTask.flatMap(Dockerfile::getDestFile));
-            }
+            task.getDockerFile().convention(dockerFileTask.flatMap(Dockerfile::getDestFile));
             task.getImages().set(Collections.singletonList(project.getName()));
-            ;
             task.getInputDir().set(dockerFileTask.flatMap(Dockerfile::getDestDir));
         });
 
@@ -262,12 +256,7 @@ public class MicronautDockerPlugin implements Plugin<Project> {
             task.setGroup(BasePlugin.BUILD_GROUP);
             task.setDescription("Builds a Native Docker Image using GraalVM (image " + imageName + ")");
             task.getInputs().files(prepareContext);
-            if (f.exists()) {
-                task.getDockerFile().set(f);
-            } else {
-                task.getDockerFile()
-                        .convention(dockerFileTask.flatMap(Dockerfile::getDestFile));
-            }
+            task.getDockerFile().convention(dockerFileTask.flatMap(Dockerfile::getDestFile));
             task.getImages().set(Collections.singletonList(project.getName()));
             task.dependsOn(buildLayersTask);
             task.getInputDir().set(dockerFileTask.flatMap(Dockerfile::getDestDir));
