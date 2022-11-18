@@ -1,6 +1,7 @@
 package io.micronaut.gradle.docker;
 
 import com.bmuschko.gradle.docker.DockerExtension;
+import com.bmuschko.gradle.docker.DockerRemoteApiPlugin;
 import com.bmuschko.gradle.docker.tasks.container.DockerCopyFileFromContainer;
 import com.bmuschko.gradle.docker.tasks.container.DockerCreateContainer;
 import com.bmuschko.gradle.docker.tasks.container.DockerRemoveContainer;
@@ -50,13 +51,13 @@ import static org.gradle.api.plugins.JavaPlugin.RUNTIME_CLASSPATH_CONFIGURATION_
 public class MicronautDockerPlugin implements Plugin<Project> {
     @Override
     public void apply(Project project) {
+        project.getPluginManager().apply(DockerRemoteApiPlugin.class);
         project.getPluginManager().apply(MicronautBasePlugin.class);
         TaskContainer tasks = project.getTasks();
         ExtensionContainer extensions = project.getExtensions();
         MicronautExtension micronautExtension = extensions.getByType(MicronautExtension.class);
         NamedDomainObjectContainer<MicronautDockerImage> dockerImages = project.getObjects().domainObjectContainer(MicronautDockerImage.class, s -> project.getObjects().newInstance(DefaultMicronautDockerImage.class, s));
         micronautExtension.getExtensions().add("dockerImages", dockerImages);
-        extensions.create("docker", DockerExtension.class);
         dockerImages.all(image -> createDockerImage(project, image));
         TaskProvider<Jar> runnerJar = createMainRunnerJar(project, tasks);
         dockerImages.create("main", image -> {
