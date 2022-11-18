@@ -25,7 +25,6 @@ import org.gradle.api.attributes.LibraryElements;
 import org.gradle.api.attributes.Usage;
 import org.gradle.api.file.Directory;
 import org.gradle.api.file.DirectoryProperty;
-import org.gradle.api.file.RegularFile;
 import org.gradle.api.internal.project.ProjectInternal;
 import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.plugins.JavaPlugin;
@@ -44,8 +43,12 @@ import org.gradle.internal.session.BuildSessionLifecycleListener;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -119,6 +122,16 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
         String accessToken = UUID.randomUUID().toString();
         Provider<String> accessTokenProvider = providers.provider(() -> accessToken);
         DirectoryProperty buildDirectory = project.getLayout().getBuildDirectory();
+        MessageDigest md;
+        try {
+            md = MessageDigest.getInstance("SHA-1");
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
+        md.update(project.getPath().getBytes(StandardCharsets.UTF_8));
+        // convert the digest to hex string
+        String hash = String.format("%040x", new BigInteger(1, md.digest()));
+        File testResourcesDir = new File(project.getRootDir(), ".gradle/test-resources/" + hash);
         Provider<Directory> settingsDirectory = config.getSharedServer().flatMap(shared -> {
             DirectoryProperty directoryProperty = project.getObjects().directoryProperty();
             if (Boolean.TRUE.equals(shared)) {
@@ -126,8 +139,8 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
                 directoryProperty.set(ServerUtils.getDefaultSharedSettingsPath(namespace).toFile());
             }
             return directoryProperty;
-        }).orElse(buildDirectory.dir("test-resources-settings"));
-        Provider<RegularFile> portFile = buildDirectory.file("test-resources-port.txt");
+        }).orElse(project.getObjects().directoryProperty().fileValue(new File(testResourcesDir, "test-resources-settings")));
+        File portFile = new File(testResourcesDir, "test-resources-port.txt");
         Path stopAtEndFile = createStopFile(project);
         TaskContainer tasks = project.getTasks();
         Provider<Boolean> isStandalone = config.getSharedServer().zip(providers.provider(() -> {
@@ -224,13 +237,13 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
                                                                            Provider<Directory> settingsDirectory,
                                                                            Provider<String> accessToken,
                                                                            TaskContainer tasks,
-                                                                           Provider<RegularFile> portFile,
+                                                                           File portFile,
                                                                            Path stopFile,
                                                                            Provider<Boolean> isStandalone,
                                                                            Provider<Directory> cdsDir) {
         return tasks.register(START_TEST_RESOURCES_SERVICE_INTERNAL, StartTestResourcesService.class, task -> {
             task.setOnlyIf(t -> config.getEnabled().get());
-            task.getPortFile().convention(portFile);
+            task.getPortFile().set(portFile);
             task.getSettingsDirectory().convention(settingsDirectory);
             task.getAccessToken().convention(accessToken);
             task.getExplicitPort().convention(config.getExplicitPort());
