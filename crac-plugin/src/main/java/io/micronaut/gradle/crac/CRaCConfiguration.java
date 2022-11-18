@@ -3,6 +3,7 @@ package io.micronaut.gradle.crac;
 import org.gradle.api.file.RegularFileProperty;
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Property;
+import org.gradle.api.tasks.Optional;
 import org.gradle.api.tasks.PathSensitive;
 import org.gradle.api.tasks.PathSensitivity;
 
@@ -25,6 +26,13 @@ public interface CRaCConfiguration {
      * @return the platform (can be removed with {@code platform.convention(null)} in the {@link CRaCConfiguration} extension)
      */
     Property<String> getPlatform();
+
+    /**
+     * The optional docker network name to use during building
+     * @return the network name
+     */
+    @Optional
+    Property<String> getNetwork();
 
     /**
      * Any arguments passed to java in the final image
