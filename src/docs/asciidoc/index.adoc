@@ -655,6 +655,8 @@ If you wish to split your native image tests from your regular tests you can {gr
 
 === Docker Support
 
+==== Building docker images
+
 The Micronaut plugin includes integration with the https://bmuschko.github.io/gradle-docker-plugin[Gradle Docker plugin] allowing you to easily build applications and native images using Docker containers.
 
 Applications are built as layered JARs using the `buildLayers` task ensuring optimized Docker images for Java applications.
@@ -743,6 +745,8 @@ tasks.named<DockerBuildImage>("dockerBuildCrac") {
 
 Notice that you can supply two different image names to push to for the JVM version and the native version of the application.
 
+==== Customized docker files
+
 If you wish to customize the docker builds that are used, the easiest way is to run `./gradlew dockerfile` (or `dockerfileNative` for the native version) and copy the generated `Dockerfile` from `build/docker` to your root directory and modify as required.
 
 If you wish to customize the JVM arguments or native image arguments then it is possible to do so with the `args` method of the `dockerfile` and `dockerfileNative` tasks:
@@ -768,6 +772,8 @@ tasks.named<io.micronaut.gradle.docker.NativeImageDockerfile>("dockerfileNative"
 ----
 
 The above configuration uses a max heap setting of `128m` for Java and `64m` for native image for the application.
+
+==== Adding additional instructions
 
 To add additional docker instructions to the generated Dockerfile, such as adding a HEALTHCHECK, you can do the following. The additional instructions will be added at the end of the `Dockerfile` just before the `ENTRYPOINT`.
 
@@ -796,6 +802,27 @@ tasks.named<io.micronaut.gradle.docker.NativeImageDockerfile>("dockerfileNative"
 ----
 
 You can also add any of the other instructions/commands that the docker plugin supports, see {docker-plugin}/blob/master/src/main/groovy/com/bmuschko/gradle/docker/tasks/image/Dockerfile.groovy[the Dockerfile task documentation].
+
+==== Duplicates on classpath
+
+In some projects, it may happen that different transitive dependencies have the same file name.
+In this case, the task which builds the layers will fail with a duplicate error.
+You can workaround this issue by configuring the duplicates strategy on the task:
+
+[source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
+----
+tasks.withType<io.micronaut.gradle.docker.tasks.BuildLayersTask> {
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+}
+----
+
+[source, kotlin, subs="verbatim,attributes", role="multi-language-sample"]
+----
+tasks.withType(io.micronaut.gradle.docker.tasks.BuildLayersTask) {
+    duplicatesStrategy.set(DuplicatesStrategy.INCLUDE)
+}
+----
+
 
 === Micronaut Runtimes
 
