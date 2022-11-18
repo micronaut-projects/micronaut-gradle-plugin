@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":10,"i1":6,"i2":6,"i3":6};
+var methods = {"i0":10,"i1":6,"i2":6,"i3":6,"i4":6};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],4:["t3","Abstract Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -194,14 +194,18 @@ extends org.gradle.api.DefaultTask</pre>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../io/micronaut/gradle/docker/tasks/BuildLayersTask.html#action--">action</a></span>()</code>&nbsp;</td>
 </tr>
 <tr id="i1" class="rowColor">
+<td class="colFirst"><code>abstract org.gradle.api.provider.Property&lt;org.gradle.api.file.DuplicatesStrategy&gt;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../io/micronaut/gradle/docker/tasks/BuildLayersTask.html#getDuplicatesStrategy--">getDuplicatesStrategy</a></span>()</code>&nbsp;</td>
+</tr>
+<tr id="i2" class="altColor">
 <td class="colFirst"><code>protected abstract org.gradle.api.internal.file.FileOperations</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../io/micronaut/gradle/docker/tasks/BuildLayersTask.html#getFileOperations--">getFileOperations</a></span>()</code>&nbsp;</td>
 </tr>
-<tr id="i2" class="altColor">
+<tr id="i3" class="rowColor">
 <td class="colFirst"><code>abstract org.gradle.api.provider.ListProperty&lt;<a href="../../../../../io/micronaut/gradle/docker/model/Layer.html" title="interface in io.micronaut.gradle.docker.model">Layer</a>&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../io/micronaut/gradle/docker/tasks/BuildLayersTask.html#getLayers--">getLayers</a></span>()</code>&nbsp;</td>
 </tr>
-<tr id="i3" class="rowColor">
+<tr id="i4" class="altColor">
 <td class="colFirst"><code>abstract org.gradle.api.file.DirectoryProperty</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../io/micronaut/gradle/docker/tasks/BuildLayersTask.html#getOutputDir--">getOutputDir</a></span>()</code>&nbsp;</td>
 </tr>
@@ -272,6 +276,17 @@ extends org.gradle.api.DefaultTask</pre>
 <li class="blockList">
 <h4>getLayers</h4>
 <pre>public abstract&nbsp;org.gradle.api.provider.ListProperty&lt;<a href="../../../../../io/micronaut/gradle/docker/model/Layer.html" title="interface in io.micronaut.gradle.docker.model">Layer</a>&gt;&nbsp;getLayers()</pre>
+</li>
+</ul>
+<a name="getDuplicatesStrategy--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getDuplicatesStrategy</h4>
+<pre>@Input
+ @Optional
+public abstract&nbsp;org.gradle.api.provider.Property&lt;org.gradle.api.file.DuplicatesStrategy&gt;&nbsp;getDuplicatesStrategy()</pre>
 </li>
 </ul>
 <a name="getOutputDir--">
