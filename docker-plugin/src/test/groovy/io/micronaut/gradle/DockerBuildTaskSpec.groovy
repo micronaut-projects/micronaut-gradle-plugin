@@ -50,6 +50,58 @@ class Application {
 
     }
 
+    def "test build docker image using custom Dockerfile"() {
+        given:
+        settingsFile << "rootProject.name = 'hello-world'"
+        buildFile << """
+            plugins {
+                id "io.micronaut.minimal.application"
+                id "io.micronaut.docker"
+            }
+            
+            micronaut {
+                version "3.5.1"
+            }
+            
+            $repositoriesBlock
+
+            mainClassName="example.Application"
+            
+        """
+        testProjectDir.newFolder("src", "main", "java", "example")
+        def javaFile = testProjectDir.newFile("src/main/java/example/Application.java")
+        javaFile.parentFile.mkdirs()
+        javaFile << """
+package example;
+
+class Application {
+    public static void main(String... args) {
+    
+    }
+}
+"""
+
+        testProjectDir.newFile("Dockerfile") << """
+FROM openjdk:17-alpine
+WORKDIR /home/alternate
+COPY layers/libs /home/alternate/libs
+COPY layers/classes /home/alternate/classes
+COPY layers/resources /home/alternate/resources
+COPY layers/application.jar /home/alternate/application.jar
+EXPOSE 8080
+ENTRYPOINT ["java", "-jar", "/home/alternate/application.jar"]
+"""
+        when:
+        def result = build('dockerBuild', '-s')
+
+        def task = result.task(":dockerBuild")
+        then:
+        result.output.contains("WORKDIR /home/alternate")
+        result.output.contains("Successfully tagged hello-world:latest")
+        task.outcome == TaskOutcome.SUCCESS
+
+    }
+
     @Issue('https://github.com/micronaut-projects/micronaut-gradle-plugin/issues/161')
     void 'create group and user for running the application instead of using root'() {
         given:
