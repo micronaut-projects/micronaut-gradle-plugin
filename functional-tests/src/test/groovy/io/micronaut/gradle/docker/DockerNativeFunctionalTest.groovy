@@ -41,6 +41,9 @@ class DockerNativeFunctionalTest extends AbstractEagerConfiguringFunctionalTest 
                 instruction \"\"\"HEALTHCHECK CMD curl -s localhost:8090/health | grep '"status":"UP"'\"\"\"
             }
             
+            graalvmNative.binaries.all {
+                buildArgs.addAll(["--exclude-config", "micronaut-function-aws-api-proxy-.*.jar", "META-INF/native-image/.*.properties"])
+            }
         """
         testProjectDir.newFolder("src", "main", "java", "example")
         def resources = testProjectDir.newFolder("src", "main", "resources")
@@ -127,6 +130,10 @@ micronaut:
 
             dockerfileNative {
                 baseImage("gcr.io/distroless/cc-debian10")
+            }
+
+            graalvmNative.binaries.all {
+                buildArgs.addAll(["--exclude-config", "micronaut-function-aws-api-proxy-.*.jar", "META-INF/native-image/.*.properties"])
             }
         """
 
