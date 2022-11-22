@@ -9,19 +9,13 @@ import org.graalvm.buildtools.gradle.tasks.BuildNativeImageTask;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.DependencySet;
-import org.gradle.api.file.RegularFile;
 import org.gradle.api.plugins.JavaPluginConvention;
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Provider;
-import org.gradle.api.tasks.InputFile;
-import org.gradle.api.tasks.PathSensitive;
-import org.gradle.api.tasks.PathSensitivity;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.SourceSetContainer;
 import org.gradle.api.tasks.TaskContainer;
-import org.gradle.api.tasks.testing.Test;
 import org.gradle.language.jvm.tasks.ProcessResources;
-import org.gradle.process.CommandLineArgumentProvider;
 
 import java.io.File;
 import java.util.Arrays;
@@ -30,7 +24,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * Support for building GraalVM native images.
@@ -91,14 +84,6 @@ public class MicronautGraalPlugin implements Plugin<Project> {
                     }
                 }
             });
-
-            // We use `afterEvaluate` here in order to preserve laziness of task configuration
-            // and because there is no API to allow reacting to registration of tasks.
-            Set<String> alreadyRegisteredTaskNames = new HashSet<>();
-            project.afterEvaluate(p -> tasks.withType(Test.class).getCollectionSchema().getElements().forEach(element -> {
-                String testName = element.getName();
-                registerTestAgainstNativeImageTask(alreadyRegisteredTaskNames, tasks, testName);
-            }));
         });
     }
 
@@ -119,39 +104,6 @@ public class MicronautGraalPlugin implements Plugin<Project> {
                     });
                 })
         );
-    }
-
-    /**
-     * For each `Test` task, we register a new `testNativeImage` task which tests _against_ the native image
-     * server. Note that this is different from the `nativeTest` task that the GraalVM Gradle plugin provides,
-     * as the latter executes all tests _within_ the native image.
-     */
-    private void registerTestAgainstNativeImageTask(Set<String> alreadyRegistered, TaskContainer tasks, String testName) {
-        if (alreadyRegistered.add(testName)) {
-            tasks.register(testName + "NativeImage", Test.class, nativeImageTestTask -> {
-                Test testTask = (Test) tasks.getByName(testName);
-                nativeImageTestTask.setClasspath(testTask.getClasspath());
-                nativeImageTestTask.getJavaLauncher().set(testTask.getJavaLauncher());
-                BuildNativeImageTask nativeBuild = (BuildNativeImageTask) tasks.findByName("nativeCompile");
-                nativeImageTestTask.setForkEvery(testTask.getForkEvery());
-                nativeImageTestTask.setTestClassesDirs(testTask.getTestClassesDirs());
-                nativeImageTestTask.getJvmArgumentProviders().add(new CommandLineArgumentProvider() {
-                    @InputFile
-                    @PathSensitive(PathSensitivity.RELATIVE)
-                    Provider<RegularFile> getInputFile() {
-                        return nativeBuild.getOutputFile();
-                    }
-
-                    @Override
-                    public Iterable<String> asArguments() {
-                        return Collections.singleton(
-                                "-Dmicronaut.test.server.executable=" + getInputFile().get().getAsFile().getAbsolutePath()
-                        );
-                    }
-                });
-                nativeImageTestTask.setDescription("Runs tests against a native image build of the server. Requires the server to allow the port to configurable with 'micronaut.server.port'.");
-            });
-        }
     }
 
     private static void configureAnnotationProcessing(Project project, MicronautExtension extension) {
