@@ -363,7 +363,6 @@ The following additional tasks are provided by this plugin:
 * `dockerBuildNative` - Builds a Native Docker Image using GraalVM Native Image
 * `dockerBuildCrac` - Builds a docker Image containing a CRaC enabled JDK and a pre-warmed, checkpointed application.
 * `nativeCompile` - Builds a GraalVM Native Executable
-* `testNativeImage` (since 1.1.0) - Builds a GraalVM Native Executable, starts the native server and runs tests against the server
 * `dockerPush` - Pushes a Docker Image to configured container registry
 * `dockerPushNative` - Pushes a Docker Image built with GraalVM Native Image to configured container registry
 * `dockerPushCrac` - Pushes a Docker Image built with a CRaC enabled JDK and a pre-warmed, checkpointed application to configured container registry
@@ -630,28 +629,6 @@ tasks.named<io.micronaut.gradle.docker.NativeImageDockerfile>("dockerfileNative"
     args("-H:+StaticExecutableWithDynamicLibC")
 }
 ----
-
-=== Testing Native Executables
-
-NOTE: This feature is independent from the official GraalVM testing support, which actually runs a test suite _within a native executable_. Micronaut native test support launches a JVM test suite _against a native executable server_.
-
-Since 1.1.x of the plugin, you can also use the `testNativeImage` task to start the Micronaut native server and run tests against it.
-
-IMPORTANT: This feature only works in combination with `micronaut-test-core` versions 2.2.1 or above. Make sure your test classpath includes at least this version of Micronaut Test.
-
-Using this task will replace the regular embedded server used for tests with the natively built executable:
-
-[source, bash]
-----
-./gradlew testNativeImage
-----
-
-It is important to note that there are some limitations to this approach in that the native server is no longer "embedded" in the test. This has the following implications:
-
-* It is not possible to mock components using `@MockBean` or replace beans using `@Replaces` since the native server starts in a separate process and beans injected into or defined by the test are no longer shared with the application under test since it is running in a separate process.
-* The native server starts with the `test` environment active, however the classpath of the application is the runtime classpath not the test classpath. This has the implication that certain testing features (like for example Testcontainers' usage of JDBC URLs to start containers) won't work and you have to explicitly start any test containers in the test itself.
-
-If you wish to split your native executable tests from your regular tests you can {gradle-docs}/java_testing.html#sec:configuring_java_integration_tests[create an additional source set for integration tests] and the plugin will add an additional task suffixed with `*NativeImage` to run the native executable tests, for example: `gradle integrationTestNativeImage`.
 
 === Docker Support
 
