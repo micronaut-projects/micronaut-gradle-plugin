@@ -138,6 +138,13 @@ public abstract class StartTestResourcesService extends DefaultTask {
     abstract RegularFileProperty getStopFile();
 
     /**
+     * If set to true, the service will be started with debug enabled.
+     * @return the debug flag
+     */
+    @Internal
+    abstract Property<Boolean> getDebugServer();
+
+    /**
      * An internal property used to determine if the
      * server is in standalone mode, in which case it
      * will outlive the build (it will stay in the
@@ -196,6 +203,7 @@ public abstract class StartTestResourcesService extends DefaultTask {
                 try {
                     getExecOperations().javaexec(spec -> {
                         spec.getMainClass().set(processParameters.getMainClass());
+                        spec.setDebug(getDebugServer().getOrElse(false));
                         List<File> classpath = processParameters.getClasspath();
                         spec.setClasspath(getObjects().fileCollection().from(classpath));
                         spec.setJvmArgs(processParameters.getJvmArguments());
