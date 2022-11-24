@@ -325,8 +325,8 @@ class LambdaNativeImageSpec extends AbstractFunctionalTest {
             }
             
             java {
-                sourceCompatibility = JavaVersion.toVersion('11')
-                targetCompatibility = JavaVersion.toVersion('11')
+                sourceCompatibility = JavaVersion.toVersion('17')
+                targetCompatibility = JavaVersion.toVersion('17')
             }
             
             graalvmNative {

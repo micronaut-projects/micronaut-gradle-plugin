@@ -148,11 +148,11 @@ class Application {
                 id "io.micronaut.graalvm"
             }
             dependencies {
-                annotationProcessor(enforcedPlatform("io.micronaut.bom:micronaut-bom:$micronautVersion"))
+                annotationProcessor(enforcedPlatform("io.micronaut.platform:micronaut-platform:$micronautVersion"))
                 annotationProcessor("io.micronaut:micronaut-inject-java")
                 annotationProcessor("io.micronaut.openapi:micronaut-openapi")
                 
-                implementation(enforcedPlatform("io.micronaut.bom:micronaut-bom:$micronautVersion"))
+                implementation(enforcedPlatform("io.micronaut.platform:micronaut-platform:$micronautVersion"))
                 implementation("io.micronaut:micronaut-inject")
                 implementation("io.micronaut:micronaut-http-server-netty")
                 implementation("io.swagger.core.v3:swagger-annotations")

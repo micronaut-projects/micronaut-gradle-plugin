@@ -185,7 +185,7 @@ public class MicronautComponentPlugin implements Plugin<Project> {
 
 
     static Dependency resolveMicronautPlatform(DependencyHandler dependencyHandler, String micronautVersion) {
-        return dependencyHandler.platform("io.micronaut.bom:micronaut-bom:" + micronautVersion);
+        return dependencyHandler.platform("io.micronaut.platform:micronaut-platform:" + micronautVersion);
     }
 
     private void configureJava(Project project, TaskContainer tasks) {

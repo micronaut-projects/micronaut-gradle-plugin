@@ -267,6 +267,10 @@ micronaut:
             }
             
             mainClassName="example.Application"
+
+            graalvmNative.binaries.all {
+                buildArgs.addAll(["--exclude-config", "micronaut-function-aws-api-proxy-.*.jar", "META-INF/native-image/.*.properties"])
+            }
         """
         testProjectDir.newFolder("src", "main", "java", "other")
         def javaFile = testProjectDir.newFile("src/main/java/other/Application.java")
