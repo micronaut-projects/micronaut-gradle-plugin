@@ -15,11 +15,12 @@
  */
 package io.micronaut.gradle.testresources.internal;
 
+import io.micronaut.gradle.testresources.MicronautTestResourcesPlugin;
+import io.micronaut.gradle.testresources.StartTestResourcesService;
 import org.graalvm.buildtools.gradle.dsl.GraalVMExtension;
-import org.graalvm.buildtools.gradle.tasks.NativeRunTask;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
-import org.gradle.api.tasks.TaskContainer;
+import org.gradle.api.tasks.TaskProvider;
 
 /**
  * Methods for Micronaut GraalVM plugin integration,
@@ -27,11 +28,16 @@ import org.gradle.api.tasks.TaskContainer;
  * issues.
  */
 public final class TestResourcesGraalVM {
-    public static void configure(Project project, TaskContainer tasks, Configuration testResourcesClasspathConfig) {
-        // The native "run" tasks are not JavaExec tasks so we need to handle them separately
-        tasks.withType(NativeRunTask.class).configureEach(t -> {
-            GraalVMExtension graalVMExtension = project.getExtensions().findByType(GraalVMExtension.class);
-            graalVMExtension.getBinaries().all(b -> b.getClasspath().from(testResourcesClasspathConfig));
+    public static void configure(Project project,
+                                 Configuration testResourcesClasspathConfig,
+                                 TaskProvider<StartTestResourcesService> internalStart) {
+        GraalVMExtension graalVMExtension = project.getExtensions().findByType(GraalVMExtension.class);
+        graalVMExtension.getBinaries().all(b -> {
+            b.getClasspath().from(testResourcesClasspathConfig);
+            b.getRuntimeArgs().addAll(internalStart.map(task -> {
+                MicronautTestResourcesPlugin.ServerConnectionParametersProvider provider = new MicronautTestResourcesPlugin.ServerConnectionParametersProvider(internalStart);
+                return provider.asArguments();
+            }));
         });
     }
 }
