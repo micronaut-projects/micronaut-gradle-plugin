@@ -19,7 +19,7 @@ class TestResourcesWithGraalVMSpec extends AbstractTestResourcesSpec {
     id("io.micronaut.graalvm")
 }
 
-tasks.named("nativeRun") {
+graalvmNative.binaries.all {
     runtimeArgs.add("-DinterruptStartup=true")
 }
 
@@ -46,7 +46,7 @@ tasks.named("nativeRun") {
     id("io.micronaut.graalvm")
 }
 
-tasks.named("nativeRun") {
+graalvmNative.binaries.all {
     runtimeArgs.add("-DinterruptStartup=true")
 }
 

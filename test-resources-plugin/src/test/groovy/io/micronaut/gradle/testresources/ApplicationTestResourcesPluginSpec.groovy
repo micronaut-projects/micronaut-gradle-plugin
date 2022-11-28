@@ -18,6 +18,12 @@ class ApplicationTestResourcesPluginSpec extends AbstractGradleBuildSpec {
         result.output.contains "Loaded 2 test resources resolvers"
         result.output.contains "io.micronaut.testresources.mysql.MySQLTestResourceProvider"
         result.output.contains "io.micronaut.testresources.testcontainers.GenericTestContainerProvider"
+
+        when:
+        result = build 'test'
+
+        then:
+        result.task(':test').outcome == TaskOutcome.UP_TO_DATE
     }
 
     def "creates temp test-resources directory when running 'clean build'"() {
@@ -43,7 +49,7 @@ class ApplicationTestResourcesPluginSpec extends AbstractGradleBuildSpec {
         def result = fails 'test'
 
         then:
-        result.task(":internalStartTestResourcesService") == null
+        result.task(":internalStartTestResourcesService").outcome == TaskOutcome.SKIPPED
         result.task(':test').outcome == TaskOutcome.FAILED
         !result.output.contains("Loaded 1 test resources resolvers: io.micronaut.testresources.testcontainers.GenericTestContainerProvider")
     }
