@@ -355,7 +355,10 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
             int tested = testedVersionParts.get(i);
             int reference = minimalVersionParts.get(i);
             if (tested < reference) {
-                throw new GradleException("Micronaut Test Resources version " + testedVersion + " is not compatible with this Micronaut Gradle Plugin verson. Please use at least release " + VersionInfo.getVersion());
+                throw new GradleException("Micronaut Test Resources version " + testedVersion + " is not compatible with this Micronaut Gradle Plugin version. Please use at least release " + VersionInfo.getVersion());
+            }
+            if (tested > reference) {
+                break;
             }
         }
     }
