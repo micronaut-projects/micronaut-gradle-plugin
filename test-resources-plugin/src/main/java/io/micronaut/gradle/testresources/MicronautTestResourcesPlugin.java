@@ -16,6 +16,7 @@ import org.gradle.api.GradleException;
 import org.gradle.api.JavaVersion;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
+import org.gradle.api.Task;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.Dependency;
 import org.gradle.api.artifacts.ModuleDependency;
@@ -36,12 +37,18 @@ import org.gradle.api.tasks.JavaExec;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.TaskContainer;
 import org.gradle.api.tasks.TaskProvider;
+import org.gradle.api.tasks.testing.Test;
 import org.gradle.internal.event.ListenerManager;
 import org.gradle.internal.service.ServiceRegistry;
 import org.gradle.internal.session.BuildSessionLifecycleListener;
+import org.gradle.process.CommandLineArgumentProvider;
+import org.gradle.process.JavaForkOptions;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.lang.reflect.Field;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
@@ -49,8 +56,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Properties;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -83,12 +93,7 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
             }
             return Collections.emptyList();
         }));
-        conf.getDependencies().addAllLater(config.getEnabled().map(enabled -> {
-            if (Boolean.TRUE.equals(enabled)) {
-                return Collections.singleton(dependencies.create(project.files(writeTestProperties)));
-            }
-            return Collections.emptyList();
-        }));
+
         conf.getDependencyConstraints().addAllLater(PluginsHelper.findMicronautVersionAsProvider(project).map(v ->
                 Stream.of("micronaut-http-client", "micronaut-bom", "micronaut-inject")
                         .map(artifact -> dependencies.getConstraints().create("io.micronaut:" + artifact, dc -> {
@@ -164,11 +169,22 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
         outgoing.getDependencies().addLater(config.getVersion().map(v -> dependencies.create("io.micronaut.testresources:micronaut-test-resources-client:" + v)));
         Configuration testResourcesClasspathConfig = createTestResourcesClasspathConfig(project, config, internalStart);
         PluginManager pluginManager = project.getPluginManager();
-        pluginManager.withPlugin("org.graalvm.buildtools.native", unused -> TestResourcesGraalVM.configure(project, tasks, testResourcesClasspathConfig));
+        pluginManager.withPlugin("org.graalvm.buildtools.native", unused -> TestResourcesGraalVM.configure(project, testResourcesClasspathConfig, internalStart));
         pluginManager.withPlugin("io.micronaut.aot", unused -> TestResourcesAOT.configure(project, config, dependencies, tasks, internalStart, testResourcesClasspathConfig));
         configureServiceReset((ProjectInternal) project, settingsDirectory, stopAtEndFile);
 
+        tasks.withType(Test.class).configureEach(task -> configureServerConnection(internalStart, task));
+        tasks.withType(JavaExec.class).configureEach(task -> configureServerConnection(internalStart, task));
+
         workaroundForIntellij(project);
+
+    }
+
+    private static void configureServerConnection(TaskProvider<StartTestResourcesService> internalStart, Task task) {
+        task.dependsOn(internalStart);
+        if (task instanceof JavaForkOptions) {
+            ((JavaForkOptions) task).getJvmArgumentProviders().add(new ServerConnectionParametersProvider(internalStart));
+        }
     }
 
     private static void workaroundForIntellij(Project project) {
@@ -314,6 +330,7 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
                         .toList();
             }
             String testResourcesVersion = config.getVersion().get();
+            assertMinimalVersion(testResourcesVersion);
             return concat(concat(
                             TestResourcesClasspath.inferTestResourcesClasspath(mavenDependencies, testResourcesVersion)
                                     .stream()
@@ -325,6 +342,32 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
                     Stream.of(dependencies.create(testResourcesSourceSet.getRuntimeClasspath())))
                     .toList();
         }).orElse(Collections.emptyList());
+    }
+
+    private static void assertMinimalVersion(String testedVersion) {
+        List<Integer> testedVersionParts = parseVersion(testedVersion);
+        List<Integer> minimalVersionParts = parseVersion(VersionInfo.getVersion());
+        while (minimalVersionParts.size() < testedVersionParts.size()) {
+            minimalVersionParts.add(0);
+        }
+        for (int i = 0; i < testedVersionParts.size(); i++) {
+            int tested = testedVersionParts.get(i);
+            int reference = minimalVersionParts.get(i);
+            if (tested < reference) {
+                throw new GradleException("Micronaut Test Resources version " + testedVersion + " is not compatible with this Micronaut Gradle Plugin version. Please use at least release " + VersionInfo.getVersion());
+            }
+            if (tested > reference) {
+                break;
+            }
+        }
+    }
+
+    private static ArrayList<Integer> parseVersion(String testedVersion) {
+        return Arrays.stream(testedVersion.split("\\."))
+                .map(String::trim)
+                .map(s -> s.replaceAll("[^0-9]", ""))
+                .map(Integer::parseInt)
+                .collect(Collectors.toCollection(ArrayList::new));
     }
 
     private void configureServiceReset(ProjectInternal project,
@@ -382,4 +425,29 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
         });
     }
 
+    public static class ServerConnectionParametersProvider implements CommandLineArgumentProvider {
+        private final TaskProvider<StartTestResourcesService> internalStart;
+
+        public ServerConnectionParametersProvider(TaskProvider<StartTestResourcesService> internalStart) {
+            this.internalStart = internalStart;
+        }
+
+        @Override
+        public Iterable<String> asArguments() {
+            Properties props = new Properties();
+            File serverConfig = new File(internalStart.get().getSettingsDirectory().get().getAsFile(), "test-resources.properties");
+            if (serverConfig.exists()) {
+                try (InputStream in = new FileInputStream(serverConfig)) {
+                    props.load(in);
+                } catch (IOException e) {
+                    throw new UncheckedIOException(e);
+                }
+                return props.keySet()
+                        .stream()
+                        .map(key -> "-Dmicronaut.test.resources." + key + "=" + props.getProperty(key.toString()))
+                        .collect(Collectors.toList());
+            }
+            return Collections.emptyList();
+        }
+    }
 }
