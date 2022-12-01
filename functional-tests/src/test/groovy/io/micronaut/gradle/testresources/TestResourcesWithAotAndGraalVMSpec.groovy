@@ -19,7 +19,7 @@ class TestResourcesWithAotAndGraalVMSpec extends AbstractTestResourcesSpec {
     id("io.micronaut.graalvm")
 }
 
-tasks.named("nativeOptimizedRun") {
+graalvmNative.binaries.all {
     runtimeArgs.add("-DinterruptStartup=true")
 }
 
