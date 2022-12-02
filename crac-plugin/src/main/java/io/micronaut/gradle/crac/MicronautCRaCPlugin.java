@@ -190,7 +190,7 @@ public class MicronautCRaCPlugin implements Plugin<Project> {
         return new CheckpointTasksOfNote(f.exists() ? null : dockerFileTask, start);
     }
 
-    String createCheckpointImageName(Project project) {
+    static String createCheckpointImageName(Project project) {
         return (project.getRootProject().getName() + project.getPath() + "-checkpoint").replace(":", "-");
     }
 
