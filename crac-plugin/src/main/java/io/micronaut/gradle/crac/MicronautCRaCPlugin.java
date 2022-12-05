@@ -41,7 +41,6 @@ public class MicronautCRaCPlugin implements Plugin<Project> {
     public static final String CRAC_DEFAULT_BASE_IMAGE_PLATFORM = "linux/amd64";
     public static final String CRAC_DEFAULT_READINESS_COMMAND = "curl --output /dev/null --silent --head http://localhost:8080";
     private static final String CRAC_TASK_GROUP = "CRaC";
-    public static final String CRAC_CHECKPOINT = "crac_checkpoint";
     public static final String BUILD_DOCKER_DIRECTORY = "docker/";
 
     @Override
@@ -145,27 +144,27 @@ public class MicronautCRaCPlugin implements Plugin<Project> {
                         .convention(dockerFileTask.flatMap(Dockerfile::getDestFile));
             }
             task.getInputDir().set(dockerFileTask.flatMap(Dockerfile::getDestDir));
-            task.getImages().set(Collections.singletonList("checkpoint"));
-        });
-
-        TaskProvider<DockerRemoveContainer> removeContainer = tasks.register(adaptTaskName("checkpointRemoveContainer", imageName), DockerRemoveContainer.class, task -> {
-            task.setGroup(CRAC_TASK_GROUP);
-            task.setDescription("Removes the checkpoint:latest CRaC checkpoint Docker Image");
-            task.getForce().set(true);
-            task.getContainerId().set(CRAC_CHECKPOINT);
+            task.getImages().set(Collections.singletonList(createCheckpointImageName(project)));
         });
 
         TaskProvider<DockerCreateContainer> checkpointContainer = tasks.register(adaptTaskName("checkpointCreateContainer", imageName), DockerCreateContainer.class, task -> {
             task.dependsOn(dockerBuildTask);
             task.setGroup(CRAC_TASK_GROUP);
             task.setDescription("Runs the checkpoint:latest CRaC checkpoint Docker Image");
-            task.targetImageId("checkpoint:latest");
-            task.getContainerName().set(CRAC_CHECKPOINT);
+            task.targetImageId(createCheckpointImageName(project));
             task.getHostConfig().getPrivileged().set(true);
             task.getHostConfig().getNetwork().convention(configuration.getNetwork());
             String local = project.getLayout().getBuildDirectory().dir(BUILD_DOCKER_DIRECTORY + imageName + "/cr").map(d -> d.getAsFile().getAbsolutePath()).get();
             task.getHostConfig().getBinds().put(local, "/home/app/cr");
         });
+
+        TaskProvider<DockerRemoveContainer> removeContainer = tasks.register(adaptTaskName("checkpointRemoveContainer", imageName), DockerRemoveContainer.class, task -> {
+            task.setGroup(CRAC_TASK_GROUP);
+            task.setDescription("Removes the CRaC checkpoint container");
+            task.getForce().set(true);
+            task.getContainerId().set(checkpointContainer.flatMap(DockerCreateContainer::getContainerId));
+        });
+
         TaskProvider<DockerStartContainer> start = tasks.register(adaptTaskName("checkpointDockerRun", imageName), DockerStartContainer.class, task -> {
             task.dependsOn(checkpointContainer);
             task.setGroup(CRAC_TASK_GROUP);
@@ -189,6 +188,10 @@ public class MicronautCRaCPlugin implements Plugin<Project> {
         });
         start.configure(t -> t.finalizedBy(await));
         return new CheckpointTasksOfNote(f.exists() ? null : dockerFileTask, start);
+    }
+
+    static String createCheckpointImageName(Project project) {
+        return (project.getRootProject().getName() + project.getPath() + "-checkpoint").replace(":", "-");
     }
 
     private static class CheckpointTasksOfNote {
