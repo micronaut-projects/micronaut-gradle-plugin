@@ -20,12 +20,16 @@ import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.Dependency;
 import org.gradle.api.artifacts.dsl.DependencyHandler;
+import org.gradle.api.plugins.BasePlugin;
+import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.plugins.JavaPluginConvention;
+import org.gradle.api.plugins.JavaPluginExtension;
 import org.gradle.api.plugins.PluginManager;
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.SourceSetContainer;
 import org.gradle.api.tasks.TaskContainer;
+import org.gradle.api.tasks.TaskProvider;
 import org.gradle.api.tasks.compile.GroovyCompile;
 import org.gradle.api.tasks.compile.JavaCompile;
 import org.gradle.api.tasks.testing.Test;
@@ -66,6 +70,7 @@ public class MicronautComponentPlugin implements Plugin<Project> {
         add(COMPILE_ONLY_CONFIGURATION_NAME);
     }});
     public static final String MICRONAUT_BOMS_CONFIGURATION = "micronautBoms";
+    public static final String INSPECT_RUNTIME_CLASSPATH_TASK_NAME = "inspectRuntimeClasspath";
 
     @Override
     public void apply(Project project) {
@@ -73,6 +78,7 @@ public class MicronautComponentPlugin implements Plugin<Project> {
         plugins.apply(MicronautBasePlugin.class);
         MicronautExtension micronautExtension = project.getExtensions().getByType(MicronautExtension.class);
         TaskContainer tasks = project.getTasks();
+        TaskProvider<ApplicationClasspathInspector> inspectRuntimeClasspath = registerInspectRuntimeClasspath(project, tasks);
 
         configureJava(project, tasks);
 
@@ -82,16 +88,17 @@ public class MicronautComponentPlugin implements Plugin<Project> {
 
         configureMicronautBom(project, micronautExtension);
 
-        configureTesting(project, micronautExtension);
+        configureTesting(project, micronautExtension, inspectRuntimeClasspath);
 
         ShadowPluginSupport.withShadowPlugin(project, () -> {
-            configureTesting(project, micronautExtension);
+            configureTesting(project, micronautExtension, inspectRuntimeClasspath);
             ShadowPluginSupport.mergeServiceFiles(project);
         });
 
     }
 
-    private void configureTesting(Project project, MicronautExtension micronautExtension) {
+    private void configureTesting(Project project, MicronautExtension micronautExtension, TaskProvider<ApplicationClasspathInspector> inspectRuntimeClasspath) {
+        project.getTasks().withType(Test.class).configureEach(t -> t.dependsOn(inspectRuntimeClasspath));
         project.afterEvaluate(p -> {
             DependencyHandler dependencyHandler = project.getDependencies();
             MicronautTestRuntime testRuntime = micronautExtension.getTestRuntime().get();
@@ -322,5 +329,15 @@ public class MicronautComponentPlugin implements Plugin<Project> {
         }
     }
 
+    private static TaskProvider<ApplicationClasspathInspector> registerInspectRuntimeClasspath(Project project, TaskContainer tasks) {
+        return tasks.register(INSPECT_RUNTIME_CLASSPATH_TASK_NAME, ApplicationClasspathInspector.class, task -> {
+            JavaPluginExtension javaPluginExtension = project.getExtensions().getByType(JavaPluginExtension.class);
+            task.setGroup(BasePlugin.BUILD_GROUP);
+            task.setDescription("Performs sanity checks of the runtime classpath to warn about misconfigured builds");
+            task.getRuntimeClasspath().from(project.getConfigurations().getByName(JavaPlugin.RUNTIME_CLASSPATH_CONFIGURATION_NAME));
+            task.getResources().from(javaPluginExtension.getSourceSets().getByName(SourceSet.MAIN_SOURCE_SET_NAME).getResources());
+            task.getReportFile().set(project.getLayout().getBuildDirectory().file("reports/inspectRuntimeClasspath.txt"));
+        });
+    }
 
 }
