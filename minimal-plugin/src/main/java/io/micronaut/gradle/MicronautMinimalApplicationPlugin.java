@@ -79,6 +79,7 @@ public class MicronautMinimalApplicationPlugin implements Plugin<Project> {
         final TaskContainer tasks = project.getTasks();
         tasks.withType(JavaExec.class).configureEach(javaExec -> {
             if (javaExec.getName().equals("run")) {
+                javaExec.dependsOn(tasks.named(MicronautComponentPlugin.INSPECT_RUNTIME_CLASSPATH_TASK_NAME));
                 javaExec.jvmArgs(
                         "-Dcom.sun.management.jmxremote"
                 );
