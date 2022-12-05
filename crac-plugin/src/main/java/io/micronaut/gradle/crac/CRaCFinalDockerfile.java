@@ -11,6 +11,8 @@ import org.gradle.api.tasks.Optional;
 import java.util.ArrayList;
 import java.util.List;
 
+import static io.micronaut.gradle.crac.MicronautCRaCPlugin.createCheckpointImageName;
+
 @CacheableTask
 public abstract class CRaCFinalDockerfile extends MicronautDockerfile {
 
@@ -61,7 +63,7 @@ public abstract class CRaCFinalDockerfile extends MicronautDockerfile {
                 "        libnl-3-200 \\\n" +
                 "    && rm -rf /var/lib/apt/lists/*");
         instruction("# Copy CRaC JDK from the checkpoint image (to save a download)");
-        copyFile("--from=checkpoint /azul-crac-jdk", "/azul-crac-jdk");
+        copyFile("--from=" + createCheckpointImageName(getProject()) + " /azul-crac-jdk", "/azul-crac-jdk");
         instruction("# Copy layers");
         copyFile("cr", workDir + "/cr");
         copyFile("layers/libs", workDir + "/libs");
