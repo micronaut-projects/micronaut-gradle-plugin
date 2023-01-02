@@ -11,7 +11,7 @@ class ApplicationTestResourcesPluginSpec extends AbstractGradleBuildSpec {
         withSample("test-resources/data-mysql")
 
         when:
-        def result = fails 'test'
+        def result = build 'test'
 
         then:
         result.task(':test').outcome == TaskOutcome.SUCCESS

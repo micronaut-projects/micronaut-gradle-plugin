@@ -8,11 +8,15 @@ group = "demo"
 
 repositories {
     mavenCentral()
+    maven {
+        url = "https://s01.oss.sonatype.org/content/repositories/snapshots/"
+    }
 }
 
 dependencies {
     annotationProcessor("io.micronaut:micronaut-http-validation")
     runtimeOnly("io.micronaut:micronaut-jackson-databind")
+    runtimeOnly("org.yaml:snakeyaml")
 
     testResourcesService(project(":testresources"))
 }

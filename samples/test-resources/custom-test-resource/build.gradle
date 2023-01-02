@@ -19,6 +19,7 @@ dependencies {
     implementation("io.micronaut:micronaut-validation")
     runtimeOnly("ch.qos.logback:logback-classic")
     runtimeOnly("io.micronaut:micronaut-jackson-databind")
+    runtimeOnly("org.yaml:snakeyaml")
     testResourcesImplementation("org.apache.commons:commons-lang3:3.12.0")
 }
 
