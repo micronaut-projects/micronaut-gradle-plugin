@@ -12,11 +12,22 @@ import spock.util.environment.Jvm
 
 import java.nio.file.Files
 import java.nio.file.Path
+import java.nio.file.Paths
 import java.nio.file.StandardCopyOption
 
 abstract class AbstractGradleBuildSpec extends Specification {
     static boolean isGraalVmAvailable() {
-        return GraalUtil.isGraalJVM() || System.getenv("GRAALVM_HOME")
+        if (GraalUtil.isGraalJVM()) {
+            return true
+        }
+        String graalvmHome = System.getenv("GRAALVM_HOME")
+        if (graalvmHome != null) {
+            Path nativeImage = Paths.get(graalvmHome, "bin", "native-image")
+            if (Files.exists(nativeImage)) {
+                return true
+            }
+        }
+        return false
     }
 
     boolean allowSnapshots = true
