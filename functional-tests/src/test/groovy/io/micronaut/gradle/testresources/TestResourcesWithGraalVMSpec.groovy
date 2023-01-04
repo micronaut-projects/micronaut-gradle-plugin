@@ -2,12 +2,14 @@ package io.micronaut.gradle.testresources
 
 import io.micronaut.gradle.AbstractGradleBuildSpec
 import org.gradle.testkit.runner.TaskOutcome
-import spock.lang.Ignore
 import spock.lang.Requires
 
 @Requires({ AbstractGradleBuildSpec.graalVmAvailable && !os.windows })
-@Ignore("https://github.com/micronaut-projects/micronaut-gradle-plugin/issues/625")
 class TestResourcesWithGraalVMSpec extends AbstractTestResourcesSpec {
+
+    def setup() {
+//        allowMavenLocal = true
+    }
 
     def "runs native tests"() {
         withSample("test-resources/data-mysql")
