@@ -40,6 +40,7 @@ jobs:
           version: '22.2.0'
           java-version: '17'
           components: 'native-image'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Optional setup step
         env:
           GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GRADLE_ENTERPRISE_ACCESS_KEY }}
