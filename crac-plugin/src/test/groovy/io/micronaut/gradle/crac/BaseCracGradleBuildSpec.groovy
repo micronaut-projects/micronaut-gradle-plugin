@@ -51,14 +51,6 @@ abstract class BaseCracGradleBuildSpec extends AbstractGradleBuildSpec {
             }"""
     }
 
-    String getRepositoriesBlock(boolean allowSnapshots = true) {
-        """
-            repositories {
-                mavenCentral()
-                ${allowSnapshots ? 'maven { url = "https://s01.oss.sonatype.org/content/repositories/snapshots" }' : ""}
-            }""".stripIndent()
-    }
-
     String getDependenciesBlock(String cracVersion = '1.0.0-SNAPSHOT') {
         """
             dependencies {
@@ -69,7 +61,7 @@ abstract class BaseCracGradleBuildSpec extends AbstractGradleBuildSpec {
     String getMicronautConfigBlock(String cracConfig = '') {
         """
             micronaut {
-                version "3.6.1"
+                version "$micronautVersion"
                 runtime("netty")
                 testRuntime("junit5")
                 processing {
@@ -88,6 +80,7 @@ ${cracConfig.readLines().collect {"                ${it}"}.join("\n")}
         """${getPluginsBlock(switchPluginOrder)}
           |$repositoriesBlock
           |$dependenciesBlock
+          |$withSerde
           |$micronautConfig
           |mainClassName="example.Application"
           |""".stripMargin()

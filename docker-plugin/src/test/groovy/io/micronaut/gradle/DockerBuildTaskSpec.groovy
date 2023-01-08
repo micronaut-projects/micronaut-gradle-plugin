@@ -17,7 +17,7 @@ class DockerBuildTaskSpec extends AbstractGradleBuildSpec {
             }
             
             micronaut {
-                version "3.5.1"
+                version "$micronautVersion"
             }
             
             $repositoriesBlock
@@ -58,7 +58,7 @@ class Application {
             }
             
             micronaut {
-                version "3.5.1"
+                version "$micronautVersion"
             }
             
             $repositoriesBlock
@@ -111,7 +111,7 @@ ENTRYPOINT ["java", "-jar", "/home/alternate/application.jar"]
             }
 
             micronaut {
-                version "3.5.1"
+                version "$micronautVersion"
             }
 
             $repositoriesBlock
@@ -155,7 +155,7 @@ class Application {
             }
             
             micronaut {
-                version "3.4.0"
+                version "$micronautVersion"
             }
             
             $repositoriesBlock

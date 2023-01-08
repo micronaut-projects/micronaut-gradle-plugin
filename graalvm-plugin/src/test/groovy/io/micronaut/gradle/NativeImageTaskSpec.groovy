@@ -19,7 +19,7 @@ class NativeImageTaskSpec extends AbstractGradleBuildSpec {
             }
             
             micronaut {
-                version "3.5.1"
+                version "$micronautVersion"
                 runtime "netty"
             }
             
@@ -64,7 +64,7 @@ class Application {
             }
             
             micronaut {
-                version "3.5.1"
+                version "$micronautVersion"
                 runtime "netty"
             }
             

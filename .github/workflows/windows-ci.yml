@@ -29,6 +29,7 @@ jobs:
           version: '22.0.0.2'
           java-version: ${{ matrix.java }}
           components: 'native-image'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Build with Gradle
         shell: cmd
         run: ./gradlew.bat check --no-daemon --continue

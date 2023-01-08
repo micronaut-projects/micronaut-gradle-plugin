@@ -19,7 +19,7 @@ class KotlinLibraryFunctionalTest extends AbstractEagerConfiguringFunctionalTest
             }
             
             micronaut {
-                version("3.5.1")
+                version("$micronautVersion")
                 processing {
                     incremental(true)
                 }
@@ -70,7 +70,7 @@ class Foo {}
                 }
             }            
             micronaut {
-                version("3.5.1")
+                version("$micronautVersion")
                 processing {
                     incremental(true)
                     sourceSets(

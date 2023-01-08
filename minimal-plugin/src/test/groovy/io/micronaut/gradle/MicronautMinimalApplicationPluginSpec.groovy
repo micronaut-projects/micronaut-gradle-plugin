@@ -15,13 +15,15 @@ class MicronautMinimalApplicationPluginSpec extends AbstractGradleBuildSpec {
             }
             
             micronaut {
-                version "3.5.1"
+                version "$micronautVersion"
                 runtime "netty"
                 testRuntime "junit5"
             }
             
             $repositoriesBlock
             mainClassName="example.Application"
+
+            $withSerde
         """
         testProjectDir.newFolder("src", "test", "java", "example")
         def javaFile = writeExampleClass()
@@ -48,17 +50,17 @@ class MicronautMinimalApplicationPluginSpec extends AbstractGradleBuildSpec {
             }
 
             micronaut {
-                version "3.0.1"
+                version "$micronautVersion"
                 runtime "netty"
             }
 
-            repositories {
-                mavenCentral()
-            }
+            $repositoriesBlock
 
             dependencies {
-                implementation "org.codehaus.groovy:groovy:3.0.5"
+                implementation "org.apache.groovy:groovy"
             }
+            $withSerde
+
             mainClassName="example.Application"
         """
 
@@ -91,7 +93,7 @@ class MicronautMinimalApplicationPluginSpec extends AbstractGradleBuildSpec {
             }
             
             micronaut {
-                version "3.5.1"
+                version "$micronautVersion"
                 runtime "netty"
                 testRuntime "junit5"
             }

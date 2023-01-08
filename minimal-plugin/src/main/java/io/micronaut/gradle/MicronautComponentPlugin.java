@@ -192,14 +192,7 @@ public class MicronautComponentPlugin implements Plugin<Project> {
 
 
     static Dependency resolveMicronautPlatform(DependencyHandler dependencyHandler, String micronautVersion) {
-        final Dependency platform;
-        if (micronautVersion.endsWith("-SNAPSHOT")) {
-            // enforced platform has to be used for snapshots to work correctly
-            platform = dependencyHandler.enforcedPlatform("io.micronaut:micronaut-bom:" + micronautVersion);
-        } else {
-            platform = dependencyHandler.platform("io.micronaut:micronaut-bom:" + micronautVersion);
-        }
-        return platform;
+        return dependencyHandler.platform("io.micronaut.platform:micronaut-platform:" + micronautVersion);
     }
 
     private void configureJava(Project project, TaskContainer tasks) {

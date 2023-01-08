@@ -17,16 +17,12 @@ class FullMicronautRuntimeSpec extends AbstractEagerConfiguringFunctionalTest {
             }
             
             micronaut {
-                version "3.5.1"
+                version "$micronautVersion"
                 runtime "$runtime"
                 testRuntime "junit5"
             }
             
             $repositoriesBlock
-            
-            repositories {
-                maven { url "https://s01.oss.sonatype.org/content/repositories/snapshots" }
-            }
             
             dependencies {
                 runtimeOnly("ch.qos.logback:logback-classic")

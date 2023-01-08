@@ -8,7 +8,6 @@ import spock.lang.Unroll
 class ShadowJarSpec extends AbstractEagerConfiguringFunctionalTest {
 
     private static final String SHADE_VERSION = "7.1.2"
-    private static final String MICRONAUT_VERSION = "3.4.0"
 
     @Unroll
     @Issue("https://github.com/micronaut-projects/micronaut-gradle-plugin/issues/406")
@@ -27,7 +26,7 @@ class ShadowJarSpec extends AbstractEagerConfiguringFunctionalTest {
             version = "1.0"
             
             micronaut {
-                version "$MICRONAUT_VERSION"
+                version "$micronautVersion"
                 runtime "$runtime"
                 processing {
                     annotations("example.*")

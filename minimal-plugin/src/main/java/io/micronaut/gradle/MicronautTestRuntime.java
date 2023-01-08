@@ -30,7 +30,7 @@ public enum MicronautTestRuntime {
             Arrays.asList(
                     "org.spockframework:spock-core",
                     "io.micronaut.test:micronaut-test-spock",
-                    "org.codehaus.groovy:groovy"
+                    "org.apache.groovy:groovy"
             )
     )),
     /**

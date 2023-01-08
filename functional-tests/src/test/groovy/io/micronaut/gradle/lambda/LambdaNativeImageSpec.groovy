@@ -22,7 +22,7 @@ class LambdaNativeImageSpec extends AbstractFunctionalTest {
             }
             
             micronaut {
-                version "3.5.1"
+                version "$micronautVersion"
                 runtime "netty"
             }
             
@@ -64,7 +64,7 @@ class LambdaNativeImageSpec extends AbstractFunctionalTest {
             }
 
             micronaut {
-                version "3.5.1"
+                version "$micronautVersion"
                 runtime "lambda"
             }
 
@@ -113,7 +113,7 @@ class LambdaNativeImageSpec extends AbstractFunctionalTest {
             }
             
             micronaut {
-                version "3.5.1"
+                version "$micronautVersion"
                 runtime "netty"
             }
             
@@ -163,7 +163,7 @@ class LambdaNativeImageSpec extends AbstractFunctionalTest {
             }
 
             micronaut {
-                version "3.5.1"
+                version "$micronautVersion"
                 runtime "netty"
             }
 
@@ -212,7 +212,7 @@ class LambdaNativeImageSpec extends AbstractFunctionalTest {
             }
 
             micronaut {
-                version "3.5.1"
+                version "$micronautVersion"
                 runtime "netty"
             }
 
@@ -264,7 +264,7 @@ class LambdaNativeImageSpec extends AbstractFunctionalTest {
             }
 
             micronaut {
-                version "3.5.1"
+                version "$micronautVersion"
                 runtime "netty"
             }
 
@@ -314,7 +314,7 @@ class LambdaNativeImageSpec extends AbstractFunctionalTest {
             }
             
             micronaut {
-                version "3.5.1"
+                version "$micronautVersion"
                 runtime "lambda"
             }
             
@@ -325,8 +325,8 @@ class LambdaNativeImageSpec extends AbstractFunctionalTest {
             }
             
             java {
-                sourceCompatibility = JavaVersion.toVersion('11')
-                targetCompatibility = JavaVersion.toVersion('11')
+                sourceCompatibility = JavaVersion.toVersion('17')
+                targetCompatibility = JavaVersion.toVersion('17')
             }
             
             graalvmNative {

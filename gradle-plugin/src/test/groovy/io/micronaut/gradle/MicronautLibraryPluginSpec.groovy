@@ -13,7 +13,7 @@ class MicronautLibraryPluginSpec extends AbstractGradleBuildSpec {
             }
             
             micronaut {
-                version "3.5.1"
+                version "$micronautVersion"
                 testRuntime "junit"
                 processing {
                     incremental true
@@ -63,7 +63,7 @@ class FooTest {
             }
             
             micronaut {
-                version "3.5.1"
+                version "$micronautVersion"
                 testRuntime "junit"
                 processing {
                     incremental true
@@ -134,7 +134,7 @@ class FooTest {
             }
             
             micronaut {
-                version "3.5.1"
+                version "$micronautVersion"
             }
             
             $repositoriesBlock
@@ -185,7 +185,7 @@ public class Foo {
             }
             
             micronaut {
-                version "3.5.1"
+                version "$micronautVersion"
                 
                 processing {
                     incremental true
@@ -241,7 +241,7 @@ class Foo {}
             }
             
             micronaut {
-                version "3.5.1"
+                version "$micronautVersion"
                 
                 processing {
                     incremental true
@@ -289,7 +289,7 @@ class Foo {}
                 }
             }            
             micronaut {
-                version "3.5.1"
+                version "$micronautVersion"
                 processing {
                     incremental true
                     sourceSets(
@@ -333,7 +333,7 @@ class Foo {}
             }
             
             micronaut {
-                version "3.5.1"
+                version "$micronautVersion"
             }
             
             $repositoriesBlock
@@ -394,7 +394,7 @@ class Foo {
                 }
             }                    
             micronaut {
-                version "3.5.1"
+                version "$micronautVersion"
                 processing {
                     incremental true
                     sourceSets(
@@ -406,7 +406,7 @@ class Foo {
             $repositoriesBlock
             
             dependencies {
-                customImplementation("org.codehaus.groovy:groovy")
+                customImplementation("org.apache.groovy:groovy")
             }
         """
         testProjectDir.newFolder("src", "custom", "groovy", "example")
@@ -444,7 +444,7 @@ class Foo {}
             }
             
             micronaut {
-                version "3.5.1"
+                version "$micronautVersion"
             }
             
             $repositoriesBlock
@@ -481,7 +481,7 @@ class Foo {}
             }
             
             micronaut {
-                version "3.5.1"
+                version "$micronautVersion"
             }
             
             $repositoriesBlock
@@ -489,6 +489,9 @@ class Foo {}
             dependencies {
                 compileOnly "io.micronaut.openapi:micronaut-openapi"
                 compileOnly "io.swagger.core.v3:swagger-annotations"
+                compileOnly("io.micronaut:micronaut-http") {
+                    because "The Micronaut OpenAPI processor needs Micronaut HTTP at compile time"
+                }
             }
             
         """

@@ -21,7 +21,9 @@ abstract class AbstractFunctionalTest extends AbstractGradleBuildSpec {
         settingsFile.text = """
             pluginManagement {
                 repositories {
+                    ${guardString('mavenLocal()', allowMavenLocal)}
                     mavenCentral()
+                    ${guardString('maven { url = "https://s01.oss.sonatype.org/content/repositories/snapshots" }', allowSnapshots)}
                     maven {
                         url = "${System.getProperty("internal.plugin.repo")}"
                     }

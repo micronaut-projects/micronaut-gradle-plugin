@@ -12,7 +12,6 @@ repositories {
 }
 
 micronaut {
-    version = "3.3.0"
     runtime("lambda")
     testRuntime("junit5")
     processing {
@@ -35,6 +34,7 @@ dependencies {
     implementation("io.micronaut:micronaut-validation")
 
     implementation("io.micronaut.aws:micronaut-function-aws")
+    runtimeOnly("org.yaml:snakeyaml")
 
     testImplementation("io.micronaut:micronaut-http-client")
 

@@ -23,7 +23,7 @@ class DockerNativeFunctionalTest extends AbstractEagerConfiguringFunctionalTest 
             }
             
             micronaut {
-                version "3.5.1"
+                version "$micronautVersion"
                 runtime "$runtime"
             }
             
@@ -41,6 +41,9 @@ class DockerNativeFunctionalTest extends AbstractEagerConfiguringFunctionalTest 
                 instruction \"\"\"HEALTHCHECK CMD curl -s localhost:8090/health | grep '"status":"UP"'\"\"\"
             }
             
+            graalvmNative.binaries.all {
+                buildArgs.addAll(["--exclude-config", "micronaut-function-aws-api-proxy-.*.jar", "META-INF/native-image/.*.properties"])
+            }
         """
         testProjectDir.newFolder("src", "main", "java", "example")
         def resources = testProjectDir.newFolder("src", "main", "resources")
@@ -109,7 +112,7 @@ micronaut:
             }
 
             micronaut {
-                version "3.5.1"
+                version "$micronautVersion"
 
                 runtime "$runtime"
             }
@@ -127,6 +130,10 @@ micronaut:
 
             dockerfileNative {
                 baseImage("gcr.io/distroless/cc-debian10")
+            }
+
+            graalvmNative.binaries.all {
+                buildArgs.addAll(["--exclude-config", "micronaut-function-aws-api-proxy-.*.jar", "META-INF/native-image/.*.properties"])
             }
         """
 
@@ -158,7 +165,7 @@ micronaut:
             }
 
             micronaut {
-                version "3.5.1"
+                version "$micronautVersion"
                 runtime "netty"
             }
 
@@ -199,7 +206,7 @@ micronaut:
             }
 
             micronaut {
-                version "3.5.1"
+                version "$micronautVersion"
                 runtime "lambda"
             }
 
@@ -240,7 +247,7 @@ micronaut:
             }
             
             micronaut {
-                version "3.5.1"
+                version "$micronautVersion"
                 runtime "lambda"
             }
             
@@ -260,6 +267,10 @@ micronaut:
             }
             
             mainClassName="example.Application"
+
+            graalvmNative.binaries.all {
+                buildArgs.addAll(["--exclude-config", "micronaut-function-aws-api-proxy-.*.jar", "META-INF/native-image/.*.properties"])
+            }
         """
         testProjectDir.newFolder("src", "main", "java", "other")
         def javaFile = testProjectDir.newFile("src/main/java/other/Application.java")
@@ -294,7 +305,7 @@ class Application {
             }
             
             micronaut {
-                version "3.5.1"
+                version "$micronautVersion"
             }
             
             $repositoriesBlock
@@ -308,8 +319,8 @@ class Application {
             }
             
             java {
-                sourceCompatibility = JavaVersion.toVersion('8')
-                targetCompatibility = JavaVersion.toVersion('8')
+                sourceCompatibility = JavaVersion.toVersion('17')
+                targetCompatibility = JavaVersion.toVersion('17')
             }
             
             dockerfile {
@@ -373,7 +384,7 @@ class Application {
             }
             
             micronaut {
-                version "3.5.1"
+                version "$micronautVersion"
                 runtime "netty"
                 testRuntime "junit5"
             }
@@ -413,7 +424,7 @@ class Application {
             }
             
             micronaut {
-                version "3.5.1"
+                version "$micronautVersion"
                 runtime "$runtime"
             }
             
@@ -500,7 +511,7 @@ class Application {
             }
             
             micronaut {
-                version "3.4.0"
+                version "$micronautVersion"
                 runtime "netty"
             }
             
@@ -594,7 +605,7 @@ ENTRYPOINT ["/app/application", "-Xmx64m"]
 }
 
 micronaut {
-    version "3.4.0"
+    version "$micronautVersion"
     runtime "netty"
 }
             
