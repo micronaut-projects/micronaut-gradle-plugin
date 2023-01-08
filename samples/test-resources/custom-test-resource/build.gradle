@@ -16,8 +16,10 @@ dependencies {
     implementation("io.micronaut:micronaut-jackson-databind")
     implementation("io.micronaut:micronaut-runtime")
     implementation("jakarta.annotation:jakarta.annotation-api")
-    runtimeOnly("ch.qos.logback:logback-classic")
     implementation("io.micronaut:micronaut-validation")
+    runtimeOnly("ch.qos.logback:logback-classic")
+    runtimeOnly("io.micronaut:micronaut-jackson-databind")
+    runtimeOnly("org.yaml:snakeyaml")
     testResourcesImplementation("org.apache.commons:commons-lang3:3.12.0")
 }
 
@@ -26,7 +28,6 @@ application {
 }
 
 micronaut {
-    version = "3.5.1"
     runtime("netty")
     testRuntime("junit5")
     processing {

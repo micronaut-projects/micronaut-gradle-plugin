@@ -8,16 +8,27 @@ group = "demo"
 
 repositories {
     mavenCentral()
+    maven {
+        url = "https://s01.oss.sonatype.org/content/repositories/snapshots/"
+    }
 }
 
 dependencies {
     annotationProcessor("io.micronaut:micronaut-http-validation")
+    annotationProcessor("io.micronaut.data:micronaut-data-processor:4.0.0-SNAPSHOT")
     implementation("io.micronaut:micronaut-http-client")
     implementation("io.micronaut:micronaut-jackson-databind")
     implementation("io.micronaut:micronaut-runtime")
     implementation("jakarta.annotation:jakarta.annotation-api")
-    runtimeOnly("ch.qos.logback:logback-classic")
     implementation("io.micronaut:micronaut-validation")
+    implementation("io.micronaut.data:micronaut-data-jdbc:4.0.0-SNAPSHOT")
+    implementation("io.micronaut.sql:micronaut-jdbc-hikari")
+    runtimeOnly("ch.qos.logback:logback-classic")
+    runtimeOnly("io.micronaut:micronaut-jackson-databind")
+    runtimeOnly("org.yaml:snakeyaml")
+    runtimeOnly("org.postgresql:postgresql")
+
+    testResourcesService(project(":testresources"))
 }
 
 application {
@@ -31,13 +42,4 @@ micronaut {
         incremental(true)
         annotations("demo.*")
     }
-}
-
-dependencies {
-    annotationProcessor("io.micronaut.data:micronaut-data-processor")
-    implementation("io.micronaut.data:micronaut-data-jdbc")
-    implementation("io.micronaut.sql:micronaut-jdbc-hikari")
-    runtimeOnly("org.postgresql:postgresql")
-
-    testResourcesService(project(":testresources"))
 }

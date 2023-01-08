@@ -7,6 +7,10 @@ import spock.lang.Requires
 @Requires({ AbstractGradleBuildSpec.graalVmAvailable && !os.windows })
 class TestResourcesWithGraalVMSpec extends AbstractTestResourcesSpec {
 
+    def setup() {
+//        allowMavenLocal = true
+    }
+
     def "runs native tests"() {
         withSample("test-resources/data-mysql")
         buildFile.text = buildFile.text.replace("""plugins {

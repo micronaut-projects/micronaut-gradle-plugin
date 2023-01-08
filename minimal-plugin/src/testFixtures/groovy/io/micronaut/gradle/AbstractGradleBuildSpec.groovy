@@ -12,11 +12,30 @@ import spock.util.environment.Jvm
 
 import java.nio.file.Files
 import java.nio.file.Path
+import java.nio.file.Paths
 import java.nio.file.StandardCopyOption
 
 abstract class AbstractGradleBuildSpec extends Specification {
     static boolean isGraalVmAvailable() {
-        return GraalUtil.isGraalJVM() || System.getenv("GRAALVM_HOME")
+        if (GraalUtil.isGraalJVM()) {
+            return true
+        }
+        String graalvmHome = System.getenv("GRAALVM_HOME")
+        if (graalvmHome != null) {
+            Path nativeImage = Paths.get(graalvmHome, "bin", "native-image")
+            if (Files.exists(nativeImage)) {
+                return true
+            }
+        }
+        return false
+    }
+
+    boolean allowSnapshots = true
+    // This flag is only for local tests, do not push with this flag set to true
+    boolean allowMavenLocal = false
+
+    String getMicronautVersion() {
+        System.getProperty("micronautVersion")
     }
 
     boolean containsDependency(String mavenCoordinate, String configuration) {
@@ -57,11 +76,24 @@ abstract class AbstractGradleBuildSpec extends Specification {
     protected void withSample(String name) {
         File sampleDir = new File("../samples/$name").canonicalFile
         copySample(sampleDir.toPath(), baseDir)
-
+        buildFile << """
+            $repositoriesBlock
+        """
         def jacocoConf = AbstractGradleBuildSpec.classLoader.getResourceAsStream("testkit-gradle.properties")?.text
         if (jacocoConf) {
             println "Configuring Code Coverage support: ${jacocoConf}"
             file("gradle.properties") << jacocoConf
+        }
+        File gradleProperties = file("gradle.properties")
+        if (gradleProperties.exists() && micronautVersion != null) {
+            def writer = new StringWriter()
+            gradleProperties.newReader().transformLine(writer) { line ->
+                if (line.startsWith("micronautVersion=")) {
+                    return "micronautVersion=$micronautVersion"
+                }
+                return line
+            }
+            gradleProperties.text = writer.toString()
         }
     }
 
@@ -80,9 +112,19 @@ abstract class AbstractGradleBuildSpec extends Specification {
         baseDir.resolve(relativePath).toFile()
     }
 
+    protected static String guardString(String s, boolean flag) {
+        if (flag) {
+            s
+        } else {
+            ""
+        }
+    }
+
     def getRepositoriesBlock(String dsl = 'groovy') {
         """repositories {
+    ${guardString('mavenLocal()', allowMavenLocal)}
     mavenCentral()
+    ${guardString('maven { url = "https://s01.oss.sonatype.org/content/repositories/snapshots" }', allowSnapshots)}
 }"""
     }
 
@@ -149,5 +191,13 @@ abstract class AbstractGradleBuildSpec extends Specification {
         }.findFirst()
                 .map { it.text }
                 .orElse("")
+    }
+
+    String getWithSerde() {
+        """
+            dependencies {
+                runtimeOnly 'io.micronaut.serde:micronaut-serde-jackson'
+            }
+        """
     }
 }

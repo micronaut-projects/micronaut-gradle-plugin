@@ -42,6 +42,7 @@ jobs:
           version: ${{ matrix.graalvm }}
           java-version: ${{ matrix.java }}
           components: 'native-image'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Build with Gradle
         run: ./gradlew check --continue --no-daemon --no-parallel
         env:

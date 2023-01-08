@@ -20,6 +20,7 @@ class TestResourcesWithAotAndGraalVMSpec extends AbstractTestResourcesSpec {
 }
 
 graalvmNative.binaries.all {
+    buildArgs.add('--trace-class-initialization=io.micronaut.data.runtime.criteria.\$RuntimeCriteriaBuilder\$Definition\$Reference')
     runtimeArgs.add("-DinterruptStartup=true")
 }
 

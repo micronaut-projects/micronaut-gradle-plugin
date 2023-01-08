@@ -4,11 +4,16 @@ plugins {
 }
 
 tasks.withType(Test).configureEach {
+    def graalvmHome = providers.environmentVariable('GRAALVM_HOME')
+            .orElse(providers.environmentVariable("JAVA_HOME"))
+            .getOrElse("")
     useJUnitPlatform()
-    inputs.property("GRAALVM_HOME", providers.environmentVariable('GRAALVM_HOME').forUseAtConfigurationTime().getOrElse(""))
+    inputs.property("GRAALVM_HOME", graalvmHome)
     predictiveSelection {
         enabled = micronautBuild.environment.isTestSelectionEnabled()
     }
+    environment "GRAALVM_HOME", graalvmHome
+    systemProperty "micronautVersion", libs.versions.micronaut.asProvider().get()
 }
 
 dependencies {
