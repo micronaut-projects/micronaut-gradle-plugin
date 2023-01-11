@@ -58,7 +58,7 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
     );
     private static final String ARM_ARCH = "aarch64";
     private static final String X86_64_ARCH = "amd64";
-    private static final String GRAAL_VERSION_CONVENTION = "22.2.0";
+    private static final String GRAAL_VERSION_CONVENTION = "22.3.0";
 
     /**
      * @return The JDK version to use with native image. Defaults to the toolchain version, or the current Java version.
