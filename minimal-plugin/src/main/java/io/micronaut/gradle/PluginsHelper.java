@@ -37,7 +37,7 @@ import static org.gradle.api.plugins.JavaPlugin.COMPILE_ONLY_CONFIGURATION_NAME;
 import static org.gradle.api.plugins.JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME;
 
 public abstract class PluginsHelper {
-    private final static List<String> ANNOTATION_PROCESSOR_MODULES = Arrays.asList("inject-java", "validation");
+    final static List<String> ANNOTATION_PROCESSOR_MODULES = Arrays.asList("inject-java", "validation");
     private final static Map<String, String> GROUP_TO_PROCESSOR_MAP = Collections.unmodifiableMap(new HashMap<String, String>() {{
         put("io.micronaut.data", "io.micronaut.data:micronaut-data-processor");
         put("io.micronaut.jaxrs", "io.micronaut.jaxrs:micronaut-jaxrs-processor");
@@ -81,7 +81,11 @@ public abstract class PluginsHelper {
     }
 
     static void registerAnnotationProcessors(DependencyHandler dependencyHandler, String... annotationProcessingConfigurations) {
-        for (String annotationProcessorModule : ANNOTATION_PROCESSOR_MODULES) {
+        registerAnnotationProcessors(dependencyHandler, ANNOTATION_PROCESSOR_MODULES, annotationProcessingConfigurations);
+    }
+
+    static void registerAnnotationProcessors(DependencyHandler dependencyHandler, List<String> annotationProcessorModules, String... annotationProcessingConfigurations) {
+        for (String annotationProcessorModule : annotationProcessorModules) {
             for (String annotationProcessingConfiguration : annotationProcessingConfigurations) {
                 dependencyHandler.add(
                         annotationProcessingConfiguration,

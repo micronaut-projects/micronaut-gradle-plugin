@@ -121,11 +121,21 @@ abstract class AbstractGradleBuildSpec extends Specification {
     }
 
     def getRepositoriesBlock(String dsl = 'groovy') {
-        """repositories {
+        if (dsl == 'groovy') {
+            """repositories {
     ${guardString('mavenLocal()', allowMavenLocal)}
     mavenCentral()
     ${guardString('maven { url = "https://s01.oss.sonatype.org/content/repositories/snapshots" }', allowSnapshots)}
 }"""
+
+        } else {
+            """repositories {
+    ${guardString('mavenLocal()', allowMavenLocal)}
+    mavenCentral()
+    ${guardString('maven { setUrl("https://s01.oss.sonatype.org/content/repositories/snapshots/") }', allowSnapshots)}
+}"""
+
+        }
     }
 
     private void prepareBuild() {
