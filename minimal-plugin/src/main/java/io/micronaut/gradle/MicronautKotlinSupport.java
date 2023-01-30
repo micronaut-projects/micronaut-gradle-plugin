@@ -3,6 +3,7 @@ package io.micronaut.gradle;
 import com.google.devtools.ksp.gradle.KspExtension;
 import io.micronaut.gradle.graalvm.GraalUtil;
 import org.gradle.api.Project;
+import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.Dependency;
 import org.gradle.api.artifacts.dsl.DependencyHandler;
 import org.gradle.api.plugins.ExtensionContainer;
@@ -38,6 +39,7 @@ public class MicronautKotlinSupport {
             "ksp",
             "kspTest"
     };
+    public static final String KOTLIN_PROCESSORS = "kotlinProcessors";
 
     private final static List<String> KSP_ANNOTATION_PROCESSOR_MODULES = Arrays.asList("inject-kotlin", "validation");
 
@@ -67,6 +69,10 @@ public class MicronautKotlinSupport {
     public static void configureKotlin(Project project) {
         PluginManager pluginManager = project.getPluginManager();
         final TaskContainer tasks = project.getTasks();
+        project.getConfigurations().create(KOTLIN_PROCESSORS, conf -> {
+            conf.setCanBeConsumed(false);
+            conf.setCanBeConsumed(false);
+        });
         tasks.withType(KotlinCompile.class).configureEach(kotlinCompile -> {
             final KotlinJvmOptions kotlinOptions = (KotlinJvmOptions) kotlinCompile.getKotlinOptions();
             kotlinOptions.setJavaParameters(true);
@@ -141,6 +147,11 @@ public class MicronautKotlinSupport {
                         "io.micronaut:micronaut-graal"
                 );
             }
+        }
+
+        Configuration kotlinProcessors = project.getConfigurations().getByName(KOTLIN_PROCESSORS);
+        for (String compilerConfiguration : compilerConfigurations) {
+            project.getConfigurations().getByName(compilerConfiguration).extendsFrom(kotlinProcessors);
         }
 
         project.afterEvaluate(p -> {

@@ -2,9 +2,16 @@ package io.micronaut.gradle.kotlin
 
 import io.micronaut.gradle.fixtures.AbstractEagerConfiguringFunctionalTest
 import org.gradle.testkit.runner.TaskOutcome
-import spock.lang.IgnoreIf
+import spock.lang.Shared
 
 class KotlinLibraryFunctionalTest extends AbstractEagerConfiguringFunctionalTest {
+
+    @Shared
+    private final String kotlinVersion = System.getProperty("kotlinVersion");
+
+    @Shared
+    private final String kspVersion = System.getProperty("kspVersion");
+
 
     def "test apply defaults for micronaut-library and KSP with kotlin DSL for #plugin"() {
         given:
@@ -12,8 +19,8 @@ class KotlinLibraryFunctionalTest extends AbstractEagerConfiguringFunctionalTest
         buildFile.delete()
         kotlinBuildFile << """
             plugins {
-                id("org.jetbrains.kotlin.jvm") version("1.8.0")
-                id("com.google.devtools.ksp") version "1.8.0-1.0.8"
+                id("org.jetbrains.kotlin.jvm") version("$kotlinVersion")
+                id("com.google.devtools.ksp") version "$kspVersion"
                 id("io.micronaut.$plugin")
             }
             
@@ -57,9 +64,9 @@ class Foo {}
         buildFile.delete()
         kotlinBuildFile << """
             plugins {
-                id("org.jetbrains.kotlin.jvm") version("1.8.0")
-                id("org.jetbrains.kotlin.kapt") version("1.8.0")
-                id("org.jetbrains.kotlin.plugin.allopen") version("1.8.0")
+                id("org.jetbrains.kotlin.jvm") version("$kotlinVersion")
+                id("org.jetbrains.kotlin.kapt") version("$kotlinVersion")
+                id("org.jetbrains.kotlin.plugin.allopen") version("$kotlinVersion")
                 id("io.micronaut.$plugin")
             }
             
@@ -101,9 +108,9 @@ class Foo {}
         buildFile.delete()
         kotlinBuildFile << """
             plugins {
-                id("org.jetbrains.kotlin.jvm") version("1.8.0")
-                id("org.jetbrains.kotlin.kapt") version("1.8.0")
-                id("org.jetbrains.kotlin.plugin.allopen") version("1.8.0")
+                id("org.jetbrains.kotlin.jvm") version("$kotlinVersion")
+                id("org.jetbrains.kotlin.kapt") version("$kotlinVersion")
+                id("org.jetbrains.kotlin.plugin.allopen") version("$kotlinVersion")
                 id("io.micronaut.$plugin")
             }
             

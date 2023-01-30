@@ -2,16 +2,27 @@ package io.micronaut.gradle.kotlin
 
 import io.micronaut.gradle.fixtures.AbstractEagerConfiguringFunctionalTest
 import org.gradle.testkit.runner.TaskOutcome
+import spock.lang.Shared
 
 class Kotest5FunctionalTest extends AbstractEagerConfiguringFunctionalTest {
 
-    def "test kotest 5 test runtime with #plugin"() {
+    @Shared
+    private final String kotlinVersion = System.getProperty("kotlinVersion")
+    @Shared
+    private final String kspVersion = System.getProperty("kspVersion")
+
+    @Shared
+    private final String kaptPlugin = "id(\"org.jetbrains.kotlin.kapt\") version \"$kotlinVersion\""
+    @Shared
+    private final String kspPlugin = "id(\"com.google.devtools.ksp\") version \"$kspVersion\""
+
+    def "test kotest 5 test runtime with #plugin and #processingPlugin"() {
         given:
         settingsFile << "rootProject.name = 'hello-world'"
         buildFile << """plugins {
-                       |    id("org.jetbrains.kotlin.jvm") version "1.6.21"
-                       |    id("org.jetbrains.kotlin.kapt") version "1.6.21"
-                       |    id("org.jetbrains.kotlin.plugin.allopen") version "1.6.21"
+                       |    id("org.jetbrains.kotlin.jvm") version "$kotlinVersion"
+                       |    $processingPlugin
+                       |    id("org.jetbrains.kotlin.plugin.allopen") version "$kotlinVersion"
                        |    $plugin
                        |}
                        |
@@ -72,7 +83,7 @@ class Kotest5FunctionalTest extends AbstractEagerConfiguringFunctionalTest {
                       """.stripMargin()
 
         when:
-        def result = build('test')
+        def result = build('test', '-s')
 
         def task = result.task(":test")
         println result.output
@@ -81,9 +92,11 @@ class Kotest5FunctionalTest extends AbstractEagerConfiguringFunctionalTest {
         task.outcome == TaskOutcome.SUCCESS
 
         where:
-        plugin << [
-                'id "io.micronaut.application"',
-                'id "io.micronaut.minimal.application"',
-        ]
+        plugin                                  | processingPlugin
+        'id "io.micronaut.application"'         | kaptPlugin
+        'id "io.micronaut.minimal.application"' | kaptPlugin
+//        'id "io.micronaut.application"'         | kspPlugin
+//        'id "io.micronaut.minimal.application"' | kspPlugin
+
     }
 }
