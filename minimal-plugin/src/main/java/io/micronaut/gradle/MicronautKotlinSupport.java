@@ -41,7 +41,7 @@ public class MicronautKotlinSupport {
     };
     public static final String KOTLIN_PROCESSORS = "kotlinProcessors";
 
-    private final static List<String> KSP_ANNOTATION_PROCESSOR_MODULES = Arrays.asList("inject-kotlin", "validation");
+    private static final List<String> KSP_ANNOTATION_PROCESSOR_MODULES = Arrays.asList("inject-kotlin", "validation");
 
     public static void whenKotlinSupportPresent(Project p, Consumer<? super Project> action) {
         p.getPluginManager().withPlugin("org.jetbrains.kotlin.jvm", unused -> action.accept(p));
@@ -140,14 +140,7 @@ public class MicronautKotlinSupport {
         // add inject-java to kapt scopes
         DependencyHandler dependencies = project.getDependencies();
         PluginsHelper.registerAnnotationProcessors(dependencies, annotationProcessorModules, compilerConfigurations);
-        if (GraalUtil.isGraalJVM()) {
-            for (String configuration : compilerConfigurations) {
-                dependencies.add(
-                        configuration,
-                        "io.micronaut:micronaut-graal"
-                );
-            }
-        }
+        addGraalVmDependencies(compilerConfigurations, dependencies);
 
         Configuration kotlinProcessors = project.getConfigurations().getByName(KOTLIN_PROCESSORS);
         for (String compilerConfiguration : compilerConfigurations) {
@@ -175,28 +168,7 @@ public class MicronautKotlinSupport {
                 List<SourceSet> configurations = additionalSourceSets.get();
                 if (!configurations.isEmpty()) {
                     for (SourceSet sourceSet : configurations) {
-                        String annotationProcessorConfigurationName = compilerType + Strings.capitalize(sourceSet.getName());
-                        String implementationConfigurationName = sourceSet
-                                .getImplementationConfigurationName();
-                        List<String> both = Arrays.asList(
-                                implementationConfigurationName,
-                                annotationProcessorConfigurationName
-                        );
-                        for (String configuration : both) {
-                            dependencyHandler.add(
-                                    configuration,
-                                    platform
-                            );
-                        }
-                        configureAnnotationProcessors(p,
-                                implementationConfigurationName,
-                                annotationProcessorConfigurationName);
-                        if (GraalUtil.isGraalJVM()) {
-                            dependencies.add(
-                                    annotationProcessorConfigurationName,
-                                    "io.micronaut:micronaut-graal"
-                            );
-                        }
+                        configureAdditionalSourceSet(compilerType, dependencies, p, dependencyHandler, platform, sourceSet);
                     }
                 }
             }
@@ -209,6 +181,42 @@ public class MicronautKotlinSupport {
                 );
             }
         });
+    }
+
+    private static void configureAdditionalSourceSet(String compilerType, DependencyHandler dependencies, Project p, DependencyHandler dependencyHandler, Dependency platform, SourceSet sourceSet) {
+        String annotationProcessorConfigurationName = compilerType + Strings.capitalize(sourceSet.getName());
+        String implementationConfigurationName = sourceSet
+                .getImplementationConfigurationName();
+        List<String> both = Arrays.asList(
+                implementationConfigurationName,
+                annotationProcessorConfigurationName
+        );
+        for (String configuration : both) {
+            dependencyHandler.add(
+                    configuration,
+                    platform
+            );
+        }
+        configureAnnotationProcessors(p,
+                implementationConfigurationName,
+                annotationProcessorConfigurationName);
+        if (GraalUtil.isGraalJVM()) {
+            dependencies.add(
+                    annotationProcessorConfigurationName,
+                    "io.micronaut:micronaut-graal"
+            );
+        }
+    }
+
+    private static void addGraalVmDependencies(String[] compilerConfigurations, DependencyHandler dependencies) {
+        if (GraalUtil.isGraalJVM()) {
+            for (String configuration : compilerConfigurations) {
+                dependencies.add(
+                        configuration,
+                        "io.micronaut:micronaut-graal"
+                );
+            }
+        }
     }
 
     private static void configureAllOpen(Project project) {
