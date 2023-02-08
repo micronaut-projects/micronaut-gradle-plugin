@@ -95,8 +95,8 @@ class Kotest5FunctionalTest extends AbstractEagerConfiguringFunctionalTest {
         plugin                                  | processingPlugin
         'id "io.micronaut.application"'         | kaptPlugin
         'id "io.micronaut.minimal.application"' | kaptPlugin
-//        'id "io.micronaut.application"'         | kspPlugin
-//        'id "io.micronaut.minimal.application"' | kspPlugin
+        'id "io.micronaut.application"'         | kspPlugin
+        'id "io.micronaut.minimal.application"' | kspPlugin
 
     }
 }
