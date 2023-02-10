@@ -7,10 +7,6 @@ plugins {
 version = "0.1"
 group = "example.micronaut"
 
-repositories {
-    mavenCentral()
-}
-
 micronaut {
     runtime("lambda")
     testRuntime("junit5")

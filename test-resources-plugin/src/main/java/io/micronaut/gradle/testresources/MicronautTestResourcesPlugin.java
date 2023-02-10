@@ -410,7 +410,6 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
     }
 
     private static Configuration createTestResourcesServerConfiguration(Project project, MicronautExtension micronautExtension) {
-        // Legacy configuration was only used in 3.5.0 so it's relatively safe
         ConfigurationContainer configurations = project.getConfigurations();
         Configuration boms = configurations.findByName(MICRONAUT_BOMS_CONFIGURATION);
         DependencyHandler dependencyHandler = project.getDependencies();
