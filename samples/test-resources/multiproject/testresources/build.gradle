@@ -5,13 +5,6 @@ plugins {
 version = "0.1"
 group = "demo"
 
-repositories {
-    mavenCentral()
-    maven {
-        url = "https://s01.oss.sonatype.org/content/repositories/snapshots/"
-    }
-}
-
 micronaut {
     testResources {
         // app1 uses MySQL

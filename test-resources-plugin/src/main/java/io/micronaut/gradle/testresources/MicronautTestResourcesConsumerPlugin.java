@@ -16,14 +16,21 @@
 package io.micronaut.gradle.testresources;
 
 import io.micronaut.gradle.MicronautBasePlugin;
+import io.micronaut.gradle.MicronautExtension;
+import io.micronaut.gradle.PluginsHelper;
 import org.gradle.api.InvalidUserDataException;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
+import org.gradle.api.artifacts.ConfigurationContainer;
 import org.gradle.api.artifacts.ProjectDependency;
+import org.gradle.api.artifacts.dsl.DependencyHandler;
 import org.gradle.api.attributes.AttributeContainer;
 import org.gradle.api.attributes.Usage;
 import org.gradle.api.plugins.PluginManager;
+
+import static io.micronaut.gradle.MicronautComponentPlugin.MICRONAUT_BOMS_CONFIGURATION;
+import static io.micronaut.gradle.MicronautComponentPlugin.resolveMicronautPlatform;
 
 /**
  * A lightweight test resources plugin, which requires
@@ -37,21 +44,24 @@ public class MicronautTestResourcesConsumerPlugin implements Plugin<Project> {
     public void apply(Project project) {
         PluginManager pluginManager = project.getPluginManager();
         pluginManager.apply(MicronautBasePlugin.class);
-        Configuration testResourcesConfiguration = createTestResourcesExtension(project);
+        Configuration testResourcesConfiguration = createTestResourcesExtension(project, project.getExtensions().findByType(MicronautExtension.class));
         pluginManager.withPlugin("io.micronaut.component", unused ->
                 project.afterEvaluate(p -> p.getConfigurations().all(cnf -> configureDependencies(testResourcesConfiguration, cnf)))
         );
     }
 
-    private Configuration createTestResourcesExtension(Project project) {
-        // Legacy configuration was only used in 3.5.0 so it's relatively safe
-        Configuration legacyConf = project.getConfigurations().create("testresources", conf -> {
-            conf.setCanBeConsumed(false);
-            conf.setCanBeResolved(false);
-            conf.setDescription("[deprecated] Please use " + MicronautTestResourcesPlugin.TESTRESOURCES_CONFIGURATION + " instead.");
+    private Configuration createTestResourcesExtension(Project project, MicronautExtension micronautExtension) {
+        ConfigurationContainer configurations = project.getConfigurations();
+        Configuration boms = configurations.findByName(MICRONAUT_BOMS_CONFIGURATION);
+        DependencyHandler dependencyHandler = project.getDependencies();
+        project.afterEvaluate(p -> {
+            dependencyHandler.addProvider(boms.getName(), project.getProviders().provider(() -> {
+                String micronautVersion = PluginsHelper.findMicronautVersion(project, micronautExtension);
+                return resolveMicronautPlatform(dependencyHandler, micronautVersion);
+            }));
         });
         return project.getConfigurations().create(MicronautTestResourcesPlugin.TESTRESOURCES_CONFIGURATION, conf -> {
-            conf.extendsFrom(legacyConf);
+            conf.extendsFrom(boms);
             conf.setCanBeConsumed(false);
             conf.setCanBeResolved(false);
             conf.setDescription("Used to declare projects which provide test resources");

@@ -44,7 +44,7 @@ public abstract class PluginsHelper {
         put("io.micronaut.security", "io.micronaut.security:micronaut-security-annotations");
     }});
 
-    static String findMicronautVersion(Project p, MicronautExtension micronautExtension) {
+    public static String findMicronautVersion(Project p, MicronautExtension micronautExtension) {
         String v = micronautExtension.getVersion().getOrNull();
         if (v == null) {
             final Object o = p.getProperties().get("micronautVersion");
