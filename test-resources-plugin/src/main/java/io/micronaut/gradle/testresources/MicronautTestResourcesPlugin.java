@@ -181,15 +181,24 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
         pluginManager.withPlugin("io.micronaut.aot", unused -> TestResourcesAOT.configure(project, config, dependencies, tasks, internalStart, testResourcesClasspathConfig));
         configureServiceReset((ProjectInternal) project, settingsDirectory, stopAtEndFile);
 
-        tasks.withType(Test.class).configureEach(task -> configureServerConnection(internalStart, task));
-        tasks.withType(JavaExec.class).configureEach(task -> configureServerConnection(internalStart, task));
+        tasks.withType(Test.class).configureEach(task -> configureServerConnection(internalStart, task, config, testResourcesSourceSet));
+        tasks.withType(JavaExec.class).configureEach(task -> configureServerConnection(internalStart, task, config, testResourcesSourceSet));
 
         workaroundForIntellij(project);
 
     }
 
-    private static void configureServerConnection(TaskProvider<StartTestResourcesService> internalStart, Task task) {
+    private static void configureServerConnection(TaskProvider<StartTestResourcesService> internalStart,
+                                                  Task task,
+                                                  TestResourcesConfiguration configuration,
+                                                  SourceSet testResourcesSourceSet) {
         task.dependsOn(internalStart);
+        task.getInputs().files(configuration.getEnabled().map(enabled -> {
+            if (enabled) {
+                return testResourcesSourceSet.getRuntimeClasspath();
+            }
+            return Collections.emptyList();
+        }));
         if (task instanceof JavaForkOptions) {
             ((JavaForkOptions) task).getJvmArgumentProviders().add(new ServerConnectionParametersProvider(internalStart));
         }

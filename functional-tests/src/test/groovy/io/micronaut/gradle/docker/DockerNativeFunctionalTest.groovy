@@ -575,7 +575,7 @@ micronaut:
         expect:
         task.outcome == TaskOutcome.SUCCESS
         dockerFile == """
-FROM ghcr.io/graalvm/native-image:ol7-java17-22.2.0 AS graalvm
+FROM ghcr.io/graalvm/native-image:ol7-java17-22.3.0 AS graalvm
 WORKDIR /home/alternate
 COPY layers/libs /home/alternate/libs
 COPY layers/classes /home/alternate/classes
