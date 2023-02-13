@@ -35,6 +35,8 @@ tasks.withType(Test).configureEach { Test test ->
     repoProvider.repositoryDir.from(configurations.pluginsUnderTest)
     repoProvider.version.set(version)
     test.jvmArgumentProviders.add(repoProvider)
+    systemProperties.put("kotlinVersion", libs.versions.kotlin.get())
+    systemProperties.put("kspVersion", libs.versions.ksp.get())
 }
 
 tasks.withType(JacocoReport).configureEach {

@@ -1,7 +1,9 @@
 package io.micronaut.gradle;
 
+import com.google.devtools.ksp.gradle.KspExtension;
 import io.micronaut.gradle.graalvm.GraalUtil;
 import org.gradle.api.Project;
+import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.Dependency;
 import org.gradle.api.artifacts.dsl.DependencyHandler;
 import org.gradle.api.plugins.ExtensionContainer;
@@ -33,6 +35,13 @@ public class MicronautKotlinSupport {
             "kapt",
             "kaptTest"
     };
+    private static final String[] KSP_CONFIGURATIONS = new String[]{
+            "ksp",
+            "kspTest"
+    };
+    public static final String KOTLIN_PROCESSORS = "kotlinProcessors";
+
+    private static final List<String> KSP_ANNOTATION_PROCESSOR_MODULES = Arrays.asList("inject-kotlin", "validation");
 
     public static void whenKotlinSupportPresent(Project p, Consumer<? super Project> action) {
         p.getPluginManager().withPlugin("org.jetbrains.kotlin.jvm", unused -> action.accept(p));
@@ -60,83 +69,41 @@ public class MicronautKotlinSupport {
     public static void configureKotlin(Project project) {
         PluginManager pluginManager = project.getPluginManager();
         final TaskContainer tasks = project.getTasks();
+        project.getConfigurations().create(KOTLIN_PROCESSORS, conf -> {
+            conf.setCanBeConsumed(false);
+            conf.setCanBeConsumed(false);
+        });
         tasks.withType(KotlinCompile.class).configureEach(kotlinCompile -> {
             final KotlinJvmOptions kotlinOptions = (KotlinJvmOptions) kotlinCompile.getKotlinOptions();
             kotlinOptions.setJavaParameters(true);
         });
         pluginManager.withPlugin("org.jetbrains.kotlin.plugin.allopen", unused -> configureAllOpen(project));
         pluginManager.withPlugin("org.jetbrains.kotlin.kapt", unused -> configureKapt(project));
+        pluginManager.withPlugin("com.google.devtools.ksp", unused -> configureKsp(project));
+    }
+
+    private static void configureKsp(Project project) {
+        configureKotlinCompilerPlugin(project, KSP_CONFIGURATIONS, "ksp", KSP_ANNOTATION_PROCESSOR_MODULES);
+
+        final ExtensionContainer extensions = project.getExtensions();
+        extensions.configure(KspExtension.class, kspExtension -> {
+            final MicronautExtension micronautExtension = extensions.getByType(MicronautExtension.class);
+            AnnotationProcessing processingConfig = micronautExtension.getProcessing();
+            final boolean isIncremental = processingConfig.getIncremental().getOrElse(true);
+            final String group = processingConfig.getGroup().getOrElse(project.getGroup().toString());
+            final String module = processingConfig.getModule().getOrElse(project.getName());
+            if (isIncremental) {
+                kspExtension.arg("micronaut.processing.incremental", "true");
+                if (group.length() > 0) {
+                    kspExtension.arg("micronaut.processing.group,", group);
+                }
+                kspExtension.arg("micronaut.processing.module", module);
+            }
+        });
     }
 
     private static void configureKapt(Project project) {
-        // add inject-java to kapt scopes
-        DependencyHandler dependencies = project.getDependencies();
-        PluginsHelper.registerAnnotationProcessors(dependencies, KAPT_CONFIGURATIONS);
-
-        if (GraalUtil.isGraalJVM()) {
-            for (String configuration : KAPT_CONFIGURATIONS) {
-                dependencies.add(
-                        configuration,
-                        "io.micronaut:micronaut-graal"
-                );
-            }
-        }
-
-        project.afterEvaluate(p -> {
-            PluginsHelper.applyAdditionalProcessors(
-                    p,
-                    "kapt", "kaptTest"
-            );
-            final MicronautExtension micronautExtension = p
-                    .getExtensions()
-                    .getByType(MicronautExtension.class);
-            ListProperty<SourceSet> additionalSourceSets =
-                    micronautExtension.getProcessing().getAdditionalSourceSets();
-            final DependencyHandler dependencyHandler = p.getDependencies();
-            final String micronautVersion = PluginsHelper.findMicronautVersion(
-                    p,
-                    micronautExtension
-            );
-
-            final Dependency platform = resolveMicronautPlatform(dependencyHandler, micronautVersion);
-            if (additionalSourceSets.isPresent()) {
-                List<SourceSet> configurations = additionalSourceSets.get();
-                if (!configurations.isEmpty()) {
-                    for (SourceSet sourceSet : configurations) {
-                        String annotationProcessorConfigurationName = "kapt" + Strings.capitalize(sourceSet.getName());
-                        String implementationConfigurationName = sourceSet
-                                .getImplementationConfigurationName();
-                        List<String> both = Arrays.asList(
-                                implementationConfigurationName,
-                                annotationProcessorConfigurationName
-                        );
-                        for (String configuration : both) {
-                            dependencyHandler.add(
-                                    configuration,
-                                    platform
-                            );
-                        }
-                        configureAnnotationProcessors(p,
-                                implementationConfigurationName,
-                                annotationProcessorConfigurationName);
-                        if (GraalUtil.isGraalJVM()) {
-                            dependencies.add(
-                                    annotationProcessorConfigurationName,
-                                    "io.micronaut:micronaut-graal"
-                            );
-                        }
-                    }
-                }
-            }
-
-
-            for (String kaptConfig : KAPT_CONFIGURATIONS) {
-                dependencyHandler.add(
-                        kaptConfig,
-                        platform
-                );
-            }
-        });
+        configureKotlinCompilerPlugin(project, KAPT_CONFIGURATIONS, "kapt", PluginsHelper.ANNOTATION_PROCESSOR_MODULES);
 
         final ExtensionContainer extensions = project.getExtensions();
         extensions.configure(KaptExtension.class, kaptExtension -> {
@@ -167,6 +134,89 @@ public class MicronautKotlinSupport {
                 });
             }
         });
+    }
+
+    private static void configureKotlinCompilerPlugin(Project project, String[] compilerConfigurations, String compilerType, List<String> annotationProcessorModules) {
+        // add inject-java to kapt scopes
+        DependencyHandler dependencies = project.getDependencies();
+        PluginsHelper.registerAnnotationProcessors(dependencies, annotationProcessorModules, compilerConfigurations);
+        addGraalVmDependencies(compilerConfigurations, dependencies);
+
+        Configuration kotlinProcessors = project.getConfigurations().getByName(KOTLIN_PROCESSORS);
+        for (String compilerConfiguration : compilerConfigurations) {
+            project.getConfigurations().getByName(compilerConfiguration).extendsFrom(kotlinProcessors);
+        }
+
+        project.afterEvaluate(p -> {
+            PluginsHelper.applyAdditionalProcessors(
+                    p,
+                    compilerConfigurations
+            );
+            final MicronautExtension micronautExtension = p
+                    .getExtensions()
+                    .getByType(MicronautExtension.class);
+            ListProperty<SourceSet> additionalSourceSets =
+                    micronautExtension.getProcessing().getAdditionalSourceSets();
+            final DependencyHandler dependencyHandler = p.getDependencies();
+            final String micronautVersion = PluginsHelper.findMicronautVersion(
+                    p,
+                    micronautExtension
+            );
+
+            final Dependency platform = resolveMicronautPlatform(dependencyHandler, micronautVersion);
+            if (additionalSourceSets.isPresent()) {
+                List<SourceSet> configurations = additionalSourceSets.get();
+                if (!configurations.isEmpty()) {
+                    for (SourceSet sourceSet : configurations) {
+                        configureAdditionalSourceSet(compilerType, dependencies, p, dependencyHandler, platform, sourceSet);
+                    }
+                }
+            }
+
+
+            for (String compileConfiguration : compilerConfigurations) {
+                dependencyHandler.add(
+                        compileConfiguration,
+                        platform
+                );
+            }
+        });
+    }
+
+    private static void configureAdditionalSourceSet(String compilerType, DependencyHandler dependencies, Project p, DependencyHandler dependencyHandler, Dependency platform, SourceSet sourceSet) {
+        String annotationProcessorConfigurationName = compilerType + Strings.capitalize(sourceSet.getName());
+        String implementationConfigurationName = sourceSet
+                .getImplementationConfigurationName();
+        List<String> both = Arrays.asList(
+                implementationConfigurationName,
+                annotationProcessorConfigurationName
+        );
+        for (String configuration : both) {
+            dependencyHandler.add(
+                    configuration,
+                    platform
+            );
+        }
+        configureAnnotationProcessors(p,
+                implementationConfigurationName,
+                annotationProcessorConfigurationName);
+        if (GraalUtil.isGraalJVM()) {
+            dependencies.add(
+                    annotationProcessorConfigurationName,
+                    "io.micronaut:micronaut-graal"
+            );
+        }
+    }
+
+    private static void addGraalVmDependencies(String[] compilerConfigurations, DependencyHandler dependencies) {
+        if (GraalUtil.isGraalJVM()) {
+            for (String configuration : compilerConfigurations) {
+                dependencies.add(
+                        configuration,
+                        "io.micronaut:micronaut-graal"
+                );
+            }
+        }
     }
 
     private static void configureAllOpen(Project project) {

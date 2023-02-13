@@ -1,5 +1,6 @@
 [versions]
-kotlin = "1.6.21"
+kotlin = "1.8.0"
+ksp = "1.8.0-1.0.8"
 docker = "8.0.0"
 diffplug = "3.37.2"
 shadow = "7.1.2"
@@ -20,6 +21,7 @@ graalvmPlugin = { module = "org.graalvm.buildtools:native-gradle-plugin", versio
 
 kotlin-allopen = { module = "org.jetbrains.kotlin:kotlin-allopen", version.ref = "kotlin" }
 kotlin-gradlePlugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
+ksp-gradlePlugin = { module = "com.google.devtools.ksp:symbol-processing-gradle-plugin", version.ref = "ksp" }
 
 groovy-core = { module = "org.codehaus.groovy:groovy", version.ref = "groovy" }
 spock-core = { module = "org.spockframework:spock-core", version.ref = "spock" }
@@ -36,4 +38,4 @@ micronaut-testresources = { module = "io.micronaut.testresources:micronaut-test-
 jetbrains-annotations = { module = "org.jetbrains:annotations", version.ref = "jetbrains-annotations" }
 
 [bundles]
-optionalPlugins = [ "kotlin-allopen", "kotlin-gradlePlugin", "graalvmPlugin" ]
+optionalPlugins = [ "kotlin-allopen", "kotlin-gradlePlugin", "graalvmPlugin", "ksp-gradlePlugin" ]

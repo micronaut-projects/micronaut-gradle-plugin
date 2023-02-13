@@ -37,7 +37,7 @@ public enum MicronautTestRuntime {
      * Kotest 4.
      */
     KOTEST_4(MicronautExtension.mapOf(
-            "kaptTest",
+            MicronautKotlinSupport.KOTLIN_PROCESSORS,
             Collections.singletonList("io.micronaut:micronaut-inject-java"),
             JavaPlugin.TEST_IMPLEMENTATION_CONFIGURATION_NAME,
             Arrays.asList(
@@ -53,7 +53,7 @@ public enum MicronautTestRuntime {
      * Kotest 5.
      */
     KOTEST_5(MicronautExtension.mapOf(
-            "kaptTest",
+            MicronautKotlinSupport.KOTLIN_PROCESSORS,
             Collections.singletonList("io.micronaut:micronaut-inject-java"),
             JavaPlugin.TEST_IMPLEMENTATION_CONFIGURATION_NAME,
             Arrays.asList(
