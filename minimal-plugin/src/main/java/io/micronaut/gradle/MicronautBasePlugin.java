@@ -18,9 +18,16 @@ package io.micronaut.gradle;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 
+import static io.micronaut.gradle.MicronautComponentPlugin.MICRONAUT_BOMS_CONFIGURATION;
+
 public class MicronautBasePlugin implements Plugin<Project> {
     @Override
     public void apply(Project project) {
         project.getExtensions().create("micronaut", MicronautExtension.class);
+        project.getConfigurations().create(MICRONAUT_BOMS_CONFIGURATION, conf -> {
+            conf.setCanBeResolved(false);
+            conf.setCanBeConsumed(false);
+            conf.setDescription("BOMs which will be applied by the Micronaut plugins");
+        });
     }
 }

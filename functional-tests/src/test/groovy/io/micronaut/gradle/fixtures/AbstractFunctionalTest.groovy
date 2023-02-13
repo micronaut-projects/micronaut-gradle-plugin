@@ -23,10 +23,10 @@ abstract class AbstractFunctionalTest extends AbstractGradleBuildSpec {
                 repositories {
                     ${guardString('mavenLocal()', allowMavenLocal)}
                     mavenCentral()
-                    ${guardString('maven { url = "https://s01.oss.sonatype.org/content/repositories/snapshots" }', allowSnapshots)}
                     maven {
                         url = "${System.getProperty("internal.plugin.repo")}"
                     }
+                    ${guardString('maven { url = "https://s01.oss.sonatype.org/content/repositories/snapshots" }', allowSnapshots)}
                     gradlePluginPortal()
                 }
                 plugins {
