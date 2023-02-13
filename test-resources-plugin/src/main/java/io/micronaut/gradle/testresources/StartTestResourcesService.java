@@ -73,7 +73,7 @@ public abstract class StartTestResourcesService extends DefaultTask {
      * @return the directory where to write settings
      */
     @OutputDirectory
-    abstract DirectoryProperty getSettingsDirectory();
+    public abstract DirectoryProperty getSettingsDirectory();
 
     /**
      * This file is used by the test server once started,
@@ -83,7 +83,7 @@ public abstract class StartTestResourcesService extends DefaultTask {
      * @return the port file
      */
     @Internal
-    abstract RegularFileProperty getPortFile();
+    public abstract RegularFileProperty getPortFile();
 
     /**
      * An explicit port to use when starting the test
@@ -93,7 +93,7 @@ public abstract class StartTestResourcesService extends DefaultTask {
      */
     @Input
     @Optional
-    abstract Property<Integer> getExplicitPort();
+    public abstract Property<Integer> getExplicitPort();
 
     /**
      * An access token which must be used by clients
@@ -103,7 +103,7 @@ public abstract class StartTestResourcesService extends DefaultTask {
      */
     @Input
     @Optional
-    abstract Property<String> getAccessToken();
+    public abstract Property<String> getAccessToken();
 
     /**
      * Client timeout, in seconds, to the server.
@@ -115,7 +115,7 @@ public abstract class StartTestResourcesService extends DefaultTask {
      */
     @Input
     @Optional
-    abstract Property<Integer> getClientTimeout();
+    public abstract Property<Integer> getClientTimeout();
 
     /**
      * Allows starting the test server in foreground
@@ -126,7 +126,7 @@ public abstract class StartTestResourcesService extends DefaultTask {
      */
     @Internal
     @Option(option = "block", description = "Runs the test server in foreground, blocking until the server is stopped.")
-    abstract Property<Boolean> getForeground();
+    public abstract Property<Boolean> getForeground();
 
     /**
      * An internal file used to determine if the server
@@ -135,14 +135,14 @@ public abstract class StartTestResourcesService extends DefaultTask {
      * @return the stop file location
      */
     @Internal
-    abstract RegularFileProperty getStopFile();
+    public abstract RegularFileProperty getStopFile();
 
     /**
      * If set to true, the service will be started with debug enabled.
      * @return the debug flag
      */
     @Internal
-    abstract Property<Boolean> getDebugServer();
+    public abstract Property<Boolean> getDebugServer();
 
     /**
      * An internal property used to determine if the
@@ -154,13 +154,13 @@ public abstract class StartTestResourcesService extends DefaultTask {
      * @return the standalone mode property
      */
     @Internal
-    abstract Property<Boolean> getStandalone();
+    public abstract Property<Boolean> getStandalone();
 
     @Internal
-    abstract Property<Boolean> getUseClassDataSharing();
+    public abstract Property<Boolean> getUseClassDataSharing();
 
     @Internal
-    abstract DirectoryProperty getClassDataSharingDir();
+    public abstract DirectoryProperty getClassDataSharingDir();
 
     @Inject
     protected abstract ExecOperations getExecOperations();
