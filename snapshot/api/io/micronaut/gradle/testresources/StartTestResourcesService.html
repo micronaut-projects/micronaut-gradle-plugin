@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":6,"i1":6,"i2":10};
+var methods = {"i0":6,"i1":6,"i2":6,"i3":6,"i4":6,"i5":6,"i6":6,"i7":6,"i8":6,"i9":6,"i10":6,"i11":6,"i12":6,"i13":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],4:["t3","Abstract Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -192,14 +192,87 @@ extends org.gradle.api.DefaultTask</pre>
 <th class="colLast" scope="col">Method and Description</th>
 </tr>
 <tr id="i0" class="altColor">
+<td class="colFirst"><code>abstract org.gradle.api.provider.Property&lt;java.lang.String&gt;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../io/micronaut/gradle/testresources/StartTestResourcesService.html#getAccessToken--">getAccessToken</a></span>()</code>
+<div class="block">An access token which must be used by clients
+ when talking to the test resources server.</div>
+</td>
+</tr>
+<tr id="i1" class="rowColor">
+<td class="colFirst"><code>abstract org.gradle.api.file.DirectoryProperty</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../io/micronaut/gradle/testresources/StartTestResourcesService.html#getClassDataSharingDir--">getClassDataSharingDir</a></span>()</code>&nbsp;</td>
+</tr>
+<tr id="i2" class="altColor">
+<td class="colFirst"><code>abstract org.gradle.api.provider.Property&lt;java.lang.Integer&gt;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../io/micronaut/gradle/testresources/StartTestResourcesService.html#getClientTimeout--">getClientTimeout</a></span>()</code>
+<div class="block">Client timeout, in seconds, to the server.</div>
+</td>
+</tr>
+<tr id="i3" class="rowColor">
+<td class="colFirst"><code>abstract org.gradle.api.provider.Property&lt;java.lang.Boolean&gt;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../io/micronaut/gradle/testresources/StartTestResourcesService.html#getDebugServer--">getDebugServer</a></span>()</code>
+<div class="block">If set to true, the service will be started with debug enabled.</div>
+</td>
+</tr>
+<tr id="i4" class="altColor">
 <td class="colFirst"><code>protected abstract org.gradle.process.ExecOperations</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../io/micronaut/gradle/testresources/StartTestResourcesService.html#getExecOperations--">getExecOperations</a></span>()</code>&nbsp;</td>
 </tr>
-<tr id="i1" class="rowColor">
+<tr id="i5" class="rowColor">
+<td class="colFirst"><code>abstract org.gradle.api.provider.Property&lt;java.lang.Integer&gt;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../io/micronaut/gradle/testresources/StartTestResourcesService.html#getExplicitPort--">getExplicitPort</a></span>()</code>
+<div class="block">An explicit port to use when starting the test
+ resources server.</div>
+</td>
+</tr>
+<tr id="i6" class="altColor">
+<td class="colFirst"><code>abstract org.gradle.api.provider.Property&lt;java.lang.Boolean&gt;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../io/micronaut/gradle/testresources/StartTestResourcesService.html#getForeground--">getForeground</a></span>()</code>
+<div class="block">Allows starting the test server in foreground
+ instead of background, in which case the build
+ will block.</div>
+</td>
+</tr>
+<tr id="i7" class="rowColor">
 <td class="colFirst"><code>protected abstract org.gradle.api.model.ObjectFactory</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../io/micronaut/gradle/testresources/StartTestResourcesService.html#getObjects--">getObjects</a></span>()</code>&nbsp;</td>
 </tr>
-<tr id="i2" class="altColor">
+<tr id="i8" class="altColor">
+<td class="colFirst"><code>abstract org.gradle.api.file.RegularFileProperty</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../io/micronaut/gradle/testresources/StartTestResourcesService.html#getPortFile--">getPortFile</a></span>()</code>
+<div class="block">This file is used by the test server once started,
+ to write the port where to contact it.</div>
+</td>
+</tr>
+<tr id="i9" class="rowColor">
+<td class="colFirst"><code>abstract org.gradle.api.file.DirectoryProperty</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../io/micronaut/gradle/testresources/StartTestResourcesService.html#getSettingsDirectory--">getSettingsDirectory</a></span>()</code>
+<div class="block">The directory where the settings to connect to
+ the test resources server will be written.</div>
+</td>
+</tr>
+<tr id="i10" class="altColor">
+<td class="colFirst"><code>abstract org.gradle.api.provider.Property&lt;java.lang.Boolean&gt;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../io/micronaut/gradle/testresources/StartTestResourcesService.html#getStandalone--">getStandalone</a></span>()</code>
+<div class="block">An internal property used to determine if the
+ server is in standalone mode, in which case it
+ will outlive the build (it will stay in the
+ background even if a build or a build session
+ ends)</div>
+</td>
+</tr>
+<tr id="i11" class="rowColor">
+<td class="colFirst"><code>abstract org.gradle.api.file.RegularFileProperty</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../io/micronaut/gradle/testresources/StartTestResourcesService.html#getStopFile--">getStopFile</a></span>()</code>
+<div class="block">An internal file used to determine if the server
+ should be stopped at the end of a build or not.</div>
+</td>
+</tr>
+<tr id="i12" class="altColor">
+<td class="colFirst"><code>abstract org.gradle.api.provider.Property&lt;java.lang.Boolean&gt;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../io/micronaut/gradle/testresources/StartTestResourcesService.html#getUseClassDataSharing--">getUseClassDataSharing</a></span>()</code>&nbsp;</td>
+</tr>
+<tr id="i13" class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../io/micronaut/gradle/testresources/StartTestResourcesService.html#startService--">startService</a></span>()</code>&nbsp;</td>
 </tr>
@@ -264,6 +337,181 @@ public&nbsp;StartTestResourcesService()</pre>
 <!--   -->
 </a>
 <h3>Method Detail</h3>
+<a name="getSettingsDirectory--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getSettingsDirectory</h4>
+<pre>@OutputDirectory
+public abstract&nbsp;org.gradle.api.file.DirectoryProperty&nbsp;getSettingsDirectory()</pre>
+<div class="block">The directory where the settings to connect to
+ the test resources server will be written. This
+ directory is used by clients to determine how
+ to contact the server.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>the directory where to write settings</dd>
+</dl>
+</li>
+</ul>
+<a name="getPortFile--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getPortFile</h4>
+<pre>@Internal
+public abstract&nbsp;org.gradle.api.file.RegularFileProperty&nbsp;getPortFile()</pre>
+<div class="block">This file is used by the test server once started,
+ to write the port where to contact it. It is used
+ internally before we can write the settings.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>the port file</dd>
+</dl>
+</li>
+</ul>
+<a name="getExplicitPort--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getExplicitPort</h4>
+<pre>@Input
+ @Optional
+public abstract&nbsp;org.gradle.api.provider.Property&lt;java.lang.Integer&gt;&nbsp;getExplicitPort()</pre>
+<div class="block">An explicit port to use when starting the test
+ resources server.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>an explicit port</dd>
+</dl>
+</li>
+</ul>
+<a name="getAccessToken--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getAccessToken</h4>
+<pre>@Input
+ @Optional
+public abstract&nbsp;org.gradle.api.provider.Property&lt;java.lang.String&gt;&nbsp;getAccessToken()</pre>
+<div class="block">An access token which must be used by clients
+ when talking to the test resources server.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>the access token</dd>
+</dl>
+</li>
+</ul>
+<a name="getClientTimeout--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getClientTimeout</h4>
+<pre>@Input
+ @Optional
+public abstract&nbsp;org.gradle.api.provider.Property&lt;java.lang.Integer&gt;&nbsp;getClientTimeout()</pre>
+<div class="block">Client timeout, in seconds, to the server.
+ This may have to be tweaked if spawning
+ test resources take longer than the default,
+ which is 60s.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>the client timeout</dd>
+</dl>
+</li>
+</ul>
+<a name="getForeground--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getForeground</h4>
+<pre>@Internal
+public abstract&nbsp;org.gradle.api.provider.Property&lt;java.lang.Boolean&gt;&nbsp;getForeground()</pre>
+<div class="block">Allows starting the test server in foreground
+ instead of background, in which case the build
+ will block.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>the foreground property</dd>
+</dl>
+</li>
+</ul>
+<a name="getStopFile--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getStopFile</h4>
+<pre>@Internal
+public abstract&nbsp;org.gradle.api.file.RegularFileProperty&nbsp;getStopFile()</pre>
+<div class="block">An internal file used to determine if the server
+ should be stopped at the end of a build or not.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>the stop file location</dd>
+</dl>
+</li>
+</ul>
+<a name="getDebugServer--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getDebugServer</h4>
+<pre>@Internal
+public abstract&nbsp;org.gradle.api.provider.Property&lt;java.lang.Boolean&gt;&nbsp;getDebugServer()</pre>
+<div class="block">If set to true, the service will be started with debug enabled.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>the debug flag</dd>
+</dl>
+</li>
+</ul>
+<a name="getStandalone--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getStandalone</h4>
+<pre>@Internal
+public abstract&nbsp;org.gradle.api.provider.Property&lt;java.lang.Boolean&gt;&nbsp;getStandalone()</pre>
+<div class="block">An internal property used to determine if the
+ server is in standalone mode, in which case it
+ will outlive the build (it will stay in the
+ background even if a build or a build session
+ ends)</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>the standalone mode property</dd>
+</dl>
+</li>
+</ul>
+<a name="getUseClassDataSharing--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getUseClassDataSharing</h4>
+<pre>@Internal
+public abstract&nbsp;org.gradle.api.provider.Property&lt;java.lang.Boolean&gt;&nbsp;getUseClassDataSharing()</pre>
+</li>
+</ul>
+<a name="getClassDataSharingDir--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getClassDataSharingDir</h4>
+<pre>@Internal
+public abstract&nbsp;org.gradle.api.file.DirectoryProperty&nbsp;getClassDataSharingDir()</pre>
+</li>
+</ul>
 <a name="getExecOperations--">
 <!--   -->
 </a>
