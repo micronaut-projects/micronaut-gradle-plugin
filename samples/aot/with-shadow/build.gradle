@@ -7,10 +7,6 @@ plugins {
 version = "0.1"
 group = "demo.app"
 
-repositories {
-    mavenCentral()
-}
-
 micronaut {
     runtime("netty")
     testRuntime("junit5")

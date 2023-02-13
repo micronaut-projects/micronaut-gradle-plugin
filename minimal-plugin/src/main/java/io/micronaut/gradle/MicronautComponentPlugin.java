@@ -144,11 +144,7 @@ public class MicronautComponentPlugin implements Plugin<Project> {
     }
 
     private void configureMicronautBom(Project project, MicronautExtension micronautExtension) {
-        Configuration micronautBoms = project.getConfigurations().create(MICRONAUT_BOMS_CONFIGURATION, conf -> {
-            conf.setCanBeResolved(false);
-            conf.setCanBeConsumed(false);
-            conf.setDescription("BOMs which will be applied by the Micronaut plugins");
-        });
+        Configuration micronautBoms = project.getConfigurations().getByName(MICRONAUT_BOMS_CONFIGURATION);
         DependencyHandler dependencyHandler = project.getDependencies();
         project.afterEvaluate(p -> {
             dependencyHandler.addProvider(micronautBoms.getName(), project.getProviders().provider(() -> {
@@ -191,7 +187,7 @@ public class MicronautComponentPlugin implements Plugin<Project> {
     }
 
 
-    static Dependency resolveMicronautPlatform(DependencyHandler dependencyHandler, String micronautVersion) {
+    public static Dependency resolveMicronautPlatform(DependencyHandler dependencyHandler, String micronautVersion) {
         return dependencyHandler.platform("io.micronaut.platform:micronaut-platform:" + micronautVersion);
     }
 

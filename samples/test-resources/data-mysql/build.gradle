@@ -6,10 +6,6 @@ plugins {
 version = "0.1"
 group = "demo"
 
-repositories {
-    mavenCentral()
-}
-
 dependencies {
     annotationProcessor("io.micronaut:micronaut-http-validation")
     implementation("io.micronaut:micronaut-http-client")
@@ -38,8 +34,8 @@ micronaut {
 }
 
 dependencies {
-    annotationProcessor("io.micronaut.data:micronaut-data-processor:4.0.0-SNAPSHOT")
-    implementation("io.micronaut.data:micronaut-data-jdbc:4.0.0-SNAPSHOT")
+    annotationProcessor("io.micronaut.data:micronaut-data-processor")
+    implementation("io.micronaut.data:micronaut-data-jdbc")
     implementation("io.micronaut.sql:micronaut-jdbc-hikari")
     runtimeOnly("mysql:mysql-connector-java")
     runtimeOnly("io.micronaut:micronaut-jackson-databind")

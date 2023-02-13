@@ -77,7 +77,9 @@ abstract class AbstractGradleBuildSpec extends Specification {
         File sampleDir = new File("../samples/$name").canonicalFile
         copySample(sampleDir.toPath(), baseDir)
         buildFile << """
-            $repositoriesBlock
+            allprojects {
+                $repositoriesBlock
+            }
         """
         def jacocoConf = AbstractGradleBuildSpec.classLoader.getResourceAsStream("testkit-gradle.properties")?.text
         if (jacocoConf) {
