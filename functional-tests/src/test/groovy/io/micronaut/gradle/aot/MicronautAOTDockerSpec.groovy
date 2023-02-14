@@ -1,7 +1,9 @@
 package io.micronaut.gradle.aot
 
+import io.micronaut.gradle.AbstractGradleBuildSpec
 import org.gradle.testkit.runner.TaskOutcome
 import spock.lang.IgnoreIf
+import spock.lang.Requires
 
 @IgnoreIf({ os.windows })
 class MicronautAOTDockerSpec extends AbstractAOTPluginSpec {
@@ -56,6 +58,7 @@ ENTRYPOINT ["java", "-jar", "/home/app/application.jar"]
 
     }
 
+    @Requires({ AbstractGradleBuildSpec.graalVmAvailable && !os.windows })
     def "generates a native optimized docker image"() {
         withSample("aot/basic-app")
 
