@@ -362,6 +362,7 @@ The following additional tasks are provided by this plugin:
 * `dockerfileNative` - Builds a Docker File for for GraalVM Native Image
 * `dockerBuildNative` - Builds a Native Docker Image using GraalVM Native Image
 * `dockerBuildCrac` - Builds a docker Image containing a CRaC enabled JDK and a pre-warmed, checkpointed application.
+* `dockerFileCrac` - Builds a Docker File for a CRaC checkpointed image.
 * `nativeCompile` - Builds a GraalVM Native Image
 * `testNativeImage` (since 1.1.0) - Builds a GraalVM Native Image, starts the native server and runs tests against the server
 * `dockerPush` - Pushes a Docker Image to configured container registry
