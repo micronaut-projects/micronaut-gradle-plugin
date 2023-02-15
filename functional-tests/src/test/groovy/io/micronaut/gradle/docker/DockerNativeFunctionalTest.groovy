@@ -582,8 +582,11 @@ COPY layers/classes /home/alternate/classes
 COPY layers/resources /home/alternate/resources
 COPY layers/application.jar /home/alternate/application.jar
 RUN mkdir /home/alternate/config-dirs
+RUN mkdir -p /home/alternate/config-dirs/generateResourcesConfigFile
+RUN mkdir -p /home/alternate/config-dirs/io.netty/netty-common/4.1.80.Final
 COPY config-dirs/generateResourcesConfigFile /home/alternate/config-dirs/generateResourcesConfigFile
-RUN native-image -cp /home/alternate/libs/*.jar:/home/alternate/resources:/home/alternate/application.jar --no-fallback -H:Name=application $graalVMBuilderExports -H:ConfigurationFileDirectories=/home/alternate/config-dirs/generateResourcesConfigFile -H:Class=example.Application
+COPY config-dirs/io.netty/netty-common/4.1.80.Final /home/alternate/config-dirs/io.netty/netty-common/4.1.80.Final
+RUN native-image -cp /home/alternate/libs/*.jar:/home/alternate/resources:/home/alternate/application.jar --no-fallback -H:Name=application -J--add-exports=org.graalvm.nativeimage.builder/com.oracle.svm.core.configure=ALL-UNNAMED -J--add-exports=org.graalvm.nativeimage.builder/com.oracle.svm.core.jdk=ALL-UNNAMED -J--add-exports=org.graalvm.nativeimage.builder/com.oracle.svm.core.jni=ALL-UNNAMED -J--add-exports=org.graalvm.sdk/org.graalvm.nativeimage.impl=ALL-UNNAMED -H:ConfigurationFileDirectories=/home/alternate/config-dirs/generateResourcesConfigFile,/home/alternate/config-dirs/4.1.80.Final -H:Class=example.Application
 FROM frolvlad/alpine-glibc:alpine-3.12
 RUN apk --no-cache update && apk add libstdc++
 EXPOSE 8080
