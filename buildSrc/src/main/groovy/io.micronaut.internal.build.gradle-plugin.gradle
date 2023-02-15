@@ -75,3 +75,8 @@ tasks.configureEach {
 tasks.withType(Checkstyle).configureEach {
     enabled = false
 }
+
+gradlePlugin {
+    website = "https://github.com/micronaut-projects/micronaut-gradle-plugin"
+    vcsUrl = "https://github.com/micronaut-projects/micronaut-gradle-plugin.git"
+}
