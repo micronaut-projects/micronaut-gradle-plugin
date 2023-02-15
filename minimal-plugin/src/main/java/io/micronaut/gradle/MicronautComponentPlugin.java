@@ -51,7 +51,6 @@ import static org.gradle.api.plugins.JavaPlugin.COMPILE_ONLY_CONFIGURATION_NAME;
 import static org.gradle.api.plugins.JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME;
 import static org.gradle.api.plugins.JavaPlugin.TEST_ANNOTATION_PROCESSOR_CONFIGURATION_NAME;
 import static org.gradle.api.plugins.JavaPlugin.TEST_COMPILE_ONLY_CONFIGURATION_NAME;
-import static org.gradle.api.plugins.JavaPlugin.TEST_IMPLEMENTATION_CONFIGURATION_NAME;
 
 /**
  * A base plugin which configures Micronaut components, which are either a Micronaut
@@ -100,14 +99,7 @@ public class MicronautComponentPlugin implements Plugin<Project> {
     private void configureTesting(Project project, MicronautExtension micronautExtension, TaskProvider<ApplicationClasspathInspector> inspectRuntimeClasspath) {
         project.getTasks().withType(Test.class).configureEach(t -> {
             t.dependsOn(inspectRuntimeClasspath);
-            Configuration testConfig = project.getConfigurations().getByName(TEST_IMPLEMENTATION_CONFIGURATION_NAME);
-            boolean hasJunit5 = !testConfig.getAllDependencies()
-                    .matching(dependency -> {
-                        String name = dependency.getName();
-                        return name.equals("junit-jupiter-engine") || name.equals("micronaut-test-junit5");
-                    })
-                    .isEmpty();
-            if (hasJunit5 || micronautExtension.getTestRuntime().get().equals(MicronautTestRuntime.JUNIT_5)) {
+            if (micronautExtension.getTestRuntime().get().isUsingJunitPlatform()) {
                 t.useJUnitPlatform();
             }
         });

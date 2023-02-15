@@ -19,7 +19,7 @@ public enum MicronautTestRuntime {
             Arrays.asList("org.junit.jupiter:junit-jupiter-api", "io.micronaut.test:micronaut-test-junit5"),
             JavaPlugin.TEST_RUNTIME_ONLY_CONFIGURATION_NAME,
             Collections.singletonList("org.junit.jupiter:junit-jupiter-engine")
-    )),
+    ), true),
     /**
      * Spock 2.
      */
@@ -32,7 +32,7 @@ public enum MicronautTestRuntime {
                     "io.micronaut.test:micronaut-test-spock",
                     "org.apache.groovy:groovy"
             )
-    )),
+    ), true),
     /**
      * Kotest 4.
      */
@@ -47,7 +47,7 @@ public enum MicronautTestRuntime {
             ),
             JavaPlugin.TEST_RUNTIME_ONLY_CONFIGURATION_NAME,
             Collections.singletonList("io.kotest:kotest-runner-junit5-jvm")
-    )),
+    ), true),
 
     /**
      * Kotest 5.
@@ -63,20 +63,23 @@ public enum MicronautTestRuntime {
             ),
             JavaPlugin.TEST_RUNTIME_ONLY_CONFIGURATION_NAME,
             Collections.singletonList("io.kotest:kotest-runner-junit5-jvm")
-    )),
+    ), true),
     /**
      * No test runtime.
      */
     NONE;
 
     private final Map<String, List<String>> implementation;
+    private final boolean usesJunitPlatform;
 
-    MicronautTestRuntime(String... dependencies) {
-        this.implementation = Collections.singletonMap(JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME, Arrays.asList(dependencies));
+    MicronautTestRuntime() {
+        this.implementation = Collections.singletonMap(JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME, Collections.emptyList());
+        this.usesJunitPlatform = false;
     }
 
-    MicronautTestRuntime(Map<String, List<String>> implementation) {
+    MicronautTestRuntime(Map<String, List<String>> implementation, boolean usesJunitPlatform) {
         this.implementation = implementation;
+        this.usesJunitPlatform = usesJunitPlatform;
     }
 
     public Map<String, List<String>> getDependencies() {
@@ -105,5 +108,9 @@ public enum MicronautTestRuntime {
             }
         }
         return MicronautTestRuntime.NONE;
+    }
+
+    public boolean isUsingJunitPlatform() {
+        return usesJunitPlatform;
     }
 }
