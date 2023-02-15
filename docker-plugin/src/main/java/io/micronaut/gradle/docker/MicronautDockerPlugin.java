@@ -1,6 +1,5 @@
 package io.micronaut.gradle.docker;
 
-import com.bmuschko.gradle.docker.DockerExtension;
 import com.bmuschko.gradle.docker.DockerRemoteApiPlugin;
 import com.bmuschko.gradle.docker.tasks.container.DockerCopyFileFromContainer;
 import com.bmuschko.gradle.docker.tasks.container.DockerCreateContainer;
@@ -18,6 +17,7 @@ import io.micronaut.gradle.docker.model.MicronautDockerImage;
 import io.micronaut.gradle.docker.model.RuntimeKind;
 import io.micronaut.gradle.docker.tasks.BuildLayersTask;
 import io.micronaut.gradle.docker.tasks.PrepareDockerContext;
+import org.graalvm.buildtools.gradle.dsl.NativeImageOptions;
 import org.gradle.api.Action;
 import org.gradle.api.NamedDomainObjectContainer;
 import org.gradle.api.Plugin;
@@ -248,9 +248,8 @@ public class MicronautDockerPlugin implements Plugin<Project> {
             // Because docker requires all files to be found in the build context we need to
             // copy the configuration file directories into the build context
             context.getOutputDirectory().set(project.getLayout().getBuildDirectory().dir("docker/native-" + imageName + "/config-dirs"));
-            context.getInputDirectories().from(dockerFileTask.map(t -> t.getNativeImageOptions()
-                    .get()
-                    .getConfigurationFileDirectories()
+            context.getInputDirectories().from(dockerFileTask.flatMap(t -> t.getNativeImageOptions()
+                    .map(NativeImageOptions::getConfigurationFileDirectories)
             ));
         });
         TaskProvider<DockerBuildImage> dockerBuildTask = tasks.register(adaptTaskName("dockerBuildNative", imageName), DockerBuildImage.class, task -> {

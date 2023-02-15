@@ -5,10 +5,12 @@ import io.micronaut.gradle.MicronautRuntime;
 import io.micronaut.gradle.PluginsHelper;
 import org.graalvm.buildtools.gradle.NativeImagePlugin;
 import org.graalvm.buildtools.gradle.dsl.GraalVMExtension;
+import org.graalvm.buildtools.gradle.dsl.GraalVMReachabilityMetadataRepositoryExtension;
 import org.graalvm.buildtools.gradle.tasks.BuildNativeImageTask;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.DependencySet;
+import org.gradle.api.plugins.ExtensionAware;
 import org.gradle.api.plugins.JavaPluginConvention;
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Provider;
@@ -57,6 +59,8 @@ public class MicronautGraalPlugin implements Plugin<Project> {
             configureAnnotationProcessing(project, extension);
         });
         GraalVMExtension graal = project.getExtensions().findByType(GraalVMExtension.class);
+        GraalVMReachabilityMetadataRepositoryExtension reachability = ((ExtensionAware)graal).getExtensions().getByType(GraalVMReachabilityMetadataRepositoryExtension.class);
+        reachability.getEnabled().convention(true);
         graal.getBinaries().configureEach(options ->
                 {
                     options.resources(rsrc -> rsrc.autodetection(inf -> {
@@ -71,8 +75,8 @@ public class MicronautGraalPlugin implements Plugin<Project> {
                     }
                 }
         );
+        TaskContainer tasks = project.getTasks();
         project.getPluginManager().withPlugin("application", plugin -> {
-            TaskContainer tasks = project.getTasks();
             tasks.withType(BuildNativeImageTask.class).named("nativeCompile", nativeImageTask -> {
                 MicronautRuntime mr = PluginsHelper.resolveRuntime(project);
                 if (mr.isLambdaProvided()) {

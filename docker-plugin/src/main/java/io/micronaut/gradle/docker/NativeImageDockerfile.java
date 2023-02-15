@@ -1,6 +1,7 @@
 package io.micronaut.gradle.docker;
 
 import com.bmuschko.gradle.docker.tasks.image.Dockerfile;
+import io.micronaut.gradle.docker.tasks.DockerResourceConfigDirectoryNamer;
 import org.graalvm.buildtools.gradle.NativeImagePlugin;
 import org.graalvm.buildtools.gradle.dsl.NativeImageOptions;
 import org.graalvm.buildtools.gradle.dsl.NativeResourcesOptions;
@@ -13,7 +14,6 @@ import org.gradle.api.JavaVersion;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
 import org.gradle.api.file.ConfigurableFileCollection;
-import org.gradle.api.file.Directory;
 import org.gradle.api.file.ProjectLayout;
 import org.gradle.api.internal.file.FileOperations;
 import org.gradle.api.model.ObjectFactory;
@@ -40,7 +40,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import static io.micronaut.gradle.docker.MicronautDockerfile.DEFAULT_WORKING_DIR;
 
@@ -388,10 +387,6 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
         super.create();
     }
 
-    private Provider<Directory> getConfigurationFilesDirectory() {
-        return getLayout().getBuildDirectory().dir("docker/config-dirs");
-    }
-
     // Everything done in this method MUST be lazy, so use providers as much as possible
     private void setupInstructions(List<Instruction> additionalInstructions) {
         DockerBuildStrategy buildStrategy = getBuildStrategy().get();
@@ -422,12 +417,25 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
         executable.set("application");
         String workDir = getTargetWorkingDirectory().get();
         runCommand("mkdir " + workDir + "/config-dirs");
-        getInstructions().addAll(getNativeImageOptions().map(options ->
-                options.getConfigurationFileDirectories()
-                        .getFiles()
-                        .stream()
-                        .map(this::toCopyResourceDirectoryInstruction)
-                        .toList()
+        getInstructions().addAll(getNativeImageOptions().map(options -> {
+                    DockerResourceConfigDirectoryNamer namer = new DockerResourceConfigDirectoryNamer();
+                    return options.getConfigurationFileDirectories()
+                            .getFiles()
+                            .stream()
+                            .filter(java.io.File::exists)
+                            .map(dir -> new RunCommandInstruction("mkdir -p " + workDir + "/config-dirs/" + namer.determineNameFor(dir)))
+                            .toList();
+                }
+        ));
+        getInstructions().addAll(getNativeImageOptions().map(options -> {
+            DockerResourceConfigDirectoryNamer namer = new DockerResourceConfigDirectoryNamer();
+            return options.getConfigurationFileDirectories()
+                            .getFiles()
+                            .stream()
+                            .filter(java.io.File::exists)
+                            .map(dir -> toCopyResourceDirectoryInstruction(dir, namer))
+                            .toList();
+                }
         ));
         runCommand(getProviders().provider(() -> String.join(" ", buildActualCommandLine(executable, buildStrategy, imageResolver))));
         switch (buildStrategy) {
@@ -491,8 +499,9 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
         }
     }
 
-    private CopyFileInstruction toCopyResourceDirectoryInstruction(java.io.File resourceDirectory) {
-        return new CopyFileInstruction(new CopyFile("config-dirs/" + resourceDirectory.getName(), getTargetWorkingDirectory().get() + "/config-dirs/" + resourceDirectory.getName()));
+    private CopyFileInstruction toCopyResourceDirectoryInstruction(java.io.File resourceDirectory, DockerResourceConfigDirectoryNamer namer) {
+        String relativePath = namer.determineNameFor(resourceDirectory);
+        return new CopyFileInstruction(new CopyFile("config-dirs/" + relativePath, getTargetWorkingDirectory().get() + "/config-dirs/" + relativePath));
     }
 
     protected List<String> buildActualCommandLine(Provider<String> executable, DockerBuildStrategy buildStrategy, BaseImageForBuildStrategyResolver imageResolver) {

@@ -1,7 +1,9 @@
 package io.micronaut.gradle.aot
 
+import io.micronaut.gradle.AbstractGradleBuildSpec
 import org.gradle.testkit.runner.TaskOutcome
 import spock.lang.IgnoreIf
+import spock.lang.Requires
 
 @IgnoreIf({ os.windows })
 class MicronautAOTDockerSpec extends AbstractAOTPluginSpec {
@@ -56,6 +58,7 @@ ENTRYPOINT ["java", "-jar", "/home/app/application.jar"]
 
     }
 
+    @Requires({ AbstractGradleBuildSpec.graalVmAvailable && !os.windows })
     def "generates a native optimized docker image"() {
         withSample("aot/basic-app")
 
@@ -79,8 +82,13 @@ COPY layers/classes /home/app/classes
 COPY layers/resources /home/app/resources
 COPY layers/application.jar /home/app/application.jar
 RUN mkdir /home/app/config-dirs
+RUN mkdir -p /home/app/config-dirs/generateResourcesConfigFile
+RUN mkdir -p /home/app/config-dirs/io.netty/netty-common/4.1.80.Final
+RUN mkdir -p /home/app/config-dirs/ch.qos.logback/logback-classic/1.4.1
 COPY config-dirs/generateResourcesConfigFile /home/app/config-dirs/generateResourcesConfigFile
-RUN native-image -cp /home/app/libs/*.jar:/home/app/resources:/home/app/application.jar --no-fallback -H:Name=application $graalVMBuilderExports -H:ConfigurationFileDirectories=/home/app/config-dirs/generateResourcesConfigFile -H:Class=demo.app.Application
+COPY config-dirs/io.netty/netty-common/4.1.80.Final /home/app/config-dirs/io.netty/netty-common/4.1.80.Final
+COPY config-dirs/ch.qos.logback/logback-classic/1.4.1 /home/app/config-dirs/ch.qos.logback/logback-classic/1.4.1
+RUN native-image -cp /home/app/libs/*.jar:/home/app/resources:/home/app/application.jar --no-fallback -H:Name=application -J--add-exports=org.graalvm.nativeimage.builder/com.oracle.svm.core.configure=ALL-UNNAMED -J--add-exports=org.graalvm.nativeimage.builder/com.oracle.svm.core.jdk=ALL-UNNAMED -J--add-exports=org.graalvm.nativeimage.builder/com.oracle.svm.core.jni=ALL-UNNAMED -J--add-exports=org.graalvm.sdk/org.graalvm.nativeimage.impl=ALL-UNNAMED -H:ConfigurationFileDirectories=/home/app/config-dirs/generateResourcesConfigFile,/home/app/config-dirs/4.1.80.Final,/home/app/config-dirs/1.4.1 -H:Class=demo.app.Application
 FROM frolvlad/alpine-glibc:alpine-3.12
 RUN apk --no-cache update && apk add libstdc++
 EXPOSE 8080

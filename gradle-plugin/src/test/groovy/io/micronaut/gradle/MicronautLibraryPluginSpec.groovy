@@ -150,8 +150,8 @@ class FooTest {
         javaFile << """
 package example;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
 
 @Path("/foo")
 public class Foo {

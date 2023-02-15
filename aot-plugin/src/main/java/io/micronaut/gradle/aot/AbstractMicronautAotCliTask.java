@@ -34,6 +34,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -75,7 +76,7 @@ abstract class AbstractMicronautAotCliTask extends DefaultTask implements Optimi
     public final void execute() throws IOException {
         File outputDir = getOutputDirectory().getAsFile().get();
         getFileOperations().delete(outputDir);
-        File argFile = File.createTempFile("aot", "args");
+        File argFile = Files.createTempFile("aot", "args").toFile();
         try {
             ExecResult javaexec = getExecOperations().javaexec(spec -> {
                 FileCollection aotClasspath = getOptimizerClasspath();
