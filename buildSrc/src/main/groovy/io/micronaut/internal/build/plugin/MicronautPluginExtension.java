@@ -41,6 +41,7 @@ public abstract class MicronautPluginExtension {
             decl.setImplementationClass(pluginClass);
             decl.setDescription(description);
             decl.setDisplayName(description);
+            decl.getTags().addAll("micronaut", "official");
         });
     }
 }
