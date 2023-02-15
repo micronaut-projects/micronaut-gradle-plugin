@@ -98,7 +98,19 @@ public class MicronautComponentPlugin implements Plugin<Project> {
     }
 
     private void configureTesting(Project project, MicronautExtension micronautExtension, TaskProvider<ApplicationClasspathInspector> inspectRuntimeClasspath) {
-        project.getTasks().withType(Test.class).configureEach(t -> t.dependsOn(inspectRuntimeClasspath));
+        project.getTasks().withType(Test.class).configureEach(t -> {
+            t.dependsOn(inspectRuntimeClasspath);
+            Configuration testConfig = project.getConfigurations().getByName(TEST_IMPLEMENTATION_CONFIGURATION_NAME);
+            boolean hasJunit5 = !testConfig.getAllDependencies()
+                    .matching(dependency -> {
+                        String name = dependency.getName();
+                        return name.equals("junit-jupiter-engine") || name.equals("micronaut-test-junit5");
+                    })
+                    .isEmpty();
+            if (hasJunit5 || micronautExtension.getTestRuntime().get().equals(MicronautTestRuntime.JUNIT_5)) {
+                t.useJUnitPlatform();
+            }
+        });
         project.afterEvaluate(p -> {
             DependencyHandler dependencyHandler = project.getDependencies();
             MicronautTestRuntime testRuntime = micronautExtension.getTestRuntime().get();
@@ -109,35 +121,11 @@ public class MicronautComponentPlugin implements Plugin<Project> {
                 }
             });
 
-            if (testRuntime != MicronautTestRuntime.NONE) {
-                // set JUnit 5 platform
-                project.getTasks().withType(Test.class).configureEach(test -> {
-                    if (!test.getTestFramework().getClass().getName().contains("JUnitPlatform")) {
-                        test.useJUnitPlatform();
-                    }
-                });
-            }
-
             PluginsHelper.applyAdditionalProcessors(
                     p,
                     ANNOTATION_PROCESSOR_CONFIGURATION_NAME,
                     TEST_ANNOTATION_PROCESSOR_CONFIGURATION_NAME
             );
-
-            Configuration testConfig = p.getConfigurations().getByName(TEST_IMPLEMENTATION_CONFIGURATION_NAME);
-            boolean hasJunit5 = !testConfig.getAllDependencies()
-                    .matching(dependency -> {
-                        String name = dependency.getName();
-                        return name.equals("junit-jupiter-engine") || name.equals("micronaut-test-junit5");
-                    })
-                    .isEmpty();
-            if (hasJunit5) {
-                project.getTasks().withType(Test.class).configureEach(test -> {
-                    if (!test.getTestFramework().getClass().getName().contains("JUnitPlatform")) {
-                        test.useJUnitPlatform();
-                    }
-                });
-            }
         });
 
 

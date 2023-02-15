@@ -30,13 +30,6 @@ configurations {
     }
 }
 
-pluginBundle {
-    website = 'https://micronaut.io/'
-    vcsUrl = 'https://github.com/micronaut-projects/micronaut-gradle-plugins'
-    description = 'Gradle Plugins for Micronaut'
-    tags = ['micronaut']
-}
-
 publishing {
     repositories {
         maven {
