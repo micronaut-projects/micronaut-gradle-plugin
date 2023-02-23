@@ -578,7 +578,11 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
         options.getConfigurationFileDirectories().setFrom(
                 remappedConfigDirectories
         );
-        options.getClasspath().from(getTargetWorkingDirectory().map(d -> d + "/libs/*.jar"), getTargetWorkingDirectory().map(d -> d + "/resources:" + d + "/application.jar"));
+        options.getClasspath().from(
+                getTargetWorkingDirectory().map(d -> d + "/libs/*.jar"),
+                getTargetWorkingDirectory().map(d -> d + "/resources"),
+                getTargetWorkingDirectory().map(d -> d + "/application.jar")
+        );
         options.getImageName().set("application");
     }
 
