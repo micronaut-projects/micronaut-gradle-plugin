@@ -20,7 +20,6 @@ class TestResourcesWithAotAndGraalVMSpec extends AbstractTestResourcesSpec {
 }
 
 graalvmNative.binaries.all {
-    buildArgs.add('--trace-class-initialization=io.micronaut.data.runtime.criteria.\$RuntimeCriteriaBuilder\$Definition\$Reference')
     runtimeArgs.add("-DinterruptStartup=true")
 }
 
@@ -33,7 +32,7 @@ micronaut {
 """)
 
         when:
-        def result = build 'nativeOptimizedRun'
+        def result = build 'nativeOptimizedRun', '-i'
 
         then:
         result.task(':nativeOptimizedRun').outcome == TaskOutcome.SUCCESS
