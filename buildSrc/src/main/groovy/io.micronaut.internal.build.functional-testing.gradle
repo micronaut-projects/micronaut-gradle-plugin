@@ -37,6 +37,7 @@ tasks.withType(Test).configureEach { Test test ->
     test.jvmArgumentProviders.add(repoProvider)
     systemProperties.put("kotlinVersion", libs.versions.kotlin.get())
     systemProperties.put("kspVersion", libs.versions.ksp.get())
+    systemProperties.put("shadowVersion", libs.versions.shadow.get())
 }
 
 tasks.withType(JacocoReport).configureEach {
