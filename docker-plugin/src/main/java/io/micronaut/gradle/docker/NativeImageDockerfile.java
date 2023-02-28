@@ -423,13 +423,16 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
                             .getFiles()
                             .stream()
                             .filter(java.io.File::exists)
-                            .map(dir -> new RunCommandInstruction("mkdir -p " + workDir + "/config-dirs/" + namer.determineNameFor(dir)))
+                            .map(dir -> {
+                                String dirName = namer.determineNameFor(dir);
+                                return new RunCommandInstruction("mkdir -p " + workDir + "/config-dirs/" + dirName);
+                            })
                             .toList();
                 }
         ));
         getInstructions().addAll(getNativeImageOptions().map(options -> {
-            DockerResourceConfigDirectoryNamer namer = new DockerResourceConfigDirectoryNamer();
-            return options.getConfigurationFileDirectories()
+                    DockerResourceConfigDirectoryNamer namer = new DockerResourceConfigDirectoryNamer();
+                    return options.getConfigurationFileDirectories()
                             .getFiles()
                             .stream()
                             .filter(java.io.File::exists)
@@ -577,11 +580,13 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
         options.getVerbose().set(originalOptions.flatMap(NativeImageOptions::getVerbose));
         options.getFallback().set(originalOptions.flatMap(NativeImageOptions::getFallback));
         options.getSystemProperties().set(originalOptions.flatMap(NativeImageOptions::getSystemProperties));
-        options.getRichOutput().set(false); // no need in docker images
+        options.getExcludeConfigArgs().set(originalOptions.flatMap(NativeImageOptions::getExcludeConfigArgs).map(this::remapExcludeConfigArgs));
+        options.getRichOutput().set(false);
+        DockerResourceConfigDirectoryNamer namer = new DockerResourceConfigDirectoryNamer();
         Provider<List<String>> remappedConfigDirectories = originalOptions.map(orig -> orig.getConfigurationFileDirectories()
                 .getFiles()
                 .stream()
-                .map(f -> getTargetWorkingDirectory().get() + "/config-dirs/" + f.getName())
+                .map(f -> getTargetWorkingDirectory().get() + "/config-dirs/" + namer.determineNameFor(f))
                 .toList()
         );
         options.getConfigurationFileDirectories().setFrom(
@@ -593,6 +598,29 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
                 getTargetWorkingDirectory().map(d -> d + "/application.jar")
         );
         options.getImageName().set("application");
+    }
+
+    /**
+     * Exclude config args that we get reference files from the original file system
+     * but we are building within docker, and the libraries are now in a different
+     * directory, so we're monkey patching the config args to point to the new location.
+     *
+     * @param args the original args, containing references to the original file system
+     * @return the patched args, with references to the docker context
+     */
+    private List<String> remapExcludeConfigArgs(List<String> args) {
+        return args.stream().map(arg -> {
+            if (arg.startsWith("\\Q") && arg.contains(".jar")) {
+                int index = arg.lastIndexOf(java.io.File.separatorChar);
+                if (index > 0) {
+                    // Why aren't we using `\Q` and `\E` here?
+                    // Because for some reason, it doesn't when we build under
+                    // docker.
+                    return ".*/libs/" + arg.substring(index + 1, arg.length() - 2);
+                }
+            }
+            return arg;
+        }).toList();
     }
 
     private NativeImageOptions newNativeImageOptions(String name) {
