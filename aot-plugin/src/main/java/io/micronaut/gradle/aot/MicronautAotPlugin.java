@@ -259,6 +259,10 @@ public abstract class MicronautAotPlugin implements Plugin<Project> {
             binary.getMainClass().set(main.getMainClass());
             binary.getClasspath().from(main.getClasspath());
             binary.getClasspath().from(prepareNative.map(MicronautAotOptimizerTask::getGeneratedClassesDirectory));
+            // The following lines are a hack for the fact that the GraalVM plugin doesn't configure all binaries
+            // to use the metadata repository, but only the ones that it knows about (`main` and `test`).
+            binary.getConfigurationFileDirectories().from(main.getConfigurationFileDirectories());
+            binary.getExcludeConfigArgs().convention(main.getExcludeConfigArgs());
             project.getPlugins().withId("java-library", p -> binary.getSharedLibrary().convention(true));
         });
     }
