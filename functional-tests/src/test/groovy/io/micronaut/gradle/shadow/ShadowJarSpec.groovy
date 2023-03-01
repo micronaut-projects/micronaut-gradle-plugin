@@ -7,8 +7,6 @@ import spock.lang.Unroll
 
 class ShadowJarSpec extends AbstractEagerConfiguringFunctionalTest {
 
-    private static final String SHADE_VERSION = "7.1.2"
-
     @Unroll
     @Issue("https://github.com/micronaut-projects/micronaut-gradle-plugin/issues/406")
     def "merges service files when building shadow jar"(String runtime, String micronautGradlePlugin) {
@@ -20,7 +18,7 @@ class ShadowJarSpec extends AbstractEagerConfiguringFunctionalTest {
             plugins {
                 id "$micronautGradlePlugin"
                 id "application" 
-                id "com.github.johnrengelman.shadow" version "$SHADE_VERSION"
+                id "com.github.johnrengelman.shadow" version "$shadowVersion"
             }
 
             version = "1.0"

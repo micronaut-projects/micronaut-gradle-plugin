@@ -38,6 +38,10 @@ abstract class AbstractGradleBuildSpec extends Specification {
         System.getProperty("micronautVersion")
     }
 
+    String getShadowVersion() {
+        System.getProperty("shadowVersion")
+    }
+
     boolean containsDependency(String mavenCoordinate, String configuration) {
         BuildResult result = build('dependencies', "--configuration", configuration)
         BuildTask task = result.task(":dependencies")

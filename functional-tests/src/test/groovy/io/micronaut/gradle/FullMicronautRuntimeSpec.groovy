@@ -13,7 +13,7 @@ class FullMicronautRuntimeSpec extends AbstractEagerConfiguringFunctionalTest {
         buildFile << """
             plugins {
                 id "io.micronaut.application"
-                id("com.github.johnrengelman.shadow") version("7.1.1")
+                id("com.github.johnrengelman.shadow") version("$shadowVersion")
             }
             
             micronaut {

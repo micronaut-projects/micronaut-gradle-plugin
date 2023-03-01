@@ -4,9 +4,6 @@ import io.micronaut.gradle.AbstractGradleBuildSpec
 import org.gradle.testkit.runner.GradleRunner
 
 abstract class AbstractFunctionalTest extends AbstractGradleBuildSpec {
-    public static final String MICRONAUT_VERSION = "3.4.0"
-    public static final String SHADE_VERSION = "7.1.2";
-    
     @Override
     protected GradleRunner newRunner() {
         GradleRunner.create()

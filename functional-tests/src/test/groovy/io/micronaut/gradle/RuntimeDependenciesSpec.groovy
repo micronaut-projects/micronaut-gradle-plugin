@@ -19,11 +19,11 @@ class RuntimeDependenciesSpec extends AbstractEagerConfiguringFunctionalTest {
         buildFile << """
             plugins {
                 id "io.micronaut.minimal.application"
-                id("com.github.johnrengelman.shadow") version("$SHADE_VERSION")
+                id("com.github.johnrengelman.shadow") version("$shadowVersion")
             }
             
             micronaut {
-                version "$MICRONAUT_VERSION"
+                version "$shadowVersion"
                 runtime "$runtime"                
             }
             
