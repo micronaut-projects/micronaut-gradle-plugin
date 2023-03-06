@@ -41,7 +41,7 @@ public class MicronautKotlinSupport {
     };
     public static final String KOTLIN_PROCESSORS = "kotlinProcessors";
 
-    private static final List<String> KSP_ANNOTATION_PROCESSOR_MODULES = Arrays.asList("inject-kotlin", "validation");
+    private static final List<String> KSP_ANNOTATION_PROCESSOR_MODULES = Arrays.asList("inject-kotlin");
 
     public static void whenKotlinSupportPresent(Project p, Consumer<? super Project> action) {
         p.getPluginManager().withPlugin("org.jetbrains.kotlin.jvm", unused -> action.accept(p));

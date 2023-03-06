@@ -37,11 +37,12 @@ import static org.gradle.api.plugins.JavaPlugin.COMPILE_ONLY_CONFIGURATION_NAME;
 import static org.gradle.api.plugins.JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME;
 
 public abstract class PluginsHelper {
-    final static List<String> ANNOTATION_PROCESSOR_MODULES = Arrays.asList("inject-java", "validation");
+    final static List<String> ANNOTATION_PROCESSOR_MODULES = Arrays.asList("inject-java");
     private final static Map<String, String> GROUP_TO_PROCESSOR_MAP = Collections.unmodifiableMap(new HashMap<String, String>() {{
         put("io.micronaut.data", "io.micronaut.data:micronaut-data-processor");
         put("io.micronaut.jaxrs", "io.micronaut.jaxrs:micronaut-jaxrs-processor");
         put("io.micronaut.security", "io.micronaut.security:micronaut-security-annotations");
+        put("io.micronaut.validation", "io.micronaut.validation:micronaut-validation-processor");
     }});
 
     public static String findMicronautVersion(Project p, MicronautExtension micronautExtension) {
