@@ -170,7 +170,7 @@ class LambdaNativeImageSpec extends AbstractFunctionalTest {
             $repositoriesBlock
 
             dependencies {
-                implementation("io.micronaut:micronaut-validation")
+                implementation("io.micronaut.validation:micronaut-validation")
                 implementation("io.micronaut:micronaut-runtime")
                 implementation("io.micronaut.aws:micronaut-function-aws")
                 implementation("io.micronaut.aws:micronaut-function-aws-custom-runtime")
@@ -219,7 +219,7 @@ class LambdaNativeImageSpec extends AbstractFunctionalTest {
             $repositoriesBlock
 
             dependencies {
-                implementation("io.micronaut:micronaut-validation")
+                implementation("io.micronaut.validation:micronaut-validation")
                 implementation("io.micronaut:micronaut-runtime")
                 implementation("io.micronaut.aws:micronaut-function-aws")
                 implementation("io.micronaut.aws:micronaut-function-aws-custom-runtime")
@@ -271,7 +271,7 @@ class LambdaNativeImageSpec extends AbstractFunctionalTest {
             $repositoriesBlock
 
             dependencies {
-                implementation("io.micronaut:micronaut-validation")
+                implementation("io.micronaut.validation:micronaut-validation")
                 implementation("io.micronaut:micronaut-runtime")
                 implementation("io.micronaut.aws:micronaut-function-aws")
                 implementation("io.micronaut.aws:micronaut-function-aws-custom-runtime")

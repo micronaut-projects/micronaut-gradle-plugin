@@ -176,6 +176,56 @@ public class Foo {
         ).exists()
     }
 
+    def "test add validation processing"() {
+        given:
+        settingsFile << "rootProject.name = 'hello-world'"
+        buildFile << """
+            plugins {
+                id "io.micronaut.library"
+            }
+            
+            micronaut {
+                version "$micronautVersion"
+            }
+            
+            $repositoriesBlock
+            
+            dependencies {
+                implementation("io.micronaut.validation:micronaut-validation")
+            }
+            
+        """
+        testProjectDir.newFolder("src", "main", "java", "example")
+        def javaFile = testProjectDir.newFile("src/main/java/example/Foo.java")
+        javaFile.parentFile.mkdirs()
+        javaFile << """
+package example;
+
+import io.micronaut.validation.Validated;
+
+@jakarta.inject.Singleton
+@Validated
+public class Foo {
+
+    @javax.validation.constraints.NotBlank
+    public String index() {
+        return "Example Response";
+    }
+}
+"""
+
+        when:
+        def result = build('assemble', "--stacktrace")
+
+        then:
+        result.task(":assemble").outcome == TaskOutcome.SUCCESS
+        result.output.contains("Creating bean classes for 1 type elements")
+        new File(
+                testProjectDir.getRoot(),
+                'build/classes/java/main/example/$Foo$Definition$Intercepted.class'
+        ).exists()
+    }
+
     def "test add openapi processing"() {
         given:
         settingsFile << "rootProject.name = 'hello-world'"
