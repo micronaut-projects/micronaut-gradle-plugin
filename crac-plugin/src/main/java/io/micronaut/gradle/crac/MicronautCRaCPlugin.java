@@ -224,6 +224,7 @@ public class MicronautCRaCPlugin implements Plugin<Project> {
         Provider<RegularFile> targetCheckpointDockerFile = project.getLayout().getBuildDirectory().file(BUILD_DOCKER_DIRECTORY + imageName + "/Dockerfile");
         TaskProvider<CRaCFinalDockerfile> dockerFileTask = tasks.register(dockerFileTaskName, CRaCFinalDockerfile.class, task -> {
             task.setGroup(CRAC_TASK_GROUP);
+            task.mustRunAfter(start);
             task.setDescription("Builds a Docker File for CRaC checkpointed image " + imageName);
             task.getDestFile().set(targetCheckpointDockerFile);
             task.getBaseImage().set(configuration.getBaseImage());
