@@ -1510,7 +1510,7 @@ WARNING: The Micronaut CRaC module is in experimental stages. Use at your own ri
 The `io.micronaut.crac` plugin provides extra integration with https://micronaut-projects.github.io/micronaut-crac/latest/guide/[Micronaut CRaC].
 Micronaut CRaC is a module which adds support for https://openjdk.org/projects/crac/[Coordinated Restore at Checkpoint] to Micronaut applications.
 
-It is capable of generating a docker image containing a CRaC enabled JDK and a pre-warmed, checkpointed application via a new task `dockerCracBuild`.
+It is capable of generating a docker image containing a CRaC enabled JDK and a pre-warmed, checkpointed application via a new task `dockerBuildCrac`.
 
 IMPORTANT: Currently CRaC support has only been tested on Ubuntu 18.04, 20.04 and 22.04.  It also requires an x86 machine architecture.
 
@@ -1574,6 +1574,9 @@ micronaut {
         // A command to run that will be successful when the application is ready to be checkpointed.
         preCheckpointReadinessCheck = "curl --output /dev/null --silent --head http://localhost:8080"
 
+        // The existing Docker network to use when running the application prior to checkpointing
+        network = "my-docker-network"
+
         // You can use these to replace the script that generates a checkpoint, and the script that warms up the
         // application prior to checkpointing
         warmupScript = file("customWarmupScript.sh")
@@ -1598,6 +1601,9 @@ micronaut {
 
         // A command to run that will be successful when the application is ready to be checkpointed.
         preCheckpointReadinessCheck.set("curl --output /dev/null --silent --head http://localhost:8080")
+
+        // The existing Docker network to use when running the application prior to checkpointing
+        network.set("my-docker-network")
 
         // You can use these to replace the script that generates a checkpoint, and the script that warms up the
         // application prior to checkpointing
