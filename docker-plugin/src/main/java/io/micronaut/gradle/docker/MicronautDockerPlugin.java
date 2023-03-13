@@ -19,6 +19,7 @@ import io.micronaut.gradle.docker.tasks.BuildLayersTask;
 import io.micronaut.gradle.docker.tasks.PrepareDockerContext;
 import org.graalvm.buildtools.gradle.dsl.NativeImageOptions;
 import org.gradle.api.Action;
+import org.gradle.api.GradleException;
 import org.gradle.api.NamedDomainObjectContainer;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
@@ -37,6 +38,7 @@ import org.gradle.api.tasks.TaskProvider;
 import org.gradle.api.tasks.bundling.Jar;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -190,7 +192,11 @@ public class MicronautDockerPlugin implements Plugin<Project> {
                 task.setGroup(BasePlugin.BUILD_GROUP);
                 task.setDescription("Builds a Docker File for image " + imageName);
                 task.getDestFile().set(targetDockerFile);
-                task.instructionsFromTemplate(f);
+                try {
+                    task.instructionsFromTemplate(f);
+                } catch (IOException e) {
+                    throw new GradleException("Unable to configure docker task for image " + imageName, e);
+                }
             });
         } else {
             dockerFileTask = tasks.register(dockerFileTaskName, MicronautDockerfile.class, task -> {
@@ -234,7 +240,11 @@ public class MicronautDockerPlugin implements Plugin<Project> {
             dockerFileTask = tasks.register(dockerfileNativeTaskName, NativeImageDockerfile.class, task -> {
                 task.setGroup(BasePlugin.BUILD_GROUP);
                 task.setDescription("Builds a Native Docker File for image " + imageName);
-                task.instructionsFromTemplate(f);
+                try {
+                    task.instructionsFromTemplate(f);
+                } catch (IOException e) {
+                    throw new GradleException("Unable to configure docker task for image " + imageName, e);
+                }
                 task.getDestFile().set(targetDockerFile);
             });
         } else {

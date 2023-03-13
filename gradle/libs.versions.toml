@@ -1,7 +1,7 @@
 [versions]
 kotlin = "1.8.0"
 ksp = "1.8.0-1.0.8"
-docker = "8.0.0"
+docker = "9.2.1"
 diffplug = "3.37.2"
 shadow = "7.1.2"
 groovy = "3.0.16"

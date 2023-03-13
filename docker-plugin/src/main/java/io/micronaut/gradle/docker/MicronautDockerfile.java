@@ -9,10 +9,10 @@ import org.gradle.api.plugins.JavaApplication;
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.Input;
-import org.gradle.api.tasks.Optional;
 import org.gradle.api.tasks.TaskAction;
 import org.gradle.internal.jvm.Jvm;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -61,7 +61,7 @@ public class MicronautDockerfile extends Dockerfile implements DockerBuildOption
 
     @TaskAction
     @Override
-    public void create() {
+    public void create() throws IOException {
         super.create();
         System.out.println("Dockerfile written to: " + getDestFile().get().getAsFile().getAbsolutePath());
     }

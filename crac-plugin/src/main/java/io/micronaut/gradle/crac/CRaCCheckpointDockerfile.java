@@ -11,6 +11,7 @@ import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.Optional;
 import org.gradle.api.tasks.TaskAction;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -46,7 +47,7 @@ public abstract class CRaCCheckpointDockerfile extends Dockerfile {
     @TaskAction
     @Override
     @SuppressWarnings("java:S106") // System.out
-    public void create() {
+    public void create() throws IOException {
         super.create();
         System.out.println("CRaC checkpoint Dockerfile written to: " + getDestFile().get().getAsFile().getAbsolutePath());
     }

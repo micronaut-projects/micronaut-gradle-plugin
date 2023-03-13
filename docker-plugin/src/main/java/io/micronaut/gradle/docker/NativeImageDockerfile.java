@@ -35,6 +35,7 @@ import org.gradle.jvm.toolchain.JavaLauncher;
 import org.gradle.jvm.toolchain.JavaToolchainService;
 
 import javax.inject.Inject;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -383,7 +384,7 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
 
     @TaskAction
     @Override
-    public void create() {
+    public void create() throws IOException {
         super.create();
     }
 
