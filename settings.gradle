@@ -20,13 +20,7 @@ include("gradle-plugin")
 include("test-resources-plugin")
 include("functional-tests")
 
-for (project in rootProject.children) {
-    if (project.name.contains('tests')) {
-        continue
-    }
-    project.name = "micronaut-${project.name}"
-}
-
 micronautBuild {
     useStandardizedProjectNames = true
+    nonStandardProjectNamePrefixes.add("functional-tests")
 }
