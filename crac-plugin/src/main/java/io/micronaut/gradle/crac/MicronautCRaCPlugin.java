@@ -29,7 +29,10 @@ import org.gradle.api.tasks.TaskProvider;
 
 import javax.annotation.Nullable;
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 
@@ -173,15 +176,23 @@ public class MicronautCRaCPlugin implements Plugin<Project> {
             task.targetContainerId(checkpointContainer.flatMap(DockerCreateContainer::getContainerId));
         });
         TaskProvider<DockerLogsContainer> await = tasks.register("checkpointAwaitSuccess", DockerLogsContainer.class, task -> {
-            TeeStringWriter stringWriter = new TeeStringWriter(project.getLogger());
+            File checkpointFile = new File(task.getTemporaryDir(), "checkpoint.log");
+            checkpointFile.deleteOnExit();
             task.dependsOn(start);
             task.finalizedBy(removeContainer);
             task.getFollow().set(true);
             task.getTailAll().set(true);
             task.getContainerId().set(start.flatMap(DockerExistingContainer::getContainerId));
-            task.setSink(stringWriter);
+            task.getSink().fileValue(checkpointFile);
             task.doLast(t -> {
-                if (!stringWriter.toString().contains("Snapshotting complete")) {
+                List<String> lines;
+                try {
+                    lines = Files.readAllLines(checkpointFile.toPath());
+                } catch (IOException e) {
+                    throw new GradleException("Checkpoint container failed");
+                }
+                lines.forEach(task.getLogger()::lifecycle);
+                if (lines.stream().noneMatch(l -> l.contains("Snapshotting complete"))) {
                     throw new GradleException("Checkpoint container failed");
                 }
             });
