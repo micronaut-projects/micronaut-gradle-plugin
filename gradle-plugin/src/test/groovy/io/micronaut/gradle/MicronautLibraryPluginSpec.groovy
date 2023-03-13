@@ -207,7 +207,7 @@ import io.micronaut.validation.Validated;
 @Validated
 public class Foo {
 
-    @javax.validation.constraints.NotBlank
+    @jakarta.validation.constraints.NotBlank
     public String index() {
         return "Example Response";
     }
