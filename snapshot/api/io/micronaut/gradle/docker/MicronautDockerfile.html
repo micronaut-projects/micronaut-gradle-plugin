@@ -17,8 +17,8 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10,"i10":10,"i11":10,"i12":10};
-var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
+var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":6,"i10":10,"i11":10,"i12":10,"i13":10,"i14":10};
+var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],4:["t3","Abstract Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
 var tableTab = "tableTab";
@@ -130,7 +130,7 @@ var activeTableTab = "activeTableTab";
 </dl>
 <hr>
 <br>
-<pre>public class <span class="typeNameLabel">MicronautDockerfile</span>
+<pre>public abstract class <span class="typeNameLabel">MicronautDockerfile</span>
 extends com.bmuschko.gradle.docker.tasks.image.Dockerfile
 implements <a href="../../../../io/micronaut/gradle/docker/DockerBuildOptions.html" title="interface in io.micronaut.gradle.docker">DockerBuildOptions</a></pre>
 </li>
@@ -219,7 +219,7 @@ implements <a href="../../../../io/micronaut/gradle/docker/DockerBuildOptions.ht
 </a>
 <h3>Method Summary</h3>
 <table class="memberSummary" border="0" cellpadding="3" cellspacing="0" summary="Method Summary table, listing methods, and an explanation">
-<caption><span id="t0" class="activeTableTab"><span>All Methods</span><span class="tabEnd">&nbsp;</span></span><span id="t2" class="tableTab"><span><a href="javascript:show(2);">Instance Methods</a></span><span class="tabEnd">&nbsp;</span></span><span id="t4" class="tableTab"><span><a href="javascript:show(8);">Concrete Methods</a></span><span class="tabEnd">&nbsp;</span></span></caption>
+<caption><span id="t0" class="activeTableTab"><span>All Methods</span><span class="tabEnd">&nbsp;</span></span><span id="t2" class="tableTab"><span><a href="javascript:show(2);">Instance Methods</a></span><span class="tabEnd">&nbsp;</span></span><span id="t3" class="tableTab"><span><a href="javascript:show(4);">Abstract Methods</a></span><span class="tabEnd">&nbsp;</span></span><span id="t4" class="tableTab"><span><a href="javascript:show(8);">Concrete Methods</a></span><span class="tabEnd">&nbsp;</span></span></caption>
 <tr>
 <th class="colFirst" scope="col">Modifier and Type</th>
 <th class="colLast" scope="col">Method and Description</th>
@@ -265,12 +265,20 @@ implements <a href="../../../../io/micronaut/gradle/docker/DockerBuildOptions.ht
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../io/micronaut/gradle/docker/MicronautDockerfile.html#getExposedPorts--">getExposedPorts</a></span>()</code>&nbsp;</td>
 </tr>
 <tr id="i9" class="rowColor">
+<td class="colFirst"><code>protected abstract org.gradle.api.model.ObjectFactory</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../io/micronaut/gradle/docker/MicronautDockerfile.html#getObjects--">getObjects</a></span>()</code>&nbsp;</td>
+</tr>
+<tr id="i10" class="altColor">
 <td class="colFirst"><code>org.gradle.api.provider.Property&lt;java.lang.String&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../io/micronaut/gradle/docker/MicronautDockerfile.html#getTargetWorkingDirectory--">getTargetWorkingDirectory</a></span>()</code>
 <div class="block">The working directory to use in the container.</div>
 </td>
 </tr>
-<tr id="i10" class="altColor">
+<tr id="i11" class="rowColor">
+<td class="colFirst"><code>protected org.gradle.api.provider.Provider&lt;java.util.List&lt;java.lang.String&gt;&gt;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../io/micronaut/gradle/docker/MicronautDockerfile.html#getTweaks--">getTweaks</a></span>()</code>&nbsp;</td>
+</tr>
+<tr id="i12" class="altColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../io/micronaut/gradle/docker/MicronautDockerfile.html#setupDockerfileInstructions--">setupDockerfileInstructions</a></span>()</code>
 <div class="block">The Dockerfile task requires a 'from' at least, but this
@@ -278,11 +286,11 @@ implements <a href="../../../../io/micronaut/gradle/docker/DockerBuildOptions.ht
  incorporate commands supplied by the build.gradle file (if required)</div>
 </td>
 </tr>
-<tr id="i11" class="rowColor">
+<tr id="i13" class="rowColor">
 <td class="colFirst"><code>protected void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../io/micronaut/gradle/docker/MicronautDockerfile.html#setupInstructions-java.util.List-">setupInstructions</a></span>(java.util.List&lt;com.bmuschko.gradle.docker.tasks.image.Dockerfile.Instruction&gt;&nbsp;additionalInstructions)</code>&nbsp;</td>
 </tr>
-<tr id="i12" class="altColor">
+<tr id="i14" class="altColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../io/micronaut/gradle/docker/MicronautDockerfile.html#setupTaskPostEvaluate--">setupTaskPostEvaluate</a></span>()</code>
 <div class="block">This is executed post project evaluation</div>
@@ -316,6 +324,13 @@ implements <a href="../../../../io/micronaut/gradle/docker/DockerBuildOptions.ht
 </a>
 <h3>Methods inherited from class&nbsp;java.lang.Object</h3>
 <code>clone, equals, finalize, getClass, hashCode, notify, notifyAll, toString, wait, wait, wait</code></li>
+</ul>
+<ul class="blockList">
+<li class="blockList"><a name="methods.inherited.from.class.io.micronaut.gradle.docker.DockerBuildOptions">
+<!--   -->
+</a>
+<h3>Methods inherited from interface&nbsp;io.micronaut.gradle.docker.<a href="../../../../io/micronaut/gradle/docker/DockerBuildOptions.html" title="interface in io.micronaut.gradle.docker">DockerBuildOptions</a></h3>
+<code><a href="../../../../io/micronaut/gradle/docker/DockerBuildOptions.html#editDockerfile-org.gradle.api.Action-">editDockerfile</a>, <a href="../../../../io/micronaut/gradle/docker/DockerBuildOptions.html#getDockerfileTweaks--">getDockerfileTweaks</a></code></li>
 </ul>
 <ul class="blockList">
 <li class="blockList"><a name="methods.inherited.from.class.groovy.lang.GroovyObject">
@@ -434,6 +449,27 @@ protected final&nbsp;org.gradle.api.provider.Property&lt;<a href="../../../../io
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>The default command to use</dd>
 </dl>
+</li>
+</ul>
+<a name="getObjects--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getObjects</h4>
+<pre>@Inject
+protected abstract&nbsp;org.gradle.api.model.ObjectFactory&nbsp;getObjects()</pre>
+</li>
+</ul>
+<a name="getTweaks--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getTweaks</h4>
+<pre>@Input
+ @Optional
+protected&nbsp;org.gradle.api.provider.Provider&lt;java.util.List&lt;java.lang.String&gt;&gt;&nbsp;getTweaks()</pre>
 </li>
 </ul>
 <a name="create--">
