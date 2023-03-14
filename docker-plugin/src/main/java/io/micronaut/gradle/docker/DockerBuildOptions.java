@@ -1,8 +1,11 @@
 package io.micronaut.gradle.docker;
 
+import io.micronaut.gradle.docker.editor.Editor;
+import org.gradle.api.Action;
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.Input;
+import org.gradle.api.tasks.Internal;
 
 /**
  * Build options for Docker.
@@ -35,6 +38,9 @@ public interface DockerBuildOptions {
     @Input
     ListProperty<Integer> getExposedPorts();
 
+    @Internal
+    ListProperty<Action<? super Editor>> getDockerfileTweaks();
+
     /**
      * Arguments for the entrypoint.
      * @param args The arguments
@@ -61,4 +67,12 @@ public interface DockerBuildOptions {
      * @return the target directory
      */
     Property<String> getTargetWorkingDirectory();
+
+    /**
+     * Adds a dockerfile tweak.
+     * @param action the edition action
+     */
+    default void editDockerfile(Action<? super Editor> action) {
+        getDockerfileTweaks().add(action);
+    }
 }
