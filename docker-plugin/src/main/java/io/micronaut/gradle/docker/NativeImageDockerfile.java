@@ -13,9 +13,7 @@ import org.gradle.api.JavaVersion;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
 import org.gradle.api.file.ConfigurableFileCollection;
-import org.gradle.api.file.Directory;
 import org.gradle.api.file.ProjectLayout;
-import org.gradle.api.internal.file.FileOperations;
 import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.plugins.BasePlugin;
 import org.gradle.api.plugins.JavaApplication;
@@ -142,8 +140,11 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
     @Inject
     protected abstract ProjectLayout getLayout();
 
-    @Inject
-    protected abstract FileOperations getFileOperations();
+    @Input
+    @Optional
+    protected Provider<List<String>> getTweaks() {
+        return getDockerfileTweaks().map(tweaks -> DockerfileEditor.fingerprintOf(getObjects(), tweaks));
+    }
 
     public NativeImageDockerfile() {
         Project project = getProject();
@@ -386,10 +387,9 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
     @Override
     public void create() {
         super.create();
-    }
-
-    private Provider<Directory> getConfigurationFilesDirectory() {
-        return getLayout().getBuildDirectory().dir("docker/config-dirs");
+        if (getDockerfileTweaks().isPresent()) {
+            DockerfileEditor.apply(getObjects(), this, getDockerfileTweaks().get());
+        }
     }
 
     // Everything done in this method MUST be lazy, so use providers as much as possible
