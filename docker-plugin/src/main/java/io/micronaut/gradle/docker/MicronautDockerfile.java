@@ -8,17 +8,20 @@ import org.gradle.api.plugins.BasePlugin;
 import org.gradle.api.plugins.JavaApplication;
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Property;
+import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.Input;
+import org.gradle.api.tasks.Optional;
 import org.gradle.api.tasks.TaskAction;
 import org.gradle.internal.jvm.Jvm;
 
+import javax.inject.Inject;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-public class MicronautDockerfile extends Dockerfile implements DockerBuildOptions {
+public abstract class MicronautDockerfile extends Dockerfile implements DockerBuildOptions {
     public static final String DEFAULT_WORKING_DIR = "/home/app";
 
     @Input
@@ -59,10 +62,22 @@ public class MicronautDockerfile extends Dockerfile implements DockerBuildOption
         return defaultCommand;
     }
 
+    @Inject
+    protected abstract ObjectFactory getObjects();
+
+    @Input
+    @Optional
+    protected Provider<List<String>> getTweaks() {
+        return getDockerfileTweaks().map(tweaks -> DockerfileEditor.fingerprintOf(getObjects(), tweaks));
+    }
+
     @TaskAction
     @Override
     public void create() throws IOException {
         super.create();
+        if (getDockerfileTweaks().isPresent()) {
+            DockerfileEditor.apply(getObjects(), this, getDockerfileTweaks().get());
+        }
         System.out.println("Dockerfile written to: " + getDestFile().get().getAsFile().getAbsolutePath());
     }
 

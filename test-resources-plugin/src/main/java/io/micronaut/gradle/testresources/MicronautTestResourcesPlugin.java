@@ -446,16 +446,16 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
     }
 
     public static class ServerConnectionParametersProvider implements CommandLineArgumentProvider {
-        private final TaskProvider<StartTestResourcesService> internalStart;
+        private final Provider<Directory> settingsDirectory;
 
         public ServerConnectionParametersProvider(TaskProvider<StartTestResourcesService> internalStart) {
-            this.internalStart = internalStart;
+            this.settingsDirectory = internalStart.flatMap(StartTestResourcesService::getSettingsDirectory);
         }
 
         @Override
         public Iterable<String> asArguments() {
             Properties props = new Properties();
-            File serverConfig = new File(internalStart.get().getSettingsDirectory().get().getAsFile(), "test-resources.properties");
+            File serverConfig = new File(settingsDirectory.get().getAsFile(), "test-resources.properties");
             if (serverConfig.exists()) {
                 try (InputStream in = new FileInputStream(serverConfig)) {
                     props.load(in);
