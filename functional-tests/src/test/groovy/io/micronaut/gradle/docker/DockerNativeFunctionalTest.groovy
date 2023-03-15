@@ -630,4 +630,166 @@ afterEvaluate {
         then:
         task.outcome == TaskOutcome.SUCCESS
     }
+
+    @Issue("https://github.com/micronaut-projects/micronaut-gradle-plugin/issues/667")
+    def "can tweak the generated docker file"() {
+        given:
+        settingsFile << "rootProject.name = 'hello-world'"
+        buildFile << """
+            plugins {
+                id "io.micronaut.minimal.application"
+                id "io.micronaut.docker"
+                id "io.micronaut.graalvm"
+            }
+            
+            $repositoriesBlock
+
+            micronaut {
+                version "3.4.0"
+            }
+
+            mainClassName="example.Application"
+
+            tasks.withType(io.micronaut.gradle.docker.DockerBuildOptions).configureEach {
+                editDockerfile {
+                    after('COPY layers/libs /home/app/libs') {
+                        insert('COPY server.iprof /home/app/server.iprof')
+                    } 
+                }
+            }
+            
+        """
+        testProjectDir.newFolder("src", "main", "java", "example")
+        def javaFile = testProjectDir.newFile("src/main/java/example/Application.java")
+        javaFile.parentFile.mkdirs()
+        javaFile << """
+package example;
+
+class Application {
+    public static void main(String... args) {
+    
+    }
+}
+"""
+
+        when:
+        def result = build('dockerfile', '-s')
+
+        then:
+        def dockerfile = new File(testProjectDir.root, 'build/docker/main/Dockerfile').text
+        dockerfile == """FROM openjdk:17-alpine
+WORKDIR /home/app
+COPY layers/libs /home/app/libs
+COPY server.iprof /home/app/server.iprof
+COPY layers/classes /home/app/classes
+COPY layers/resources /home/app/resources
+COPY layers/application.jar /home/app/application.jar
+EXPOSE 8080
+ENTRYPOINT ["java", "-jar", "/home/app/application.jar"]
+"""
+
+        when:
+        result = build('dockerfileNative', '-s')
+
+        then:
+        def dockerfileNative = new File(testProjectDir.root, 'build/docker/native-main/DockerfileNative').text
+        dockerfileNative == """FROM ghcr.io/graalvm/native-image:ol7-java11-22.3.0 AS graalvm
+WORKDIR /home/app
+COPY layers/libs /home/app/libs
+COPY server.iprof /home/app/server.iprof
+COPY layers/classes /home/app/classes
+COPY layers/resources /home/app/resources
+COPY layers/application.jar /home/app/application.jar
+RUN mkdir /home/app/config-dirs
+COPY config-dirs/generateResourcesConfigFile /home/app/config-dirs/generateResourcesConfigFile
+RUN native-image -cp /home/app/libs/*.jar:/home/app/resources:/home/app/application.jar --no-fallback -H:Name=application -J--add-exports=org.graalvm.nativeimage.builder/com.oracle.svm.core.configure=ALL-UNNAMED -J--add-exports=org.graalvm.nativeimage.builder/com.oracle.svm.core.jdk=ALL-UNNAMED -J--add-exports=org.graalvm.nativeimage.builder/com.oracle.svm.core.jni=ALL-UNNAMED -J--add-exports=org.graalvm.sdk/org.graalvm.nativeimage.impl=ALL-UNNAMED -H:ConfigurationFileDirectories=/home/app/config-dirs/generateResourcesConfigFile -H:Class=example.Application
+FROM frolvlad/alpine-glibc:alpine-3.12
+RUN apk --no-cache update && apk add libstdc++
+EXPOSE 8080
+COPY --from=graalvm /home/app/application /app/application
+ENTRYPOINT ["/app/application"]
+"""
+    }
+
+    @Issue("https://github.com/micronaut-projects/micronaut-gradle-plugin/issues/667")
+    def "dockerfile tweaks participate in up-to-date checking"() {
+        given:
+        settingsFile << "rootProject.name = 'hello-world'"
+        buildFile << """
+            plugins {
+                id "io.micronaut.minimal.application"
+                id "io.micronaut.docker"
+                id "io.micronaut.graalvm"
+            }
+            
+            $repositoriesBlock
+
+            micronaut {
+                version "3.4.0"
+            }
+
+            mainClassName="example.Application"
+
+            tasks.withType(io.micronaut.gradle.docker.DockerBuildOptions).configureEach {
+                editDockerfile {
+                    after('COPY layers/libs /home/app/libs') {
+                        insert('COPY server.iprof /home/app/server.iprof')
+                    } 
+                }
+            }
+            
+        """
+        testProjectDir.newFolder("src", "main", "java", "example")
+        def javaFile = testProjectDir.newFile("src/main/java/example/Application.java")
+        javaFile.parentFile.mkdirs()
+        javaFile << """
+package example;
+
+class Application {
+    public static void main(String... args) {
+    
+    }
+}
+"""
+
+        when:
+        def result = build('dockerfile', '-s')
+
+        then:
+        def dockerfile = new File(testProjectDir.root, 'build/docker/main/Dockerfile').text
+        dockerfile == """FROM openjdk:17-alpine
+WORKDIR /home/app
+COPY layers/libs /home/app/libs
+COPY server.iprof /home/app/server.iprof
+COPY layers/classes /home/app/classes
+COPY layers/resources /home/app/resources
+COPY layers/application.jar /home/app/application.jar
+EXPOSE 8080
+ENTRYPOINT ["java", "-jar", "/home/app/application.jar"]
+"""
+
+        when:
+        result = build('dockerfile', '-s')
+
+        then:
+        result.task(":dockerfile").outcome == TaskOutcome.UP_TO_DATE
+
+        when:
+        buildFile << """
+            tasks.withType(io.micronaut.gradle.docker.DockerBuildOptions).configureEach {
+                editDockerfile {
+                    after('COPY server.iprof /home/app/server.iprof') {
+                        insert('COPY README.TXT /home/app/README.TXT')
+                    } 
+                }
+            }
+        """
+        result = build('dockerfile', '-s')
+
+        then:
+        result.task(":dockerfile").outcome == TaskOutcome.SUCCESS
+
+    }
+
+
 }
