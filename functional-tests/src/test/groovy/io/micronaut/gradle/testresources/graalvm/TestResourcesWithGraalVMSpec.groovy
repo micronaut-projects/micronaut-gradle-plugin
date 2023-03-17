@@ -1,6 +1,7 @@
-package io.micronaut.gradle.testresources
+package io.micronaut.gradle.testresources.graalvm
 
 import io.micronaut.gradle.AbstractGradleBuildSpec
+import io.micronaut.gradle.testresources.AbstractTestResourcesSpec
 import org.gradle.testkit.runner.TaskOutcome
 import spock.lang.Requires
 

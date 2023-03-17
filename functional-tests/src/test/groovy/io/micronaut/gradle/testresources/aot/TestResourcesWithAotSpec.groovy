@@ -1,6 +1,6 @@
-package io.micronaut.gradle.testresources
+package io.micronaut.gradle.testresources.aot
 
-
+import io.micronaut.gradle.testresources.AbstractTestResourcesSpec
 import org.gradle.testkit.runner.TaskOutcome
 import spock.lang.IgnoreIf
 

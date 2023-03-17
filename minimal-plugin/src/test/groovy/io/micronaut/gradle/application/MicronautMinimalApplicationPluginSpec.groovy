@@ -1,6 +1,7 @@
-package io.micronaut.gradle
+package io.micronaut.gradle.application
 
-
+import io.micronaut.gradle.AbstractGradleBuildSpec
+import io.micronaut.gradle.MicronautMinimalApplicationPlugin
 import org.gradle.testkit.runner.TaskOutcome
 import spock.lang.Issue
 

@@ -1,4 +1,4 @@
-package io.micronaut.gradle.testresources
+package io.micronaut.gradle.testresources.application
 
 import io.micronaut.gradle.AbstractGradleBuildSpec
 import org.gradle.testkit.runner.TaskOutcome

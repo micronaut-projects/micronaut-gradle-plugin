@@ -1,5 +1,6 @@
-package io.micronaut.gradle
+package io.micronaut.gradle.library
 
+import io.micronaut.gradle.AbstractGradleBuildSpec
 import org.gradle.testkit.runner.TaskOutcome
 
 class MicronautMinimalLibraryPluginSpec extends AbstractGradleBuildSpec {

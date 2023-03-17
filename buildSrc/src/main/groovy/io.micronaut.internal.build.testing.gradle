@@ -1,23 +1,64 @@
+import java.util.regex.Pattern
+
 plugins {
     id 'java'
     id 'pl.droidsonroids.jacoco.testkit'
-}
-
-tasks.withType(Test).configureEach {
-    def graalvmHome = providers.environmentVariable('GRAALVM_HOME')
-            .orElse(providers.environmentVariable("JAVA_HOME"))
-            .getOrElse("")
-    useJUnitPlatform()
-    inputs.property("GRAALVM_HOME", graalvmHome)
-    predictiveSelection {
-        enabled = micronautBuild.environment.isTestSelectionEnabled()
-    }
-    environment "GRAALVM_HOME", graalvmHome
-    systemProperty "micronautVersion", libs.versions.micronaut.asProvider().get()
 }
 
 dependencies {
     testImplementation libs.groovy.core
     testImplementation libs.spock.core
     testImplementation libs.spock.junit4
+}
+
+// We are NOT using the `jvm-test-suite` plugin because
+// it would generate different source sets for each test
+// suite, which is not what we want: we simply need different
+// test tasks, with different includes
+
+tasks.withType(Test).configureEach {
+    dependsOn("generateJacocoTestKitProperties")
+    useJUnitPlatform()
+    def graalvmHome = providers.environmentVariable('GRAALVM_HOME')
+            .orElse(providers.environmentVariable("JAVA_HOME"))
+            .getOrElse("")
+    inputs.property("GRAALVM_HOME", graalvmHome)
+    environment "GRAALVM_HOME", graalvmHome
+    systemProperty "micronautVersion", libs.versions.micronaut.asProvider().get()
+    predictiveSelection {
+        enabled = micronautBuild.environment.isTestSelectionEnabled()
+    }
+}
+
+sourceSets.test.allSource.sourceDirectories.files.each { root ->
+    if (root.exists()) {
+        root.eachFileRecurse {
+            if (it.directory) {
+                if (it.listFiles().any { it.name.endsWith(".groovy") || it.name.endsWith(".java") }) {
+                    def relativePath = root.toPath().relativize(it.toPath())
+                    def pkg = relativePath.toString().split(Pattern.quote("" + File.separatorChar))
+                    def camelCase = pkg
+                            .collect { it.capitalize() }
+                            .join("")
+                            .uncapitalize()
+                    def testTask = tasks.register("${camelCase}Test", Test) {
+                        def testTask = tasks.named("test").get()
+                        testClassesDirs = testTask.testClassesDirs
+                        classpath = testTask.classpath
+                        include("${relativePath}/*")
+                    }
+                    tasks.named("check") {
+                        dependsOn(testTask)
+                    }
+                    tasks.named("test") {
+                        dependsOn(testTask)
+                    }
+                }
+            }
+        }
+    }
+}
+
+tasks.named("test") {
+    exclude("**")
 }
