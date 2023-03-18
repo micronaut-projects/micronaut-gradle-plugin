@@ -3,6 +3,7 @@ import java.util.regex.Pattern
 plugins {
     id 'java'
     id 'pl.droidsonroids.jacoco.testkit'
+    id 'com.adarshr.test-logger'
 }
 
 dependencies {
@@ -61,4 +62,13 @@ sourceSets.test.allSource.sourceDirectories.files.each { root ->
 
 tasks.named("test") {
     exclude("**")
+}
+
+testlogger {
+    theme 'standard-parallel'
+    showFullStackTraces true
+    showStandardStreams true
+    showPassedStandardStreams false
+    showSkippedStandardStreams false
+    showFailedStandardStreams true
 }
