@@ -1,3 +1,5 @@
+import groovy.transform.CompileStatic
+
 import java.util.regex.Pattern
 
 plugins {
@@ -31,32 +33,31 @@ tasks.withType(Test).configureEach {
     }
 }
 
-sourceSets.test.allSource.sourceDirectories.files.each { root ->
-    if (root.exists()) {
-        root.eachFileRecurse {
-            if (it.directory) {
-                if (it.listFiles().any { it.name.endsWith(".groovy") || it.name.endsWith(".java") }) {
-                    def relativePath = root.toPath().relativize(it.toPath())
-                    def pkg = relativePath.toString().split(Pattern.quote("" + File.separatorChar))
-                    def camelCase = pkg
-                            .collect { it.capitalize() }
-                            .join("")
-                            .uncapitalize()
-                    def testTask = tasks.register("${camelCase}Test", Test) {
-                        def testTask = tasks.named("test").get()
-                        testClassesDirs = testTask.testClassesDirs
-                        classpath = testTask.classpath
-                        include("${relativePath}/*")
-                    }
-                    tasks.named("check") {
-                        dependsOn(testTask)
-                    }
-                    tasks.named("test") {
-                        dependsOn(testTask)
-                    }
-                }
-            }
+def testPackages = providers.of(PackageListValueSource) { spec ->
+    sourceSets.test.allSource.sourceDirectories.files.each { root ->
+        if (root.exists()) {
+            spec.parameters.sources.from(root)
         }
+    }
+}
+
+testPackages.get().each { relativePath ->
+    def pkg = relativePath.toString().split(Pattern.quote("" + File.separatorChar))
+    def camelCase = pkg
+            .collect { it.capitalize() }
+            .join("")
+            .uncapitalize()
+    def testTask = tasks.register("${camelCase}Test", Test) {
+        def testTask = tasks.named("test").get()
+        testClassesDirs = testTask.testClassesDirs
+        classpath = testTask.classpath
+        include("${relativePath}/*")
+    }
+    tasks.named("check") {
+        dependsOn(testTask)
+    }
+    tasks.named("test") {
+        dependsOn(testTask)
     }
 }
 
@@ -71,4 +72,36 @@ testlogger {
     showPassedStandardStreams false
     showSkippedStandardStreams false
     showFailedStandardStreams true
+}
+
+/**
+ * This value source is used to generate the list of test packages.
+ * We must implement our own value source, otherwise Gradle cannot
+ * properly detect that the list of generated tasks must change whenever
+ * a package is added or removed, when using the configuration cache.
+ */
+@CompileStatic
+abstract class PackageListValueSource implements ValueSource<Set<String>, PackageListValueSource.Params> {
+    interface Params extends ValueSourceParameters {
+        @InputFiles
+        ConfigurableFileCollection getSources()
+    }
+
+    @Override
+    Set<String> obtain() {
+        def fileset = new TreeSet<String>()
+        parameters.sources.files.each { root ->
+            if (root.exists()) {
+                root.eachFileRecurse {
+                    if (it.directory) {
+                        if (it.listFiles().any { it.name.endsWith(".groovy") || it.name.endsWith(".java") }) {
+                            def relativePath = root.toPath().relativize(it.toPath())
+                            fileset.add(relativePath.toString())
+                        }
+                    }
+                }
+            }
+        }
+        fileset
+    }
 }
