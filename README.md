@@ -8,6 +8,6 @@ Please refer to the [documentation](https://micronaut-projects.github.io/microna
 
 Documentation for the development version of the plugin can be found [here](https://micronaut-projects.github.io/micronaut-gradle-plugin/snapshot/).
 
-Documentation for the 3.x version of the plugin can be found [here](https://github.com/micronaut-projects/micronaut-gradle-plugin/tree/2.0.x#readme).
+Documentation for the 3.x version of the plugin can be found [here](https://github.com/micronaut-projects/micronaut-gradle-plugin/tree/3.7.x#readme).
 
 Documentation for the 2.x version of the plugin can be found [here](https://github.com/micronaut-projects/micronaut-gradle-plugin/tree/2.0.x#readme).
