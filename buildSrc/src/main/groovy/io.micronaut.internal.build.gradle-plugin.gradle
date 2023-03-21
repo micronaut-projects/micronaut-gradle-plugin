@@ -31,18 +31,81 @@ configurations {
     }
 }
 
+def projectRepoPath = project.layout.buildDirectory.dir("repo")
+
+def localPublicationsTasks = []
+
 publishing {
     repositories {
         maven {
             name = "build"
             url = "${rootProject.layout.buildDirectory.dir("repo").get().asFile.toURI()}"
         }
+        maven {
+            name = "project"
+            url = "${projectRepoPath.get().asFile.toURI()}"
+        }
+    }
+    publications.all { pub ->
+        if (!pub.name.startsWith('local')) {
+            String pubName = "local${pub.name.capitalize()}"
+            localPublicationsTasks << "publish${pubName.capitalize()}PublicationToProjectRepository".toString()
+            publications.register(pubName, MavenPublication) {
+                project.afterEvaluate {
+                    def component = pub.component
+                    from(component)
+                    alias = true
+                    groupId = pub.groupId
+                    artifactId = pub.artifactId
+                    version = project.version.replace('-SNAPSHOT', '-DUMMY')
+                    if (component == null) {
+                        String pName = project.name
+                        String pGroup = project.group
+                        String pVersion = project.version.toString().replace('-SNAPSHOT', '-DUMMY')
+                        // it is a plugin marker
+                        pom.withXml {
+                            def dependenciesNode = asNode().appendNode('dependencies')
+                            def dep = dependenciesNode.appendNode('dependency')
+                            dep.appendNode('groupId', pGroup)
+                            dep.appendNode('artifactId', pName)
+                            dep.appendNode('version', pVersion)
+                        }
+                    } else {
+                        pom.withXml {
+                            asNode().dependencies.dependency.each { n ->
+                                if (n.groupId[0].text() == 'io.micronaut.gradle') {
+                                    if (n.version[0].text().endsWith('-SNAPSHOT')) {
+                                        n.version[0].value = n.version[0].text().replace('-SNAPSHOT', '-DUMMY')
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+def cleanRepository = tasks.register("cleanRepository", Delete) {
+    delete projectRepoPath
+}
+
+def publishPluginToProjectRepo = tasks.register("publishPluginToProjectRepo") {
+    dependsOn(cleanRepository)
+    dependsOn(localPublicationsTasks)
+}
+
+localPublicationsTasks.each { taskName ->
+    tasks.named(taskName) {
+        mustRunAfter(cleanRepository)
     }
 }
 
 configurations.repository.outgoing {
-    artifact(rootProject.layout.buildDirectory.dir("repo")) {
-        builtBy(tasks.named("publishAllPublicationsToBuildRepository"))
+    artifact(projectRepoPath) {
+        builtBy(publishPluginToProjectRepo)
     }
 }
 
@@ -54,26 +117,20 @@ dependencies {
     }
 }
 
-// This is a quick and dirty workaround for
-// publication tasks which are never up-to-date.
-// The problem is that we rely on a local repository
-// for functional testing, and that every invocation
-// of a test would trigger a publication and therefore
-// never be up-to-date.
-tasks.configureEach {
-    if (it.name.startsWith("generateMetadataFile")
-            || it.name.startsWith("generatePomFile")
-            || it.name.startsWith("publish")) {
-        dependsOn(tasks.named('jar'))
-        onlyIf {
-            !rootProject.layout.buildDirectory.dir("repo").get().asFile.exists() || tasks.getByName("jar").didWork
-        }
-    }
+tasks.withType(Jar).configureEach {
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
 }
 
 // There are many violations that we'll need to fix later
 tasks.withType(Checkstyle).configureEach {
     enabled = false
+}
+
+tasks.withType(GenerateModuleMetadata).configureEach {
+    if (it.name.contains('ForLocal')) {
+        enabled = false
+    }
 }
 
 gradlePlugin {

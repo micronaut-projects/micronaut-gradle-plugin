@@ -32,7 +32,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Build with Gradle
         shell: cmd
-        run: ./gradlew.bat check --no-daemon --continue
+        run: ./gradlew.bat check --no-daemon --continue --configuration-cache
         env:
           TESTCONTAINERS_RYUK_DISABLED: true
           GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GRADLE_ENTERPRISE_ACCESS_KEY }}
