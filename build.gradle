@@ -1,3 +1,5 @@
+import org.gradle.util.GradleVersion
+
 /*
  * Copyright 2017-2021 original authors
  *
@@ -36,4 +38,12 @@ dependencies {
     javadoc project(":micronaut-gradle-plugin")
     javadoc libs.bundles.optionalPlugins
     javadoc libs.shadowPlugin
+}
+
+asciidoctorj {
+    attributes 'native-build-tools-version': libs.versions.graalvmPlugin.get(),
+            'kotlin-version': libs.versions.kotlin.get(),
+            'micronaut-version': libs.versions.micronaut.asProvider().get(),
+            'gradle-version': GradleVersion.current().version,
+            'shadow-version': libs.versions.shadow.get()
 }
