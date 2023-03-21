@@ -16,10 +16,12 @@ import io.micronaut.gradle.crac.tasks.CheckpointScriptTask;
 import io.micronaut.gradle.docker.DockerBuildStrategy;
 import io.micronaut.gradle.docker.model.MicronautDockerImage;
 import io.micronaut.gradle.docker.tasks.BuildLayersTask;
+import org.gradle.api.Action;
 import org.gradle.api.GradleException;
 import org.gradle.api.NamedDomainObjectContainer;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
+import org.gradle.api.Task;
 import org.gradle.api.file.RegularFile;
 import org.gradle.api.plugins.ExtensionContainer;
 import org.gradle.api.plugins.PluginManager;
@@ -184,16 +186,20 @@ public class MicronautCRaCPlugin implements Plugin<Project> {
             task.getTailAll().set(true);
             task.getContainerId().set(start.flatMap(DockerExistingContainer::getContainerId));
             task.getSink().fileValue(checkpointFile);
-            task.doLast(t -> {
-                List<String> lines;
-                try {
-                    lines = Files.readAllLines(checkpointFile.toPath());
-                } catch (IOException e) {
-                    throw new GradleException("Checkpoint container failed");
-                }
-                lines.forEach(task.getLogger()::lifecycle);
-                if (lines.stream().noneMatch(l -> l.contains("Snapshotting complete"))) {
-                    throw new GradleException("Checkpoint container failed");
+            // Do not use lambda or it's not compatible with Gradle's config cache
+            task.doLast(new Action<>() {
+                @Override
+                public void execute(Task t) {
+                    List<String> lines;
+                    try {
+                        lines = Files.readAllLines(checkpointFile.toPath());
+                    } catch (IOException e) {
+                        throw new GradleException("Checkpoint container failed");
+                    }
+                    lines.forEach(task.getLogger()::lifecycle);
+                    if (lines.stream().noneMatch(l -> l.contains("Snapshotting complete"))) {
+                        throw new GradleException("Checkpoint container failed");
+                    }
                 }
             });
         });

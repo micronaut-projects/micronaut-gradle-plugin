@@ -1,7 +1,7 @@
 import io.micronaut.internal.build.test.FunctionalTestingExtension
 plugins {
     id 'groovy'
-    id "io.micronaut.internal.build.testing"
+    id 'io.micronaut.internal.build.testing'
 }
 
 pluginManager.apply(io.micronaut.build.MicronautQualityChecksParticipantPlugin)
@@ -30,9 +30,14 @@ configurations {
 
 extensions.create("functionalTesting", FunctionalTestingExtension)
 
+def prepareRepository = tasks.register("prepareRepository", Sync) {
+    from configurations.pluginsUnderTest
+    into file("${buildDir}/aggregatedRepo")
+}
+
 tasks.withType(Test).configureEach { Test test ->
     def repoProvider = objects.newInstance(RepositoryProvider)
-    repoProvider.repositoryDir.from(configurations.pluginsUnderTest)
+    repoProvider.repositoryDir.from(prepareRepository)
     repoProvider.version.set(version)
     test.jvmArgumentProviders.add(repoProvider)
     systemProperties.put("kotlinVersion", libs.versions.kotlin.get())
@@ -61,6 +66,7 @@ abstract class RepositoryProvider implements CommandLineArgumentProvider {
 
     @Override
     Iterable<String> asArguments() {
-        ["-Dinternal.plugin.repo=${repositoryDir.singleFile.toURI().toASCIIString()}", "-Dproject.version=${version.get()}"]
+        String patchedVersion = version.get().replace('-SNAPSHOT', '-DUMMY')
+        ["-Dinternal.plugin.repo=${repositoryDir.singleFile.toURI().toASCIIString()}", "-Dproject.version=${patchedVersion}"]
     }
 }

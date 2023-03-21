@@ -76,7 +76,7 @@ class BuildLayersSpec extends AbstractGradleBuildSpec {
                 from sourceSets.main.output
             }
 
-            configurations.runtimeClasspath.dependencies.add(dependencies.create(files(jar1, jar2)))            
+            configurations.runtimeOnly.dependencies.add(dependencies.create(files(jar1, jar2)))            
 
             tasks.withType(io.micronaut.gradle.docker.tasks.BuildLayersTask) {
                 duplicatesStrategy = DuplicatesStrategy.INCLUDE
