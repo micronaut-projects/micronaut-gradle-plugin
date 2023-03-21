@@ -50,7 +50,7 @@ jobs:
           [ -f ./setup.sh ] && ./setup.sh || true
       - name: Analyse with Gradle
         run: |
-          ./gradlew check sonarqube --no-daemon --no-parallel --continue --no-build-cache
+          ./gradlew check sonarqube --no-daemon --continue --no-build-cache
         env:
           PREDICTIVE_TEST_SELECTION: false
           TESTCONTAINERS_RYUK_DISABLED: true
