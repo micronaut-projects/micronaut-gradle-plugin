@@ -3,11 +3,19 @@ package io.micronaut.gradle.crac;
 import io.micronaut.gradle.docker.DockerBuildStrategy;
 import io.micronaut.gradle.docker.MicronautDockerfile;
 import org.gradle.api.GradleException;
+import org.gradle.api.file.RegularFileProperty;
 import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.CacheableTask;
 import org.gradle.api.tasks.Input;
+import org.gradle.api.tasks.InputFile;
 import org.gradle.api.tasks.Optional;
+import org.gradle.api.tasks.PathSensitive;
+import org.gradle.api.tasks.PathSensitivity;
+import org.gradle.api.tasks.TaskAction;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,11 +28,36 @@ public abstract class CRaCFinalDockerfile extends MicronautDockerfile {
     @Optional
     public abstract Property<String> getPlatform();
 
+    @InputFile
+    @PathSensitive(PathSensitivity.RELATIVE)
+    @Optional
+    public abstract RegularFileProperty getCustomFinalDockerfile();
+
     public static final String DEFAULT_WORKING_DIR = "/home/app";
 
     @SuppressWarnings("java:S5993") // Gradle API
     public CRaCFinalDockerfile() {
         setDescription("Builds a Docker File for a CRaC checkpointed Micronaut application");
+    }
+
+    @TaskAction
+    @Override
+    public void create() throws IOException {
+        if (getCustomFinalDockerfile().isPresent()) {
+            Path source = getCustomFinalDockerfile().get().getAsFile().toPath();
+            try {
+                Files.copy(
+                        source,
+                        getDestFile().get().getAsFile().toPath()
+                );
+                getProject().getLogger().lifecycle("Dockerfile copied from {} to {}", source, getDestFile().get().getAsFile().getAbsolutePath());
+                return;
+            } catch (IOException e) {
+                throw new GradleException("Error copying custom final Dockerfile", e);
+            }
+        }
+        super.create();
+        getProject().getLogger().lifecycle("Dockerfile written to: {}", getDestFile().get().getAsFile().getAbsolutePath());
     }
 
     @Override
