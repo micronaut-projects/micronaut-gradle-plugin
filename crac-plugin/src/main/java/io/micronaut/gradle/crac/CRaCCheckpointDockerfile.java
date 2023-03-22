@@ -3,14 +3,21 @@ package io.micronaut.gradle.crac;
 import com.bmuschko.gradle.docker.tasks.image.Dockerfile;
 import io.micronaut.gradle.docker.DockerBuildStrategy;
 import org.gradle.api.GradleException;
+import org.gradle.api.file.RegularFileProperty;
 import org.gradle.api.plugins.BasePlugin;
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.CacheableTask;
 import org.gradle.api.tasks.Input;
+import org.gradle.api.tasks.InputFile;
 import org.gradle.api.tasks.Optional;
+import org.gradle.api.tasks.PathSensitive;
+import org.gradle.api.tasks.PathSensitivity;
 import org.gradle.api.tasks.TaskAction;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,6 +41,11 @@ public abstract class CRaCCheckpointDockerfile extends Dockerfile {
     @Input
     public abstract Property<String> getTargetWorkingDirectory();
 
+    @InputFile
+    @PathSensitive(PathSensitivity.RELATIVE)
+    @Optional
+    public abstract RegularFileProperty getCustomCheckpointDockerfile();
+
     @SuppressWarnings("java:S5993") // Gradle API
     public CRaCCheckpointDockerfile() {
         setGroup(BasePlugin.BUILD_GROUP);
@@ -47,8 +59,21 @@ public abstract class CRaCCheckpointDockerfile extends Dockerfile {
     @Override
     @SuppressWarnings("java:S106") // System.out
     public void create() {
+        if (getCustomCheckpointDockerfile().isPresent()) {
+            try {
+                Path source = getCustomCheckpointDockerfile().get().getAsFile().toPath();
+                Files.copy(
+                        source,
+                        getDestFile().get().getAsFile().toPath()
+                );
+                getProject().getLogger().lifecycle("Checkpoint Dockerfile copied from {} to {}", source, getDestFile().get().getAsFile().getAbsolutePath());
+                return;
+            } catch (IOException e) {
+                throw new GradleException("Error copying custom checkpoint Dockerfile", e);
+            }
+        }
         super.create();
-        System.out.println("CRaC checkpoint Dockerfile written to: " + getDestFile().get().getAsFile().getAbsolutePath());
+        getProject().getLogger().lifecycle("Checkpoint Dockerfile written to: {}", getDestFile().get().getAsFile().getAbsolutePath());
     }
 
     private void setupInstructions(List<Instruction> additionalInstructions) {
