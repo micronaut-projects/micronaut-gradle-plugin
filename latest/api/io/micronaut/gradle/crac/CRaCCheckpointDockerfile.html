@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":10,"i1":6,"i2":6,"i3":6,"i4":6,"i5":6};
+var methods = {"i0":10,"i1":6,"i2":6,"i3":6,"i4":6,"i5":6,"i6":6};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],4:["t3","Abstract Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -229,10 +229,14 @@ extends com.bmuschko.gradle.docker.tasks.image.Dockerfile</pre>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../io/micronaut/gradle/crac/CRaCCheckpointDockerfile.html#getBuildStrategy--">getBuildStrategy</a></span>()</code>&nbsp;</td>
 </tr>
 <tr id="i4" class="altColor">
+<td class="colFirst"><code>abstract org.gradle.api.file.RegularFileProperty</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../io/micronaut/gradle/crac/CRaCCheckpointDockerfile.html#getCustomCheckpointDockerfile--">getCustomCheckpointDockerfile</a></span>()</code>&nbsp;</td>
+</tr>
+<tr id="i5" class="rowColor">
 <td class="colFirst"><code>abstract org.gradle.api.provider.Property&lt;java.lang.String&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../io/micronaut/gradle/crac/CRaCCheckpointDockerfile.html#getPlatform--">getPlatform</a></span>()</code>&nbsp;</td>
 </tr>
-<tr id="i5" class="rowColor">
+<tr id="i6" class="altColor">
 <td class="colFirst"><code>abstract org.gradle.api.provider.Property&lt;java.lang.String&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../io/micronaut/gradle/crac/CRaCCheckpointDockerfile.html#getTargetWorkingDirectory--">getTargetWorkingDirectory</a></span>()</code>&nbsp;</td>
 </tr>
@@ -380,6 +384,18 @@ public abstract&nbsp;org.gradle.api.provider.Property&lt;<a href="../../../../io
 <h4>getTargetWorkingDirectory</h4>
 <pre>@Input
 public abstract&nbsp;org.gradle.api.provider.Property&lt;java.lang.String&gt;&nbsp;getTargetWorkingDirectory()</pre>
+</li>
+</ul>
+<a name="getCustomCheckpointDockerfile--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getCustomCheckpointDockerfile</h4>
+<pre>@InputFile
+ @PathSensitive(value=RELATIVE)
+ @Optional
+public abstract&nbsp;org.gradle.api.file.RegularFileProperty&nbsp;getCustomCheckpointDockerfile()</pre>
 </li>
 </ul>
 <a name="create--">
