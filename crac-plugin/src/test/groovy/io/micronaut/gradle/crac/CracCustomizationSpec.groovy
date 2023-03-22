@@ -140,4 +140,21 @@ class CracCustomizationSpec extends BaseCracGradleBuildSpec {
         fileTextContents("build/docker/main/Dockerfile").readLines().head() == "FROM --platform=raspberry-pi/arm64 timyates:latest"
         fileTextContents("build/docker/main/Dockerfile.CRaCCheckpoint").readLines().head() == "FROM --platform=raspberry-pi/arm64 timyates:latest"
     }
+
+    void "dockerfiles can be customized"() {
+        given:
+        settingsFile << "rootProject.name = 'hello-world'"
+        buildFile << buildFileBlock
+
+        baseDir.resolve("DockerfileCracCheckpoint").write("I am checkpoint dockerfile")
+        baseDir.resolve("Dockerfile").write("I am the main dockerfile")
+
+        when:
+        def result = build('dockerfileCrac', 'checkpointDockerfile', '-s')
+
+        then:
+        result.output.contains("BUILD SUCCESSFUL")
+        fileTextContents("build/docker/main/Dockerfile.CRaCCheckpoint").readLines().head() == "I am checkpoint dockerfile"
+        fileTextContents("build/docker/main/Dockerfile").readLines().head() == "I am the main dockerfile"
+    }
 }

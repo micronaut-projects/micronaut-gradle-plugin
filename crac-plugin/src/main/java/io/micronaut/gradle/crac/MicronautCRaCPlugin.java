@@ -127,6 +127,9 @@ public class MicronautCRaCPlugin implements Plugin<Project> {
         TaskProvider<CRaCCheckpointDockerfile> dockerFileTask = tasks.register(dockerFileTaskName, CRaCCheckpointDockerfile.class, task -> {
             task.setGroup(CRAC_TASK_GROUP);
             task.setDescription("Builds a Checkpoint Docker File for image " + imageName);
+            if (f.exists()) {
+                task.getCustomCheckpointDockerfile().set(f);
+            }
             task.getDestFile().set(targetCheckpointDockerFile);
             task.getBaseImage().set(configuration.getBaseImage());
             task.getPlatform().set(configuration.getPlatform());
@@ -226,6 +229,9 @@ public class MicronautCRaCPlugin implements Plugin<Project> {
             task.setGroup(CRAC_TASK_GROUP);
             task.mustRunAfter(start);
             task.setDescription("Builds a Docker File for CRaC checkpointed image " + imageName);
+            if (f.exists()) {
+                task.getCustomFinalDockerfile().set(f);
+            }
             task.getDestFile().set(targetCheckpointDockerFile);
             task.getBaseImage().set(configuration.getBaseImage());
             task.getPlatform().set(configuration.getPlatform());
@@ -258,5 +264,4 @@ public class MicronautCRaCPlugin implements Plugin<Project> {
         }
         return Optional.empty();
     }
-
 }
