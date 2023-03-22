@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":6,"i1":10};
+var methods = {"i0":10,"i1":6,"i2":6,"i3":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],4:["t3","Abstract Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -225,10 +225,18 @@ extends <a href="../../../../io/micronaut/gradle/docker/MicronautDockerfile.html
 <th class="colLast" scope="col">Method and Description</th>
 </tr>
 <tr id="i0" class="altColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../io/micronaut/gradle/crac/CRaCFinalDockerfile.html#create--">create</a></span>()</code>&nbsp;</td>
+</tr>
+<tr id="i1" class="rowColor">
+<td class="colFirst"><code>abstract org.gradle.api.file.RegularFileProperty</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../io/micronaut/gradle/crac/CRaCFinalDockerfile.html#getCustomFinalDockerfile--">getCustomFinalDockerfile</a></span>()</code>&nbsp;</td>
+</tr>
+<tr id="i2" class="altColor">
 <td class="colFirst"><code>abstract org.gradle.api.provider.Property&lt;java.lang.String&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../io/micronaut/gradle/crac/CRaCFinalDockerfile.html#getPlatform--">getPlatform</a></span>()</code>&nbsp;</td>
 </tr>
-<tr id="i1" class="rowColor">
+<tr id="i3" class="rowColor">
 <td class="colFirst"><code>protected void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../io/micronaut/gradle/crac/CRaCFinalDockerfile.html#setupInstructions-java.util.List-">setupInstructions</a></span>(java.util.List&lt;com.bmuschko.gradle.docker.tasks.image.Dockerfile.Instruction&gt;&nbsp;additionalInstructions)</code>&nbsp;</td>
 </tr>
@@ -238,7 +246,7 @@ extends <a href="../../../../io/micronaut/gradle/docker/MicronautDockerfile.html
 <!--   -->
 </a>
 <h3>Methods inherited from class&nbsp;io.micronaut.gradle.docker.<a href="../../../../io/micronaut/gradle/docker/MicronautDockerfile.html" title="class in io.micronaut.gradle.docker">MicronautDockerfile</a></h3>
-<code><a href="../../../../io/micronaut/gradle/docker/MicronautDockerfile.html#args-java.lang.String...-">args</a>, <a href="../../../../io/micronaut/gradle/docker/MicronautDockerfile.html#baseImage-java.lang.String-">baseImage</a>, <a href="../../../../io/micronaut/gradle/docker/MicronautDockerfile.html#create--">create</a>, <a href="../../../../io/micronaut/gradle/docker/MicronautDockerfile.html#exportPorts-java.lang.Integer...-">exportPorts</a>, <a href="../../../../io/micronaut/gradle/docker/MicronautDockerfile.html#getArgs--">getArgs</a>, <a href="../../../../io/micronaut/gradle/docker/MicronautDockerfile.html#getBaseImage--">getBaseImage</a>, <a href="../../../../io/micronaut/gradle/docker/MicronautDockerfile.html#getBuildStrategy--">getBuildStrategy</a>, <a href="../../../../io/micronaut/gradle/docker/MicronautDockerfile.html#getDefaultCommand--">getDefaultCommand</a>, <a href="../../../../io/micronaut/gradle/docker/MicronautDockerfile.html#getExposedPorts--">getExposedPorts</a>, <a href="../../../../io/micronaut/gradle/docker/MicronautDockerfile.html#getObjects--">getObjects</a>, <a href="../../../../io/micronaut/gradle/docker/MicronautDockerfile.html#getTargetWorkingDirectory--">getTargetWorkingDirectory</a>, <a href="../../../../io/micronaut/gradle/docker/MicronautDockerfile.html#getTweaks--">getTweaks</a>, <a href="../../../../io/micronaut/gradle/docker/MicronautDockerfile.html#setupDockerfileInstructions--">setupDockerfileInstructions</a>, <a href="../../../../io/micronaut/gradle/docker/MicronautDockerfile.html#setupTaskPostEvaluate--">setupTaskPostEvaluate</a></code></li>
+<code><a href="../../../../io/micronaut/gradle/docker/MicronautDockerfile.html#args-java.lang.String...-">args</a>, <a href="../../../../io/micronaut/gradle/docker/MicronautDockerfile.html#baseImage-java.lang.String-">baseImage</a>, <a href="../../../../io/micronaut/gradle/docker/MicronautDockerfile.html#exportPorts-java.lang.Integer...-">exportPorts</a>, <a href="../../../../io/micronaut/gradle/docker/MicronautDockerfile.html#getArgs--">getArgs</a>, <a href="../../../../io/micronaut/gradle/docker/MicronautDockerfile.html#getBaseImage--">getBaseImage</a>, <a href="../../../../io/micronaut/gradle/docker/MicronautDockerfile.html#getBuildStrategy--">getBuildStrategy</a>, <a href="../../../../io/micronaut/gradle/docker/MicronautDockerfile.html#getDefaultCommand--">getDefaultCommand</a>, <a href="../../../../io/micronaut/gradle/docker/MicronautDockerfile.html#getExposedPorts--">getExposedPorts</a>, <a href="../../../../io/micronaut/gradle/docker/MicronautDockerfile.html#getObjects--">getObjects</a>, <a href="../../../../io/micronaut/gradle/docker/MicronautDockerfile.html#getTargetWorkingDirectory--">getTargetWorkingDirectory</a>, <a href="../../../../io/micronaut/gradle/docker/MicronautDockerfile.html#getTweaks--">getTweaks</a>, <a href="../../../../io/micronaut/gradle/docker/MicronautDockerfile.html#setupDockerfileInstructions--">setupDockerfileInstructions</a>, <a href="../../../../io/micronaut/gradle/docker/MicronautDockerfile.html#setupTaskPostEvaluate--">setupTaskPostEvaluate</a></code></li>
 </ul>
 <ul class="blockList">
 <li class="blockList"><a name="methods.inherited.from.class.com.bmuschko.gradle.docker.tasks.image.Dockerfile">
@@ -350,6 +358,31 @@ extends <a href="../../../../io/micronaut/gradle/docker/MicronautDockerfile.html
 <pre>@Input
  @Optional
 public abstract&nbsp;org.gradle.api.provider.Property&lt;java.lang.String&gt;&nbsp;getPlatform()</pre>
+</li>
+</ul>
+<a name="getCustomFinalDockerfile--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getCustomFinalDockerfile</h4>
+<pre>@InputFile
+ @PathSensitive(value=RELATIVE)
+ @Optional
+public abstract&nbsp;org.gradle.api.file.RegularFileProperty&nbsp;getCustomFinalDockerfile()</pre>
+</li>
+</ul>
+<a name="create--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>create</h4>
+<pre>public&nbsp;void&nbsp;create()</pre>
+<dl>
+<dt><span class="overrideSpecifyLabel">Overrides:</span></dt>
+<dd><code><a href="../../../../io/micronaut/gradle/docker/MicronautDockerfile.html#create--">create</a></code>&nbsp;in class&nbsp;<code><a href="../../../../io/micronaut/gradle/docker/MicronautDockerfile.html" title="class in io.micronaut.gradle.docker">MicronautDockerfile</a></code></dd>
+</dl>
 </li>
 </ul>
 <a name="setupInstructions-java.util.List-">
