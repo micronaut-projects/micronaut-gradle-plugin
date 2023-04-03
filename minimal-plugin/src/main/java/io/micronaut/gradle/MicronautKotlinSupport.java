@@ -95,7 +95,7 @@ public class MicronautKotlinSupport {
             if (isIncremental) {
                 kspExtension.arg("micronaut.processing.incremental", "true");
                 if (group.length() > 0) {
-                    kspExtension.arg("micronaut.processing.group,", group);
+                    kspExtension.arg("micronaut.processing.group", group);
                 }
                 kspExtension.arg("micronaut.processing.module", module);
             }
@@ -126,7 +126,7 @@ public class MicronautKotlinSupport {
                     }
 
                     if (group.length() > 0) {
-                        options.arg("micronaut.processing.group,", group);
+                        options.arg("micronaut.processing.group", group);
                     }
                     options.arg("micronaut.processing.module", module);
 
