@@ -137,3 +137,16 @@ gradlePlugin {
     website = "https://github.com/micronaut-projects/micronaut-gradle-plugin"
     vcsUrl = "https://github.com/micronaut-projects/micronaut-gradle-plugin.git"
 }
+
+tasks.withType(PublishToMavenRepository).configureEach {
+    def predicate = provider {
+        if (repository.name == 'sonatype' &&
+                publication.name.startsWith('local')) {
+            return false
+        }
+        return true
+    }
+    onlyIf("skip publication of local artifacts to Sonatype") {
+        predicate.get()
+    }
+}
