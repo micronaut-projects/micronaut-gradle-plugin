@@ -258,8 +258,8 @@ public class MicronautDockerPlugin implements Plugin<Project> {
             // Because docker requires all files to be found in the build context we need to
             // copy the configuration file directories into the build context
             context.getOutputDirectory().set(project.getLayout().getBuildDirectory().dir("docker/native-" + imageName + "/config-dirs"));
-            context.getInputDirectories().from(dockerFileTask.flatMap(t -> t.getNativeImageOptions()
-                    .map(NativeImageOptions::getConfigurationFileDirectories)
+            context.getInputDirectories().from(dockerFileTask.map(t -> t.getNativeImageOptions()
+                    .map(NativeImageOptions::getConfigurationFileDirectories).get() // drop dependency on building image
             ));
         });
         TaskProvider<DockerBuildImage> dockerBuildTask = tasks.register(adaptTaskName("dockerBuildNative", imageName), DockerBuildImage.class, task -> {

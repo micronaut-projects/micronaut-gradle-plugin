@@ -1365,6 +1365,28 @@ dependencies {
 ----
 ====
 
+[[src:test-resources-native]]
+=== Using test resources with native binaries
+
+By default, native binaries are considered production code.
+This implies that the test resources client will _not_ be included in the generated native binaries and therefore, by default, native applications will not make use of test resources.
+
+In order to produce a native binary which is capable of using test resources, you must explicitly pass a system property to the build:
+
+[source,bash]
+----
+./gradlew nativeCompile -Dtestresources.native=true
+----
+
+or, if you want to run the binary directly:
+
+[source,bash]
+----
+./gradlew nativeRun -Dtestresources.native=true
+----
+
+Note that you don't need to do this for the `nativeTest` task, which is automatically configured to use test resources.
+
 [[sec:standalone-test-resources]]
 === Standalone test resources service
 

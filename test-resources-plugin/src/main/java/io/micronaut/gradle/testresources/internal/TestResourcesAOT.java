@@ -18,16 +18,10 @@ package io.micronaut.gradle.testresources.internal;
 import io.micronaut.gradle.PluginsHelper;
 import io.micronaut.gradle.aot.AOTExtension;
 import io.micronaut.gradle.aot.MicronautAotPlugin;
-import io.micronaut.gradle.testresources.MicronautTestResourcesPlugin;
-import io.micronaut.gradle.testresources.StartTestResourcesService;
-import io.micronaut.gradle.testresources.TestResourcesConfiguration;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
-import org.gradle.api.artifacts.dsl.DependencyHandler;
+import org.gradle.api.artifacts.ConfigurationContainer;
 import org.gradle.api.provider.MapProperty;
-import org.gradle.api.tasks.JavaExec;
-import org.gradle.api.tasks.TaskContainer;
-import org.gradle.api.tasks.TaskProvider;
 
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -39,10 +33,13 @@ import java.util.stream.Stream;
  */
 public final class TestResourcesAOT {
 
-    public static void configure(Project project, TestResourcesConfiguration config, DependencyHandler dependencies, TaskContainer tasks, TaskProvider<StartTestResourcesService> internalStart, Configuration testResourcesClasspathConfig) {
+    public static void configure(Project project, Configuration client) {
         AOTExtension aot = PluginsHelper.findMicronautExtension(project).getExtensions().getByType(AOTExtension.class);
-        Configuration aotAppClasspath = project.getConfigurations().getByName(MicronautAotPlugin.AOT_APPLICATION_CLASSPATH);
-        MicronautTestResourcesPlugin.addTestResourcesClientDependencies(project, config, dependencies, internalStart, aotAppClasspath);
+        ConfigurationContainer configurations = project.getConfigurations();
+        Configuration aotAppClasspath = configurations.getByName(MicronautAotPlugin.AOT_APPLICATION_CLASSPATH);
+        Configuration optimizedRuntimeClasspath = configurations.getByName(MicronautAotPlugin.OPTIMIZED_RUNTIME_CLASSPATH_CONFIGURATION_NAME);
+        aotAppClasspath.extendsFrom(client);
+        optimizedRuntimeClasspath.extendsFrom(client);
         project.afterEvaluate(p -> {
             MapProperty<String, String> props = aot.getConfigurationProperties();
             if (props.get().containsKey("service.types")) {
@@ -53,9 +50,6 @@ public final class TestResourcesAOT {
                         MicronautAotPlugin.SERVICE_TYPES.stream()
                 ).collect(Collectors.joining(",")));
             }
-            tasks.named("optimizedRun", JavaExec.class, javaExec ->
-                    javaExec.setClasspath(javaExec.getClasspath().plus(testResourcesClasspathConfig))
-            );
         });
     }
 

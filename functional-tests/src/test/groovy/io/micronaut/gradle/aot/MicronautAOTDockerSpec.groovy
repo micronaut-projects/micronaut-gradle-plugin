@@ -63,7 +63,7 @@ ENTRYPOINT ["java", "-jar", "/home/app/application.jar"]
         withSample("aot/basic-app")
 
         when:
-        def result = build "optimizedDockerBuildNative", "-i"
+        def result = build "optimizedDockerBuildNative"
 
         then:
         result.task(":prepareNativeOptimizations").outcome == TaskOutcome.SUCCESS
@@ -73,6 +73,7 @@ ENTRYPOINT ["java", "-jar", "/home/app/application.jar"]
         result.task(":optimizedBuildNativeLayersTask").outcome == TaskOutcome.SUCCESS
         result.task(":optimizedDockerfileNative").outcome == TaskOutcome.SUCCESS
         result.task(":optimizedDockerBuildNative").outcome == TaskOutcome.SUCCESS
+        result.tasks.stream().noneMatch { it.path == ":nativeCompile" }
 
         def dockerFile = normalizeLineEndings(file("build/docker/native-optimized/DockerfileNative").text)
         dockerFile == """FROM ghcr.io/graalvm/native-image:ol7-java17-22.3.0 AS graalvm

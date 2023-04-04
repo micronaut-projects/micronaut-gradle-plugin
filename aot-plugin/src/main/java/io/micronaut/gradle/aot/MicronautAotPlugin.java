@@ -15,6 +15,7 @@
  */
 package io.micronaut.gradle.aot;
 
+import io.micronaut.gradle.AttributeUtils;
 import io.micronaut.gradle.MicronautBasePlugin;
 import io.micronaut.gradle.MicronautComponentPlugin;
 import io.micronaut.gradle.MicronautExtension;
@@ -33,8 +34,6 @@ import org.gradle.api.Project;
 import org.gradle.api.Task;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.ConfigurationContainer;
-import org.gradle.api.attributes.Attribute;
-import org.gradle.api.attributes.AttributeContainer;
 import org.gradle.api.distribution.DistributionContainer;
 import org.gradle.api.distribution.plugins.DistributionPlugin;
 import org.gradle.api.file.ArchiveOperations;
@@ -49,7 +48,7 @@ import org.gradle.api.plugins.ApplicationPlugin;
 import org.gradle.api.plugins.ApplicationPluginConvention;
 import org.gradle.api.plugins.JavaApplication;
 import org.gradle.api.plugins.JavaPlugin;
-import org.gradle.api.plugins.JavaPluginConvention;
+import org.gradle.api.plugins.JavaPluginExtension;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.provider.ProviderFactory;
 import org.gradle.api.tasks.JavaExec;
@@ -109,6 +108,7 @@ public abstract class MicronautAotPlugin implements Plugin<Project> {
             "io.micronaut.core.beans.BeanIntrospectionReference"
     ));
     public static final String AOT_APPLICATION_CLASSPATH = "aotApplicationClasspath";
+    public static final String OPTIMIZED_RUNTIME_CLASSPATH_CONFIGURATION_NAME = "optimizedRuntimeClasspath";
 
     @Inject
     protected abstract ArchiveOperations getArchiveOperations();
@@ -255,9 +255,12 @@ public abstract class MicronautAotPlugin implements Plugin<Project> {
         GraalVMExtension graalVMExtension = project.getExtensions().getByType(GraalVMExtension.class);
         NamedDomainObjectContainer<NativeImageOptions> binaries = graalVMExtension.getBinaries();
         binaries.create(OPTIMIZED_BINARY_NAME, binary -> {
+            JavaPluginExtension javaExtension = project.getExtensions().getByType(JavaPluginExtension.class);
+            SourceSet mainSourceSet = javaExtension.getSourceSets().getByName(SourceSet.MAIN_SOURCE_SET_NAME);
             NativeImageOptions main = binaries.getByName(MAIN_BINARY_NAME);
             binary.getMainClass().set(main.getMainClass());
-            binary.getClasspath().from(main.getClasspath());
+            binary.getClasspath().from(mainSourceSet.getRuntimeClasspath());
+            binary.getClasspath().from(mainSourceSet.getOutput());
             binary.getClasspath().from(prepareNative.map(MicronautAotOptimizerTask::getGeneratedClassesDirectory));
             // The following lines are a hack for the fact that the GraalVM plugin doesn't configure all binaries
             // to use the metadata repository, but only the ones that it knows about (`main` and `test`).
@@ -297,33 +300,34 @@ public abstract class MicronautAotPlugin implements Plugin<Project> {
     private void registerJavaExecOptimizedRun(Project project,
                                               TaskContainer tasks,
                                               TaskProvider<MicronautAotOptimizerTask> prepareJit) {
-        TaskProvider<Jar> mainJar = tasks.named("jar", Jar.class);
         TaskProvider<Jar> jarTask = registerOptimizedJar(project, tasks, prepareJit, OptimizerIO.TargetRuntime.JIT);
         ShadowPluginSupport.withShadowPlugin(project, () -> AotShadowSupport.registerShadowJar(project, getArchiveOperations(), tasks, jarTask));
         project.getPlugins().withType(DistributionPlugin.class, p -> registerOptimizedDistribution(project, jarTask));
         project.getPlugins().withType(ApplicationPlugin.class, p -> {
+            ConfigurationContainer configurations = project.getConfigurations();
+            Configuration optimizedRuntimeClasspath = configurations.create(OPTIMIZED_RUNTIME_CLASSPATH_CONFIGURATION_NAME, conf -> {
+                Configuration runtimeClasspath = configurations.getByName("runtimeClasspath");
+                conf.extendsFrom(runtimeClasspath);
+                conf.setCanBeConsumed(false);
+                conf.setCanBeConsumed(true);
+                // Use the same attributes as runtimeClasspath for resolution
+                AttributeUtils.copyAttributes(conf, runtimeClasspath);
+            });
+
             tasks.register("optimizedRun", JavaExec.class, task -> {
-                JavaExec runTask = tasks.named("run", JavaExec.class).get();
                 JavaApplication javaApplication = project.getExtensions().getByType(JavaApplication.class);
-                JavaPluginConvention javaPluginConvention = project.getConvention().getPlugin(JavaPluginConvention.class);
-                SourceSet mainSourceSet = javaPluginConvention.getSourceSets().getByName(SourceSet.MAIN_SOURCE_SET_NAME);
-                task.setGroup(runTask.getGroup());
                 task.setDescription("Executes the Micronaut application with AOT optimizations");
                 task.getMainClass().convention(javaApplication.getMainClass());
                 // https://github.com/micronaut-projects/micronaut-gradle-plugin/issues/385
                 task.getOutputs().upToDateWhen(t -> false);
-                Set<File> mainSourceSetOutput = mainSourceSet.getOutput().getFiles();
-                task.setClasspath(
-                        project.files(jarTask, mainSourceSet.getRuntimeClasspath().filter(f -> !mainJar.get().getArchiveFile().get().getAsFile().equals(f)
-                                && mainSourceSetOutput.stream().noneMatch(f::equals)
-                        )));
+                task.setClasspath(project.files(jarTask, optimizedRuntimeClasspath));
                 task.doFirst(new Action<Task>() {
                     @Override
                     public void execute(Task t) {
                         if (task.getLogger().isDebugEnabled()) {
                             task.getLogger().debug(
                                     "Running optimized entry point: " + task.getMainClass().get() +
-                                            "\nClasspath:\n    " + task.getClasspath().getFiles()
+                                    "\nClasspath:\n    " + task.getClasspath().getFiles()
                                             .stream()
                                             .map(File::getName)
                                             .collect(Collectors.joining("\n    "))
@@ -400,15 +404,8 @@ public abstract class MicronautAotPlugin implements Plugin<Project> {
         configuration.setCanBeResolved(true);
         configuration.setCanBeConsumed(false);
 
-        Configuration runtimeClasspath = configurations.findByName(JavaPlugin.RUNTIME_CLASSPATH_CONFIGURATION_NAME);
-        configuration.attributes(attrs -> {
-            AttributeContainer baseAttributes = runtimeClasspath.getAttributes();
-            for (Attribute<?> attribute : baseAttributes.keySet()) {
-                Attribute<Object> attr = (Attribute<Object>) attribute;
-                Object value = baseAttributes.getAttribute(attr);
-                attrs.attribute(attr, value);
-            }
-        });
+        Configuration runtimeClasspath = configurations.getByName(JavaPlugin.RUNTIME_CLASSPATH_CONFIGURATION_NAME);
+        AttributeUtils.copyAttributes(runtimeClasspath, configuration);
     }
 
     private static class JarExclusionSpec implements Action<FileCopyDetails> {

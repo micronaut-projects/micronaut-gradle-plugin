@@ -56,7 +56,7 @@ graalvmNative.binaries.all {
 """)
 
         when:
-        def result = build 'nativeRun'
+        def result = build 'nativeRun', "-Dtestresources.native"
 
         then:
         result.task(':nativeRun').outcome == TaskOutcome.SUCCESS
