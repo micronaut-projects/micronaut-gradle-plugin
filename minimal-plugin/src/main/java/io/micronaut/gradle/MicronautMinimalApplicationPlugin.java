@@ -24,10 +24,13 @@ import org.gradle.api.Task;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.ConfigurationContainer;
 import org.gradle.api.artifacts.dsl.DependencyHandler;
+import org.gradle.api.file.ConfigurableFileCollection;
+import org.gradle.api.file.FileCollection;
 import org.gradle.api.file.SourceDirectorySet;
 import org.gradle.api.plugins.ApplicationPlugin;
 import org.gradle.api.plugins.JavaApplication;
 import org.gradle.api.plugins.JavaPluginConvention;
+import org.gradle.api.plugins.JavaPluginExtension;
 import org.gradle.api.plugins.PluginManager;
 import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.JavaExec;
@@ -75,9 +78,21 @@ public class MicronautMinimalApplicationPlugin implements Plugin<Project> {
         configureJavaExecTasks(project, developmentOnly);
     }
 
-    private void configureJavaExecTasks(Project project, Configuration developmentOnly) {
+    private void configureJavaExecTasks(Project project, Configuration developmentOnlyConfiguration) {
         final TaskContainer tasks = project.getTasks();
+        ConfigurationContainer configurations = project.getConfigurations();
+        Configuration developmentRuntimeClasspath = configurations.create("developmentRuntimeClasspath", conf -> {
+            conf.setCanBeResolved(true);
+            conf.setCanBeConsumed(true);
+            Configuration runtimeClasspath = configurations.getByName("runtimeClasspath");
+            conf.extendsFrom(runtimeClasspath);
+            conf.extendsFrom(developmentOnlyConfiguration);
+            AttributeUtils.copyAttributes(runtimeClasspath, conf);
+        });
         tasks.withType(JavaExec.class).configureEach(javaExec -> {
+            SourceSetContainer sourceSets = project.getExtensions()
+                    .getByType(JavaPluginExtension.class)
+                    .getSourceSets();
             if (javaExec.getName().equals("run")) {
                 javaExec.dependsOn(tasks.named(MicronautComponentPlugin.INSPECT_RUNTIME_CLASSPATH_TASK_NAME));
                 javaExec.jvmArgs(
@@ -89,16 +104,19 @@ public class MicronautMinimalApplicationPlugin implements Plugin<Project> {
                 }
                 // https://github.com/micronaut-projects/micronaut-gradle-plugin/issues/385
                 javaExec.getOutputs().upToDateWhen(t -> false);
+                FileCollection classpath = javaExec.getClasspath();
+                if (classpath instanceof ConfigurableFileCollection cp) {
+                    Set<Object> from = cp.getFrom();
+                    from.clear();
+                    cp.from(sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME).getOutput());
+                    cp.from(developmentRuntimeClasspath);
+                }
             }
-            javaExec.classpath(developmentOnly);
 
             // If -t (continuous mode) is enabled feed parameters to the JVM
             // that allows it to shutdown on resources changes so a rebuild
             // can apply a restart to the application
             if (project.getGradle().getStartParameter().isContinuous() || Boolean.getBoolean(INTERNAL_CONTINUOUS_FLAG)) {
-                SourceSetContainer sourceSets = project.getConvention()
-                        .getPlugin(JavaPluginConvention.class)
-                        .getSourceSets();
                 SourceSet sourceSet = sourceSets.findByName("main");
                 if (sourceSet != null) {
                     Map<String, Object> sysProps = new LinkedHashMap<>();
