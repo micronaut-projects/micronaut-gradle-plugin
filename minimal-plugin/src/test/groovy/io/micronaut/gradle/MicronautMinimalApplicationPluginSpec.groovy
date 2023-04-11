@@ -148,4 +148,138 @@ public class ExampleTest {
 """
         javaFile
     }
+
+    def "can override the default Micronaut core version via the DSL"() {
+        given:
+        settingsFile << "rootProject.name = 'hello-world'"
+        buildFile << """
+            plugins {
+                id "io.micronaut.minimal.application"
+            }
+            
+            micronaut {
+                version "$micronautVersion"
+ 
+                // Gradle won't support using the `=` operator here
+                coreVersion.set("2048")
+                
+                runtime "netty"
+                testRuntime "junit5"
+            }
+            
+            $repositoriesBlock
+            mainClassName="example.Application"
+
+            $withSerde
+        """
+
+        testProjectDir.newFolder("src", "test", "java", "example")
+        def javaFile = writeExampleClass()
+
+        when:
+        def result = fails('test')
+
+        then:
+        result.output.contains('Could not find io.micronaut:micronaut-inject:2048')
+
+    }
+
+    def "can override the default Micronaut core version via a Gradle property"() {
+        given:
+        settingsFile << "rootProject.name = 'hello-world'"
+        buildFile << """
+            plugins {
+                id "io.micronaut.minimal.application"
+            }
+            
+            micronaut {
+                version "$micronautVersion"
+                runtime "netty"
+                testRuntime "junit5"
+            }
+            
+            $repositoriesBlock
+            mainClassName="example.Application"
+
+            $withSerde
+        """
+        file("gradle.properties") << "micronautCoreVersion=2048"
+
+        testProjectDir.newFolder("src", "test", "java", "example")
+        def javaFile = writeExampleClass()
+
+        when:
+        def result = fails('test')
+
+        then:
+        result.output.contains('Could not find io.micronaut:micronaut-inject:2048')
+
+    }
+
+    def "can override the default Micronaut Netty version via the DSL"() {
+        given:
+        settingsFile << "rootProject.name = 'hello-world'"
+        buildFile << """
+            plugins {
+                id "io.micronaut.minimal.application"
+            }
+            
+            micronaut {
+                version "$micronautVersion"
+ 
+                // Gradle won't support using the `=` operator here
+                httpNettyVersion.set("2048")
+                
+                runtime "netty"
+                testRuntime "junit5"
+            }
+            
+            $repositoriesBlock
+            mainClassName="example.Application"
+
+            $withSerde
+        """
+
+        testProjectDir.newFolder("src", "test", "java", "example")
+        def javaFile = writeExampleClass()
+
+        when:
+        def result = fails('test')
+
+        then:
+        result.output.contains('Could not find io.micronaut:micronaut-http-server-netty:2048')
+
+    }
+
+    def "can override the default Micronaut Netty version via a Gradle property"() {
+        given:
+        settingsFile << "rootProject.name = 'hello-world'"
+        buildFile << """
+            plugins {
+                id "io.micronaut.minimal.application"
+            }
+            
+            micronaut {
+                version "$micronautVersion"
+                runtime "netty"
+                testRuntime "junit5"
+            }
+            
+            $repositoriesBlock
+            mainClassName="example.Application"
+
+            $withSerde
+        """
+        file("gradle.properties") << "micronautHttpNettyVersion=2048"
+
+        testProjectDir.newFolder("src", "test", "java", "example")
+        def javaFile = writeExampleClass()
+
+        when:
+        def result = fails('test')
+
+        then:
+        result.output.contains('Could not find io.micronaut:micronaut-http-server-netty:2048')
+
+    }
 }
