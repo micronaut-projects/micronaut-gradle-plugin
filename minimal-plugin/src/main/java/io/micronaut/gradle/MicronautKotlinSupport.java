@@ -139,7 +139,7 @@ public class MicronautKotlinSupport {
     private static void configureKotlinCompilerPlugin(Project project, String[] compilerConfigurations, String compilerType, List<String> annotationProcessorModules) {
         // add inject-java to kapt scopes
         DependencyHandler dependencies = project.getDependencies();
-        PluginsHelper.registerAnnotationProcessors(dependencies, annotationProcessorModules, compilerConfigurations);
+        PluginsHelper.registerAnnotationProcessors(project, annotationProcessorModules, compilerConfigurations);
         addGraalVmDependencies(compilerConfigurations, dependencies);
 
         Configuration kotlinProcessors = project.getConfigurations().getByName(KOTLIN_PROCESSORS);

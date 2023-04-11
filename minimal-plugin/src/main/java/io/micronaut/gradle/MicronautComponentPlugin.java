@@ -93,7 +93,7 @@ public class MicronautComponentPlugin implements Plugin<Project> {
             configureTesting(project, micronautExtension, inspectRuntimeClasspath);
             ShadowPluginSupport.mergeServiceFiles(project);
         });
-
+        PluginsHelper.registerVersionExtensions(PluginsHelper.KNOWN_VERSION_PROPERTIES, project);
     }
 
     private void configureTesting(Project project, MicronautExtension micronautExtension, TaskProvider<ApplicationClasspathInspector> inspectRuntimeClasspath) {

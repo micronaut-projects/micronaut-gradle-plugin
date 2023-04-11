@@ -15,17 +15,17 @@
  */
 package io.micronaut.gradle;
 
+import io.micronaut.gradle.internal.AutomaticDependency;
+import io.micronaut.gradle.internal.ConfigurableVersionProperty;
 import org.gradle.api.InvalidUserCodeException;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.DependencySet;
-import org.gradle.api.artifacts.dsl.DependencyHandler;
+import org.gradle.api.provider.Property;
 import org.gradle.api.provider.Provider;
+import org.gradle.api.reflect.TypeOf;
 import org.gradle.api.tasks.SourceSet;
 
 import java.io.File;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -37,13 +37,27 @@ import static org.gradle.api.plugins.JavaPlugin.COMPILE_ONLY_CONFIGURATION_NAME;
 import static org.gradle.api.plugins.JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME;
 
 public abstract class PluginsHelper {
-    final static List<String> ANNOTATION_PROCESSOR_MODULES = Arrays.asList("inject-java");
-    private final static Map<String, String> GROUP_TO_PROCESSOR_MAP = Collections.unmodifiableMap(new HashMap<String, String>() {{
-        put("io.micronaut.data", "io.micronaut.data:micronaut-data-processor");
-        put("io.micronaut.jaxrs", "io.micronaut.jaxrs:micronaut-jaxrs-processor");
-        put("io.micronaut.security", "io.micronaut.security:micronaut-security-annotations");
-        put("io.micronaut.validation", "io.micronaut.validation:micronaut-validation-processor");
-    }});
+    static final List<String> ANNOTATION_PROCESSOR_MODULES = List.of("inject-java");
+    public static final ConfigurableVersionProperty CORE_VERSION_PROPERTY = ConfigurableVersionProperty.of("core");
+    public static final ConfigurableVersionProperty DATA_VERSION_PROPERTY = ConfigurableVersionProperty.of("data");
+    public static final ConfigurableVersionProperty JAXRS_VERSION_PROPERTY = ConfigurableVersionProperty.of("jaxrs");
+    public static final ConfigurableVersionProperty SECURITY_VERSION_PROPERTY = ConfigurableVersionProperty.of("security");
+    public static final ConfigurableVersionProperty VALIDATION_VERSION_PROPERTY = ConfigurableVersionProperty.of("validation");
+
+    private static final Map<String, AutomaticDependency> GROUP_TO_PROCESSOR_MAP = Map.of(
+            "io.micronaut.data", new AutomaticDependency(null, "io.micronaut.data:micronaut-data-processor", Optional.of(DATA_VERSION_PROPERTY)),
+            "io.micronaut.jaxrs", new AutomaticDependency(null, "io.micronaut.jaxrs:micronaut-jaxrs-processor", Optional.of(JAXRS_VERSION_PROPERTY)),
+            "io.micronaut.security", new AutomaticDependency(null, "io.micronaut.security:micronaut-security-annotations", Optional.of(SECURITY_VERSION_PROPERTY)),
+            "io.micronaut.validation", new AutomaticDependency(null, "io.micronaut.validation:micronaut-validation-processor", Optional.of(VALIDATION_VERSION_PROPERTY))
+    );
+
+    public static List<ConfigurableVersionProperty> KNOWN_VERSION_PROPERTIES = List.of(
+            CORE_VERSION_PROPERTY,
+            DATA_VERSION_PROPERTY,
+            JAXRS_VERSION_PROPERTY,
+            SECURITY_VERSION_PROPERTY,
+            VALIDATION_VERSION_PROPERTY
+    );
 
     public static String findMicronautVersion(Project p, MicronautExtension micronautExtension) {
         String v = micronautExtension.getVersion().getOrNull();
@@ -63,7 +77,7 @@ public abstract class PluginsHelper {
         return findMicronautExtension(p)
                 .getVersion()
                 .orElse(p.getProviders().gradleProperty("micronautVersion"))
-                .orElse(p.getProviders().provider( () -> {
+                .orElse(p.getProviders().provider(() -> {
                     throw new InvalidUserCodeException("Micronaut version not set. Use micronaut { version '..'} or 'micronautVersion' in gradle.properties to set the version");
                 }));
     }
@@ -72,26 +86,26 @@ public abstract class PluginsHelper {
             Project project,
             String implementationScope,
             String annotationProcessorConfiguration) {
-        DependencyHandler dependencyHandler = project.getDependencies();
-        registerAnnotationProcessors(dependencyHandler, annotationProcessorConfiguration);
-
-        dependencyHandler.add(
+        registerAnnotationProcessors(project, annotationProcessorConfiguration);
+        new AutomaticDependency(
                 implementationScope,
-                "io.micronaut:micronaut-inject"
-        );
+                "io.micronaut:micronaut-inject",
+                Optional.of(CORE_VERSION_PROPERTY)
+        ).applyTo(project);
     }
 
-    static void registerAnnotationProcessors(DependencyHandler dependencyHandler, String... annotationProcessingConfigurations) {
-        registerAnnotationProcessors(dependencyHandler, ANNOTATION_PROCESSOR_MODULES, annotationProcessingConfigurations);
+    static void registerAnnotationProcessors(Project p, String... annotationProcessingConfigurations) {
+        registerAnnotationProcessors(p, ANNOTATION_PROCESSOR_MODULES, annotationProcessingConfigurations);
     }
 
-    static void registerAnnotationProcessors(DependencyHandler dependencyHandler, List<String> annotationProcessorModules, String... annotationProcessingConfigurations) {
+    static void registerAnnotationProcessors(Project p, List<String> annotationProcessorModules, String... annotationProcessingConfigurations) {
         for (String annotationProcessorModule : annotationProcessorModules) {
             for (String annotationProcessingConfiguration : annotationProcessingConfigurations) {
-                dependencyHandler.add(
+                new AutomaticDependency(
                         annotationProcessingConfiguration,
-                        "io.micronaut:micronaut-" + annotationProcessorModule
-                );
+                        "io.micronaut:micronaut-" + annotationProcessorModule,
+                        Optional.of(CORE_VERSION_PROPERTY)
+                ).applyTo(p);
             }
         }
     }
@@ -117,9 +131,9 @@ public abstract class PluginsHelper {
                 for (String group : GROUP_TO_PROCESSOR_MAP.keySet()) {
                     boolean hasDep = !allDependencies.matching(dependency -> Objects.equals(dependency.getGroup(), group)).isEmpty();
                     if (hasDep) {
-                        final DependencyHandler dependencies = project.getDependencies();
                         for (String configuration : configurations) {
-                            dependencies.add(configuration, GROUP_TO_PROCESSOR_MAP.get(group));
+                            AutomaticDependency automaticDependency = GROUP_TO_PROCESSOR_MAP.get(group);
+                            automaticDependency.withConfiguration(configuration).applyTo(project);
                         }
                     }
                 }
@@ -144,5 +158,16 @@ public abstract class PluginsHelper {
 
     public static MicronautExtension findMicronautExtension(Project project) {
         return project.getExtensions().getByType(MicronautExtension.class);
+    }
+
+    static void registerVersionExtensions(List<ConfigurableVersionProperty> properties, Project project) {
+        var micronautExtension = project.getExtensions().findByType(MicronautExtension.class);
+        var type = new TypeOf<Property<String>>() {
+        };
+        properties.forEach(v -> {
+            var property = project.getObjects().property(String.class);
+            property.convention(project.getProviders().gradleProperty(v.gradlePropertyName()));
+            micronautExtension.getExtensions().add(type, v.dslName(), property);
+        });
     }
 }
