@@ -95,7 +95,7 @@ micronaut:
         where:
         runtime  | nativeImage
         "netty"  | 'FROM ghcr.io/graalvm/native-image:ol7-java'
-        "lambda" | 'FROM amazonlinux:2023 AS graalvm'
+        "lambda" | 'FROM amazonlinux:2 AS graalvm'
         "jetty"  | 'FROM ghcr.io/graalvm/native-image:ol7-java'
     }
 
@@ -485,7 +485,7 @@ class Application {
         where:
         runtime  | nativeImage
         "netty"  | 'FROM ghcr.io/graalvm/native-image:ol7-java'
-        "lambda" | 'FROM amazonlinux:2023 AS graalvm'
+        "lambda" | 'FROM amazonlinux:2 AS graalvm'
         "jetty"  | 'FROM ghcr.io/graalvm/native-image:ol7-java'
     }
 
