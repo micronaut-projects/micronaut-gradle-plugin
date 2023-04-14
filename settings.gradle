@@ -11,6 +11,7 @@ plugins {
 
 rootProject.name = 'micronaut-gradle-plugin-parent'
 
+include("platform-catalog-plugin")
 include("minimal-plugin")
 include("crac-plugin")
 include("docker-plugin")

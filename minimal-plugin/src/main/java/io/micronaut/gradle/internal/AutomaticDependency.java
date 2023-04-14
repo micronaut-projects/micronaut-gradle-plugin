@@ -18,8 +18,12 @@ package io.micronaut.gradle.internal;
 import io.micronaut.gradle.MicronautComponentPlugin;
 import io.micronaut.gradle.MicronautExtension;
 import org.gradle.api.Project;
+import org.gradle.api.artifacts.MinimalExternalModuleDependency;
+import org.gradle.api.artifacts.VersionCatalog;
+import org.gradle.api.artifacts.VersionCatalogsExtension;
 import org.gradle.api.artifacts.dsl.DependencyHandler;
 import org.gradle.api.provider.Property;
+import org.gradle.api.provider.Provider;
 
 import java.util.Optional;
 
@@ -46,6 +50,24 @@ public record AutomaticDependency(
                     Property<String> provider = (Property<String>) micronautExtension.getExtensions().findByName(versionProperty.get().dslName());
                     if (provider != null && provider.isPresent()) {
                         return dependencyHandler.create(coordinates + ":" + provider.get());
+                    }
+                }
+                // If the Micronaut version catalog is applied via the settings plugin, we won't use an "empty" version
+                // but fetch it from the catalog if possible
+                VersionCatalogsExtension versionCatalogs = p.getExtensions().findByType(VersionCatalogsExtension.class);
+                if (versionCatalogs != null) {
+                    Optional<VersionCatalog> mn = versionCatalogs.find("mn");
+                    if (mn.isPresent()) {
+                        VersionCatalog micronautCatalog = mn.get();
+                        Optional<Provider<MinimalExternalModuleDependency>> dependencyProvider = micronautCatalog.getLibraryAliases()
+                                .stream()
+                                .map(micronautCatalog::findLibrary)
+                                .map(Optional::get)
+                                .filter(d -> coordinates.equals(d.get().getModule().toString()))
+                                .findFirst();
+                        if (dependencyProvider.isPresent()) {
+                            return dependencyProvider.get().get();
+                        }
                     }
                 }
                 return dependencyHandler.create(coordinates);

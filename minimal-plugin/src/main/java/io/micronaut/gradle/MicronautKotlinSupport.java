@@ -9,6 +9,7 @@ import org.gradle.api.artifacts.dsl.DependencyHandler;
 import org.gradle.api.plugins.ExtensionContainer;
 import org.gradle.api.plugins.PluginManager;
 import org.gradle.api.provider.ListProperty;
+import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.TaskContainer;
 import org.jetbrains.kotlin.allopen.gradle.AllOpenExtension;
@@ -158,12 +159,7 @@ public class MicronautKotlinSupport {
             ListProperty<SourceSet> additionalSourceSets =
                     micronautExtension.getProcessing().getAdditionalSourceSets();
             final DependencyHandler dependencyHandler = p.getDependencies();
-            final String micronautVersion = PluginsHelper.findMicronautVersion(
-                    p,
-                    micronautExtension
-            );
-
-            final Dependency platform = resolveMicronautPlatform(dependencyHandler, micronautVersion);
+            Provider<Dependency> platform = PluginsHelper.findMicronautVersion(p).map(micronautVersion -> resolveMicronautPlatform(dependencyHandler, micronautVersion));
             if (additionalSourceSets.isPresent()) {
                 List<SourceSet> configurations = additionalSourceSets.get();
                 if (!configurations.isEmpty()) {
@@ -175,7 +171,7 @@ public class MicronautKotlinSupport {
 
 
             for (String compileConfiguration : compilerConfigurations) {
-                dependencyHandler.add(
+                dependencyHandler.addProvider(
                         compileConfiguration,
                         platform
                 );
@@ -183,7 +179,7 @@ public class MicronautKotlinSupport {
         });
     }
 
-    private static void configureAdditionalSourceSet(String compilerType, DependencyHandler dependencies, Project p, DependencyHandler dependencyHandler, Dependency platform, SourceSet sourceSet) {
+    private static void configureAdditionalSourceSet(String compilerType, DependencyHandler dependencies, Project p, DependencyHandler dependencyHandler, Provider<Dependency> platform, SourceSet sourceSet) {
         String annotationProcessorConfigurationName = compilerType + Strings.capitalize(sourceSet.getName());
         String implementationConfigurationName = sourceSet
                 .getImplementationConfigurationName();
@@ -192,7 +188,7 @@ public class MicronautKotlinSupport {
                 annotationProcessorConfigurationName
         );
         for (String configuration : both) {
-            dependencyHandler.add(
+            dependencyHandler.addProvider(
                     configuration,
                     platform
             );

@@ -70,6 +70,7 @@ public class MicronautComponentPlugin implements Plugin<Project> {
     }});
     public static final String MICRONAUT_BOMS_CONFIGURATION = "micronautBoms";
     public static final String INSPECT_RUNTIME_CLASSPATH_TASK_NAME = "inspectRuntimeClasspath";
+    public static final String MICRONAUT_PLATFORM_COORDINATES = "io.micronaut.platform:micronaut-platform";
 
     @Override
     public void apply(Project project) {
@@ -127,10 +128,9 @@ public class MicronautComponentPlugin implements Plugin<Project> {
         Configuration micronautBoms = project.getConfigurations().getByName(MICRONAUT_BOMS_CONFIGURATION);
         DependencyHandler dependencyHandler = project.getDependencies();
         project.afterEvaluate(p -> {
-            dependencyHandler.addProvider(micronautBoms.getName(), project.getProviders().provider(() -> {
-                String micronautVersion = PluginsHelper.findMicronautVersion(project, micronautExtension);
-                return resolveMicronautPlatform(dependencyHandler, micronautVersion);
-            }));
+            dependencyHandler.addProvider(micronautBoms.getName(), PluginsHelper.findMicronautVersion(project).map(micronautVersion ->
+                resolveMicronautPlatform(dependencyHandler, micronautVersion)
+            ));
             project.getConfigurations().configureEach(conf -> {
                 if (CONFIGURATIONS_TO_APPLY_BOMS.contains(conf.getName())) {
                     conf.extendsFrom(micronautBoms);
@@ -168,7 +168,7 @@ public class MicronautComponentPlugin implements Plugin<Project> {
 
 
     public static Dependency resolveMicronautPlatform(DependencyHandler dependencyHandler, String micronautVersion) {
-        return dependencyHandler.platform("io.micronaut.platform:micronaut-platform:" + micronautVersion);
+        return dependencyHandler.platform(MICRONAUT_PLATFORM_COORDINATES + ":" + micronautVersion);
     }
 
     private void configureJava(Project project, TaskContainer tasks) {

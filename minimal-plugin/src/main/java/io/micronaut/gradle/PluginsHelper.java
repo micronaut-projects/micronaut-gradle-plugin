@@ -20,6 +20,9 @@ import io.micronaut.gradle.internal.ConfigurableVersionProperty;
 import org.gradle.api.InvalidUserCodeException;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.DependencySet;
+import org.gradle.api.artifacts.VersionCatalog;
+import org.gradle.api.artifacts.VersionCatalogsExtension;
+import org.gradle.api.artifacts.VersionConstraint;
 import org.gradle.api.provider.Property;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.reflect.TypeOf;
@@ -50,8 +53,11 @@ public abstract class PluginsHelper {
             "io.micronaut.security", new AutomaticDependency(null, "io.micronaut.security:micronaut-security-annotations", Optional.of(SECURITY_VERSION_PROPERTY)),
             "io.micronaut.validation", new AutomaticDependency(null, "io.micronaut.validation:micronaut-validation-processor", Optional.of(VALIDATION_VERSION_PROPERTY))
     );
+    public static final String MICRONAUT_VERSION_PROPERTY = "micronautVersion";
+    public static final String MICRONAUT_PLATFORM_ALIAS = "micronaut.platform";
+    public static final String MICRONAUT_ALIAS = "micronaut";
 
-    public static List<ConfigurableVersionProperty> KNOWN_VERSION_PROPERTIES = List.of(
+    public static final List<ConfigurableVersionProperty> KNOWN_VERSION_PROPERTIES = List.of(
             CORE_VERSION_PROPERTY,
             DATA_VERSION_PROPERTY,
             JAXRS_VERSION_PROPERTY,
@@ -59,27 +65,51 @@ public abstract class PluginsHelper {
             VALIDATION_VERSION_PROPERTY
     );
 
-    public static String findMicronautVersion(Project p, MicronautExtension micronautExtension) {
-        String v = micronautExtension.getVersion().getOrNull();
-        if (v == null) {
-            final Object o = p.getProperties().get("micronautVersion");
-            if (o != null) {
-                v = o.toString();
+    private static Provider<String> findVersionFromProjectProperties(Project p) {
+        return p.getProviders().provider(() -> {
+            Object micronautVersion = p.getProperties().get(MICRONAUT_VERSION_PROPERTY);
+            if (micronautVersion != null) {
+                return micronautVersion.toString();
             }
-        }
-        if (v == null || v.length() == 0) {
-            throw new InvalidUserCodeException("Micronaut version not set. Use micronaut { version '..'} or 'micronautVersion' in gradle.properties to set the version");
-        }
-        return v;
+            return null;
+        });
     }
 
-    public static Provider<String> findMicronautVersionAsProvider(Project p) {
+    private static Provider<String> findVersionFromGradleProperties(Project p) {
+        return p.getProviders().gradleProperty(MICRONAUT_VERSION_PROPERTY);
+    }
+
+    private static Provider<String> findVersionFromVersionCatalog(Project p) {
+        return p.provider(() -> {
+            VersionCatalogsExtension versionCatalogs = p.getExtensions().findByType(VersionCatalogsExtension.class);
+            if (versionCatalogs != null) {
+                Optional<VersionCatalog> mn = versionCatalogs.find("mn").or(() -> versionCatalogs.find("libs"));
+                if (mn.isPresent()) {
+                    VersionCatalog versionCatalog = mn.get();
+                    Optional<VersionConstraint> vc = versionCatalog.findVersion(MICRONAUT_PLATFORM_ALIAS)
+                            .or(() -> versionCatalog.findVersion(MICRONAUT_ALIAS));
+                    if (vc.isPresent()) {
+                        return vc.get().getRequiredVersion();
+                    }
+                }
+            }
+            return null;
+        });
+    }
+
+    public static Provider<String> findMicronautVersion(Project p) {
         return findMicronautExtension(p)
                 .getVersion()
-                .orElse(p.getProviders().gradleProperty("micronautVersion"))
-                .orElse(p.getProviders().provider(() -> {
-                    throw new InvalidUserCodeException("Micronaut version not set. Use micronaut { version '..'} or 'micronautVersion' in gradle.properties to set the version");
-                }));
+                .orElse(findVersionFromVersionCatalog(p))
+                .orElse(findVersionFromGradleProperties(p))
+                .orElse(findVersionFromProjectProperties(p))
+                .orElse(failAboutMissingMicronautVersion(p));
+    }
+
+    private static Provider<String> failAboutMissingMicronautVersion(Project p) {
+        return p.getProviders().provider(() -> {
+            throw new InvalidUserCodeException("Micronaut version not set. Use micronaut { version '..'} or 'micronautVersion' in gradle.properties to set the version");
+        });
     }
 
     static void configureAnnotationProcessors(

@@ -160,7 +160,7 @@ abstract class AbstractGradleBuildSpec extends Specification {
 
     BuildResult build(String... args) {
         configureRunner(args)
-                .build()
+                .run()
     }
 
     BuildResult fails(String... args) {

@@ -30,13 +30,19 @@ import org.codehaus.groovy.runtime.StringGroovyMethods;
 public record ConfigurableVersionProperty(
         String name,
         String dslName,
-        String gradlePropertyName
+        String gradlePropertyName,
+        String platformCatalogName
 ) {
     public static ConfigurableVersionProperty of(String name) {
         return new ConfigurableVersionProperty(
                 name,
                 name + "Version",
-                "micronaut" + StringGroovyMethods.capitalize(name) + "Version"
+                "micronaut" + StringGroovyMethods.capitalize(name) + "Version",
+                "micronaut." + name
         );
+    }
+
+    public ConfigurableVersionProperty withPlatformCatalogName(String platformCatalogName) {
+        return new ConfigurableVersionProperty(name, dslName, gradlePropertyName, platformCatalogName);
     }
 }
