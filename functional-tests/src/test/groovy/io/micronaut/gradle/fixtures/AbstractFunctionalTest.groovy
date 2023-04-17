@@ -27,6 +27,7 @@ abstract class AbstractFunctionalTest extends AbstractGradleBuildSpec {
                     gradlePluginPortal()
                 }
                 plugins {
+                    id 'io.micronaut.platform.catalog' version '${version}'
                     id 'io.micronaut.minimal.library' version '${version}'
                     id 'io.micronaut.minimal.application' version '${version}'
                     id 'io.micronaut.library' version '${version}'

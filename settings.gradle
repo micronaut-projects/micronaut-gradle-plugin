@@ -6,11 +6,12 @@ pluginManagement {
 }
 
 plugins {
-    id 'io.micronaut.build.shared.settings' version '6.3.5'
+    id 'io.micronaut.build.shared.settings' version '6.4.1'
 }
 
 rootProject.name = 'micronaut-gradle-plugin-parent'
 
+include("platform-catalog-plugin")
 include("minimal-plugin")
 include("crac-plugin")
 include("docker-plugin")
