@@ -16,7 +16,6 @@
 package io.micronaut.gradle.testresources;
 
 import io.micronaut.gradle.MicronautBasePlugin;
-import io.micronaut.gradle.MicronautExtension;
 import io.micronaut.gradle.PluginsHelper;
 import org.gradle.api.InvalidUserDataException;
 import org.gradle.api.Plugin;
@@ -44,22 +43,19 @@ public class MicronautTestResourcesConsumerPlugin implements Plugin<Project> {
     public void apply(Project project) {
         PluginManager pluginManager = project.getPluginManager();
         pluginManager.apply(MicronautBasePlugin.class);
-        Configuration testResourcesConfiguration = createTestResourcesExtension(project, project.getExtensions().findByType(MicronautExtension.class));
+        Configuration testResourcesConfiguration = createTestResourcesExtension(project);
         pluginManager.withPlugin("io.micronaut.component", unused ->
                 project.afterEvaluate(p -> p.getConfigurations().all(cnf -> configureDependencies(testResourcesConfiguration, cnf)))
         );
     }
 
-    private Configuration createTestResourcesExtension(Project project, MicronautExtension micronautExtension) {
+    private Configuration createTestResourcesExtension(Project project) {
         ConfigurationContainer configurations = project.getConfigurations();
         Configuration boms = configurations.findByName(MICRONAUT_BOMS_CONFIGURATION);
         DependencyHandler dependencyHandler = project.getDependencies();
-        project.afterEvaluate(p -> {
-            dependencyHandler.addProvider(boms.getName(), project.getProviders().provider(() -> {
-                String micronautVersion = PluginsHelper.findMicronautVersion(project, micronautExtension);
-                return resolveMicronautPlatform(dependencyHandler, micronautVersion);
-            }));
-        });
+        dependencyHandler.addProvider(MICRONAUT_BOMS_CONFIGURATION, PluginsHelper.findMicronautVersion(project).map(micronautVersion ->
+                resolveMicronautPlatform(dependencyHandler, micronautVersion)
+        ));
         return project.getConfigurations().create(MicronautTestResourcesPlugin.TESTRESOURCES_CONFIGURATION, conf -> {
             conf.extendsFrom(boms);
             conf.setCanBeConsumed(false);

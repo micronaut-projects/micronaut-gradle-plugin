@@ -12,6 +12,7 @@ repositories {
 }
 
 functionalTesting {
+    pluginUnderTest('platform-catalog')
     pluginUnderTest('minimal')
     pluginUnderTest('graalvm')
     pluginUnderTest('docker')

@@ -102,7 +102,7 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
             return Collections.emptyList();
         }));
 
-        client.getDependencyConstraints().addAllLater(PluginsHelper.findMicronautVersionAsProvider(project).map(v ->
+        client.getDependencyConstraints().addAllLater(PluginsHelper.findMicronautVersion(project).map(v ->
                 Stream.of("io.micronaut:micronaut-http-client",
                                 "io.micronaut:micronaut-core-bom",
                                 "io.micronaut.platform:micronaut-platform",
@@ -125,7 +125,7 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
 
     private void configurePlugin(Project project) {
         MicronautExtension micronautExtension = project.getExtensions().getByType(MicronautExtension.class);
-        Configuration server = createTestResourcesServerConfiguration(project, micronautExtension);
+        Configuration server = createTestResourcesServerConfiguration(project);
         Configuration outgoing = createTestResourcesOutgoingConfiguration(project);
         ProviderFactory providers = project.getProviders();
         Provider<Integer> explicitPort = providers.systemProperty("micronaut.test-resources.server.port").map(Integer::parseInt);
@@ -410,16 +410,13 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
         }
     }
 
-    private static Configuration createTestResourcesServerConfiguration(Project project, MicronautExtension micronautExtension) {
+    private static Configuration createTestResourcesServerConfiguration(Project project) {
         ConfigurationContainer configurations = project.getConfigurations();
         Configuration boms = configurations.findByName(MICRONAUT_BOMS_CONFIGURATION);
         DependencyHandler dependencyHandler = project.getDependencies();
-        project.afterEvaluate(p -> {
-            dependencyHandler.addProvider(boms.getName(), project.getProviders().provider(() -> {
-                String micronautVersion = PluginsHelper.findMicronautVersion(project, micronautExtension);
-                return resolveMicronautPlatform(dependencyHandler, micronautVersion);
-            }));
-        });
+        dependencyHandler.addProvider(MICRONAUT_BOMS_CONFIGURATION, PluginsHelper.findMicronautVersion(project).map(micronautVersion ->
+                resolveMicronautPlatform(dependencyHandler, micronautVersion)
+        ));
         return configurations.create(TESTRESOURCES_CONFIGURATION, conf -> {
             conf.extendsFrom(boms);
             conf.setDescription("Dependencies for the Micronaut test resources service");

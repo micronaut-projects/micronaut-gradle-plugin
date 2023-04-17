@@ -27,6 +27,7 @@ This project currently consists of different plugins:
 - the https://plugins.gradle.org/plugin/io.micronaut.library[`io.micronaut.library`] plugin is aimed at building Micronaut libraries.
 - the https://plugins.gradle.org/plugin/io.micronaut.graalvm[`io.micronaut.graalvm`] plugin integrates with the official {native-gradle-plugin}[GraalVM Native Build Tools plugin] and configures it for Micronaut applications.
 - the https://plugins.gradle.org/plugin/io.micronaut.aot[`io.micronaut.aot`] plugin integrates with Micronaut AOT to produce optimized binaries.
+- the https://plugins.gradle.org/plugin/io.micronaut.platform.catalog[`io.micronaut.platform.catalog`] plugin imports the Micronaut Platform version catalog so that you can easily add Micronaut dependencies in your build scripts.
 
 === Individual plugins
 
@@ -145,6 +146,140 @@ $ curl https://launch.micronaut.io/demo.zip?lang=kotlin \
   -o demo.zip && unzip demo.zip -d demo && cd demo
 ----
 
+[[sec:selecting-micronaut-version]]
+== Selecting the Micronaut version
+
+[[sec:micronaut-platform-catalog-plugin]]
+=== The Micronaut Platform Catalog plugin
+
+We recommend that you apply the `io.micronaut.platform.catalog` plugin to your `settings.gradle(.kts)` file.
+This plugin will automatically import the Micronaut version catalog, which provides a number of advantages:
+
+- all supported Micronaut modules are part of the platform catalog, making it easy to add new dependencies on Micronaut modules without having to remember their group, artifact and version numbers
+- all transitive dependencies of Micronaut modules are shipped with a recommended version that you can find in the version catalog
+- you can easily <<sec:overriding-version,override versions>> of individual Micronaut modules or even transitive dependencies which are managed by the Micronaut platform
+
+[IMPORTANT]
+This is a **settings** plugin, which means that it **must** be applied to your `settings.gradle(.kts)` file, not `build.gradle(.kts)`.
+
+Add the plugin to your `settings.gradle(.kts)` file:
+
+[source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
+----
+plugins {
+  id 'io.micronaut.platform.catalog' version '{gradle-project-version}'
+}
+----
+
+[source, kotlin, subs="verbatim,attributes", role="multi-language-sample"]
+----
+plugins {
+  id("io.micronaut.platform.catalog") version "{gradle-project-version}"
+}
+----
+
+The catalog is then exposed with the name `mn` and can be used in your build scripts, for example:
+
+[source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
+----
+dependencies {
+  // Use Spring Boot annotations
+  compileOnly mn.micronaut.spring.boot.annotation
+}
+----
+
+[source, kotlin, subs="verbatim,attributes", role="multi-language-sample"]
+----
+dependencies {
+  // Use Spring Boot annotations
+  compileOnly(mn.micronaut.spring.boot.annotation)
+}
+----
+
+=== Selecting the Micronaut Platform version
+
+The minimum requirement is to set the Micronaut version to use.
+Since Micronaut 4, this is the version of the Micronaut Platform (in previous releases, releases were bound to the version of Micronaut Core).
+
+The easiest is to set `micronautVersion` in `gradle.properties`.
+If you use a https://docs.gradle.org/current/userguide/platforms.html#sub:central-declaration-of-dependencies[version catalog], you can also set the version of Micronaut directly in your `libs.versions.toml` file:
+
+[source, toml]
+----
+[versions]
+micronaut="4.0.0"
+----
+
+This version will be shared by all Micronaut modules of your project.
+Alternatively, you can set the version in your `build.gradle(.kts)`:
+
+.Selecting the Micronaut version
+[source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
+----
+micronaut {
+    version "{micronaut-version}"
+}
+----
+
+[source, kotlin, subs="verbatim,attributes", role="multi-language-sample"]
+----
+micronaut {
+    version.set("{micronaut-version}")
+}
+----
+
+[[sec:overriding-version]]
+=== Overriding Micronaut module versions
+
+Micronaut offers multiple options to override the default versions of its modules.
+For example, you may want to try a `SNAPSHOT` version of a module, or a release version which is not yet included in a new platform release.
+The easiest to do this is to make use of the Micronaut Platform version catalog.
+
+==== Using the Micronaut Platform Catalog plugin
+
+If you use the <<sec:micronaut-platform-catalog-plugin,Micronaut Platform Catalog plugin>>, then overriding versions of individual modules can easily be done by creating a `gradle/mn-override.versions.toml` file:
+
+[source,toml]
+----
+[versions]
+micronaut-core = "4.5.0" # override version of Micronaut Core
+ehcache = "3.8.2" # override version of ehcache
+----
+
+Note that overriding will only work if you use the dependency notations from the platform catalog (e.g `implementation(mn.ehcache)`).
+
+==== Using the DSL
+
+Alternatively, in each project which applies the Micronaut plugins, you can override versions of _specific modules_ via the DSL:
+
+.Overriding Micronaut module versions
+[source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
+----
+micronaut {
+    coreVersion.set("4.5.0") // override the version of Micronaut Core
+}
+----
+
+[source, kotlin, subs="verbatim,attributes", role="multi-language-sample"]
+----
+micronaut {
+    coreVersion.set("4.5.0") // override the version of Micronaut Core
+}
+----
+
+There is only a limited list of module versions which can be overridden via the DSL:
+
+- `coreVersion` for Micronaut Core
+- `awsVersion` for Micronaut AWS
+- `azureVersion` for Micronaut Azure
+- `dataVersion` for Micronaut Data
+- `gcpVersion` for Micronaut Google Cloud
+- `jaxrsVersion` for Micronaut JAX-RS
+- `oraclecloudVersion` for Micronaut Oracle Cloud
+- `securityVersion` for Micronaut Security
+- `servletVersion` for Micronaut Servlet
+- `validationVersion` for Micronaut Validation
+
 == Micronaut Library Plugin
 
 .Applying the plugin
@@ -169,23 +304,6 @@ The https://plugins.gradle.org/plugin/io.micronaut.library[Micronaut library plu
 * Configures annotation processing for the current language (Groovy, Java or Kotlin)
 
 The `micronaut` DSL can be used to configure how this behaves.
-
-The minimum requirement is to set the Micronaut version to use. This can be done by setting `micronautVersion` in `gradle.properties` or as follows in `build.gradle(.kts)`:
-
-.Selecting the Micronaut version
-[source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
-----
-micronaut {
-    version "{micronaut-version}"
-}
-----
-
-[source, kotlin, subs="verbatim,attributes", role="multi-language-sample"]
-----
-micronaut {
-    version.set("{micronaut-version}")
-}
-----
 
 Complete example with the default settings:
 

@@ -1,0 +1,18 @@
+plugins {
+    id "io.micronaut.internal.build.gradle-plugin"
+}
+
+description = """Micronaut Platform Catalog Gradle plugin
+
+A plugin which will automatically make the Micronaut Platform version catalog
+available to your build scripts.
+"""
+
+micronautPlugins {
+    register('platform.catalog', 'io.micronaut.gradle.catalog.MicronautCatalogSettingsPlugin', 'Micronaut Platform Catalog Plugin')
+}
+
+dependencies {
+    implementation(libs.tomlj)
+    testImplementation testFixtures(project(":micronaut-minimal-plugin"))
+}

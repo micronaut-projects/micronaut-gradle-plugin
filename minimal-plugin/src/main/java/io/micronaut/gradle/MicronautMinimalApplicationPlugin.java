@@ -16,6 +16,7 @@
 package io.micronaut.gradle;
 
 import io.micronaut.gradle.graalvm.GraalUtil;
+import io.micronaut.gradle.internal.AutomaticDependency;
 import org.apache.tools.ant.taskdefs.condition.Os;
 import org.gradle.api.Action;
 import org.gradle.api.Plugin;
@@ -71,12 +72,13 @@ public class MicronautMinimalApplicationPlugin implements Plugin<Project> {
         PluginManager plugins = project.getPluginManager();
         plugins.apply(ApplicationPlugin.class);
         plugins.apply(MicronautComponentPlugin.class);
-
+        PluginsHelper.registerVersionExtensions(MicronautRuntimeDependencies.KNOWN_VERSION_PROPERTIES, project);
         Configuration developmentOnly = createDevelopmentOnlyConfiguration(project);
         configureLogging(project);
         configureMicronautRuntime(project);
         configureJavaExecTasks(project, developmentOnly);
     }
+
 
     private void configureJavaExecTasks(Project project, Configuration developmentOnlyConfiguration) {
         final TaskContainer tasks = project.getTasks();
@@ -187,8 +189,8 @@ public class MicronautMinimalApplicationPlugin implements Plugin<Project> {
             MicronautRuntimeDependencies.findApplicationPluginDependenciesByRuntime(micronautRuntime)
                     .toMap()
                     .forEach((scope, dependencies) -> {
-                for (String dependency : dependencies) {
-                    dependencyHandler.add(scope, dependency);
+                for (AutomaticDependency dependency : dependencies) {
+                    dependency.applyTo(project);
                 }
             });
             if (micronautRuntime == MicronautRuntime.GOOGLE_FUNCTION) {
