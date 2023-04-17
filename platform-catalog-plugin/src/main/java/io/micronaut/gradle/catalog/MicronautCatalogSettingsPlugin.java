@@ -37,6 +37,7 @@ import java.util.List;
 
 public abstract class MicronautCatalogSettingsPlugin implements Plugin<Settings> {
     private static final Logger LOGGER = Logging.getLogger(MicronautCatalogSettingsPlugin.class);
+    public static final String MN_OVERRIDE_VERSIONS_TOML_FILE = "mn-override.versions.toml";
 
     abstract RegularFileProperty getDefaultGradleVersionCatalogFile();
 
@@ -63,7 +64,7 @@ public abstract class MicronautCatalogSettingsPlugin implements Plugin<Settings>
                             drm.versionCatalogs(vcs ->
                                     vcs.create("mn", catalog -> {
                                         catalog.from("io.micronaut.platform:micronaut-platform:" + micronautVersion);
-                                        File catalogOverrideFile = new File(settings.getSettingsDir(), "gradle/mn.versions.toml");
+                                        File catalogOverrideFile = new File(settings.getSettingsDir(), "gradle/" + MN_OVERRIDE_VERSIONS_TOML_FILE);
                                         if (catalogOverrideFile.exists()) {
                                             LenientVersionCatalogParser parser = new LenientVersionCatalogParser();
                                             try (InputStream in = new FileInputStream(catalogOverrideFile)) {
@@ -111,7 +112,7 @@ public abstract class MicronautCatalogSettingsPlugin implements Plugin<Settings>
             }
         });
         if (!model.getLibrariesTable().isEmpty()) {
-            throw new UnsupportedOperationException("The mn.versions.toml file should only contain entries overriding the Micronaut Platform versions. Use your own version catalog to declare new libraries");
+            LOGGER.warn("The " + MN_OVERRIDE_VERSIONS_TOML_FILE + " file should only contain entries overriding the Micronaut Platform versions. Use your own version catalog to declare new libraries");
         }
     }
 

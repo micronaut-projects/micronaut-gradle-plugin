@@ -237,7 +237,7 @@ The easiest to do this is to make use of the Micronaut Platform version catalog.
 
 ==== Using the Micronaut Platform Catalog plugin
 
-If you use the <<sec:micronaut-platform-catalog-plugin,Micronaut Platform Catalog plugin>>, then overriding versions of individual modules can easily be done by creating a `gradle/mn.versions.toml` file:
+If you use the <<sec:micronaut-platform-catalog-plugin,Micronaut Platform Catalog plugin>>, then overriding versions of individual modules can easily be done by creating a `gradle/mn-override.versions.toml` file:
 
 [source,toml]
 ----

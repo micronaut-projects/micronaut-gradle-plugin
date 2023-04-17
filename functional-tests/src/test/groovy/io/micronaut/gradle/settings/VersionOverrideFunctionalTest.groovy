@@ -32,7 +32,7 @@ class VersionOverrideFunctionalTest extends AbstractFunctionalTest {
         """
 
         file('gradle').mkdir()
-        file('gradle/mn.versions.toml') << """
+        file('gradle/mn-override.versions.toml') << """
 [versions]
 micronaut-core = "2048"
 """
