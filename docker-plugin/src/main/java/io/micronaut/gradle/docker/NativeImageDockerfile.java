@@ -401,7 +401,7 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
         if (buildStrategy == DockerBuildStrategy.LAMBDA) {
             from(new From(imageResolver.resolve()).withStage("graalvm"));
             environmentVariable("LANG", "en_US.UTF-8");
-            runCommand("yum install -y gcc gcc-c++ bash zlib zlib-devel zlib-static zip tar gzip");
+            runCommand("yum install -y gcc gcc-c++ libc6-dev zlib1g-dev curl bash zlib zlib-devel zlib-static zip tar gzip");
             String jdkVersion = getJdkVersion().get();
             String graalVersion = getGraalVersion().get();
             String graalArch = getGraalArch().get();
@@ -701,7 +701,7 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
             String baseImage = getBaseImage().getOrNull();
 
             if (strategy == DockerBuildStrategy.LAMBDA && baseImage == null) {
-                baseImage = "amazonlinux:2023";
+                baseImage = "amazonlinux:2";
             } else if (baseImage == null) {
                 baseImage = "frolvlad/alpine-glibc:alpine-3.12";
             }
