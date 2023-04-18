@@ -101,18 +101,6 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
             }
             return Collections.emptyList();
         }));
-
-        client.getDependencyConstraints().addAllLater(PluginsHelper.findMicronautVersion(project).map(v ->
-                Stream.of("io.micronaut:micronaut-http-client",
-                                "io.micronaut:micronaut-core-bom",
-                                "io.micronaut.platform:micronaut-platform",
-                                "io.micronaut:micronaut-inject")
-                        .map(artifact -> dependencies.getConstraints().create(artifact, dc -> {
-                            dc.because("Aligning version of Micronaut the current Micronaut version");
-                            dc.version(version -> version.strictly(v));
-                        }))
-                        .toList()
-        ));
         return client;
     }
 
