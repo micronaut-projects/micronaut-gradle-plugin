@@ -312,6 +312,10 @@ Complete example with the default settings:
 ----
 micronaut {
     version "{micronaut-version}"
+    // If set to false, then the `io.micronaut.platform:micronaut-platform` BOM
+    // will not be automatically applied, and you will have to add it yourself
+    // to your dependencies, or specify versions of Micronaut modules explicitly
+    importMicronautPlatform = true
     processing {
         // Sets whether incremental annotation processing is enabled
         incremental true
@@ -340,7 +344,11 @@ micronaut {
 ----
 micronaut {
     version.set("{micronaut-version}")
-    processing {
+    // If set to false, then the `io.micronaut.platform:micronaut-platform` BOM
+    // will not be automatically applied, and you will have to add it yourself
+    // to your dependencies, or specify versions of Micronaut modules explicitly
+   importMicronautPlatform.set(true)
+   processing {
         // Sets whether incremental annotation processing is enabled
         incremental.set(true)
         // Sets the module name.

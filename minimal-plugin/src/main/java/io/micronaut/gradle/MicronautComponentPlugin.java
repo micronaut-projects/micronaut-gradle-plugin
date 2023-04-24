@@ -18,7 +18,6 @@ package io.micronaut.gradle;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
-import org.gradle.api.artifacts.Dependency;
 import org.gradle.api.artifacts.dsl.DependencyHandler;
 import org.gradle.api.plugins.BasePlugin;
 import org.gradle.api.plugins.JavaPlugin;
@@ -37,7 +36,6 @@ import org.gradle.api.tasks.testing.Test;
 import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -57,20 +55,19 @@ import static org.gradle.api.plugins.JavaPlugin.TEST_COMPILE_ONLY_CONFIGURATION_
  * library, or a Micronaut application.
  */
 public class MicronautComponentPlugin implements Plugin<Project> {
-    private final static List<String> SOURCESETS = Arrays.asList(
+    private static final List<String> SOURCESETS = List.of(
             SourceSet.MAIN_SOURCE_SET_NAME,
             SourceSet.TEST_SOURCE_SET_NAME
     );
-    private final static Set<String> CONFIGURATIONS_TO_APPLY_BOMS = Collections.unmodifiableSet(new HashSet<String>() {{
-        add(ANNOTATION_PROCESSOR_CONFIGURATION_NAME);
-        add(TEST_ANNOTATION_PROCESSOR_CONFIGURATION_NAME);
-        add(API_CONFIGURATION_NAME);
-        add(IMPLEMENTATION_CONFIGURATION_NAME);
-        add(COMPILE_ONLY_CONFIGURATION_NAME);
-    }});
+    private static final Set<String> CONFIGURATIONS_TO_APPLY_BOMS = Set.of(
+        ANNOTATION_PROCESSOR_CONFIGURATION_NAME,
+        TEST_ANNOTATION_PROCESSOR_CONFIGURATION_NAME,
+        API_CONFIGURATION_NAME,
+        IMPLEMENTATION_CONFIGURATION_NAME,
+        COMPILE_ONLY_CONFIGURATION_NAME
+    );
     public static final String MICRONAUT_BOMS_CONFIGURATION = "micronautBoms";
     public static final String INSPECT_RUNTIME_CLASSPATH_TASK_NAME = "inspectRuntimeClasspath";
-    public static final String MICRONAUT_PLATFORM_COORDINATES = "io.micronaut.platform:micronaut-platform";
 
     @Override
     public void apply(Project project) {
@@ -126,11 +123,8 @@ public class MicronautComponentPlugin implements Plugin<Project> {
 
     private void configureMicronautBom(Project project, MicronautExtension micronautExtension) {
         Configuration micronautBoms = project.getConfigurations().getByName(MICRONAUT_BOMS_CONFIGURATION);
-        DependencyHandler dependencyHandler = project.getDependencies();
+        PluginsHelper.maybeAddMicronautPlaformBom(project, micronautBoms);
         project.afterEvaluate(p -> {
-            dependencyHandler.addProvider(micronautBoms.getName(), PluginsHelper.findMicronautVersion(project).map(micronautVersion ->
-                resolveMicronautPlatform(dependencyHandler, micronautVersion)
-            ));
             project.getConfigurations().configureEach(conf -> {
                 if (CONFIGURATIONS_TO_APPLY_BOMS.contains(conf.getName())) {
                     conf.extendsFrom(micronautBoms);
@@ -166,10 +160,6 @@ public class MicronautComponentPlugin implements Plugin<Project> {
         });
     }
 
-
-    public static Dependency resolveMicronautPlatform(DependencyHandler dependencyHandler, String micronautVersion) {
-        return dependencyHandler.platform(MICRONAUT_PLATFORM_COORDINATES + ":" + micronautVersion);
-    }
 
     private void configureJava(Project project, TaskContainer tasks) {
 

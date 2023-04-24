@@ -23,13 +23,11 @@ import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.ConfigurationContainer;
 import org.gradle.api.artifacts.ProjectDependency;
-import org.gradle.api.artifacts.dsl.DependencyHandler;
 import org.gradle.api.attributes.AttributeContainer;
 import org.gradle.api.attributes.Usage;
 import org.gradle.api.plugins.PluginManager;
 
 import static io.micronaut.gradle.MicronautComponentPlugin.MICRONAUT_BOMS_CONFIGURATION;
-import static io.micronaut.gradle.MicronautComponentPlugin.resolveMicronautPlatform;
 
 /**
  * A lightweight test resources plugin, which requires
@@ -52,10 +50,7 @@ public class MicronautTestResourcesConsumerPlugin implements Plugin<Project> {
     private Configuration createTestResourcesExtension(Project project) {
         ConfigurationContainer configurations = project.getConfigurations();
         Configuration boms = configurations.findByName(MICRONAUT_BOMS_CONFIGURATION);
-        DependencyHandler dependencyHandler = project.getDependencies();
-        dependencyHandler.addProvider(MICRONAUT_BOMS_CONFIGURATION, PluginsHelper.findMicronautVersion(project).map(micronautVersion ->
-                resolveMicronautPlatform(dependencyHandler, micronautVersion)
-        ));
+        PluginsHelper.maybeAddMicronautPlaformBom(project, boms);
         return project.getConfigurations().create(MicronautTestResourcesPlugin.TESTRESOURCES_CONFIGURATION, conf -> {
             conf.extendsFrom(boms);
             conf.setCanBeConsumed(false);

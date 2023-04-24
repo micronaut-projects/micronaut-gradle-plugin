@@ -25,6 +25,15 @@ public abstract class MicronautExtension implements ExtensionAware {
     private final Property<MicronautRuntime> runtime;
     private final Property<MicronautTestRuntime> testRuntime;
 
+    /**
+     * If set to false, then the Micronaut Gradle plugins will not automatically
+     * add the Micronaut Platform BOM to your dependencies. It becomes your
+     * responsibility to add it directly, or to provide explicit versions for
+     * Micronaut modules.
+     * @return the import platform flag. Defaults to true.
+     */
+    public abstract Property<Boolean> getImportMicronautPlatform();
+
     @Inject
     public MicronautExtension(ObjectFactory objectFactory) {
         this.processing = objectFactory.newInstance(AnnotationProcessing.class);
@@ -35,6 +44,7 @@ public abstract class MicronautExtension implements ExtensionAware {
                                     .convention(MicronautRuntime.NONE);
         this.testRuntime = objectFactory.property(MicronautTestRuntime.class)
                                         .convention(MicronautTestRuntime.NONE);
+        getImportMicronautPlatform().convention(true);
     }
 
     /**

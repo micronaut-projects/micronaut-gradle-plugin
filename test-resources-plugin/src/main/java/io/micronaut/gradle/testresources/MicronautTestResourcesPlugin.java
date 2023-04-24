@@ -64,7 +64,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static io.micronaut.gradle.MicronautComponentPlugin.MICRONAUT_BOMS_CONFIGURATION;
-import static io.micronaut.gradle.MicronautComponentPlugin.resolveMicronautPlatform;
 import static java.util.stream.Stream.concat;
 
 /**
@@ -273,11 +272,7 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
         MicronautExtension micronautExtension = PluginsHelper.findMicronautExtension(project);
         TestResourcesConfiguration testResources = micronautExtension.getExtensions().create("testResources", TestResourcesConfiguration.class);
         ProviderFactory providers = project.getProviders();
-        testResources.getEnabled().convention(
-                micronautExtension.getVersion()
-                        .orElse(providers.gradleProperty("micronautVersion"))
-                        .map(MicronautTestResourcesPlugin::isAtLeastMicronaut3dot5)
-        );
+        testResources.getEnabled().convention(true);
         testResources.getVersion().convention(VersionInfo.getVersion());
         testResources.getExplicitPort().convention(explicitPort);
         testResources.getInferClasspath().convention(true);
@@ -401,10 +396,7 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
     private static Configuration createTestResourcesServerConfiguration(Project project) {
         ConfigurationContainer configurations = project.getConfigurations();
         Configuration boms = configurations.findByName(MICRONAUT_BOMS_CONFIGURATION);
-        DependencyHandler dependencyHandler = project.getDependencies();
-        dependencyHandler.addProvider(MICRONAUT_BOMS_CONFIGURATION, PluginsHelper.findMicronautVersion(project).map(micronautVersion ->
-                resolveMicronautPlatform(dependencyHandler, micronautVersion)
-        ));
+        PluginsHelper.maybeAddMicronautPlaformBom(project, boms);
         return configurations.create(TESTRESOURCES_CONFIGURATION, conf -> {
             conf.extendsFrom(boms);
             conf.setDescription("Dependencies for the Micronaut test resources service");
