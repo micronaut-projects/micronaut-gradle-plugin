@@ -22,7 +22,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
 
-import static io.micronaut.gradle.MicronautComponentPlugin.resolveMicronautPlatform;
+import static io.micronaut.gradle.PluginsHelper.resolveMicronautPlatform;
 import static io.micronaut.gradle.PluginsHelper.configureAnnotationProcessors;
 
 /**

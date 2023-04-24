@@ -25,6 +25,8 @@ public abstract class MicronautExtension implements ExtensionAware {
     private final Property<MicronautRuntime> runtime;
     private final Property<MicronautTestRuntime> testRuntime;
 
+    public abstract Property<Boolean> getImportMicronautPlatform();
+
     @Inject
     public MicronautExtension(ObjectFactory objectFactory) {
         this.processing = objectFactory.newInstance(AnnotationProcessing.class);
@@ -35,6 +37,7 @@ public abstract class MicronautExtension implements ExtensionAware {
                                     .convention(MicronautRuntime.NONE);
         this.testRuntime = objectFactory.property(MicronautTestRuntime.class)
                                         .convention(MicronautTestRuntime.NONE);
+        getImportMicronautPlatform().convention(true);
     }
 
     /**
