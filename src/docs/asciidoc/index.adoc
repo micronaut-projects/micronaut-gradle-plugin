@@ -674,18 +674,18 @@ The default uses an `{default-docker-image}` base image, however you can easily 
 [source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
 ----
 tasks.named("dockerfile") {
-  baseImage = "oracle/graalvm-ce:22.3.0-java11"
+  baseImage = "oracle/graalvm-ce:22.3.2-java11"
 }
 ----
 
 [source, kotlin, subs="verbatim,attributes", role="multi-language-sample"]
 ----
 tasks.named<MicronautDockerfile>("dockerfile") {
-  baseImage.set("oracle/graalvm-ce:22.3.0-java11")
+  baseImage.set("oracle/graalvm-ce:22.3.2-java11")
 }
 ----
 
-The above examples switches to use GraalVM CE 22.3.0 as a base image.
+The above examples switches to use GraalVM CE 22.3.2 as a base image.
 
 To build the application into a Native Image you can run:
 
