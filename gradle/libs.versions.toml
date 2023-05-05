@@ -3,21 +3,21 @@ kotlin = "1.8.21"
 ksp = "1.8.21-1.0.11"
 docker = "9.3.1"
 diffplug = "3.41.1"
-shadow = "7.1.2"
+shadow = "8.1.1"
 groovy = "3.0.16"
 spock = "2.1-groovy-3.0"
 graalvmPlugin = "0.9.21"
-micronaut = "4.0.0-M1"
+micronaut = "4.0.0-M1" # This is the platform version
 micronaut-aot = "2.0.0-M1"
-micronaut-testresources = "2.0.0-M1"
+micronaut-testresources = "2.0.0-M3"
 log4j2 = { require = "2.17.1", reject = ["]0, 2.17["] }
-jetbrains-annotations = "23.1.0"
+jetbrains-annotations = "24.0.1"
 tomlj = "1.1.0"
 
 [libraries]
 dockerPlug = { module = "com.bmuschko:gradle-docker-plugin", version.ref = "docker" }
 diffplugPlugin = { module = "com.diffplug.gradle:goomph", version.ref = "diffplug" }
-shadowPlugin = { module = "gradle.plugin.com.github.johnrengelman:shadow", version.ref = "shadow" }
+shadowPlugin = { module = "com.github.johnrengelman:shadow", version.ref = "shadow" }
 graalvmPlugin = { module = "org.graalvm.buildtools:native-gradle-plugin", version.ref = "graalvmPlugin" }
 
 kotlin-allopen = { module = "org.jetbrains.kotlin:kotlin-allopen", version.ref = "kotlin" }
