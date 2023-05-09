@@ -117,7 +117,7 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
         ProviderFactory providers = project.getProviders();
         Provider<Integer> explicitPort = providers.systemProperty("micronaut.test-resources.server.port").map(Integer::parseInt);
         TestResourcesConfiguration config = createTestResourcesConfiguration(project, explicitPort);
-        JavaPluginExtension javaPluginExtension = project.getExtensions().getByType(JavaPluginExtension.class);
+        JavaPluginExtension javaPluginExtension = PluginsHelper.javaPluginExtensionOf(project);
         SourceSet testResourcesSourceSet = createTestResourcesSourceSet(javaPluginExtension);
         DependencyHandler dependencies = project.getDependencies();
         Configuration testResourcesApi = project.getConfigurations().getByName(testResourcesSourceSet.getImplementationConfigurationName());

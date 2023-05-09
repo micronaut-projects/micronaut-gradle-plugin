@@ -21,12 +21,10 @@ import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.dsl.DependencyHandler;
 import org.gradle.api.plugins.BasePlugin;
 import org.gradle.api.plugins.JavaPlugin;
-import org.gradle.api.plugins.JavaPluginConvention;
 import org.gradle.api.plugins.JavaPluginExtension;
 import org.gradle.api.plugins.PluginManager;
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.tasks.SourceSet;
-import org.gradle.api.tasks.SourceSetContainer;
 import org.gradle.api.tasks.TaskContainer;
 import org.gradle.api.tasks.TaskProvider;
 import org.gradle.api.tasks.compile.GroovyCompile;
@@ -164,8 +162,7 @@ public class MicronautComponentPlugin implements Plugin<Project> {
     private void configureJava(Project project, TaskContainer tasks) {
 
         project.afterEvaluate(p -> {
-            SourceSetContainer sourceSets = p.getConvention().getPlugin(JavaPluginConvention.class)
-                    .getSourceSets();
+            var sourceSets = PluginsHelper.findSourceSets(p);
             for (String sourceSetName : SOURCESETS) {
                 SourceSet sourceSet = sourceSets.findByName(sourceSetName);
                 if (sourceSet != null) {
@@ -224,16 +221,16 @@ public class MicronautComponentPlugin implements Plugin<Project> {
     private void configureGroovy(Project project, TaskContainer tasks, MicronautExtension micronautExtension) {
         project.getPluginManager().withPlugin("groovy", plugin -> {
             tasks.withType(GroovyCompile.class).configureEach(groovyCompile -> groovyCompile.getGroovyOptions().setParameters(true));
-            JavaPluginConvention convention = project.getConvention().getPlugin(JavaPluginConvention.class);
+            var javaPluginExtension = PluginsHelper.javaPluginExtensionOf(project);
             configureDefaultGroovySourceSet(
                     project,
-                    convention,
+                    javaPluginExtension,
                     COMPILE_ONLY_CONFIGURATION_NAME,
                     "main"
             );
             configureDefaultGroovySourceSet(
                     project,
-                    convention,
+                    javaPluginExtension,
                     TEST_COMPILE_ONLY_CONFIGURATION_NAME,
                     "test"
             );
@@ -241,9 +238,7 @@ public class MicronautComponentPlugin implements Plugin<Project> {
                 DependencyHandler dependencyHandler = project.getDependencies();
 
                 for (String defaultSourceSetName : SOURCESETS) {
-                    SourceSet sourceSet = p.getConvention().getPlugin(JavaPluginConvention.class)
-                            .getSourceSets()
-                            .findByName(defaultSourceSetName);
+                    var sourceSet = PluginsHelper.findSourceSets(p).findByName(defaultSourceSetName);
                     if (sourceSet != null) {
                         String configName = sourceSet.getCompileOnlyConfigurationName();
                         Optional<File> groovySrcDir = findGroovySrcDir(sourceSet);
@@ -278,10 +273,10 @@ public class MicronautComponentPlugin implements Plugin<Project> {
 
 
     private void configureDefaultGroovySourceSet(Project p,
-                                                 JavaPluginConvention plugin,
+                                                 JavaPluginExtension javaPluginExtension,
                                                  String scope,
                                                  String sourceSetName) {
-        SourceSet groovySourceSet = plugin.getSourceSets().findByName(sourceSetName);
+        SourceSet groovySourceSet = javaPluginExtension.getSourceSets().findByName(sourceSetName);
         if (groovySourceSet != null) {
             Optional<File> groovySrc = findGroovySrcDir(groovySourceSet);
             groovySrc.ifPresent((f -> applyAdditionalProcessors(p, scope)));
@@ -290,11 +285,11 @@ public class MicronautComponentPlugin implements Plugin<Project> {
 
     private static TaskProvider<ApplicationClasspathInspector> registerInspectRuntimeClasspath(Project project, TaskContainer tasks) {
         return tasks.register(INSPECT_RUNTIME_CLASSPATH_TASK_NAME, ApplicationClasspathInspector.class, task -> {
-            JavaPluginExtension javaPluginExtension = project.getExtensions().getByType(JavaPluginExtension.class);
+            var javaPluginExtension = PluginsHelper.javaPluginExtensionOf(project);
             task.setGroup(BasePlugin.BUILD_GROUP);
             task.setDescription("Performs sanity checks of the runtime classpath to warn about misconfigured builds");
             task.getRuntimeClasspath().from(project.getConfigurations().getByName(JavaPlugin.RUNTIME_CLASSPATH_CONFIGURATION_NAME));
-            task.getResources().from(javaPluginExtension.getSourceSets().getByName(SourceSet.MAIN_SOURCE_SET_NAME).getResources());
+            task.getResources().from(PluginsHelper.findSourceSets(project).getByName(SourceSet.MAIN_SOURCE_SET_NAME).getResources());
             task.getReportFile().set(project.getLayout().getBuildDirectory().file("reports/inspectRuntimeClasspath.txt"));
         });
     }
