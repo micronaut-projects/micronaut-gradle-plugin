@@ -11,11 +11,9 @@ import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.DependencySet;
 import org.gradle.api.plugins.ExtensionAware;
-import org.gradle.api.plugins.JavaPluginConvention;
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.SourceSet;
-import org.gradle.api.tasks.SourceSetContainer;
 import org.gradle.api.tasks.TaskContainer;
 import org.gradle.language.jvm.tasks.ProcessResources;
 
@@ -112,10 +110,7 @@ public class MicronautGraalPlugin implements Plugin<Project> {
     }
 
     private static void configureAnnotationProcessing(Project project, MicronautExtension extension) {
-        SourceSetContainer sourceSets = project
-                .getConvention()
-                .getPlugin(JavaPluginConvention.class)
-                .getSourceSets();
+        var sourceSets = PluginsHelper.findSourceSets(project);
         project.afterEvaluate(unused -> {
             ListProperty<SourceSet> sets = extension.getProcessing().getAdditionalSourceSets();
             if (sets.isPresent()) {

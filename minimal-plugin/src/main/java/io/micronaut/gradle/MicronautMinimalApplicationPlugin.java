@@ -30,8 +30,6 @@ import org.gradle.api.file.FileCollection;
 import org.gradle.api.file.SourceDirectorySet;
 import org.gradle.api.plugins.ApplicationPlugin;
 import org.gradle.api.plugins.JavaApplication;
-import org.gradle.api.plugins.JavaPluginConvention;
-import org.gradle.api.plugins.JavaPluginExtension;
 import org.gradle.api.plugins.PluginManager;
 import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.JavaExec;
@@ -92,9 +90,7 @@ public class MicronautMinimalApplicationPlugin implements Plugin<Project> {
             AttributeUtils.copyAttributes(runtimeClasspath, conf);
         });
         tasks.withType(JavaExec.class).configureEach(javaExec -> {
-            SourceSetContainer sourceSets = project.getExtensions()
-                    .getByType(JavaPluginExtension.class)
-                    .getSourceSets();
+            var sourceSets = PluginsHelper.findSourceSets(project);
             if (javaExec.getName().equals("run")) {
                 javaExec.dependsOn(tasks.named(MicronautComponentPlugin.INSPECT_RUNTIME_CLASSPATH_TASK_NAME));
                 javaExec.jvmArgs(
@@ -163,8 +159,7 @@ public class MicronautMinimalApplicationPlugin implements Plugin<Project> {
 
     private void configureLogging(Project p) {
         DependencyHandler dependencyHandler = p.getDependencies();
-        SourceSetContainer sourceSets = p.getConvention().getPlugin(JavaPluginConvention.class)
-                .getSourceSets();
+        SourceSetContainer sourceSets = PluginsHelper.findSourceSets(p);
         SourceSet sourceSet = sourceSets.findByName(SourceSet.MAIN_SOURCE_SET_NAME);
         if (sourceSet != null) {
             SourceDirectorySet resources = sourceSet.getResources();
@@ -227,8 +222,7 @@ public class MicronautMinimalApplicationPlugin implements Plugin<Project> {
                     "--port", 8080
             ));
             run.doFirst(t -> {
-                JavaPluginConvention plugin = project.getConvention().getPlugin(JavaPluginConvention.class);
-                SourceSet sourceSet = plugin.getSourceSets().getByName("main");
+                SourceSet sourceSet = PluginsHelper.findSourceSets(p).getByName("main");
                 SourceSetOutput output = sourceSet.getOutput();
                 String runtimeClasspath = project.files(project.getConfigurations().getByName("runtimeClasspath"),
                         output

@@ -26,10 +26,12 @@ import org.gradle.api.artifacts.VersionCatalog;
 import org.gradle.api.artifacts.VersionCatalogsExtension;
 import org.gradle.api.artifacts.VersionConstraint;
 import org.gradle.api.artifacts.dsl.DependencyHandler;
+import org.gradle.api.plugins.JavaPluginExtension;
 import org.gradle.api.provider.Property;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.reflect.TypeOf;
 import org.gradle.api.tasks.SourceSet;
+import org.gradle.api.tasks.SourceSetContainer;
 
 import java.io.File;
 import java.util.Collections;
@@ -127,6 +129,18 @@ public abstract class PluginsHelper {
         return p.getProviders().provider(() -> {
             throw new InvalidUserCodeException("Micronaut version not set. Use micronaut { version '..'} or 'micronautVersion' in gradle.properties to set the version");
         });
+    }
+
+    public static SourceSetContainer findSourceSets(Project p) {
+        var javaPluginExtension = javaPluginExtensionOf(p);
+        if (javaPluginExtension != null) {
+            return javaPluginExtension.getSourceSets();
+        }
+        return null;
+    }
+
+    public static JavaPluginExtension javaPluginExtensionOf(Project p) {
+        return p.getExtensions().findByType(JavaPluginExtension.class);
     }
 
     static void configureAnnotationProcessors(

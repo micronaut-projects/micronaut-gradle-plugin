@@ -1,6 +1,7 @@
 package io.micronaut.gradle.docker;
 
 import com.bmuschko.gradle.docker.tasks.image.Dockerfile;
+import io.micronaut.gradle.PluginsHelper;
 import io.micronaut.gradle.docker.tasks.DockerResourceConfigDirectoryNamer;
 import org.graalvm.buildtools.gradle.NativeImagePlugin;
 import org.graalvm.buildtools.gradle.dsl.NativeImageOptions;
@@ -149,7 +150,7 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
 
     public NativeImageDockerfile() {
         Project project = getProject();
-        JavaPluginExtension javaExtension = (JavaPluginExtension) project.getExtensions().getByName("java");
+        JavaPluginExtension javaExtension = PluginsHelper.javaPluginExtensionOf(project);
         setGroup(BasePlugin.BUILD_GROUP);
         setDescription("Builds a Docker File for Native Image");
         getDestFile().set(project.getLayout().getBuildDirectory().file("docker/DockerfileNative"));
