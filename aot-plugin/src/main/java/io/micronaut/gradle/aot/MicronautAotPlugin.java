@@ -19,6 +19,7 @@ import io.micronaut.gradle.AttributeUtils;
 import io.micronaut.gradle.MicronautBasePlugin;
 import io.micronaut.gradle.MicronautComponentPlugin;
 import io.micronaut.gradle.MicronautExtension;
+import io.micronaut.gradle.PluginsHelper;
 import io.micronaut.gradle.ShadowPluginSupport;
 import io.micronaut.gradle.docker.MicronautDockerPlugin;
 import io.micronaut.gradle.docker.model.LayerKind;
@@ -48,7 +49,6 @@ import org.gradle.api.plugins.ApplicationPlugin;
 import org.gradle.api.plugins.ApplicationPluginConvention;
 import org.gradle.api.plugins.JavaApplication;
 import org.gradle.api.plugins.JavaPlugin;
-import org.gradle.api.plugins.JavaPluginExtension;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.provider.ProviderFactory;
 import org.gradle.api.tasks.JavaExec;
@@ -255,8 +255,7 @@ public abstract class MicronautAotPlugin implements Plugin<Project> {
         GraalVMExtension graalVMExtension = project.getExtensions().getByType(GraalVMExtension.class);
         NamedDomainObjectContainer<NativeImageOptions> binaries = graalVMExtension.getBinaries();
         binaries.create(OPTIMIZED_BINARY_NAME, binary -> {
-            JavaPluginExtension javaExtension = project.getExtensions().getByType(JavaPluginExtension.class);
-            SourceSet mainSourceSet = javaExtension.getSourceSets().getByName(SourceSet.MAIN_SOURCE_SET_NAME);
+            var mainSourceSet = PluginsHelper.findSourceSets(project).getByName(SourceSet.MAIN_SOURCE_SET_NAME);
             NativeImageOptions main = binaries.getByName(MAIN_BINARY_NAME);
             binary.getMainClass().set(main.getMainClass());
             binary.getClasspath().from(mainSourceSet.getRuntimeClasspath());
