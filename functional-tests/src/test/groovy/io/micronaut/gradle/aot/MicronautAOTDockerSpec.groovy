@@ -76,7 +76,7 @@ ENTRYPOINT ["java", "-jar", "/home/app/application.jar"]
         result.tasks.stream().noneMatch { it.path == ":nativeCompile" }
 
         def dockerFile = normalizeLineEndings(file("build/docker/native-optimized/DockerfileNative").text)
-        dockerFile == """FROM ghcr.io/graalvm/native-image:ol7-java17-22.3.2 AS graalvm
+        dockerFile == """FROM ghcr.io/graalvm/native-image:ol8-java17-22.3.2 AS graalvm
 WORKDIR /home/app
 COPY layers/libs /home/app/libs
 COPY layers/classes /home/app/classes
