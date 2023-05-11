@@ -30,7 +30,7 @@ abstract class AbstractGradleBuildSpec extends Specification {
         return false
     }
 
-    boolean allowSnapshots = true
+    boolean allowSnapshots = false
     // This flag is only for local tests, do not push with this flag set to true
     boolean allowMavenLocal = false
 
