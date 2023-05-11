@@ -135,9 +135,16 @@ implements org.gradle.api.Plugin&lt;org.gradle.api.Project&gt;</span></div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#apply(org.gradle.api.Project)" class="member-name-link">apply</a><wbr>(org.gradle.api.Project&nbsp;project)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&gt;</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#getGraalVMBuilderExports()" class="member-name-link">getGraalVMBuilderExports</a>()</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#applyGraalVMBuilderExportsOn(org.graalvm.buildtools.gradle.dsl.NativeImageOptions)" class="member-name-link">applyGraalVMBuilderExportsOn</a><wbr>(org.graalvm.buildtools.gradle.dsl.NativeImageOptions&nbsp;options)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
+<div class="block">This method isn't used directly in the plugin, but provided as a convenience
+ for users in case a Micronaut module they are using is still, for whatever
+ reason, using internal GraalVM APIs.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&gt;</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#getGraalVMBuilderExports()" class="member-name-link">getGraalVMBuilderExports</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">&nbsp;</div>
 </div>
 </div>
 </div>
@@ -205,6 +212,21 @@ implements org.gradle.api.Plugin&lt;org.gradle.api.Project&gt;</span></div>
 <section class="detail" id="getGraalVMBuilderExports()">
 <h3>getGraalVMBuilderExports</h3>
 <div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&gt;</span>&nbsp;<span class="element-name">getGraalVMBuilderExports</span>()</div>
+</section>
+</li>
+<li>
+<section class="detail" id="applyGraalVMBuilderExportsOn(org.graalvm.buildtools.gradle.dsl.NativeImageOptions)">
+<h3>applyGraalVMBuilderExportsOn</h3>
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">applyGraalVMBuilderExportsOn</span><wbr><span class="parameters">(org.graalvm.buildtools.gradle.dsl.NativeImageOptions&nbsp;options)</span></div>
+<div class="block">This method isn't used directly in the plugin, but provided as a convenience
+ for users in case a Micronaut module they are using is still, for whatever
+ reason, using internal GraalVM APIs. This shouldn't be the case since Micronaut 4
+ but there may be community modules which are still doing this.
+ In this case the user can directly call this method to add the required exports.</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>options</code> - the native binary on which to add options</dd>
+</dl>
 </section>
 </li>
 </ul>
