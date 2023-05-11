@@ -6,6 +6,7 @@ import io.micronaut.gradle.PluginsHelper;
 import org.graalvm.buildtools.gradle.NativeImagePlugin;
 import org.graalvm.buildtools.gradle.dsl.GraalVMExtension;
 import org.graalvm.buildtools.gradle.dsl.GraalVMReachabilityMetadataRepositoryExtension;
+import org.graalvm.buildtools.gradle.dsl.NativeImageOptions;
 import org.graalvm.buildtools.gradle.tasks.BuildNativeImageTask;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
@@ -49,11 +50,11 @@ public class MicronautGraalPlugin implements Plugin<Project> {
         project.getPluginManager().apply(NativeImagePlugin.class);
         workaroundForResourcesDirectoryMissing(project);
         project.getPluginManager().withPlugin("io.micronaut.minimal.library", plugin -> {
-            MicronautExtension extension = project.getExtensions().findByType(MicronautExtension.class);
+            MicronautExtension extension = PluginsHelper.findMicronautExtension(project);
             configureAnnotationProcessing(project, extension);
         });
         project.getPluginManager().withPlugin("io.micronaut.minimal.application", plugin -> {
-            MicronautExtension extension = project.getExtensions().findByType(MicronautExtension.class);
+            MicronautExtension extension = PluginsHelper.findMicronautExtension(project);
             configureAnnotationProcessing(project, extension);
         });
         GraalVMExtension graal = project.getExtensions().findByType(GraalVMExtension.class);
@@ -66,7 +67,6 @@ public class MicronautGraalPlugin implements Plugin<Project> {
                         inf.getIgnoreExistingResourcesConfigFile().convention(true);
                         inf.getRestrictToProjectDependencies().convention(true);
                     }));
-                    options.jvmArgs(getGraalVMBuilderExports());
                     Provider<String> richOutput = project.getProviders().systemProperty(RICH_OUTPUT_PROPERTY);
                     if (richOutput.isPresent()) {
                         options.getRichOutput().convention(richOutput.map(Boolean::parseBoolean));
@@ -138,5 +138,18 @@ public class MicronautGraalPlugin implements Plugin<Project> {
         return GRAALVM_MODULE_EXPORTS.stream()
                 .map(module -> "--add-exports=" + module + "=ALL-UNNAMED")
                 .toList();
+    }
+
+    /**
+     * This method isn't used directly in the plugin, but provided as a convenience
+     * for users in case a Micronaut module they are using is still, for whatever
+     * reason, using internal GraalVM APIs. This shouldn't be the case since Micronaut 4
+     * but there may be community modules which are still doing this.
+     * In this case the user can directly call this method to add the required exports.
+     * @param options the native binary on which to add options
+     */
+    @SuppressWarnings("unused")
+    public static void applyGraalVMBuilderExportsOn(NativeImageOptions options) {
+        options.jvmArgs(getGraalVMBuilderExports());
     }
 }
