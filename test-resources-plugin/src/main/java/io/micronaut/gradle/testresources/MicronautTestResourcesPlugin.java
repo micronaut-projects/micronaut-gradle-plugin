@@ -354,8 +354,13 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
         }
     }
 
-    private static ArrayList<Integer> parseVersion(String testedVersion) {
-        return Arrays.stream(testedVersion.split("\\."))
+    static ArrayList<Integer> parseVersion(String testedVersion) {
+        String version = testedVersion;
+        var index = version.indexOf("-");
+        if (index > 0) {
+            version = version.substring(0, index);
+        }
+        return Arrays.stream(version.split("\\."))
                 .map(String::trim)
                 .map(s -> s.replaceAll("[^0-9]", ""))
                 .map(Integer::parseInt)
