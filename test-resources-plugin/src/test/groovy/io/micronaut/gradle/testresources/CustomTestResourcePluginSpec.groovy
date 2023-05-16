@@ -12,7 +12,7 @@ class CustomTestResourcePluginSpec extends AbstractGradleBuildSpec {
         withSample("test-resources/custom-test-resource")
 
         when:
-        def result = build 'test'
+        def result = build 'test', '-S'
 
         then:
         result.task(':test').outcome == TaskOutcome.SUCCESS
