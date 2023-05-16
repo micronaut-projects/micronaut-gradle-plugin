@@ -111,7 +111,6 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
     }
 
     private void configurePlugin(Project project) {
-        MicronautExtension micronautExtension = project.getExtensions().getByType(MicronautExtension.class);
         Configuration server = createTestResourcesServerConfiguration(project);
         Configuration outgoing = createTestResourcesOutgoingConfiguration(project);
         ProviderFactory providers = project.getProviders();
@@ -120,7 +119,9 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
         JavaPluginExtension javaPluginExtension = PluginsHelper.javaPluginExtensionOf(project);
         SourceSet testResourcesSourceSet = createTestResourcesSourceSet(javaPluginExtension);
         DependencyHandler dependencies = project.getDependencies();
+        Configuration testResourcesCompileOnly = project.getConfigurations().getByName(testResourcesSourceSet.getCompileOnlyConfigurationName());
         Configuration testResourcesApi = project.getConfigurations().getByName(testResourcesSourceSet.getImplementationConfigurationName());
+        testResourcesCompileOnly.getDependencies().addLater(config.getVersion().map(v -> dependencies.create("io.micronaut.testresources:micronaut-test-resources-server:" + v)));
         testResourcesApi.getDependencies().addLater(config.getVersion().map(v -> dependencies.create("io.micronaut.testresources:micronaut-test-resources-core:" + v)));
         server.getDependencies().addAllLater(buildTestResourcesDependencyList(project, dependencies, config, testResourcesSourceSet));
         String accessToken = UUID.randomUUID().toString();
@@ -291,19 +292,6 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
         );
         testResources.getSharedServerNamespace().convention(providers.environmentVariable("SHARED_TEST_RESOURCES_NAMESPACE"));
         return testResources;
-    }
-
-    private static boolean isAtLeastMicronaut3dot5(String v) {
-        String[] parts = v.split("\\.");
-        if (parts.length >= 2) {
-            int major = Integer.parseInt(parts[0]);
-            int minor = Integer.parseInt(parts[1]);
-            if (major > 3 || (major == 3 && minor >= 5)) {
-                return true;
-            }
-            return false;
-        }
-        return false;
     }
 
     private Provider<List<Dependency>> buildTestResourcesDependencyList(Project project, DependencyHandler dependencies, TestResourcesConfiguration config, SourceSet testResourcesSourceSet) {
