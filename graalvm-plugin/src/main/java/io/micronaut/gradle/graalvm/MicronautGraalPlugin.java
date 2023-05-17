@@ -3,6 +3,7 @@ package io.micronaut.gradle.graalvm;
 import io.micronaut.gradle.MicronautExtension;
 import io.micronaut.gradle.MicronautRuntime;
 import io.micronaut.gradle.PluginsHelper;
+import io.micronaut.gradle.internal.AutomaticDependency;
 import org.graalvm.buildtools.gradle.NativeImagePlugin;
 import org.graalvm.buildtools.gradle.dsl.GraalVMExtension;
 import org.graalvm.buildtools.gradle.dsl.GraalVMReachabilityMetadataRepositoryExtension;
@@ -24,7 +25,10 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
+
+import static io.micronaut.gradle.PluginsHelper.CORE_VERSION_PROPERTY;
 
 /**
  * Support for building GraalVM native images.
@@ -127,10 +131,9 @@ public class MicronautGraalPlugin implements Plugin<Project> {
 
     private static void addGraalVMAnnotationProcessorDependency(Project project, Iterable<SourceSet> sourceSets) {
         for (SourceSet sourceSet : sourceSets) {
-            project.getDependencies().add(
-                    sourceSet.getAnnotationProcessorConfigurationName(),
-                    "io.micronaut:micronaut-graal"
-            );
+            new AutomaticDependency(sourceSet.getAnnotationProcessorConfigurationName(),
+                    "io.micronaut:micronaut-graal",
+                    Optional.of(CORE_VERSION_PROPERTY)).applyTo(project);
         }
     }
 
