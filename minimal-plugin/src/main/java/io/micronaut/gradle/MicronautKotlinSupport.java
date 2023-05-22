@@ -2,6 +2,7 @@ package io.micronaut.gradle;
 
 import com.google.devtools.ksp.gradle.KspExtension;
 import io.micronaut.gradle.graalvm.GraalUtil;
+import io.micronaut.gradle.internal.AutomaticDependency;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.Dependency;
@@ -20,10 +21,12 @@ import org.jetbrains.kotlin.gradle.plugin.KaptExtension;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Consumer;
 
-import static io.micronaut.gradle.PluginsHelper.resolveMicronautPlatform;
+import static io.micronaut.gradle.PluginsHelper.CORE_VERSION_PROPERTY;
 import static io.micronaut.gradle.PluginsHelper.configureAnnotationProcessors;
+import static io.micronaut.gradle.PluginsHelper.resolveMicronautPlatform;
 
 /**
  * Extension to integration support for Kotlin.
@@ -141,7 +144,7 @@ public class MicronautKotlinSupport {
         // add inject-java to kapt scopes
         DependencyHandler dependencies = project.getDependencies();
         PluginsHelper.registerAnnotationProcessors(project, annotationProcessorModules, compilerConfigurations);
-        addGraalVmDependencies(compilerConfigurations, dependencies);
+        addGraalVmDependencies(compilerConfigurations, project);
 
         Configuration kotlinProcessors = project.getConfigurations().getByName(KOTLIN_PROCESSORS);
         for (String compilerConfiguration : compilerConfigurations) {
@@ -197,20 +200,18 @@ public class MicronautKotlinSupport {
                 implementationConfigurationName,
                 annotationProcessorConfigurationName);
         if (GraalUtil.isGraalJVM()) {
-            dependencies.add(
-                    annotationProcessorConfigurationName,
-                    "io.micronaut:micronaut-graal"
-            );
+            new AutomaticDependency(annotationProcessorConfigurationName,
+                    "io.micronaut:micronaut-graal",
+                    Optional.of(CORE_VERSION_PROPERTY)).applyTo(p);
         }
     }
 
-    private static void addGraalVmDependencies(String[] compilerConfigurations, DependencyHandler dependencies) {
+    private static void addGraalVmDependencies(String[] compilerConfigurations, Project project) {
         if (GraalUtil.isGraalJVM()) {
             for (String configuration : compilerConfigurations) {
-                dependencies.add(
-                        configuration,
-                        "io.micronaut:micronaut-graal"
-                );
+                new AutomaticDependency(configuration,
+                        "io.micronaut:micronaut-graal",
+                        Optional.of(CORE_VERSION_PROPERTY)).applyTo(project);
             }
         }
     }
