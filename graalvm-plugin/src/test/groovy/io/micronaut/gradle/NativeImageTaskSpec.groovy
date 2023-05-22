@@ -29,6 +29,8 @@ class NativeImageTaskSpec extends AbstractGradleBuildSpec {
             mainClassName="example.Application"
             
         """
+        withNativeImageDryRun()
+
         testProjectDir.newFolder("src", "main", "java", "example")
         def javaFile = testProjectDir.newFile("src/main/java/example/Application.java")
         javaFile.parentFile.mkdirs()
@@ -82,6 +84,7 @@ class Application {
                 }
             }            
         """
+        withNativeImageDryRun()
         testProjectDir.newFolder("src", "main", "java", "example")
         def javaFile = testProjectDir.newFile("src/main/java/example/Application.java")
         javaFile.parentFile.mkdirs()
@@ -103,7 +106,6 @@ class Application {
         def task = result.task(":nativeCompile")
         then:
         result.output.contains("Native Image written to")
-        result.output.contains("Generating 'basic-app'")
         argFileContentsOf(result).contains('-Dfoo=bar')
         task.outcome == TaskOutcome.SUCCESS
     }

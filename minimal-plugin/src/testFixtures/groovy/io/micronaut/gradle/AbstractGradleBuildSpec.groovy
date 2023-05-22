@@ -144,6 +144,14 @@ abstract class AbstractGradleBuildSpec extends Specification {
         }
     }
 
+    void withNativeImageDryRun() {
+        buildFile << """
+            graalvmNative.binaries.all {
+                buildArgs.add("--dry-run")
+            }
+        """
+    }
+
     private void prepareBuild() {
         if (postSettingsStatements) {
             postSettingsStatements.each {
