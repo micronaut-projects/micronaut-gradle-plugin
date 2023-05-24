@@ -15,6 +15,9 @@ jetbrains-annotations = "24.0.1"
 tomlj = "1.1.0"
 
 [libraries]
+# Core
+micronaut-core = { module = 'io.micronaut:micronaut-core-bom', version.ref = 'micronaut' }
+
 dockerPlug = { module = "com.bmuschko:gradle-docker-plugin", version.ref = "docker" }
 diffplugPlugin = { module = "com.diffplug.gradle:goomph", version.ref = "diffplug" }
 shadowPlugin = { module = "com.github.johnrengelman:shadow", version.ref = "shadow" }
