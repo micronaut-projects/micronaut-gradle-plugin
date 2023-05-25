@@ -267,7 +267,7 @@ public class MicronautCRaCPlugin implements Plugin<Project> {
             }
             task.getImages().set(Collections.singletonList(project.getName()));
             task.getInputDir().set(dockerFileTask.flatMap(Dockerfile::getDestDir));
-            task.doLast(new Action<>() {
+            task.doLast(new Action<Task>() {
                 @Override
                 public void execute(Task t) {
                     t.getLogger().warn("**********************************************************");
