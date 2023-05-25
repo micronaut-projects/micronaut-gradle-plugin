@@ -17,6 +17,7 @@ import io.micronaut.gradle.docker.DockerBuildStrategy;
 import io.micronaut.gradle.docker.model.MicronautDockerImage;
 import io.micronaut.gradle.docker.tasks.BuildLayersTask;
 import org.gradle.api.GradleException;
+import org.gradle.api.JavaVersion;
 import org.gradle.api.NamedDomainObjectContainer;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
@@ -39,6 +40,8 @@ public class MicronautCRaCPlugin implements Plugin<Project> {
 
     public static final String CRAC_DEFAULT_BASE_IMAGE = "ubuntu:22.04";
     public static final String CRAC_DEFAULT_BASE_IMAGE_PLATFORM = "linux/amd64";
+    public static final String ARM_ARCH = "aarch64";
+    public static final String X86_64_ARCH = "amd64";
     public static final String CRAC_DEFAULT_READINESS_COMMAND = "curl --output /dev/null --silent --head http://localhost:8080";
     private static final String CRAC_TASK_GROUP = "CRaC";
     public static final String BUILD_DOCKER_DIRECTORY = "docker/";
@@ -63,8 +66,15 @@ public class MicronautCRaCPlugin implements Plugin<Project> {
         CRaCConfiguration crac = micronautExtension.getExtensions().create("crac", CRaCConfiguration.class);
         crac.getEnabled().convention(true);
         crac.getBaseImage().convention(CRAC_DEFAULT_BASE_IMAGE);
-        crac.getPlatform().convention(CRAC_DEFAULT_BASE_IMAGE_PLATFORM);
         crac.getPreCheckpointReadinessCommand().convention(CRAC_DEFAULT_READINESS_COMMAND);
+
+        // Default to current architecture
+        String osArch = System.getProperty("os.arch");
+        crac.getArch().convention(ARM_ARCH.equals(osArch) ? ARM_ARCH : X86_64_ARCH);
+
+        // Default to Java 17
+        crac.getJavaVersion().convention(JavaVersion.VERSION_17.getMajorVersion());
+
         return crac;
     }
 
@@ -133,6 +143,8 @@ public class MicronautCRaCPlugin implements Plugin<Project> {
             task.getDestFile().set(targetCheckpointDockerFile);
             task.getBaseImage().set(configuration.getBaseImage());
             task.getPlatform().set(configuration.getPlatform());
+            task.getArch().set(configuration.getArch());
+            task.getJavaVersion().set(configuration.getJavaVersion());
             task.setupDockerfileInstructions();
         });
 

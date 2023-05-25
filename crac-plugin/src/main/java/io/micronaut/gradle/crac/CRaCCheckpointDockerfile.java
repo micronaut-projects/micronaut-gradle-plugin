@@ -7,6 +7,7 @@ import org.gradle.api.file.RegularFileProperty;
 import org.gradle.api.plugins.BasePlugin;
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Property;
+import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.CacheableTask;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.InputFile;
@@ -21,8 +22,12 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
+import static io.micronaut.gradle.crac.MicronautCRaCPlugin.ARM_ARCH;
+import static io.micronaut.gradle.crac.MicronautCRaCPlugin.X86_64_ARCH;
+
 @CacheableTask
 public abstract class CRaCCheckpointDockerfile extends Dockerfile {
+
     public static final String DEFAULT_WORKING_DIR = "/home/app";
 
     @Input
@@ -30,6 +35,7 @@ public abstract class CRaCCheckpointDockerfile extends Dockerfile {
 
     @Input
     @Optional
+    @Deprecated
     public abstract Property<String> getPlatform();
 
     @Input
@@ -45,6 +51,12 @@ public abstract class CRaCCheckpointDockerfile extends Dockerfile {
     @PathSensitive(PathSensitivity.RELATIVE)
     @Optional
     public abstract RegularFileProperty getCustomCheckpointDockerfile();
+
+    @Input
+    public abstract Property<String> getArch();
+
+    @Input
+    public abstract Property<String> getJavaVersion();
 
     @SuppressWarnings("java:S5993") // Gradle API
     public CRaCCheckpointDockerfile() {
@@ -122,7 +134,7 @@ public abstract class CRaCCheckpointDockerfile extends Dockerfile {
         setupInstructions(additionalInstructions);
     }
 
-    static void setupResources(Dockerfile task) {
+    static void setupResources(CRaCCheckpointDockerfile task) {
         String workDir = DEFAULT_WORKING_DIR;
         task.workingDir(workDir);
         task.instruction("# Add required libraries");
@@ -132,19 +144,32 @@ public abstract class CRaCCheckpointDockerfile extends Dockerfile {
                 "        libnl-3-200 \\\n" +
                 "    && rm -rf /var/lib/apt/lists/*");
         task.instruction("# Install latest CRaC OpenJDK");
-        task.runCommand("release=\"$(curl -sL https://api.github.com/repos/CRaC/openjdk-builds/releases/latest)\" \\\n" +
-                "    && asset=\"$(echo $release | sed -e 's/\\r//g' | sed -e 's/\\x09//g' | tr '\\n' ' ' | jq '.assets[] | select(.name | test(\"openjdk-[0-9]+-crac\\\\+[0-9]+_linux-x64\\\\.tar\\\\.gz\"))')\" \\\n" +
-                "    && id=\"$(echo $asset | jq .id)\" \\\n" +
-                "    && name=\"$(echo $asset | jq -r .name)\" \\\n" +
-                "    && curl -LJOH 'Accept: application/octet-stream' \"https://api.github.com/repos/CRaC/openjdk-builds/releases/assets/$id\" >&2 \\\n" +
+
+        Provider<String> arch = task.getArch().map(a -> ARM_ARCH.equals(a) ? ARM_ARCH : X86_64_ARCH);
+        String url = "https://api.azul.com/metadata/v1/zulu/packages/?java_version=" + task.getJavaVersion().get() + "&arch=" + arch.get() + "&crac_supported=true&latest=true&release_status=ga&certifications=tck&page=1&page_size=100";
+        task.runCommand("release_id=$(curl -s \"" + url + "\" -H \"accept: application/json\" | jq -r '.[0] | .package_uuid') \\\n" +
+                "    && details=$(curl -s \"https://api.azul.com/metadata/v1/zulu/packages/$release_id\" -H \"accept: application/json\") \\\n" +
+                "    && name=$(echo \"$details\" | jq -r '.name') \\\n" +
+                "    && url=$(echo \"$details\" | jq -r '.download_url') \\\n" +
+                "    && hash=$(echo \"$details\" | jq -r '.sha256_hash') \\\n" +
+                "    && echo \"Downloading $name from $url\" \\\n" +
+                "    && curl -LJOH 'Accept: application/octet-stream' \"$url\" >&2 \\\n" +
+                "    && file_sha=$(sha256sum -b \"$name\" | cut -d' ' -f 1) \\\n" +
+                "    && if [ \"$file_sha\" != \"$hash\" ]; then \\\n" +
+                "           echo \"SHA256 hash mismatch: $file_sha != $hash\" >&2; \\\n" +
+                "           exit 1; \\\n" +
+                "       fi \\\n" +
+                "    && echo \"SHA256 hash matches: $file_sha == $hash\" >&2 \\\n" +
                 "    && tar xzf \"$name\" \\\n" +
                 "    && mv ${name%%.tar.gz} /azul-crac-jdk \\\n" +
                 "    && rm \"$name\"");
+
         task.instruction("# Copy layers");
         task.copyFile("layers/libs", workDir + "/libs");
         task.copyFile("layers/classes", workDir + "/classes");
         task.copyFile("layers/resources", workDir + "/resources");
         task.copyFile("layers/application.jar", workDir + "/application.jar");
+
         task.instruction("# Add build scripts");
         task.copyFile("scripts/checkpoint.sh", workDir + "/checkpoint.sh");
         task.copyFile("scripts/warmup.sh", workDir + "/warmup.sh");

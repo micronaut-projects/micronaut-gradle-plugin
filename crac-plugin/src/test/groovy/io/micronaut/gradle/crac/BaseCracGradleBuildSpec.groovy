@@ -48,7 +48,7 @@ abstract class BaseCracGradleBuildSpec extends AbstractGradleBuildSpec {
                 id "io.micronaut.crac"
                 id "io.micronaut.minimal.application"
                 id "io.micronaut.docker"
-            }"""
+            }""".stripIndent()
     }
 
     String getRepositoriesBlock(boolean allowSnapshots = true) {
@@ -59,7 +59,7 @@ abstract class BaseCracGradleBuildSpec extends AbstractGradleBuildSpec {
             }""".stripIndent()
     }
 
-    String getDependenciesBlock(String cracVersion = '1.0.0-SNAPSHOT') {
+    String getDependenciesBlock(String cracVersion = '1.2.3') {
         """
             dependencies {
                 implementation("io.micronaut.crac:micronaut-crac:$cracVersion")
