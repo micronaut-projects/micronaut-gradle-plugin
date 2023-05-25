@@ -59,10 +59,10 @@ abstract class BaseCracGradleBuildSpec extends AbstractGradleBuildSpec {
             }""".stripIndent()
     }
 
-    String getDependenciesBlock(String cracVersion = '1.2.3') {
+    String getDependenciesBlock() {
         """
             dependencies {
-                implementation("io.micronaut.crac:micronaut-crac:$cracVersion")
+                implementation("io.micronaut.crac:micronaut-crac")
             }""".stripIndent()
     }
 

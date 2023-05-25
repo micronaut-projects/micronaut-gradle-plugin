@@ -156,6 +156,21 @@ class CracCustomizationSpec extends BaseCracGradleBuildSpec {
         fileTextContents("build/docker/main/Dockerfile.CRaCCheckpoint").contains("https://api.azul.com/metadata/v1/zulu/packages/?java_version=$javaVersion&arch=$MicronautCRaCPlugin.ARM_ARCH&crac_supported=true&latest=true&release_status=ga&certifications=tck&page=1&page_size=100")
     }
 
+    void "Weird java versions cause an error"() {
+        given:
+        def javaVersion = "tim"
+        settingsFile << "rootProject.name = 'hello-world'"
+        buildFile << getBuildFileBlockWithMicronautConfig(getMicronautConfigBlock("""crac {
+    javaVersion.set("$javaVersion")
+}"""))
+
+        when:
+        def result = fails('dockerfileCrac', 'checkpointDockerfile', '-s')
+
+        then:
+        result.output.contains("Could not determine java version from 'tim'")
+    }
+
     void "dockerfiles can be customized"() {
         given:
         settingsFile << "rootProject.name = 'hello-world'"

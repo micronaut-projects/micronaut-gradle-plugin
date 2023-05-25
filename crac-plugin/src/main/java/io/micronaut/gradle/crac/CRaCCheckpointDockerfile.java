@@ -3,6 +3,7 @@ package io.micronaut.gradle.crac;
 import com.bmuschko.gradle.docker.tasks.image.Dockerfile;
 import io.micronaut.gradle.docker.DockerBuildStrategy;
 import org.gradle.api.GradleException;
+import org.gradle.api.JavaVersion;
 import org.gradle.api.file.RegularFileProperty;
 import org.gradle.api.plugins.BasePlugin;
 import org.gradle.api.provider.ListProperty;
@@ -145,9 +146,18 @@ public abstract class CRaCCheckpointDockerfile extends Dockerfile {
                 "    && rm -rf /var/lib/apt/lists/*");
         task.instruction("# Install latest CRaC OpenJDK");
 
+        // Limit the architecture, Azul don't support x86_64 https://api.azul.com/metadata/v1/docs/swagger
         Provider<String> arch = task.getArch().map(a -> ARM_ARCH.equals(a) ? ARM_ARCH : X86_64_ARCH);
-        String url = "https://api.azul.com/metadata/v1/zulu/packages/?java_version=" + task.getJavaVersion().get() + "&arch=" + arch.get() + "&crac_supported=true&latest=true&release_status=ga&certifications=tck&page=1&page_size=100";
+
+        // Make sure it's a java version
+        Provider<String> javaVersion = task.getJavaVersion().map(JavaVersion::toVersion).map(JavaVersion::getMajorVersion);
+
+        String url = "https://api.azul.com/metadata/v1/zulu/packages/?java_version=" + javaVersion.get() + "&arch=" + arch.get() + "&crac_supported=true&latest=true&release_status=ga&certifications=tck&page=1&page_size=100";
         task.runCommand("release_id=$(curl -s \"" + url + "\" -H \"accept: application/json\" | jq -r '.[0] | .package_uuid') \\\n" +
+                "    && if [ \"$release_id\" = \"null\" ]; then \\\n" +
+                "           echo \"No CRaC OpenJDK found\"; \\\n" +
+                "           exit 1; \\\n" +
+                "       fi \\\n" +
                 "    && details=$(curl -s \"https://api.azul.com/metadata/v1/zulu/packages/$release_id\" -H \"accept: application/json\") \\\n" +
                 "    && name=$(echo \"$details\" | jq -r '.name') \\\n" +
                 "    && url=$(echo \"$details\" | jq -r '.download_url') \\\n" +
