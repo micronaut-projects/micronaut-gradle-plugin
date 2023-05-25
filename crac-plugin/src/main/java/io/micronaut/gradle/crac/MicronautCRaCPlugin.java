@@ -263,6 +263,11 @@ public class MicronautCRaCPlugin implements Plugin<Project> {
             }
             task.getImages().set(Collections.singletonList(project.getName()));
             task.getInputDir().set(dockerFileTask.flatMap(Dockerfile::getDestDir));
+            task.doLast(t -> {
+                project.getLogger().warn("**********************************************************");
+                project.getLogger().warn(" CRaC checkpoint files may contain sensitive information.");
+                project.getLogger().warn("**********************************************************");
+            });
         });
 
         tasks.register(adaptTaskName("dockerPushCrac", imageName), DockerPushImage.class, task -> {

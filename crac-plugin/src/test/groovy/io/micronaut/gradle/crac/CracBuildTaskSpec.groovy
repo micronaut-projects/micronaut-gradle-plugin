@@ -72,6 +72,7 @@ netty:
 
         then:
         result.output.contains("Successfully tagged hello-world:latest")
+        result.output.contains("CRaC checkpoint files may contain sensitive information.")
         task.outcome == TaskOutcome.SUCCESS
 
         where:
