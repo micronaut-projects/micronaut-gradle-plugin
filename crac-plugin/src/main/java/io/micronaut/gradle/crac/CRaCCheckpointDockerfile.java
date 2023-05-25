@@ -36,7 +36,8 @@ public abstract class CRaCCheckpointDockerfile extends Dockerfile {
 
     @Input
     @Optional
-    @Deprecated(since = "3.7.9", forRemoval = true)
+    @SuppressWarnings("java:S6355") // We need Java 8... Java 8 doesn't have forRemoval and since
+    @Deprecated
     public abstract Property<String> getPlatform();
 
     @Input

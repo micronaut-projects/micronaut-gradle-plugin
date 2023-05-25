@@ -39,7 +39,8 @@ public interface CRaCConfiguration {
      * @return the platform (can be removed with {@code platform.convention(null)} in the {@link CRaCConfiguration} extension)
      * @deprecated use {@link #getArch()} instead
      */
-    @Deprecated(since = "3.7.9", forRemoval = true)
+    @SuppressWarnings("java:S6355") // We need Java 8... Java 8 doesn't have forRemoval and since
+    @Deprecated
     Property<String> getPlatform();
 
     /**
