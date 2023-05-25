@@ -16,11 +16,13 @@ import io.micronaut.gradle.crac.tasks.CheckpointScriptTask;
 import io.micronaut.gradle.docker.DockerBuildStrategy;
 import io.micronaut.gradle.docker.model.MicronautDockerImage;
 import io.micronaut.gradle.docker.tasks.BuildLayersTask;
+import org.gradle.api.Action;
 import org.gradle.api.GradleException;
 import org.gradle.api.JavaVersion;
 import org.gradle.api.NamedDomainObjectContainer;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
+import org.gradle.api.Task;
 import org.gradle.api.file.RegularFile;
 import org.gradle.api.plugins.ExtensionContainer;
 import org.gradle.api.plugins.PluginManager;
@@ -251,6 +253,7 @@ public class MicronautCRaCPlugin implements Plugin<Project> {
             task.getArgs().set(configuration.getFinalArgs());
             task.setupDockerfileInstructions();
         });
+        @SuppressWarnings("java:S1604") // Needs to be an anonymous action for cache config serialization
         TaskProvider<DockerBuildImage> dockerBuildTask = tasks.register(adaptTaskName("dockerBuildCrac", imageName), DockerBuildImage.class, task -> {
             task.dependsOn(buildLayersTask, scriptTask);
             task.getInputs().dir(start.map(t -> t.getOutputs().getFiles().getSingleFile()));
@@ -264,10 +267,13 @@ public class MicronautCRaCPlugin implements Plugin<Project> {
             }
             task.getImages().set(Collections.singletonList(project.getName()));
             task.getInputDir().set(dockerFileTask.flatMap(Dockerfile::getDestDir));
-            task.doLast(t -> {
-                t.getLogger().warn("**********************************************************");
-                t.getLogger().warn(" CRaC checkpoint files may contain sensitive information.");
-                t.getLogger().warn("**********************************************************");
+            task.doLast(new Action<>() {
+                @Override
+                public void execute(Task t) {
+                    t.getLogger().warn("**********************************************************");
+                    t.getLogger().warn(" CRaC checkpoint files may contain sensitive information.");
+                    t.getLogger().warn("**********************************************************");
+                }
             });
         });
 
