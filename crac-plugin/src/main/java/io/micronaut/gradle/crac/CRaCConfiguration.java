@@ -39,7 +39,7 @@ public interface CRaCConfiguration {
      * @return the platform (can be removed with {@code platform.convention(null)} in the {@link CRaCConfiguration} extension)
      * @deprecated use {@link #getArch()} instead
      */
-    @Deprecated
+    @Deprecated(since = "3.7.9", forRemoval = true)
     Property<String> getPlatform();
 
     /**

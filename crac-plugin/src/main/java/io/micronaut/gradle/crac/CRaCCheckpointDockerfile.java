@@ -36,7 +36,7 @@ public abstract class CRaCCheckpointDockerfile extends Dockerfile {
 
     @Input
     @Optional
-    @Deprecated
+    @Deprecated(since = "3.7.9", forRemoval = true)
     public abstract Property<String> getPlatform();
 
     @Input
@@ -89,6 +89,7 @@ public abstract class CRaCCheckpointDockerfile extends Dockerfile {
         getProject().getLogger().lifecycle("Checkpoint Dockerfile written to: {}", getDestFile().get().getAsFile().getAbsolutePath());
     }
 
+    @SuppressWarnings("java:S5738") // Using deprecated method still, until it's removal in 4.0.0
     private void setupInstructions(List<Instruction> additionalInstructions) {
         DockerBuildStrategy strategy = this.getBuildStrategy().getOrElse(DockerBuildStrategy.DEFAULT);
         String from = getBaseImage().getOrNull();

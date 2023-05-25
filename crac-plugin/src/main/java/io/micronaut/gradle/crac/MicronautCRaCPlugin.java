@@ -36,6 +36,7 @@ import java.util.function.Consumer;
 
 import static io.micronaut.gradle.Strings.capitalize;
 
+@SuppressWarnings("java:S5738") // Using deprecated getPlatform method still, until it's removal in 4.0.0
 public class MicronautCRaCPlugin implements Plugin<Project> {
 
     public static final String CRAC_DEFAULT_BASE_IMAGE = "ubuntu:22.04";
