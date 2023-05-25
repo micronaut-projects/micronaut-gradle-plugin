@@ -44,7 +44,7 @@ dependencies {
 asciidoctorj {
     attributes 'native-build-tools-version': libs.versions.graalvmPlugin.get(),
             'kotlin-version': libs.versions.kotlin.get(),
-            'micronaut-version': libs.versions.micronaut.asProvider().get(),
+            'micronaut-version': libs.versions.micronaut.platform.get(),
             'gradle-version': GradleVersion.current().version,
             'shadow-version': libs.versions.shadow.get()
 }
