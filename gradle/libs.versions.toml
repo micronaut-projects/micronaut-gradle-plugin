@@ -7,7 +7,7 @@ shadow = "8.1.1"
 groovy = "3.0.17"
 spock = "2.1-groovy-3.0"
 graalvmPlugin = "0.9.22"
-micronaut = "4.0.0-M2" # This is the platform version, used in our tests
+micronaut-platform = "4.0.0-M2" # This is the platform version, used in our tests
 micronaut-aot = "2.0.0-M1"
 micronaut-testresources = "2.0.0-M8"
 log4j2 = { require = "2.17.1", reject = ["]0, 2.17["] }
@@ -16,7 +16,7 @@ tomlj = "1.1.0"
 
 [libraries]
 # Core
-micronaut-core = { module = 'io.micronaut:micronaut-core-bom', version.ref = 'micronaut' }
+micronaut-platform = { module = 'io.micronaut.platform:micronaut-platform', version.ref = 'micronaut-platform' }
 
 dockerPlug = { module = "com.bmuschko:gradle-docker-plugin", version.ref = "docker" }
 diffplugPlugin = { module = "com.diffplug.gradle:goomph", version.ref = "diffplug" }
