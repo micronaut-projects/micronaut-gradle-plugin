@@ -156,7 +156,7 @@ public abstract class CRaCCheckpointDockerfile extends Dockerfile {
                 "    && curl -LJOH 'Accept: application/octet-stream' \"$url\" >&2 \\\n" +
                 "    && file_sha=$(sha256sum -b \"$name\" | cut -d' ' -f 1) \\\n" +
                 "    && if [ \"$file_sha\" != \"$hash\" ]; then \\\n" +
-                "           echo \"SHA256 hash mismatch: $file_sha != $hash\" \\\n" +
+                "           echo \"SHA256 hash mismatch: $file_sha != $hash\"; \\\n" +
                 "           exit 1; \\\n" +
                 "       fi \\\n" +
                 "    && echo \"SHA256 hash matches: $file_sha == $hash\" \\\n" +
