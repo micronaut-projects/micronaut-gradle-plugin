@@ -69,7 +69,7 @@ abstract class BaseCracGradleBuildSpec extends AbstractGradleBuildSpec {
     String getMicronautConfigBlock(String cracConfig = '') {
         """
             micronaut {
-                version "3.6.1"
+                version "3.8.1"
                 runtime("netty")
                 testRuntime("junit5")
                 processing {
