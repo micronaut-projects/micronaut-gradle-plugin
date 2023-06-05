@@ -6,6 +6,7 @@ import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.Optional;
 import org.gradle.api.tasks.PathSensitive;
 import org.gradle.api.tasks.PathSensitivity;
+import org.gradle.jvm.toolchain.JavaLanguageVersion;
 
 public interface CRaCConfiguration {
 
@@ -32,7 +33,7 @@ public interface CRaCConfiguration {
      * The java version to use for building the CRaC enabled images. Currently only '17' is supported.
      * @return the java version
      */
-    Property<String> getJavaVersion();
+    Property<JavaLanguageVersion> getJavaVersion();
 
     /**
      * The platform to specify in the FROM instruction defaults to {@value MicronautCRaCPlugin#CRAC_DEFAULT_BASE_IMAGE_PLATFORM}.

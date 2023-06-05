@@ -3,12 +3,10 @@ package io.micronaut.gradle.crac;
 import com.bmuschko.gradle.docker.tasks.image.Dockerfile;
 import io.micronaut.gradle.docker.DockerBuildStrategy;
 import org.gradle.api.GradleException;
-import org.gradle.api.JavaVersion;
 import org.gradle.api.file.RegularFileProperty;
 import org.gradle.api.plugins.BasePlugin;
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Property;
-import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.CacheableTask;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.InputFile;
@@ -16,6 +14,7 @@ import org.gradle.api.tasks.Optional;
 import org.gradle.api.tasks.PathSensitive;
 import org.gradle.api.tasks.PathSensitivity;
 import org.gradle.api.tasks.TaskAction;
+import org.gradle.jvm.toolchain.JavaLanguageVersion;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -58,7 +57,7 @@ public abstract class CRaCCheckpointDockerfile extends Dockerfile {
     public abstract Property<String> getArch();
 
     @Input
-    public abstract Property<String> getJavaVersion();
+    public abstract Property<JavaLanguageVersion> getJavaVersion();
 
     @SuppressWarnings("java:S5993") // Gradle API
     public CRaCCheckpointDockerfile() {
@@ -148,16 +147,17 @@ public abstract class CRaCCheckpointDockerfile extends Dockerfile {
                 "    && rm -rf /var/lib/apt/lists/*");
         task.instruction("# Install latest CRaC OpenJDK");
 
-        // Limit the architecture, Azul don't support x86_64 https://api.azul.com/metadata/v1/docs/swagger
-        Provider<String> arch = task.getArch().map(a -> ARM_ARCH.equals(a) ? ARM_ARCH : X86_64_ARCH);
+        // Limit the architecture, Azul doesn't support x86_64 https://api.azul.com/metadata/v1/docs/swagger
+        String arch = task.getArch().map(a -> ARM_ARCH.equals(a) ? ARM_ARCH : X86_64_ARCH).get();
 
-        // Make sure it's a java version
-        Provider<String> javaVersion = task.getJavaVersion().map(JavaVersion::toVersion).map(JavaVersion::getMajorVersion);
+        String javaVersion = task.getJavaVersion().map(JavaLanguageVersion::toString).get();
 
-        String url = "https://api.azul.com/metadata/v1/zulu/packages/?java_version=" + javaVersion.get() + "&arch=" + arch.get() + "&crac_supported=true&latest=true&release_status=ga&certifications=tck&page=1&page_size=100";
+        String errorMessage = "No CRaC OpenJDK found for Java version " + javaVersion + " and architecture " + arch;
+
+        String url = "https://api.azul.com/metadata/v1/zulu/packages/?java_version=" + javaVersion + "&arch=" + arch + "&crac_supported=true&latest=true&release_status=ga&certifications=tck&page=1&page_size=100";
         task.runCommand("release_id=$(curl -s \"" + url + "\" -H \"accept: application/json\" | jq -r '.[0] | .package_uuid') \\\n" +
                 "    && if [ \"$release_id\" = \"null\" ]; then \\\n" +
-                "           echo \"No CRaC OpenJDK found\"; \\\n" +
+                "           echo \"" + errorMessage + "\"; \\\n" +
                 "           exit 1; \\\n" +
                 "       fi \\\n" +
                 "    && details=$(curl -s \"https://api.azul.com/metadata/v1/zulu/packages/$release_id\" -H \"accept: application/json\") \\\n" +

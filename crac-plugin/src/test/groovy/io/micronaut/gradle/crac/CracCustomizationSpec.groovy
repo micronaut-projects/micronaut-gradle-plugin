@@ -144,7 +144,7 @@ class CracCustomizationSpec extends BaseCracGradleBuildSpec {
         def javaVersion = "21"
         settingsFile << "rootProject.name = 'hello-world'"
         buildFile << getBuildFileBlockWithMicronautConfig(getMicronautConfigBlock("""crac {
-    javaVersion.set("$javaVersion")
+    javaVersion.set(JavaLanguageVersion.of($javaVersion))
     arch.set('$MicronautCRaCPlugin.ARM_ARCH')
 }"""))
 
@@ -161,14 +161,14 @@ class CracCustomizationSpec extends BaseCracGradleBuildSpec {
         def javaVersion = "tim"
         settingsFile << "rootProject.name = 'hello-world'"
         buildFile << getBuildFileBlockWithMicronautConfig(getMicronautConfigBlock("""crac {
-    javaVersion.set("$javaVersion")
+    javaVersion.set(JavaLanguageVersion.of("$javaVersion"))
 }"""))
 
         when:
         def result = fails('dockerfileCrac', 'checkpointDockerfile', '-s')
 
         then:
-        result.output.contains("Could not determine java version from 'tim'")
+        result.output.contains('Caused by: java.lang.NumberFormatException: For input string: "tim"')
     }
 
     void "dockerfiles can be customized"() {

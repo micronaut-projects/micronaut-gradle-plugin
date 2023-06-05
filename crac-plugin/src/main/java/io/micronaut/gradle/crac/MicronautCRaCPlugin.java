@@ -18,7 +18,6 @@ import io.micronaut.gradle.docker.model.MicronautDockerImage;
 import io.micronaut.gradle.docker.tasks.BuildLayersTask;
 import org.gradle.api.Action;
 import org.gradle.api.GradleException;
-import org.gradle.api.JavaVersion;
 import org.gradle.api.NamedDomainObjectContainer;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
@@ -29,6 +28,7 @@ import org.gradle.api.plugins.PluginManager;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.TaskContainer;
 import org.gradle.api.tasks.TaskProvider;
+import org.gradle.jvm.toolchain.JavaLanguageVersion;
 
 import javax.annotation.Nullable;
 import java.io.File;
@@ -76,7 +76,7 @@ public class MicronautCRaCPlugin implements Plugin<Project> {
         crac.getArch().convention(ARM_ARCH.equals(osArch) ? ARM_ARCH : X86_64_ARCH);
 
         // Default to Java 17
-        crac.getJavaVersion().convention(JavaVersion.VERSION_17.getMajorVersion());
+        crac.getJavaVersion().convention(JavaLanguageVersion.of(17));
 
         return crac;
     }
