@@ -6,6 +6,7 @@ import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.Optional;
 import org.gradle.api.tasks.PathSensitive;
 import org.gradle.api.tasks.PathSensitivity;
+import org.gradle.jvm.toolchain.JavaLanguageVersion;
 
 public interface CRaCConfiguration {
 
@@ -22,9 +23,25 @@ public interface CRaCConfiguration {
     Property<String> getBaseImage();
 
     /**
+     * The architecture to use for building the CRaC enabled images. Defaults to the current architecture.
+     * Currently only {@value MicronautCRaCPlugin#X86_64_ARCH} and {@value MicronautCRaCPlugin#ARM_ARCH} are supported.
+     * @return the architecture
+     */
+    Property<String> getArch();
+
+    /**
+     * The java version to use for building the CRaC enabled images. Currently only '17' is supported.
+     * @return the java version
+     */
+    Property<JavaLanguageVersion> getJavaVersion();
+
+    /**
      * The platform to specify in the FROM instruction defaults to {@value MicronautCRaCPlugin#CRAC_DEFAULT_BASE_IMAGE_PLATFORM}.
      * @return the platform (can be removed with {@code platform.convention(null)} in the {@link CRaCConfiguration} extension)
+     * @deprecated use {@link #getArch()} instead
      */
+    @SuppressWarnings("java:S6355") // We need Java 8... Java 8 doesn't have forRemoval and since
+    @Deprecated
     Property<String> getPlatform();
 
     /**

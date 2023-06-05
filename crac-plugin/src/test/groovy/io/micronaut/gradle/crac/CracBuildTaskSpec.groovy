@@ -4,6 +4,7 @@ import org.gradle.testkit.runner.TaskOutcome
 import spock.lang.IgnoreIf
 
 @IgnoreIf({ os.windows })
+@IgnoreIf(value = { os.macOs && System.properties['os.arch'] == 'aarch64' }, reason = "Java 11 compatible Docker not supported on OSX M1 architecture")
 class CracBuildTaskSpec extends BaseCracGradleBuildSpec {
 
     def "test build docker image when #desc"() {
@@ -71,6 +72,7 @@ netty:
 
         then:
         result.output.contains("Successfully tagged hello-world:latest")
+        result.output.contains("CRaC checkpoint files may contain sensitive information.")
         task.outcome == TaskOutcome.SUCCESS
 
         where:

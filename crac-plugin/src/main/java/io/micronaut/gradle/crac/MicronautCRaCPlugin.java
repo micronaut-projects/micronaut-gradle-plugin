@@ -16,16 +16,19 @@ import io.micronaut.gradle.crac.tasks.CheckpointScriptTask;
 import io.micronaut.gradle.docker.DockerBuildStrategy;
 import io.micronaut.gradle.docker.model.MicronautDockerImage;
 import io.micronaut.gradle.docker.tasks.BuildLayersTask;
+import org.gradle.api.Action;
 import org.gradle.api.GradleException;
 import org.gradle.api.NamedDomainObjectContainer;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
+import org.gradle.api.Task;
 import org.gradle.api.file.RegularFile;
 import org.gradle.api.plugins.ExtensionContainer;
 import org.gradle.api.plugins.PluginManager;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.TaskContainer;
 import org.gradle.api.tasks.TaskProvider;
+import org.gradle.jvm.toolchain.JavaLanguageVersion;
 
 import javax.annotation.Nullable;
 import java.io.File;
@@ -35,10 +38,13 @@ import java.util.function.Consumer;
 
 import static io.micronaut.gradle.Strings.capitalize;
 
+@SuppressWarnings("java:S5738") // Using deprecated getPlatform method still, until it's removal in 4.0.0
 public class MicronautCRaCPlugin implements Plugin<Project> {
 
     public static final String CRAC_DEFAULT_BASE_IMAGE = "ubuntu:22.04";
     public static final String CRAC_DEFAULT_BASE_IMAGE_PLATFORM = "linux/amd64";
+    public static final String ARM_ARCH = "aarch64";
+    public static final String X86_64_ARCH = "amd64";
     public static final String CRAC_DEFAULT_READINESS_COMMAND = "curl --output /dev/null --silent --head http://localhost:8080";
     private static final String CRAC_TASK_GROUP = "CRaC";
     public static final String BUILD_DOCKER_DIRECTORY = "docker/";
@@ -63,8 +69,15 @@ public class MicronautCRaCPlugin implements Plugin<Project> {
         CRaCConfiguration crac = micronautExtension.getExtensions().create("crac", CRaCConfiguration.class);
         crac.getEnabled().convention(true);
         crac.getBaseImage().convention(CRAC_DEFAULT_BASE_IMAGE);
-        crac.getPlatform().convention(CRAC_DEFAULT_BASE_IMAGE_PLATFORM);
         crac.getPreCheckpointReadinessCommand().convention(CRAC_DEFAULT_READINESS_COMMAND);
+
+        // Default to current architecture
+        String osArch = System.getProperty("os.arch");
+        crac.getArch().convention(ARM_ARCH.equals(osArch) ? ARM_ARCH : X86_64_ARCH);
+
+        // Default to Java 17
+        crac.getJavaVersion().convention(JavaLanguageVersion.of(17));
+
         return crac;
     }
 
@@ -133,6 +146,8 @@ public class MicronautCRaCPlugin implements Plugin<Project> {
             task.getDestFile().set(targetCheckpointDockerFile);
             task.getBaseImage().set(configuration.getBaseImage());
             task.getPlatform().set(configuration.getPlatform());
+            task.getArch().set(configuration.getArch());
+            task.getJavaVersion().set(configuration.getJavaVersion());
             task.setupDockerfileInstructions();
         });
 
@@ -238,6 +253,7 @@ public class MicronautCRaCPlugin implements Plugin<Project> {
             task.getArgs().set(configuration.getFinalArgs());
             task.setupDockerfileInstructions();
         });
+        @SuppressWarnings("java:S1604") // Needs to be an anonymous action for cache config serialization
         TaskProvider<DockerBuildImage> dockerBuildTask = tasks.register(adaptTaskName("dockerBuildCrac", imageName), DockerBuildImage.class, task -> {
             task.dependsOn(buildLayersTask, scriptTask);
             task.getInputs().dir(start.map(t -> t.getOutputs().getFiles().getSingleFile()));
@@ -251,6 +267,14 @@ public class MicronautCRaCPlugin implements Plugin<Project> {
             }
             task.getImages().set(Collections.singletonList(project.getName()));
             task.getInputDir().set(dockerFileTask.flatMap(Dockerfile::getDestDir));
+            task.doLast(new Action<Task>() {
+                @Override
+                public void execute(Task t) {
+                    t.getLogger().warn("**********************************************************");
+                    t.getLogger().warn(" CRaC checkpoint files may contain sensitive information.");
+                    t.getLogger().warn("**********************************************************");
+                }
+            });
         });
 
         tasks.register(adaptTaskName("dockerPushCrac", imageName), DockerPushImage.class, task -> {
