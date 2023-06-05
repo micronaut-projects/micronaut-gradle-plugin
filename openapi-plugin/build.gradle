@@ -1,0 +1,15 @@
+plugins {
+    id "io.micronaut.internal.build.gradle-plugin"
+}
+
+description = "Micronaut OpenAPI Gradle plugin"
+
+micronautPlugins {
+    register('openapi', 'io.micronaut.gradle.openapi.MicronautOpenAPIPlugin', 'Micronaut OpenAPI Plugin')
+}
+
+dependencies {
+    implementation libs.micronaut.openapi.generator
+    implementation project(":micronaut-minimal-plugin")
+    testImplementation testFixtures(project(":micronaut-minimal-plugin"))
+}
