@@ -1633,7 +1633,7 @@ micronaut {
         arch = "aarch64"
 
         // The version of the Azul CRaC JDK to use in the image (currently only 17 is supported)
-        javaVersion = "17"
+        javaVersion = JavaLanguageVersion.of(17)
 
         // A command to run that will be successful when the application is ready to be checkpointed.
         preCheckpointReadinessCheck = "curl --output /dev/null --silent --head http://localhost:8080"
@@ -1668,7 +1668,7 @@ micronaut {
         arch.set("aarch64")
 
         // The version of the Azul CRaC JDK to use in the image (currently only 17 is supported)
-        javaVersion.set("17")
+        javaVersion.set(JavaLanguageVersion.of(17))
 
         // A command to run that will be successful when the application is ready to be checkpointed.
         preCheckpointReadinessCheck.set("curl --output /dev/null --silent --head http://localhost:8080")
