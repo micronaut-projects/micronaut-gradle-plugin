@@ -1741,8 +1741,15 @@ micronaut {
         // the base docker image to use for the Checkpoint and final images
         baseImage = "ubuntu:22.04"
 
-        // The platform to build the image for (currently must be linux/amd64)
+        // The platform to use pulling the base image. Defaults to none specified. Deprecated, use arch instead.
         platform = "linux/amd64"
+
+        // The architecture of the CRaC JDK to use. Defaults to the architecture of the machine.
+        // (currently only 'aarch64' or 'amd64' are supported)
+        arch = "aarch64"
+
+        // The version of the Azul CRaC JDK to use in the image (currently only 17 is supported)
+        javaVersion = JavaLanguageVersion.of(17)
 
         // A command to run that will be successful when the application is ready to be checkpointed.
         preCheckpointReadinessCheck = "curl --output /dev/null --silent --head http://localhost:8080"
@@ -1769,8 +1776,15 @@ micronaut {
         // the base docker image to use for the Checkpoint and final images
         baseImage.set("ubuntu:22.04")
 
-        // The platform to build the image for (currently must be linux/amd64)
+        // The platform to build the image for (currently must be linux/amd64). Deprecated, use arch instead.
         platform.set("linux/amd64")
+
+        // The architecture of the CRaC JDK to use. Defaults to the architecture of the machine.
+        // (currently only 'aarch64' or 'amd64' are supported)
+        arch.set("aarch64")
+
+        // The version of the Azul CRaC JDK to use in the image (currently only 17 is supported)
+        javaVersion.set(JavaLanguageVersion.of(17))
 
         // A command to run that will be successful when the application is ready to be checkpointed.
         preCheckpointReadinessCheck.set("curl --output /dev/null --silent --head http://localhost:8080")
