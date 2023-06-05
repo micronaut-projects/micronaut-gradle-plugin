@@ -48,7 +48,15 @@ abstract class BaseCracGradleBuildSpec extends AbstractGradleBuildSpec {
                 id "io.micronaut.crac"
                 id "io.micronaut.minimal.application"
                 id "io.micronaut.docker"
-            }"""
+            }""".stripIndent()
+    }
+
+    String getRepositoriesBlock(boolean allowSnapshots = true) {
+        """
+            repositories {
+                mavenCentral()
+                ${allowSnapshots ? 'maven { url = "https://s01.oss.sonatype.org/content/repositories/snapshots" }' : ""}
+            }""".stripIndent()
     }
 
     String getDependenciesBlock(String cracVersion = '1.0.0-SNAPSHOT') {

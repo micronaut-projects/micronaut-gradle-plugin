@@ -87,31 +87,14 @@ class CracCustomizationSpec extends BaseCracGradleBuildSpec {
 
         then:
         result.output.contains("BUILD SUCCESSFUL")
-        fileTextContents("build/docker/main/Dockerfile").readLines().head() == "FROM --platform=linux/amd64 $MicronautCRaCPlugin.CRAC_DEFAULT_BASE_IMAGE"
-        fileTextContents("build/docker/main/Dockerfile.CRaCCheckpoint").readLines().head() == "FROM --platform=linux/amd64 $MicronautCRaCPlugin.CRAC_DEFAULT_BASE_IMAGE"
+        fileTextContents("build/docker/main/Dockerfile").readLines().head() == "FROM $MicronautCRaCPlugin.CRAC_DEFAULT_BASE_IMAGE"
+        fileTextContents("build/docker/main/Dockerfile.CRaCCheckpoint").readLines().head() == "FROM $MicronautCRaCPlugin.CRAC_DEFAULT_BASE_IMAGE"
     }
 
     void "base image is customizable"() {
         given:
         settingsFile << "rootProject.name = 'hello-world'"
         buildFile << getBuildFileBlockWithMicronautConfig(getMicronautConfigBlock("""crac {
-    baseImage.set("timyates:latest")
-}"""))
-
-        when:
-        def result = build('dockerfileCrac', 'checkpointDockerfile', '-s')
-
-        then:
-        result.output.contains("BUILD SUCCESSFUL")
-        fileTextContents("build/docker/main/Dockerfile").readLines().head() == "FROM --platform=linux/amd64 timyates:latest"
-        fileTextContents("build/docker/main/Dockerfile.CRaCCheckpoint").readLines().head() == "FROM --platform=linux/amd64 timyates:latest"
-    }
-
-    void "platform can be removed"() {
-        given:
-        settingsFile << "rootProject.name = 'hello-world'"
-        buildFile << getBuildFileBlockWithMicronautConfig(getMicronautConfigBlock("""crac {
-    platform.convention(null)
     baseImage.set("timyates:latest")
 }"""))
 
@@ -139,6 +122,53 @@ class CracCustomizationSpec extends BaseCracGradleBuildSpec {
         result.output.contains("BUILD SUCCESSFUL")
         fileTextContents("build/docker/main/Dockerfile").readLines().head() == "FROM --platform=raspberry-pi/arm64 timyates:latest"
         fileTextContents("build/docker/main/Dockerfile.CRaCCheckpoint").readLines().head() == "FROM --platform=raspberry-pi/arm64 timyates:latest"
+    }
+
+    void "Arch defaults to OS arch, and java version defaults to 17"() {
+        given:
+        def javaVersion = "17"
+        def expectedArch = System.properties['os.arch'] == MicronautCRaCPlugin.ARM_ARCH ? MicronautCRaCPlugin.ARM_ARCH : MicronautCRaCPlugin.X86_64_ARCH
+        settingsFile << "rootProject.name = 'hello-world'"
+        buildFile << getBuildFileBlockWithMicronautConfig(getMicronautConfigBlock())
+
+        when:
+        def result = build('dockerfileCrac', 'checkpointDockerfile', '-s')
+
+        then:
+        result.output.contains("BUILD SUCCESSFUL")
+        fileTextContents("build/docker/main/Dockerfile.CRaCCheckpoint").contains("https://api.azul.com/metadata/v1/zulu/packages/?java_version=$javaVersion&arch=$expectedArch&crac_supported=true&latest=true&release_status=ga&certifications=tck&page=1&page_size=100")
+    }
+
+    void "Azul CRaC JDK and arch can be changed"() {
+        given:
+        def javaVersion = "21"
+        settingsFile << "rootProject.name = 'hello-world'"
+        buildFile << getBuildFileBlockWithMicronautConfig(getMicronautConfigBlock("""crac {
+    javaVersion.set(JavaLanguageVersion.of($javaVersion))
+    arch.set('$MicronautCRaCPlugin.ARM_ARCH')
+}"""))
+
+        when:
+        def result = build('dockerfileCrac', 'checkpointDockerfile', '-s')
+
+        then:
+        result.output.contains("BUILD SUCCESSFUL")
+        fileTextContents("build/docker/main/Dockerfile.CRaCCheckpoint").contains("https://api.azul.com/metadata/v1/zulu/packages/?java_version=$javaVersion&arch=$MicronautCRaCPlugin.ARM_ARCH&crac_supported=true&latest=true&release_status=ga&certifications=tck&page=1&page_size=100")
+    }
+
+    void "Weird java versions cause an error"() {
+        given:
+        def javaVersion = "tim"
+        settingsFile << "rootProject.name = 'hello-world'"
+        buildFile << getBuildFileBlockWithMicronautConfig(getMicronautConfigBlock("""crac {
+    javaVersion.set(JavaLanguageVersion.of("$javaVersion"))
+}"""))
+
+        when:
+        def result = fails('dockerfileCrac', 'checkpointDockerfile', '-s')
+
+        then:
+        result.output.contains('Caused by: java.lang.NumberFormatException: For input string: "tim"')
     }
 
     void "dockerfiles can be customized"() {

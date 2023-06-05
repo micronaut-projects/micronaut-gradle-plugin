@@ -14,6 +14,7 @@ import org.gradle.api.tasks.Optional;
 import org.gradle.api.tasks.PathSensitive;
 import org.gradle.api.tasks.PathSensitivity;
 import org.gradle.api.tasks.TaskAction;
+import org.gradle.jvm.toolchain.JavaLanguageVersion;
 
 import java.io.IOException;
 import java.io.IOException;
@@ -22,8 +23,12 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
+import static io.micronaut.gradle.crac.MicronautCRaCPlugin.ARM_ARCH;
+import static io.micronaut.gradle.crac.MicronautCRaCPlugin.X86_64_ARCH;
+
 @CacheableTask
 public abstract class CRaCCheckpointDockerfile extends Dockerfile {
+
     public static final String DEFAULT_WORKING_DIR = "/home/app";
 
     @Input
@@ -31,6 +36,8 @@ public abstract class CRaCCheckpointDockerfile extends Dockerfile {
 
     @Input
     @Optional
+    @SuppressWarnings("java:S6355") // We need Java 8... Java 8 doesn't have forRemoval and since
+    @Deprecated
     public abstract Property<String> getPlatform();
 
     @Input
@@ -46,6 +53,12 @@ public abstract class CRaCCheckpointDockerfile extends Dockerfile {
     @PathSensitive(PathSensitivity.RELATIVE)
     @Optional
     public abstract RegularFileProperty getCustomCheckpointDockerfile();
+
+    @Input
+    public abstract Property<String> getArch();
+
+    @Input
+    public abstract Property<JavaLanguageVersion> getJavaVersion();
 
     @SuppressWarnings("java:S5993") // Gradle API
     public CRaCCheckpointDockerfile() {
@@ -77,6 +90,7 @@ public abstract class CRaCCheckpointDockerfile extends Dockerfile {
         getProject().getLogger().lifecycle("Checkpoint Dockerfile written to: {}", getDestFile().get().getAsFile().getAbsolutePath());
     }
 
+    @SuppressWarnings("java:S5738") // Using deprecated method still, until it's removal in 4.0.0
     private void setupInstructions(List<Instruction> additionalInstructions) {
         DockerBuildStrategy strategy = this.getBuildStrategy().getOrElse(DockerBuildStrategy.DEFAULT);
         String from = getBaseImage().getOrNull();
@@ -123,7 +137,7 @@ public abstract class CRaCCheckpointDockerfile extends Dockerfile {
         setupInstructions(additionalInstructions);
     }
 
-    static void setupResources(Dockerfile task) {
+    static void setupResources(CRaCCheckpointDockerfile task) {
         String workDir = DEFAULT_WORKING_DIR;
         task.workingDir(workDir);
         task.instruction("# Add required libraries");
@@ -133,19 +147,42 @@ public abstract class CRaCCheckpointDockerfile extends Dockerfile {
                 "        libnl-3-200 \\\n" +
                 "    && rm -rf /var/lib/apt/lists/*");
         task.instruction("# Install latest CRaC OpenJDK");
-        task.runCommand("release=\"$(curl -sL https://api.github.com/repos/CRaC/openjdk-builds/releases/latest)\" \\\n" +
-                "    && asset=\"$(echo $release | sed -e 's/\\r//g' | sed -e 's/\\x09//g' | tr '\\n' ' ' | jq '.assets[] | select(.name | test(\"openjdk-[0-9]+-crac\\\\+[0-9]+_linux-x64\\\\.tar\\\\.gz\"))')\" \\\n" +
-                "    && id=\"$(echo $asset | jq .id)\" \\\n" +
-                "    && name=\"$(echo $asset | jq -r .name)\" \\\n" +
-                "    && curl -LJOH 'Accept: application/octet-stream' \"https://api.github.com/repos/CRaC/openjdk-builds/releases/assets/$id\" >&2 \\\n" +
+
+        // Limit the architecture, Azul doesn't support x86_64 https://api.azul.com/metadata/v1/docs/swagger
+        String arch = task.getArch().map(a -> ARM_ARCH.equals(a) ? ARM_ARCH : X86_64_ARCH).get();
+
+        String javaVersion = task.getJavaVersion().map(JavaLanguageVersion::toString).get();
+
+        String errorMessage = "No CRaC OpenJDK found for Java version " + javaVersion + " and architecture " + arch;
+
+        String url = "https://api.azul.com/metadata/v1/zulu/packages/?java_version=" + javaVersion + "&arch=" + arch + "&crac_supported=true&latest=true&release_status=ga&certifications=tck&page=1&page_size=100";
+        task.runCommand("release_id=$(curl -s \"" + url + "\" -H \"accept: application/json\" | jq -r '.[0] | .package_uuid') \\\n" +
+                "    && if [ \"$release_id\" = \"null\" ]; then \\\n" +
+                "           echo \"" + errorMessage + "\"; \\\n" +
+                "           exit 1; \\\n" +
+                "       fi \\\n" +
+                "    && details=$(curl -s \"https://api.azul.com/metadata/v1/zulu/packages/$release_id\" -H \"accept: application/json\") \\\n" +
+                "    && name=$(echo \"$details\" | jq -r '.name') \\\n" +
+                "    && url=$(echo \"$details\" | jq -r '.download_url') \\\n" +
+                "    && hash=$(echo \"$details\" | jq -r '.sha256_hash') \\\n" +
+                "    && echo \"Downloading $name from $url\" \\\n" +
+                "    && curl -LJOH 'Accept: application/octet-stream' \"$url\" >&2 \\\n" +
+                "    && file_sha=$(sha256sum -b \"$name\" | cut -d' ' -f 1) \\\n" +
+                "    && if [ \"$file_sha\" != \"$hash\" ]; then \\\n" +
+                "           echo \"SHA256 hash mismatch: $file_sha != $hash\"; \\\n" +
+                "           exit 1; \\\n" +
+                "       fi \\\n" +
+                "    && echo \"SHA256 hash matches: $file_sha == $hash\" \\\n" +
                 "    && tar xzf \"$name\" \\\n" +
                 "    && mv ${name%%.tar.gz} /azul-crac-jdk \\\n" +
                 "    && rm \"$name\"");
+
         task.instruction("# Copy layers");
         task.copyFile("layers/libs", workDir + "/libs");
         task.copyFile("layers/classes", workDir + "/classes");
         task.copyFile("layers/resources", workDir + "/resources");
         task.copyFile("layers/application.jar", workDir + "/application.jar");
+
         task.instruction("# Add build scripts");
         task.copyFile("scripts/checkpoint.sh", workDir + "/checkpoint.sh");
         task.copyFile("scripts/warmup.sh", workDir + "/warmup.sh");

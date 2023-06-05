@@ -3,7 +3,7 @@ package io.micronaut.gradle.crac
 import org.gradle.testkit.runner.TaskOutcome
 import spock.lang.IgnoreIf
 
-@IgnoreIf({ os.windows || !jvm.current.java17 })
+@IgnoreIf({ os.windows })
 class CracBuildTaskSpec extends BaseCracGradleBuildSpec {
 
     def "test build docker image when #desc"() {
@@ -70,6 +70,7 @@ netty:
 
         then:
         result.output.contains("Successfully tagged hello-world:latest")
+        result.output.contains("CRaC checkpoint files may contain sensitive information.")
         task.outcome == TaskOutcome.SUCCESS
 
         where:
