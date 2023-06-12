@@ -15,7 +15,7 @@
  */
 package io.micronaut.gradle.openapi.tasks;
 
-import io.micronaut.openapi.generator.MicronautCodeGeneratorEntryPoint;
+import io.micronaut.openapi.generator.MicronautCodeGeneratorBuilder;
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.CacheableTask;
@@ -46,7 +46,7 @@ public abstract class OpenApiClientGenerator extends AbstractOpenApiGenerator {
     public abstract ListProperty<String> getAdditionalClientTypeAnnotations();
 
     @Override
-    protected void configureBuilder(MicronautCodeGeneratorEntryPoint.Builder builder) {
+    protected void configureBuilder(MicronautCodeGeneratorBuilder builder) {
         builder.forClient(spec -> {
             spec.withAuthorization(getUseAuth().get());
             if (getClientId().isPresent()) {

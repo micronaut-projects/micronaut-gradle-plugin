@@ -15,6 +15,7 @@
  */
 package io.micronaut.gradle.openapi.tasks;
 
+import io.micronaut.openapi.generator.MicronautCodeGeneratorBuilder;
 import io.micronaut.openapi.generator.MicronautCodeGeneratorEntryPoint;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.file.DirectoryProperty;
@@ -77,6 +78,6 @@ public abstract class AbstractOpenApiGenerator extends DefaultTask {
         builder.build().generate();
     }
 
-    protected abstract void configureBuilder(MicronautCodeGeneratorEntryPoint.Builder builder);
+    protected abstract void configureBuilder(MicronautCodeGeneratorBuilder builder);
 
 }

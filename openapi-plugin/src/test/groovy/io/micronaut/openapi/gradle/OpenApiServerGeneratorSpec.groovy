@@ -45,8 +45,10 @@ class OpenApiServerGeneratorSpec extends AbstractOpenApiGeneratorSpec {
         result.task(":compileJava").outcome == TaskOutcome.SUCCESS
 
         and:
-        file("build/generated/openapi/server/src/main/java/io/micronaut/openapi/api/AbstractPetController.java").exists()
+        file("build/generated/openapi/server/src/main/java/io/micronaut/openapi/api/PetApi.java").exists()
         file("build/generated/openapi/server/src/main/java/io/micronaut/openapi/model/Pet.java").exists()
+        file("build/classes/java/main/io/micronaut/openapi/api/PetApi.class").exists()
+        file("build/classes/java/main/io/micronaut/openapi/model/Pet.class").exists()
 
     }
 
