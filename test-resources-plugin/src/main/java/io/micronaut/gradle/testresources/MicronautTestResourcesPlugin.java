@@ -44,12 +44,8 @@ import org.gradle.process.JavaForkOptions;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.math.BigInteger;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -122,16 +118,7 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
         String accessToken = UUID.randomUUID().toString();
         Provider<String> accessTokenProvider = providers.provider(() -> accessToken);
         DirectoryProperty buildDirectory = project.getLayout().getBuildDirectory();
-        MessageDigest md;
-        try {
-            md = MessageDigest.getInstance("SHA-1");
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
-        }
-        md.update(project.getPath().getBytes(StandardCharsets.UTF_8));
-        // convert the digest to hex string
-        String hash = String.format("%040x", new BigInteger(1, md.digest()));
-        File testResourcesDir = new File(project.getRootDir(), ".gradle/test-resources/" + hash);
+        File testResourcesDir = new File(project.getProjectDir(), ".micronaut/test-resources");
         Provider<Directory> settingsDirectory = config.getSharedServer().flatMap(shared -> {
             DirectoryProperty directoryProperty = project.getObjects().directoryProperty();
             if (Boolean.TRUE.equals(shared)) {
