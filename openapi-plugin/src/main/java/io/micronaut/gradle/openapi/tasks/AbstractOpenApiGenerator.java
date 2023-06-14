@@ -17,6 +17,7 @@ package io.micronaut.gradle.openapi.tasks;
 
 import io.micronaut.openapi.generator.MicronautCodeGeneratorBuilder;
 import io.micronaut.openapi.generator.MicronautCodeGeneratorEntryPoint;
+import io.micronaut.openapi.generator.SerializationLibraryKind;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.file.DirectoryProperty;
 import org.gradle.api.file.RegularFileProperty;
@@ -28,6 +29,8 @@ import org.gradle.api.tasks.OutputDirectory;
 import org.gradle.api.tasks.PathSensitive;
 import org.gradle.api.tasks.PathSensitivity;
 import org.gradle.api.tasks.TaskAction;
+
+import java.util.Locale;
 
 public abstract class AbstractOpenApiGenerator extends DefaultTask {
     @InputFile
@@ -55,6 +58,9 @@ public abstract class AbstractOpenApiGenerator extends DefaultTask {
     @Input
     public abstract ListProperty<MicronautCodeGeneratorEntryPoint.OutputKind> getOutputKinds();
 
+    @Input
+    public abstract Property<String> getSerializationFramework();
+
     @OutputDirectory
     public abstract DirectoryProperty getOutputDirectory();
 
@@ -73,6 +79,7 @@ public abstract class AbstractOpenApiGenerator extends DefaultTask {
                     options.withBeanValidation(getUseBeanValidation().get());
                     options.withOptional(getUseOptional().get());
                     options.withReactive(getUseReactive().get());
+                    options.withSerializationLibrary(SerializationLibraryKind.valueOf(getSerializationFramework().get().toUpperCase(Locale.US)));
                 });
         configureBuilder(builder);
         builder.build().generate();

@@ -5,31 +5,11 @@ pluginManagement {
     }
 }
 
-buildscript {
-    configurations.all {
-        resolutionStrategy {
-            eachDependency {
-                if (requested.group == "org.eclipse.jgit") {
-                    useVersion("5.13.0.202109080827-r")
-                }
-            }
-        }
-    }
-}
-
 plugins {
     id 'io.micronaut.build.shared.settings' version '6.5.0'
-    id 'me.champeau.includegit' version '0.1.6'
 }
 
 rootProject.name = 'micronaut-gradle-plugin-parent'
-
-gitRepositories {
-    include('micronaut-openapi') {
-        uri = 'https://github.com/micronaut-projects/micronaut-openapi.git'
-        branch = 'cc/issue-1037'
-    }
-}
 
 include("platform-catalog-plugin")
 include("minimal-plugin")

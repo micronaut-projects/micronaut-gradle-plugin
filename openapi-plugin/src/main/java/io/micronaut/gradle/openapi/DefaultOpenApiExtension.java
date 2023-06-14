@@ -20,6 +20,7 @@ import io.micronaut.gradle.openapi.tasks.AbstractOpenApiGenerator;
 import io.micronaut.gradle.openapi.tasks.OpenApiClientGenerator;
 import io.micronaut.gradle.openapi.tasks.OpenApiServerGenerator;
 import io.micronaut.openapi.generator.MicronautCodeGeneratorEntryPoint;
+import io.micronaut.openapi.generator.SerializationLibraryKind;
 import org.gradle.api.Action;
 import org.gradle.api.GradleException;
 import org.gradle.api.Project;
@@ -98,6 +99,7 @@ public abstract class DefaultOpenApiExtension implements OpenApiExtension {
         spec.getUseBeanValidation().convention(true);
         spec.getUseOptional().convention(false);
         spec.getUseReactive().convention(true);
+        spec.getSerializationFramework().convention(SerializationLibraryKind.MICRONAUT_SERDE_JACKSON.name());
         withJava(() -> {
                     var implDeps = project.getConfigurations().getByName("implementation").getDependencies();
                     implDeps.add(project.getDependencies().create("io.micronaut.openapi:micronaut-openapi"));
@@ -123,6 +125,7 @@ public abstract class DefaultOpenApiExtension implements OpenApiExtension {
         task.getUseOptional().convention(openApiSpec.getUseOptional());
         task.getUseReactive().convention(openApiSpec.getUseReactive());
         task.getDefinitionFile().convention(definitionFile);
+        task.getSerializationFramework().convention(openApiSpec.getSerializationFramework());
     }
 
     private void withJavaSourceSets(Consumer<? super SourceSetContainer> consumer) {

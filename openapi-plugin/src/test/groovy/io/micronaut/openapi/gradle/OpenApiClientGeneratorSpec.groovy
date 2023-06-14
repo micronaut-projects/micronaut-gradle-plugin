@@ -25,6 +25,10 @@ class OpenApiClientGeneratorSpec extends AbstractOpenApiGeneratorSpec {
             
             $repositoriesBlock
 
+            dependencies {
+                implementation "io.micronaut.serde:micronaut-serde-jackson"
+            }
+
         """
 
         withPetstore()

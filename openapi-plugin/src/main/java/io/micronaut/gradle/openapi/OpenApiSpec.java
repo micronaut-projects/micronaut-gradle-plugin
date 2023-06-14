@@ -29,4 +29,6 @@ public interface OpenApiSpec {
     Property<Boolean> getUseOptional();
 
     Property<Boolean> getUseReactive();
+
+    Property<String> getSerializationFramework();
 }
