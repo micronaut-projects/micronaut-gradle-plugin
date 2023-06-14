@@ -15,7 +15,7 @@
  */
 package io.micronaut.gradle.testresources.internal;
 
-import io.micronaut.gradle.testresources.MicronautTestResourcesPlugin;
+import io.micronaut.gradle.testresources.ServerConnectionParametersProvider;
 import io.micronaut.gradle.testresources.StartTestResourcesService;
 import org.graalvm.buildtools.gradle.dsl.GraalVMExtension;
 import org.gradle.api.Project;
@@ -37,7 +37,7 @@ public final class TestResourcesGraalVM {
         GraalVMExtension graalVMExtension = project.getExtensions().findByType(GraalVMExtension.class);
         graalVMExtension.getBinaries().all(b -> {
             b.getRuntimeArgs().addAll(internalStart.map(task -> {
-                MicronautTestResourcesPlugin.ServerConnectionParametersProvider provider = new MicronautTestResourcesPlugin.ServerConnectionParametersProvider(internalStart);
+                ServerConnectionParametersProvider provider = new ServerConnectionParametersProvider(task.getSettingsDirectory());
                 return provider.asArguments();
             }));
         });
