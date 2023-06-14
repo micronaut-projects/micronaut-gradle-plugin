@@ -39,26 +39,17 @@ import org.gradle.api.tasks.testing.Test;
 import org.gradle.internal.event.ListenerManager;
 import org.gradle.internal.service.ServiceRegistry;
 import org.gradle.internal.session.BuildSessionLifecycleListener;
-import org.gradle.process.CommandLineArgumentProvider;
 import org.gradle.process.JavaForkOptions;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.UncheckedIOException;
 import java.lang.reflect.Field;
-import java.math.BigInteger;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Properties;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -127,16 +118,7 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
         String accessToken = UUID.randomUUID().toString();
         Provider<String> accessTokenProvider = providers.provider(() -> accessToken);
         DirectoryProperty buildDirectory = project.getLayout().getBuildDirectory();
-        MessageDigest md;
-        try {
-            md = MessageDigest.getInstance("SHA-1");
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
-        }
-        md.update(project.getPath().getBytes(StandardCharsets.UTF_8));
-        // convert the digest to hex string
-        String hash = String.format("%040x", new BigInteger(1, md.digest()));
-        File testResourcesDir = new File(project.getRootDir(), ".gradle/test-resources/" + hash);
+        File testResourcesDir = new File(project.getProjectDir(), ".micronaut/test-resources");
         Provider<Directory> settingsDirectory = config.getSharedServer().flatMap(shared -> {
             DirectoryProperty directoryProperty = project.getObjects().directoryProperty();
             if (Boolean.TRUE.equals(shared)) {
@@ -193,8 +175,9 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
             }
             return Collections.emptyList();
         }));
-        if (task instanceof JavaForkOptions) {
-            ((JavaForkOptions) task).getJvmArgumentProviders().add(new ServerConnectionParametersProvider(internalStart));
+        var settingsDirectory = internalStart.flatMap(StartTestResourcesService::getSettingsDirectory);
+        if (task instanceof JavaForkOptions jfo) {
+            jfo.getJvmArgumentProviders().add(new ServerConnectionParametersProvider(settingsDirectory));
         }
     }
 
@@ -407,29 +390,4 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
         });
     }
 
-    public static class ServerConnectionParametersProvider implements CommandLineArgumentProvider {
-        private final Provider<Directory> settingsDirectory;
-
-        public ServerConnectionParametersProvider(TaskProvider<StartTestResourcesService> internalStart) {
-            this.settingsDirectory = internalStart.flatMap(StartTestResourcesService::getSettingsDirectory);
-        }
-
-        @Override
-        public Iterable<String> asArguments() {
-            Properties props = new Properties();
-            File serverConfig = new File(settingsDirectory.get().getAsFile(), "test-resources.properties");
-            if (serverConfig.exists()) {
-                try (InputStream in = new FileInputStream(serverConfig)) {
-                    props.load(in);
-                } catch (IOException e) {
-                    throw new UncheckedIOException(e);
-                }
-                return props.keySet()
-                        .stream()
-                        .map(key -> "-Dmicronaut.test.resources." + key + "=" + props.getProperty(key.toString()))
-                        .collect(Collectors.toList());
-            }
-            return Collections.emptyList();
-        }
-    }
 }
