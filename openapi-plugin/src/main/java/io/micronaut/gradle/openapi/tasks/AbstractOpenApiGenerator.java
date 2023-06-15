@@ -56,7 +56,7 @@ public abstract class AbstractOpenApiGenerator extends DefaultTask {
     public abstract Property<Boolean> getUseReactive();
 
     @Input
-    public abstract ListProperty<MicronautCodeGeneratorEntryPoint.OutputKind> getOutputKinds();
+    public abstract ListProperty<String> getOutputKinds();
 
     @Input
     public abstract Property<String> getSerializationFramework();
@@ -70,7 +70,10 @@ public abstract class AbstractOpenApiGenerator extends DefaultTask {
                 .withDefinitionFile(getDefinitionFile().get().getAsFile().toURI())
                 .withOutputDirectory(getOutputDirectory().getAsFile().get())
                 .withOutputs(
-                        getOutputKinds().get().toArray(new MicronautCodeGeneratorEntryPoint.OutputKind[0])
+                        getOutputKinds().get()
+                                .stream()
+                                .map(s -> MicronautCodeGeneratorEntryPoint.OutputKind.valueOf(s.toUpperCase(Locale.US)))
+                                .toArray(MicronautCodeGeneratorEntryPoint.OutputKind[]::new)
                 )
                 .withOptions(options -> {
                     options.withInvokerPackage(getInvokerPackageName().get());

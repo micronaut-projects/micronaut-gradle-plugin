@@ -73,13 +73,13 @@ public abstract class DefaultOpenApiExtension implements OpenApiExtension {
                 configureCommonProperties(name, task, serverSpec, definition);
                 task.setDescription("Generates OpenAPI controllers from an OpenAPI definition");
                 configureServerTask(serverSpec, task);
-                task.getOutputKinds().add(MicronautCodeGeneratorEntryPoint.OutputKind.APIS);
+                task.getOutputKinds().add(MicronautCodeGeneratorEntryPoint.OutputKind.APIS.name());
             });
             var models = project.getTasks().register(generateModelsTaskName(name), OpenApiServerGenerator.class, task -> {
                 configureCommonProperties(name, task, serverSpec, definition);
                 task.setDescription("Generates OpenAPI models from an OpenAPI definition");
                 configureServerTask(serverSpec, task);
-                task.getOutputKinds().add(MicronautCodeGeneratorEntryPoint.OutputKind.MODELS);
+                task.getOutputKinds().add(MicronautCodeGeneratorEntryPoint.OutputKind.MODELS.name());
             });
             withJavaSourceSets(sourceSets -> {
                 var javaMain = sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME).getJava();
@@ -147,13 +147,13 @@ public abstract class DefaultOpenApiExtension implements OpenApiExtension {
                 configureCommonProperties(name, task, clientSpec, definition);
                 task.setDescription("Generates OpenAPI client from an OpenAPI definition");
                 configureClientTask(clientSpec, task);
-                task.getOutputKinds().add(MicronautCodeGeneratorEntryPoint.OutputKind.APIS);
+                task.getOutputKinds().add(MicronautCodeGeneratorEntryPoint.OutputKind.APIS.name());
             });
             var models = project.getTasks().register(generateModelsTaskName(name), OpenApiClientGenerator.class, task -> {
                 configureCommonProperties(name, task, clientSpec, definition);
                 task.setDescription("Generates OpenAPI client models from an OpenAPI definition");
                 configureClientTask(clientSpec, task);
-                task.getOutputKinds().add(MicronautCodeGeneratorEntryPoint.OutputKind.MODELS);
+                task.getOutputKinds().add(MicronautCodeGeneratorEntryPoint.OutputKind.MODELS.name());
             });
             withJavaSourceSets(sourceSets -> {
                 var javaMain = sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME).getJava();
