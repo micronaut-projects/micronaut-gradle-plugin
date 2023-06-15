@@ -15,12 +15,19 @@
  */
 package io.micronaut.gradle.openapi;
 
+import io.micronaut.gradle.DefaultVersions;
 import io.micronaut.gradle.MicronautBasePlugin;
 import io.micronaut.gradle.PluginsHelper;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 
+import java.util.List;
+
 public class MicronautOpenAPIPlugin implements Plugin<Project> {
+
+    public static final String OPEN_API_GENERATOR_CONFIGURATION = "openApiGenerator";
+    public static final String OPEN_API_GENERATOR_CLASSPATH_CONFIGURATION = "openApiGeneratorClasspath";
+
     @Override
     public void apply(Project project) {
         project.getPluginManager().apply(MicronautBasePlugin.class);
@@ -29,6 +36,21 @@ public class MicronautOpenAPIPlugin implements Plugin<Project> {
 
     private static void createOpenAPIExtension(Project project) {
         var micronautExtension = PluginsHelper.findMicronautExtension(project);
-        micronautExtension.getExtensions().create(OpenApiExtension.class, "openapi", DefaultOpenApiExtension.class, project);
+        var generatorDependencies = project.getConfigurations().create(OPEN_API_GENERATOR_CONFIGURATION, conf -> {
+            conf.setCanBeResolved(false);
+            conf.setCanBeConsumed(false);
+            conf.setDescription("The OpenAPI Generator dependencies");
+        });
+        var generatorClasspath = project.getConfigurations().create(OPEN_API_GENERATOR_CLASSPATH_CONFIGURATION, conf -> {
+            conf.setCanBeResolved(true);
+            conf.setCanBeConsumed(false);
+            conf.setDescription("The OpenAPI Generator classpath");
+            conf.extendsFrom(generatorDependencies);
+        });
+        var openApiExtension = micronautExtension.getExtensions().create(OpenApiExtension.class, "openapi", DefaultOpenApiExtension.class, project, generatorClasspath);
+        openApiExtension.getVersion().convention(DefaultVersions.OPENAPI);
+        generatorDependencies.getDependencies().addAllLater(openApiExtension.getVersion().map(version ->
+            List.of(project.getDependencies().create("io.micronaut.openapi:micronaut-openapi-generator:" + version))
+        ));
     }
 }

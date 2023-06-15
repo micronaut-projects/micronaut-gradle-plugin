@@ -1880,6 +1880,34 @@ micronaut {
 
 Please refer to link:api/io/micronaut/gradle/openapi/OpenApiServerSpec.html[OpenApiServerSpec] for the whole list of client configuration options.
 
+=== Advanced configuration
+
+The Micronaut OpenAPI plugin lets you override the default Micronaut OpenAPI version to use.
+To do this, set the version in the `openapi` extension:
+
+[source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
+----
+micronaut {
+    ...
+    openapi {
+        version = "5.0.2"
+    }
+}
+----
+
+[source, kotlin, subs="verbatim,attributes", role="multi-language-sample"]
+----
+micronaut {
+    ...
+    openapi {
+        version.set("5.0.2")
+    }
+}
+----
+
+In addition, it exposes a `openApiGenerator` configuration which can be used to declare additional dependencies to put on the generator classpath.
+This can be useful in case you want to implement your own generators, in which case you will also have to implement custom tasks which extend the link:api/io/micronaut/gradle/openapi/AbstractOpenApiGenerator.html[AbstractOpenApiGenerator task type].
+
 == Upgrade notes
 
 === Upgrading from 2.x

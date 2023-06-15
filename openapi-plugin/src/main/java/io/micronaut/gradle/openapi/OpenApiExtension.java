@@ -17,6 +17,7 @@ package io.micronaut.gradle.openapi;
 
 import org.gradle.api.Action;
 import org.gradle.api.file.RegularFile;
+import org.gradle.api.provider.Property;
 import org.gradle.api.provider.Provider;
 
 import java.io.File;
@@ -25,6 +26,12 @@ import java.io.File;
  * Configures the OpenAPI code generator.
  */
 public interface OpenApiExtension {
+    /**
+     * The version of the Micronaut OpenAPI generator.
+     * @return the version
+     */
+    Property<String> getVersion();
+
     /**
      * Configures generation of a server, given a definition file.
      * @param file the OpenAPI definition file

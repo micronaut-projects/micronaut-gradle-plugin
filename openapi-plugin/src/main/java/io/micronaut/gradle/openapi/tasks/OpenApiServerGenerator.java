@@ -15,13 +15,12 @@
  */
 package io.micronaut.gradle.openapi.tasks;
 
-import io.micronaut.openapi.generator.MicronautCodeGeneratorBuilder;
 import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.CacheableTask;
 import org.gradle.api.tasks.Input;
 
 @CacheableTask
-public abstract class OpenApiServerGenerator extends AbstractOpenApiGenerator {
+public abstract class OpenApiServerGenerator extends AbstractOpenApiGenerator<OpenApiServerWorkAction, OpenApiServerWorkAction.ServerParameters> {
     @Input
     public abstract Property<String> getControllerPackage();
 
@@ -29,13 +28,13 @@ public abstract class OpenApiServerGenerator extends AbstractOpenApiGenerator {
     public abstract Property<Boolean> getUseAuth();
 
     @Override
-    protected void configureBuilder(MicronautCodeGeneratorBuilder builder) {
-        builder.forServer(spec -> {
-            spec.withControllerPackage(getControllerPackage().get());
-            spec.withAuthentication(getUseAuth().get());
-            spec.withGenerateAbstractClasses(true);
-            spec.withGenerateControllerFromExamples(false);
-            spec.withGenerateOperationsToReturnNotImplemented(false);
-        });
+    protected Class<OpenApiServerWorkAction> getWorkerAction() {
+        return OpenApiServerWorkAction.class;
+    }
+
+    @Override
+    protected void configureWorkerParameters(OpenApiServerWorkAction.ServerParameters params) {
+        params.getControllerPackage().set(getControllerPackage());
+        params.getUseAuth().set(getUseAuth());
     }
 }

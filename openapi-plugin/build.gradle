@@ -9,7 +9,7 @@ micronautPlugins {
 }
 
 dependencies {
-    implementation libs.micronaut.openapi.generator
+    compileOnly libs.micronaut.openapi.generator
     implementation project(":micronaut-minimal-plugin")
     testImplementation testFixtures(project(":micronaut-minimal-plugin"))
 }

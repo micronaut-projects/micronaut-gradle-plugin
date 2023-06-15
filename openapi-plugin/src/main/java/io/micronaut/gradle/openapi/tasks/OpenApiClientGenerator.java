@@ -15,17 +15,14 @@
  */
 package io.micronaut.gradle.openapi.tasks;
 
-import io.micronaut.openapi.generator.MicronautCodeGeneratorBuilder;
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.CacheableTask;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.Optional;
 
-import java.util.List;
-
 @CacheableTask
-public abstract class OpenApiClientGenerator extends AbstractOpenApiGenerator {
+public abstract class OpenApiClientGenerator extends AbstractOpenApiGenerator<OpenApiClientWorkAction, OpenApiClientWorkAction.ClientParameters> {
 
     @Input
     @Optional
@@ -46,19 +43,16 @@ public abstract class OpenApiClientGenerator extends AbstractOpenApiGenerator {
     public abstract ListProperty<String> getAdditionalClientTypeAnnotations();
 
     @Override
-    protected void configureBuilder(MicronautCodeGeneratorBuilder builder) {
-        builder.forClient(spec -> {
-            spec.withAuthorization(getUseAuth().get());
-            if (getClientId().isPresent()) {
-                spec.withClientId(getClientId().get());
-            }
-            spec.withAdditionalClientTypeAnnotations(getAdditionalClientTypeAnnotations().getOrElse(List.of()));
-            if (getBasePathSeparator().isPresent()) {
-                spec.withBasePathSeparator(getBasePathSeparator().get());
-            }
-            if (getAuthorizationFilterPattern().isPresent()) {
-                spec.withAuthorizationFilterPattern(getAuthorizationFilterPattern().get());
-            }
-        });
+    protected Class<OpenApiClientWorkAction> getWorkerAction() {
+        return OpenApiClientWorkAction.class;
+    }
+
+    @Override
+    protected void configureWorkerParameters(OpenApiClientWorkAction.ClientParameters params) {
+        params.getClientId().set(getClientId());
+        params.getUseAuth().set(getUseAuth());
+        params.getAuthorizationFilterPattern().set(getAuthorizationFilterPattern());
+        params.getBasePathSeparator().set(getBasePathSeparator());
+        params.getAdditionalClientTypeAnnotations().set(getAdditionalClientTypeAnnotations());
     }
 }

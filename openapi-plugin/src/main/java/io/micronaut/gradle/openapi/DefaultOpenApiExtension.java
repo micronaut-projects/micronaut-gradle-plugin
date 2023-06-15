@@ -19,11 +19,10 @@ import io.micronaut.gradle.PluginsHelper;
 import io.micronaut.gradle.openapi.tasks.AbstractOpenApiGenerator;
 import io.micronaut.gradle.openapi.tasks.OpenApiClientGenerator;
 import io.micronaut.gradle.openapi.tasks.OpenApiServerGenerator;
-import io.micronaut.openapi.generator.MicronautCodeGeneratorEntryPoint;
-import io.micronaut.openapi.generator.SerializationLibraryKind;
 import org.gradle.api.Action;
 import org.gradle.api.GradleException;
 import org.gradle.api.Project;
+import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.file.RegularFile;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.SourceSet;
@@ -40,13 +39,17 @@ import static org.codehaus.groovy.runtime.StringGroovyMethods.capitalize;
 
 public abstract class DefaultOpenApiExtension implements OpenApiExtension {
     public static final String OPENAPI_GROUP = "Micronaut OpenAPI";
+    // We use a String here because the type is not available at runtime because of classpath isolation
+    private static final String DEFAULT_SERIALIZATION_FRAMEWORK = "MICRONAUT_SERDE_JACKSON";
 
     private final Set<String> names = new HashSet<>();
     private final Project project;
+    private final Configuration classpath;
 
     @Inject
-    public DefaultOpenApiExtension(Project project) {
+    public DefaultOpenApiExtension(Project project, Configuration classpath) {
         this.project = project;
+        this.classpath = classpath;
     }
 
     @Override
@@ -73,13 +76,13 @@ public abstract class DefaultOpenApiExtension implements OpenApiExtension {
                 configureCommonProperties(name, task, serverSpec, definition);
                 task.setDescription("Generates OpenAPI controllers from an OpenAPI definition");
                 configureServerTask(serverSpec, task);
-                task.getOutputKinds().add(MicronautCodeGeneratorEntryPoint.OutputKind.APIS.name());
+                task.getOutputKinds().add("APIS");
             });
             var models = project.getTasks().register(generateModelsTaskName(name), OpenApiServerGenerator.class, task -> {
                 configureCommonProperties(name, task, serverSpec, definition);
                 task.setDescription("Generates OpenAPI models from an OpenAPI definition");
                 configureServerTask(serverSpec, task);
-                task.getOutputKinds().add(MicronautCodeGeneratorEntryPoint.OutputKind.MODELS.name());
+                task.getOutputKinds().add("MODELS");
             });
             withJavaSourceSets(sourceSets -> {
                 var javaMain = sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME).getJava();
@@ -99,7 +102,7 @@ public abstract class DefaultOpenApiExtension implements OpenApiExtension {
         spec.getUseBeanValidation().convention(true);
         spec.getUseOptional().convention(false);
         spec.getUseReactive().convention(true);
-        spec.getSerializationFramework().convention(SerializationLibraryKind.MICRONAUT_SERDE_JACKSON.name());
+        spec.getSerializationFramework().convention(DEFAULT_SERIALIZATION_FRAMEWORK);
         withJava(() -> {
                     var implDeps = project.getConfigurations().getByName("implementation").getDependencies();
                     implDeps.add(project.getDependencies().create("io.micronaut.openapi:micronaut-openapi"));
@@ -115,6 +118,7 @@ public abstract class DefaultOpenApiExtension implements OpenApiExtension {
 
     private void configureCommonProperties(String name, AbstractOpenApiGenerator task, OpenApiSpec openApiSpec, Provider<RegularFile> definitionFile) {
         task.setGroup(OPENAPI_GROUP);
+        task.getClasspath().from(classpath);
         task.getApiPackageName().convention(openApiSpec.getApiPackageName());
         task.getInvokerPackageName().convention(openApiSpec.getInvokerPackageName());
         task.getModelPackageName().convention(openApiSpec.getModelPackageName());
@@ -147,13 +151,13 @@ public abstract class DefaultOpenApiExtension implements OpenApiExtension {
                 configureCommonProperties(name, task, clientSpec, definition);
                 task.setDescription("Generates OpenAPI client from an OpenAPI definition");
                 configureClientTask(clientSpec, task);
-                task.getOutputKinds().add(MicronautCodeGeneratorEntryPoint.OutputKind.APIS.name());
+                task.getOutputKinds().add("APIS");
             });
             var models = project.getTasks().register(generateModelsTaskName(name), OpenApiClientGenerator.class, task -> {
                 configureCommonProperties(name, task, clientSpec, definition);
                 task.setDescription("Generates OpenAPI client models from an OpenAPI definition");
                 configureClientTask(clientSpec, task);
-                task.getOutputKinds().add(MicronautCodeGeneratorEntryPoint.OutputKind.MODELS.name());
+                task.getOutputKinds().add("MODELS");
             });
             withJavaSourceSets(sourceSets -> {
                 var javaMain = sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME).getJava();

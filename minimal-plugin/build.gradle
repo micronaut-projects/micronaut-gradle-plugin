@@ -1,3 +1,5 @@
+import io.micronaut.internal.build.sourcegen.WriteVersions
+
 plugins {
     id "io.micronaut.internal.build.gradle-plugin"
     id "java-test-fixtures"
@@ -20,3 +22,12 @@ dependencies {
     testFixturesImplementation libs.spock.core
     testFixturesImplementation libs.spock.junit4
 }
+
+var writeVersions = tasks.register("writeDefaultVersions", WriteVersions) {
+    outputDirectory = layout.buildDirectory.dir("generated/default-versions")
+    versions.put('test-resources', libs.versions.micronaut.testresources)
+    versions.put('openapi', libs.versions.micronaut.openapi)
+    packageName = 'io.micronaut.gradle'
+}
+
+sourceSets.main.java.srcDir(writeVersions)

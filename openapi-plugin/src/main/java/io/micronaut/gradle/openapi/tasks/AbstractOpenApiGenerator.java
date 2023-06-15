@@ -15,24 +15,29 @@
  */
 package io.micronaut.gradle.openapi.tasks;
 
-import io.micronaut.openapi.generator.MicronautCodeGeneratorBuilder;
-import io.micronaut.openapi.generator.MicronautCodeGeneratorEntryPoint;
-import io.micronaut.openapi.generator.SerializationLibraryKind;
 import org.gradle.api.DefaultTask;
+import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.file.DirectoryProperty;
 import org.gradle.api.file.RegularFileProperty;
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Property;
+import org.gradle.api.tasks.Classpath;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.InputFile;
+import org.gradle.api.tasks.Internal;
 import org.gradle.api.tasks.OutputDirectory;
 import org.gradle.api.tasks.PathSensitive;
 import org.gradle.api.tasks.PathSensitivity;
 import org.gradle.api.tasks.TaskAction;
+import org.gradle.workers.WorkerExecutor;
 
-import java.util.Locale;
+import javax.inject.Inject;
 
-public abstract class AbstractOpenApiGenerator extends DefaultTask {
+public abstract class AbstractOpenApiGenerator<W extends AbstractOpenApiWorkAction<P>, P extends AbstractOpenApiWorkAction.OpenApiParameters> extends DefaultTask {
+
+    @Classpath
+    public abstract ConfigurableFileCollection getClasspath();
+
     @InputFile
     @PathSensitive(PathSensitivity.NONE)
     public abstract RegularFileProperty getDefinitionFile();
@@ -64,30 +69,30 @@ public abstract class AbstractOpenApiGenerator extends DefaultTask {
     @OutputDirectory
     public abstract DirectoryProperty getOutputDirectory();
 
+    @Inject
+    protected abstract WorkerExecutor getWorkerExecutor();
+
+    @Internal
+    protected abstract Class<W> getWorkerAction();
+
+    protected abstract void configureWorkerParameters(P params);
+
     @TaskAction
     public final void execute() {
-        var builder = MicronautCodeGeneratorEntryPoint.builder()
-                .withDefinitionFile(getDefinitionFile().get().getAsFile().toURI())
-                .withOutputDirectory(getOutputDirectory().getAsFile().get())
-                .withOutputs(
-                        getOutputKinds().get()
-                                .stream()
-                                .map(s -> MicronautCodeGeneratorEntryPoint.OutputKind.valueOf(s.toUpperCase(Locale.US)))
-                                .toArray(MicronautCodeGeneratorEntryPoint.OutputKind[]::new)
-                )
-                .withOptions(options -> {
-                    options.withInvokerPackage(getInvokerPackageName().get());
-                    options.withApiPackage(getApiPackageName().get());
-                    options.withModelPackage(getModelPackageName().get());
-                    options.withBeanValidation(getUseBeanValidation().get());
-                    options.withOptional(getUseOptional().get());
-                    options.withReactive(getUseReactive().get());
-                    options.withSerializationLibrary(SerializationLibraryKind.valueOf(getSerializationFramework().get().toUpperCase(Locale.US)));
-                });
-        configureBuilder(builder);
-        builder.build().generate();
+        getWorkerExecutor().classLoaderIsolation(spec -> {
+            spec.getClasspath().from(getClasspath());
+        }).submit(getWorkerAction(), params -> {
+            params.getApiPackageName().set(getApiPackageName());
+            params.getInvokerPackageName().set(getInvokerPackageName());
+            params.getSerializationFramework().set(getSerializationFramework());
+            params.getModelPackageName().set(getModelPackageName());
+            params.getUseBeanValidation().set(getUseBeanValidation());
+            params.getUseOptional().set(getUseOptional());
+            params.getUseReactive().set(getUseReactive());
+            params.getDefinitionFile().set(getDefinitionFile());
+            params.getOutputDirectory().set(getOutputDirectory());
+            params.getOutputKinds().set(getOutputKinds());
+            configureWorkerParameters(params);
+        });
     }
-
-    protected abstract void configureBuilder(MicronautCodeGeneratorBuilder builder);
-
 }
