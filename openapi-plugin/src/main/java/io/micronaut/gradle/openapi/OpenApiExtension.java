@@ -21,10 +21,37 @@ import org.gradle.api.provider.Provider;
 
 import java.io.File;
 
+/**
+ * Configures the OpenAPI code generator.
+ */
 public interface OpenApiExtension {
+    /**
+     * Configures generation of a server, given a definition file.
+     * @param file the OpenAPI definition file
+     * @param spec configuration for the server generation
+     */
     void server(File file, Action<? super OpenApiServerSpec> spec);
+
+    /**
+     * Configures generation of a client, given a definition file.
+     * @param file the OpenAPI definition file
+     * @param spec configuration for the client generation
+     */
     void client(File file, Action<? super OpenApiClientSpec> spec);
 
+    /**
+     * Configures generation of a server, given a definition file.
+     * @param name an identifier used to uniquely refer to the generator, used to derive task names
+     * @param definition the OpenAPI definition file provider
+     * @param spec configuration for the server generation
+     */
     void server(String name, Provider<RegularFile> definition, Action<? super OpenApiServerSpec> spec);
+
+    /**
+     * Configures generation of a server, given a definition file.
+     * @param name an identifier used to uniquely refer to the generator, used to derive task names
+     * @param definition the OpenAPI definition file provider
+     * @param spec configuration for the server generation
+     */
     void client(String name, Provider<RegularFile> definition, Action<? super OpenApiClientSpec> spec);
 }
