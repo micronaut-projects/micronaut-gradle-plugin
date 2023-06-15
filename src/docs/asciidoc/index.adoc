@@ -1844,6 +1844,8 @@ micronaut {
 }
 ----
 
+The generated sources will be found by default in your `$buildDir/generated/openapi/client` directory, and automatically added to your main source set (so the classes are directly available for you to use).
+
 Please refer to link:api/io/micronaut/gradle/openapi/OpenApiClientSpec.html[OpenApiClientSpec] for the whole list of client configuration options.
 
 === Generating a server
@@ -1877,6 +1879,10 @@ micronaut {
     }
 }
 ----
+
+The generated sources will be found by default in your `$buildDir/generated/openapi/server` directory, and automatically added to your main source set (so the classes are directly available for you to use).
+
+NOTE: Server generation will generate interfaces that you have to implement in order to write your server code.
 
 Please refer to link:api/io/micronaut/gradle/openapi/OpenApiServerSpec.html[OpenApiServerSpec] for the whole list of client configuration options.
 

@@ -79,20 +79,19 @@ public abstract class AbstractOpenApiGenerator<W extends AbstractOpenApiWorkActi
 
     @TaskAction
     public final void execute() {
-        getWorkerExecutor().classLoaderIsolation(spec -> {
-            spec.getClasspath().from(getClasspath());
-        }).submit(getWorkerAction(), params -> {
-            params.getApiPackageName().set(getApiPackageName());
-            params.getInvokerPackageName().set(getInvokerPackageName());
-            params.getSerializationFramework().set(getSerializationFramework());
-            params.getModelPackageName().set(getModelPackageName());
-            params.getUseBeanValidation().set(getUseBeanValidation());
-            params.getUseOptional().set(getUseOptional());
-            params.getUseReactive().set(getUseReactive());
-            params.getDefinitionFile().set(getDefinitionFile());
-            params.getOutputDirectory().set(getOutputDirectory());
-            params.getOutputKinds().set(getOutputKinds());
-            configureWorkerParameters(params);
-        });
+        getWorkerExecutor().classLoaderIsolation(spec -> spec.getClasspath().from(getClasspath()))
+                .submit(getWorkerAction(), params -> {
+                    params.getApiPackageName().set(getApiPackageName());
+                    params.getInvokerPackageName().set(getInvokerPackageName());
+                    params.getSerializationFramework().set(getSerializationFramework());
+                    params.getModelPackageName().set(getModelPackageName());
+                    params.getUseBeanValidation().set(getUseBeanValidation());
+                    params.getUseOptional().set(getUseOptional());
+                    params.getUseReactive().set(getUseReactive());
+                    params.getDefinitionFile().set(getDefinitionFile());
+                    params.getOutputDirectory().set(getOutputDirectory());
+                    params.getOutputKinds().set(getOutputKinds());
+                    configureWorkerParameters(params);
+                });
     }
 }

@@ -116,7 +116,7 @@ public abstract class DefaultOpenApiExtension implements OpenApiExtension {
         );
     }
 
-    private void configureCommonProperties(String name, AbstractOpenApiGenerator task, OpenApiSpec openApiSpec, Provider<RegularFile> definitionFile) {
+    private void configureCommonProperties(String name, AbstractOpenApiGenerator<?, ?> task, OpenApiSpec openApiSpec, Provider<RegularFile> definitionFile) {
         task.setGroup(OPENAPI_GROUP);
         task.getClasspath().from(classpath);
         task.getApiPackageName().convention(openApiSpec.getApiPackageName());
