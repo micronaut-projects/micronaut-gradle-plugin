@@ -36,6 +36,7 @@ dependencies {
     javadoc project(":micronaut-graalvm-plugin")
     javadoc project(":micronaut-aot-plugin")
     javadoc project(":micronaut-gradle-plugin")
+    javadoc project(":micronaut-openapi-plugin")
     javadoc project(":micronaut-platform-catalog-plugin")
     javadoc libs.bundles.optionalPlugins
     javadoc libs.shadowPlugin
