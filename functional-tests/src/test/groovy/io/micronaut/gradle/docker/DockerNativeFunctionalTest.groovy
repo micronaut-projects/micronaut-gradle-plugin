@@ -1,6 +1,7 @@
 package io.micronaut.gradle.docker
 
 import io.micronaut.gradle.AbstractGradleBuildSpec
+import io.micronaut.gradle.DefaultVersions
 import io.micronaut.gradle.fixtures.AbstractEagerConfiguringFunctionalTest
 import org.gradle.testkit.runner.TaskOutcome
 import spock.lang.IgnoreIf
@@ -575,7 +576,7 @@ micronaut:
         expect:
         task.outcome == TaskOutcome.SUCCESS
         dockerFile == """
-FROM ghcr.io/graalvm/native-image:ol8-java17-22.3.2 AS graalvm
+FROM ghcr.io/graalvm/native-image:ol8-java17-${DefaultVersions.GRAALVM} AS graalvm
 WORKDIR /home/alternate
 COPY layers/libs /home/alternate/libs
 COPY layers/classes /home/alternate/classes
@@ -693,7 +694,7 @@ ENTRYPOINT ["java", "-jar", "/home/app/application.jar"]
 
         then:
         def dockerfileNative = new File(testProjectDir.root, 'build/docker/native-main/DockerfileNative').text
-        dockerfileNative == """FROM ghcr.io/graalvm/native-image:ol8-java17-22.3.2 AS graalvm
+        dockerfileNative == """FROM ghcr.io/graalvm/native-image:ol8-java17-${DefaultVersions.GRAALVM} AS graalvm
 WORKDIR /home/app
 COPY layers/libs /home/app/libs
 COPY server.iprof /home/app/server.iprof

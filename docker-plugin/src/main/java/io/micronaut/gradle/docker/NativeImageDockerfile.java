@@ -1,6 +1,7 @@
 package io.micronaut.gradle.docker;
 
 import com.bmuschko.gradle.docker.tasks.image.Dockerfile;
+import io.micronaut.gradle.DefaultVersions;
 import io.micronaut.gradle.PluginsHelper;
 import io.micronaut.gradle.docker.tasks.DockerResourceConfigDirectoryNamer;
 import org.graalvm.buildtools.gradle.NativeImagePlugin;
@@ -58,7 +59,7 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
     );
     private static final String ARM_ARCH = "aarch64";
     private static final String X86_64_ARCH = "amd64";
-    private static final String GRAAL_VERSION_CONVENTION = "22.3.2";
+    private static final String GRAAL_VERSION_CONVENTION = DefaultVersions.GRAALVM;
 
     /**
      * @return The JDK version to use with native image. Defaults to the toolchain version, or the current Java version.

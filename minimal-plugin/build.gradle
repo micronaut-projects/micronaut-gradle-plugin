@@ -27,6 +27,7 @@ var writeVersions = tasks.register("writeDefaultVersions", WriteVersions) {
     outputDirectory = layout.buildDirectory.dir("generated/default-versions")
     versions.put('test-resources', libs.versions.micronaut.testresources)
     versions.put('openapi', libs.versions.micronaut.openapi)
+    versions.put('graalvm', libs.versions.graalvm)
     packageName = 'io.micronaut.gradle'
 }
 
