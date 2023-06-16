@@ -10,6 +10,7 @@ graalvmPlugin = "0.9.22"
 micronaut-platform = "4.0.0-M3" # This is the platform version, used in our tests
 micronaut-aot = "2.0.0-M3"
 micronaut-testresources = "2.0.0-M10"
+micronaut-openapi = "5.0.0-M6"
 log4j2 = { require = "2.17.1", reject = ["]0, 2.17["] }
 jetbrains-annotations = "24.0.1"
 tomlj = "1.1.0"
@@ -37,10 +38,12 @@ micronaut-aot-core = { module = "io.micronaut.aot:micronaut-aot-core", version.r
 micronaut-aot-std = { module = "io.micronaut.aot:micronaut-aot-std-optimizers", version.ref = "micronaut-aot" }
 micronaut-aot-cli = { module = "io.micronaut.aot:micronaut-aot-cli", version.ref = "micronaut-aot" }
 
+micronaut-openapi-generator = { module = "io.micronaut.openapi:micronaut-openapi-generator", version.ref = "micronaut-openapi" }
+
 micronaut-testresources = { module = "io.micronaut.testresources:micronaut-test-resources-build-tools", version.ref = "micronaut-testresources" }
 
 jetbrains-annotations = { module = "org.jetbrains:annotations", version.ref = "jetbrains-annotations" }
-tomlj = { module = "org.tomlj:tomlj", version.ref = "tomlj"}
+tomlj = { module = "org.tomlj:tomlj", version.ref = "tomlj" }
 
 [bundles]
-optionalPlugins = [ "kotlin-allopen", "kotlin-gradlePlugin", "graalvmPlugin", "ksp-gradlePlugin" ]
+optionalPlugins = ["kotlin-allopen", "kotlin-gradlePlugin", "graalvmPlugin", "ksp-gradlePlugin"]

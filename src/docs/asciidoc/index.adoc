@@ -76,6 +76,10 @@ For example, the `minimal` plugins can be used to reduce the number of tasks, fo
 |Provides ability to use test resources of other projects of multiproject builds
 |
 
+|https://plugins.gradle.org/plugin/io.micronaut.openapi[`io.micronaut.openapi`]
+|Adds support for generating OpenAPI clients or servers from an OpenAPI definition.
+|
+
 |===
 
 Using the `io.micronaut.application` plugin:
@@ -1799,6 +1803,116 @@ micronaut {
     }
 }
 ----
+
+== OpenAPI code generation
+
+The `io.micronaut.openapi` plugin adds support for generating https://www.openapis.org/[OpenAPI] clients or servers, given an OpenAPI definition.
+
+The plugin adds an link:api/io/micronaut/gradle/openapi/OpenApiExtension.html[openapi] extension to the `micronaut` configuration block.
+
+=== Generating a client
+
+You can generate a client by configuring the extension via the `client { ... }` block:
+
+[source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
+----
+micronaut {
+    ...
+    openapi {
+        client(file("src/openapi/my-definition.yml")) {
+            apiPackageName = "com.mycompany.api"
+            modelPackageName = "com.mycompany.model"
+            useOptional = true
+            clientId = "some-client-id"
+        }
+    }
+}
+----
+
+[source, kotlin, subs="verbatim,attributes", role="multi-language-sample"]
+----
+micronaut {
+    ...
+    openapi {
+        client(file("src/openapi/my-definition.yml")) {
+            apiPackageName.set("com.mycompany.api")
+            modelPackageName.set("com.mycompany.model")
+            useOptional.set(true)
+            clientId.set("some-client-id")
+        }
+    }
+}
+----
+
+The generated sources will be found by default in your `$buildDir/generated/openapi/client` directory, and automatically added to your main source set (so the classes are directly available for you to use).
+
+Please refer to link:api/io/micronaut/gradle/openapi/OpenApiClientSpec.html[OpenApiClientSpec] for the whole list of client configuration options.
+
+=== Generating a server
+
+You can generate a server by configuring the extension via the `server { ... }` block:
+
+[source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
+----
+micronaut {
+    ...
+    openapi {
+        server(file("src/openapi/my-definition.yml")) {
+            apiPackageName = "com.mycompany.api"
+            modelPackageName = "com.mycompany.model"
+            controllerPackage = "com.mycompany.controller"
+        }
+    }
+}
+----
+
+[source, kotlin, subs="verbatim,attributes", role="multi-language-sample"]
+----
+micronaut {
+    ...
+    openapi {
+        server(file("src/openapi/my-definition.yml")) {
+            apiPackageName.set("com.mycompany.api")
+            modelPackageName.set("com.mycompany.model")
+            controllerPackage.set("com.mycompany.controller")
+        }
+    }
+}
+----
+
+The generated sources will be found by default in your `$buildDir/generated/openapi/server` directory, and automatically added to your main source set (so the classes are directly available for you to use).
+
+NOTE: Server generation will generate interfaces that you have to implement in order to write your server code.
+
+Please refer to link:api/io/micronaut/gradle/openapi/OpenApiServerSpec.html[OpenApiServerSpec] for the whole list of client configuration options.
+
+=== Advanced configuration
+
+The Micronaut OpenAPI plugin lets you override the default Micronaut OpenAPI version to use.
+To do this, set the version in the `openapi` extension:
+
+[source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
+----
+micronaut {
+    ...
+    openapi {
+        version = "5.0.2"
+    }
+}
+----
+
+[source, kotlin, subs="verbatim,attributes", role="multi-language-sample"]
+----
+micronaut {
+    ...
+    openapi {
+        version.set("5.0.2")
+    }
+}
+----
+
+In addition, it exposes a `openApiGenerator` configuration which can be used to declare additional dependencies to put on the generator classpath.
+This can be useful in case you want to implement your own generators, in which case you will also have to implement custom tasks which extend the link:api/io/micronaut/gradle/openapi/AbstractOpenApiGenerator.html[AbstractOpenApiGenerator task type].
 
 == Upgrade notes
 
