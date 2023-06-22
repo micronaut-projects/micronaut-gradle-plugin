@@ -115,9 +115,16 @@
 <li><a href="#_configuration_2">10.1. Configuration</a></li>
 </ul>
 </li>
-<li><a href="#_upgrade_notes">11. Upgrade notes</a>
+<li><a href="#_openapi_code_generation">11. OpenAPI code generation</a>
 <ul class="sectlevel2">
-<li><a href="#_upgrading_from_2_x">11.1. Upgrading from 2.x</a></li>
+<li><a href="#_generating_a_client">11.1. Generating a client</a></li>
+<li><a href="#_generating_a_server">11.2. Generating a server</a></li>
+<li><a href="#_advanced_configuration">11.3. Advanced configuration</a></li>
+</ul>
+</li>
+<li><a href="#_upgrade_notes">12. Upgrade notes</a>
+<ul class="sectlevel2">
+<li><a href="#_upgrading_from_2_x">12.1. Upgrading from 2.x</a></li>
 </ul>
 </li>
 </ul>
@@ -140,7 +147,7 @@
 <h2 id="_compatibility_notes"><a class="anchor" href="#_compatibility_notes"></a>1. Compatibility notes</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>This Gradle plugin collection is designed for Micronaut 4.x and requires Gradle 8+. This version defaults to Micronaut 4.0.0-M3 and is tested with Gradle 8.1.1.</p>
+<p>This Gradle plugin collection is designed for Micronaut 4.x and requires Gradle 8+. This version defaults to Micronaut 4.0.0-M4 and is tested with Gradle 8.1.1.</p>
 </div>
 <div class="paragraph">
 <p>Micronaut 3.x users should use the 3.x branch which documentation can be found <a href="https://github.com/micronaut-projects/micronaut-gradle-plugin/tree/3.7.x#readme">here</a>.</p>
@@ -168,7 +175,7 @@
 <p>the <a href="https://plugins.gradle.org/plugin/io.micronaut.library"><code>io.micronaut.library</code></a> plugin is aimed at building Micronaut libraries.</p>
 </li>
 <li>
-<p>the <a href="https://plugins.gradle.org/plugin/io.micronaut.graalvm"><code>io.micronaut.graalvm</code></a> plugin integrates with the official <a href="https://graalvm.github.io/native-build-tools/0.9.22/gradle-plugin.html">GraalVM Native Build Tools plugin</a> and configures it for Micronaut applications.</p>
+<p>the <a href="https://plugins.gradle.org/plugin/io.micronaut.graalvm"><code>io.micronaut.graalvm</code></a> plugin integrates with the official <a href="https://graalvm.github.io/native-build-tools/0.9.23/gradle-plugin.html">GraalVM Native Build Tools plugin</a> and configures it for Micronaut applications.</p>
 </li>
 <li>
 <p>the <a href="https://plugins.gradle.org/plugin/io.micronaut.aot"><code>io.micronaut.aot</code></a> plugin integrates with Micronaut AOT to produce optimized binaries.</p>
@@ -241,6 +248,11 @@ For example, the <code>minimal</code> plugins can be used to reduce the number o
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><a href="https://plugins.gradle.org/plugin/io.micronaut.test-resources-consumer"><code>io.micronaut.test-resources-consumer</code></a></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Provides ability to use test resources of other projects of multiproject builds</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="https://plugins.gradle.org/plugin/io.micronaut.openapi"><code>io.micronaut.openapi</code></a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Adds support for generating OpenAPI clients or servers from an OpenAPI definition.</p></td>
 <td class="tableblock halign-left valign-top"></td>
 </tr>
 </tbody>
@@ -420,14 +432,14 @@ Alternatively, you can set the version in your <code>build.gradle(.kts)</code>:<
 <div class="title">Selecting the Micronaut version</div>
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">micronaut {
-    version "4.0.0-M3"
+    version "4.0.0-M4"
 }</code></pre>
 </div>
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">micronaut {
-    version.set("4.0.0-M3")
+    version.set("4.0.0-M4")
 }</code></pre>
 </div>
 </div>
@@ -560,7 +572,7 @@ ehcache = "3.8.2" # override version of ehcache</code></pre>
 <div class="title">Micronaut configuration options</div>
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">micronaut {
-    version "4.0.0-M3"
+    version "4.0.0-M4"
     // If set to false, then the `io.micronaut.platform:micronaut-platform` BOM
     // will not be automatically applied, and you will have to add it yourself
     // to your dependencies, or specify versions of Micronaut modules explicitly
@@ -592,7 +604,7 @@ ehcache = "3.8.2" # override version of ehcache</code></pre>
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">micronaut {
-    version.set("4.0.0-M3")
+    version.set("4.0.0-M4")
     // If set to false, then the `io.micronaut.platform:micronaut-platform` BOM
     // will not be automatically applied, and you will have to add it yourself
     // to your dependencies, or specify versions of Micronaut modules explicitly
@@ -678,7 +690,7 @@ repositories {
 }
 
 micronaut {
-    version = "4.0.0-M3"
+    version = "4.0.0-M4"
 }
 
 dependencies {
@@ -701,7 +713,7 @@ repositories {
 }
 
 micronaut {
-    version.set("4.0.0-M3")
+    version.set("4.0.0-M4")
 }
 
 dependencies {
@@ -814,7 +826,7 @@ repositories {
 }
 
 micronaut {
-    version = "4.0.0-M3"
+    version = "4.0.0-M4"
 }
 
 dependencies {
@@ -843,7 +855,7 @@ repositories {
 }
 
 micronaut {
-    version.set("4.0.0-M3")
+    version.set("4.0.0-M4")
 }
 
 dependencies {
@@ -881,7 +893,7 @@ repositories {
 }
 
 micronaut {
-    version = "4.0.0-M3"
+    version = "4.0.0-M4"
 }
 
 dependencies {
@@ -915,7 +927,7 @@ repositories {
 }
 
 micronaut {
-    version.set("4.0.0-M3")
+    version.set("4.0.0-M4")
 }
 
 dependencies {
@@ -936,7 +948,7 @@ application {
 <div class="sect2">
 <h3 id="native-image"><a class="anchor" href="#native-image"></a>6.3. GraalVM Native Image</h3>
 <div class="paragraph">
-<p>Since version 3.0.0, the Micronaut plugins rely on the <a href="https://graalvm.github.io/native-build-tools/0.9.22/gradle-plugin.html">official GraalVM plugin</a> to build native executables.</p>
+<p>Since version 3.0.0, the Micronaut plugins rely on the <a href="https://graalvm.github.io/native-build-tools/0.9.23/gradle-plugin.html">official GraalVM plugin</a> to build native executables.</p>
 </div>
 <div class="paragraph">
 <p>Those plugins make use of <a href="https://docs.gradle.org/8.1.1/userguide/toolchains.html">Gradle toolchains</a> support, which means that the SDK which is used to build the native is decorrelated from the JVM which is used to launch Gradle itself.
@@ -951,7 +963,7 @@ Said differently, you can run Gradle with OpenJDK, while still building native e
 <p>running Gradle with a GraalVM SDK doesn&#8217;t necessarily imply that Gradle will use the same SDK to build native executables</p>
 </li>
 <li>
-<p>Gradle will try to locate a <em>compatible GraalVM toolchain</em> to build executables. You can tweak what GraalVM version to use by following the <a href="https://graalvm.github.io/native-build-tools/0.9.22/gradle-plugin.html#_selecting_the_graalvm_toolchain">official documentation</a>.</p>
+<p>Gradle will try to locate a <em>compatible GraalVM toolchain</em> to build executables. You can tweak what GraalVM version to use by following the <a href="https://graalvm.github.io/native-build-tools/0.9.23/gradle-plugin.html#_selecting_the_graalvm_toolchain">official documentation</a>.</p>
 </li>
 </ul>
 </div>
@@ -1019,7 +1031,7 @@ org.gradle.java.installations.fromEnv=JAVA_HOME</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>You can tweak the native executable options by configuring the <code>graalvmNative</code> extension as explained in the <a href="https://graalvm.github.io/native-build-tools/0.9.22/gradle-plugin.html">plugin documentation</a>.</p>
+<p>You can tweak the native executable options by configuring the <code>graalvmNative</code> extension as explained in the <a href="https://graalvm.github.io/native-build-tools/0.9.23/gradle-plugin.html">plugin documentation</a>.</p>
 </div>
 <div class="paragraph">
 <p>For example, you can add options to the main executable by doing:</p>
@@ -1358,7 +1370,7 @@ repositories {
 }
 
 micronaut {
-    version = "4.0.0-M3"
+    version = "4.0.0-M4"
     runtime "netty"
 }
 
@@ -1384,7 +1396,7 @@ repositories {
 }
 
 micronaut {
-    version.set("4.0.0-M3")
+    version.set("4.0.0-M4")
     runtime.set("netty")
 }
 
@@ -1930,8 +1942,8 @@ Should this happen to you, you can disable class data sharing explicitly using t
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">plugins {
-    id "io.micronaut.application" version "4.0.0-M3"
-    id "io.micronaut.test-resources" version "4.0.0-M3"
+    id "io.micronaut.application" version "4.0.0-M4"
+    id "io.micronaut.test-resources" version "4.0.0-M4"
     ...
 }</code></pre>
 </div>
@@ -1939,8 +1951,8 @@ Should this happen to you, you can disable class data sharing explicitly using t
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">plugins {
-    id("io.micronaut.application") version "4.0.0-M3"
-    id("io.micronaut.test-resources") version "4.0.0-M3"
+    id("io.micronaut.application") version "4.0.0-M4"
+    id("io.micronaut.test-resources") version "4.0.0-M4"
     ...
 }</code></pre>
 </div>
@@ -2130,7 +2142,7 @@ Here, we&#8217;re going to add a project called <code>shared-testresources</code
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">// shared-testresources/build.gradle
 plugins {
-    id "io.micronaut.test-resources" version "4.0.0-M3" // <b class="conum">(1)</b>
+    id "io.micronaut.test-resources" version "4.0.0-M4" // <b class="conum">(1)</b>
 }
 
 micronaut {
@@ -2144,7 +2156,7 @@ micronaut {
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">// shared-testresources/build.gradle.kts
 plugins {
-    id("io.micronaut.test-resources") version "4.0.0-M3" // <b class="conum">(1)</b>
+    id("io.micronaut.test-resources") version "4.0.0-M4" // <b class="conum">(1)</b>
 }
 
 micronaut {
@@ -2170,8 +2182,8 @@ micronaut {
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">plugins {
-    id "io.micronaut.application" version "4.0.0-M3"
-    id "io.micronaut.test-resources-consumer" version "4.0.0-M3" // <b class="conum">(1)</b>
+    id "io.micronaut.application" version "4.0.0-M4"
+    id "io.micronaut.test-resources-consumer" version "4.0.0-M4" // <b class="conum">(1)</b>
 }
 
 dependencies {
@@ -2182,8 +2194,8 @@ dependencies {
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">plugins {
-    id("io.micronaut.application") version "4.0.0-M3"
-    id("io.micronaut.test-resources-consumer") version "4.0.0-M3" // <b class="conum">(1)</b>
+    id("io.micronaut.application") version "4.0.0-M4"
+    id("io.micronaut.test-resources-consumer") version "4.0.0-M4" // <b class="conum">(1)</b>
 }
 
 dependencies {
@@ -2520,10 +2532,146 @@ Currently CRaC support has only been tested on Ubuntu 18.04, 20.04 and 22.04.  I
 </div>
 </div>
 <div class="sect1">
-<h2 id="_upgrade_notes"><a class="anchor" href="#_upgrade_notes"></a>11. Upgrade notes</h2>
+<h2 id="_openapi_code_generation"><a class="anchor" href="#_openapi_code_generation"></a>11. OpenAPI code generation</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The <code>io.micronaut.openapi</code> plugin adds support for generating <a href="https://www.openapis.org/">OpenAPI</a> clients or servers, given an OpenAPI definition.</p>
+</div>
+<div class="paragraph">
+<p>The plugin adds an <a href="api/io/micronaut/gradle/openapi/OpenApiExtension.html">openapi</a> extension to the <code>micronaut</code> configuration block.</p>
+</div>
+<div class="sect2">
+<h3 id="_generating_a_client"><a class="anchor" href="#_generating_a_client"></a>11.1. Generating a client</h3>
+<div class="paragraph">
+<p>You can generate a client by configuring the extension via the <code>client { &#8230;&#8203; }</code> block:</p>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">micronaut {
+    ...
+    openapi {
+        client(file("src/openapi/my-definition.yml")) {
+            apiPackageName = "com.mycompany.api"
+            modelPackageName = "com.mycompany.model"
+            useOptional = true
+            clientId = "some-client-id"
+        }
+    }
+}</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">micronaut {
+    ...
+    openapi {
+        client(file("src/openapi/my-definition.yml")) {
+            apiPackageName.set("com.mycompany.api")
+            modelPackageName.set("com.mycompany.model")
+            useOptional.set(true)
+            clientId.set("some-client-id")
+        }
+    }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The generated sources will be found by default in your <code>$buildDir/generated/openapi/client</code> directory, and automatically added to your main source set (so the classes are directly available for you to use).</p>
+</div>
+<div class="paragraph">
+<p>Please refer to <a href="api/io/micronaut/gradle/openapi/OpenApiClientSpec.html">OpenApiClientSpec</a> for the whole list of client configuration options.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_generating_a_server"><a class="anchor" href="#_generating_a_server"></a>11.2. Generating a server</h3>
+<div class="paragraph">
+<p>You can generate a server by configuring the extension via the <code>server { &#8230;&#8203; }</code> block:</p>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">micronaut {
+    ...
+    openapi {
+        server(file("src/openapi/my-definition.yml")) {
+            apiPackageName = "com.mycompany.api"
+            modelPackageName = "com.mycompany.model"
+            controllerPackage = "com.mycompany.controller"
+        }
+    }
+}</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">micronaut {
+    ...
+    openapi {
+        server(file("src/openapi/my-definition.yml")) {
+            apiPackageName.set("com.mycompany.api")
+            modelPackageName.set("com.mycompany.model")
+            controllerPackage.set("com.mycompany.controller")
+        }
+    }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The generated sources will be found by default in your <code>$buildDir/generated/openapi/server</code> directory, and automatically added to your main source set (so the classes are directly available for you to use).</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Note</div>
+</td>
+<td class="content">
+Server generation will generate interfaces that you have to implement in order to write your server code.
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>Please refer to <a href="api/io/micronaut/gradle/openapi/OpenApiServerSpec.html">OpenApiServerSpec</a> for the whole list of client configuration options.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_advanced_configuration"><a class="anchor" href="#_advanced_configuration"></a>11.3. Advanced configuration</h3>
+<div class="paragraph">
+<p>The Micronaut OpenAPI plugin lets you override the default Micronaut OpenAPI version to use.
+To do this, set the version in the <code>openapi</code> extension:</p>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">micronaut {
+    ...
+    openapi {
+        version = "5.0.2"
+    }
+}</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">micronaut {
+    ...
+    openapi {
+        version.set("5.0.2")
+    }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>In addition, it exposes a <code>openApiGenerator</code> configuration which can be used to declare additional dependencies to put on the generator classpath.
+This can be useful in case you want to implement your own generators, in which case you will also have to implement custom tasks which extend the <a href="api/io/micronaut/gradle/openapi/AbstractOpenApiGenerator.html">AbstractOpenApiGenerator task type</a>.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_upgrade_notes"><a class="anchor" href="#_upgrade_notes"></a>12. Upgrade notes</h2>
 <div class="sectionbody">
 <div class="sect2">
-<h3 id="_upgrading_from_2_x"><a class="anchor" href="#_upgrading_from_2_x"></a>11.1. Upgrading from 2.x</h3>
+<h3 id="_upgrading_from_2_x"><a class="anchor" href="#_upgrading_from_2_x"></a>12.1. Upgrading from 2.x</h3>
 <div class="paragraph">
 <p>When upgrading from the 2.x version of the plugins, you will need to change the configuration of the GraalVM native executable builds if you use them.</p>
 </div>

@@ -11,7 +11,7 @@
 <link rel="stylesheet" type="text/css" href="script-dir/jquery-ui.min.css" title="Style">
 <link rel="stylesheet" type="text/css" href="jquery-ui.overrides.css" title="Style">
 <script type="text/javascript" src="script.js"></script>
-<script type="text/javascript" src="script-dir/jquery-3.6.0.min.js"></script>
+<script type="text/javascript" src="script-dir/jquery-3.6.1.min.js"></script>
 <script type="text/javascript" src="script-dir/jquery-ui.min.js"></script>
 </head>
 <body class="tree-page">
@@ -62,6 +62,8 @@ loadScripts(document, 'script');</script>
 <li><a href="io/micronaut/gradle/docker/tasks/package-tree.html">io.micronaut.gradle.docker.tasks</a>, </li>
 <li><a href="io/micronaut/gradle/graalvm/package-tree.html">io.micronaut.gradle.graalvm</a>, </li>
 <li><a href="io/micronaut/gradle/internal/package-tree.html">io.micronaut.gradle.internal</a>, </li>
+<li><a href="io/micronaut/gradle/openapi/package-tree.html">io.micronaut.gradle.openapi</a>, </li>
+<li><a href="io/micronaut/gradle/openapi/tasks/package-tree.html">io.micronaut.gradle.openapi.tasks</a>, </li>
 <li><a href="io/micronaut/gradle/testresources/package-tree.html">io.micronaut.gradle.testresources</a>, </li>
 <li><a href="io/micronaut/gradle/testresources/internal/package-tree.html">io.micronaut.gradle.testresources.internal</a></li>
 </ul>
@@ -71,10 +73,22 @@ loadScripts(document, 'script');</script>
 <ul>
 <li class="circle">java.lang.<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html" class="type-name-link external-link" title="class or interface in java.lang">Object</a>
 <ul>
+<li class="circle">io.micronaut.gradle.openapi.tasks.<a href="io/micronaut/gradle/openapi/tasks/AbstractOpenApiWorkAction.html" class="type-name-link" title="class in io.micronaut.gradle.openapi.tasks">AbstractOpenApiWorkAction</a>&lt;T&gt; (implements org.gradle.workers.WorkAction&lt;T&gt;)
+<ul>
+<li class="circle">io.micronaut.gradle.openapi.tasks.<a href="io/micronaut/gradle/openapi/tasks/OpenApiClientWorkAction.html" class="type-name-link" title="class in io.micronaut.gradle.openapi.tasks">OpenApiClientWorkAction</a></li>
+<li class="circle">io.micronaut.gradle.openapi.tasks.<a href="io/micronaut/gradle/openapi/tasks/OpenApiServerWorkAction.html" class="type-name-link" title="class in io.micronaut.gradle.openapi.tasks">OpenApiServerWorkAction</a></li>
+</ul>
+</li>
 <li class="circle">org.gradle.api.internal.AbstractTask (implements org.gradle.api.internal.DynamicObjectAware, org.gradle.api.internal.TaskInternal)
 <ul>
 <li class="circle">org.gradle.api.DefaultTask (implements org.gradle.api.Task)
 <ul>
+<li class="circle">io.micronaut.gradle.openapi.tasks.<a href="io/micronaut/gradle/openapi/tasks/AbstractOpenApiGenerator.html" class="type-name-link" title="class in io.micronaut.gradle.openapi.tasks">AbstractOpenApiGenerator</a>&lt;W,<wbr>P&gt;
+<ul>
+<li class="circle">io.micronaut.gradle.openapi.tasks.<a href="io/micronaut/gradle/openapi/tasks/OpenApiClientGenerator.html" class="type-name-link" title="class in io.micronaut.gradle.openapi.tasks">OpenApiClientGenerator</a></li>
+<li class="circle">io.micronaut.gradle.openapi.tasks.<a href="io/micronaut/gradle/openapi/tasks/OpenApiServerGenerator.html" class="type-name-link" title="class in io.micronaut.gradle.openapi.tasks">OpenApiServerGenerator</a></li>
+</ul>
+</li>
 <li class="circle">io.micronaut.gradle.<a href="io/micronaut/gradle/ApplicationClasspathInspector.html" class="type-name-link" title="class in io.micronaut.gradle">ApplicationClasspathInspector</a></li>
 <li class="circle">io.micronaut.gradle.docker.tasks.<a href="io/micronaut/gradle/docker/tasks/BuildLayersTask.html" class="type-name-link" title="class in io.micronaut.gradle.docker.tasks">BuildLayersTask</a></li>
 <li class="circle">io.micronaut.gradle.crac.tasks.<a href="io/micronaut/gradle/crac/tasks/CheckpointScriptTask.html" class="type-name-link" title="class in io.micronaut.gradle.crac.tasks">CheckpointScriptTask</a></li>
@@ -105,6 +119,8 @@ loadScripts(document, 'script');</script>
 <li class="circle">io.micronaut.gradle.<a href="io/micronaut/gradle/AttributeUtils.html" class="type-name-link" title="class in io.micronaut.gradle">AttributeUtils</a></li>
 <li class="circle">io.micronaut.gradle.docker.editor.<a href="io/micronaut/gradle/docker/editor/DefaultEditor.html" class="type-name-link" title="class in io.micronaut.gradle.docker.editor">DefaultEditor</a> (implements io.micronaut.gradle.docker.editor.<a href="io/micronaut/gradle/docker/editor/Editor.html" title="interface in io.micronaut.gradle.docker.editor">Editor</a>)</li>
 <li class="circle">io.micronaut.gradle.docker.model.<a href="io/micronaut/gradle/docker/model/DefaultMicronautDockerImage.html" class="type-name-link" title="class in io.micronaut.gradle.docker.model">DefaultMicronautDockerImage</a> (implements io.micronaut.gradle.docker.model.<a href="io/micronaut/gradle/docker/model/MicronautDockerImage.html" title="interface in io.micronaut.gradle.docker.model">MicronautDockerImage</a>)</li>
+<li class="circle">io.micronaut.gradle.openapi.<a href="io/micronaut/gradle/openapi/DefaultOpenApiExtension.html" class="type-name-link" title="class in io.micronaut.gradle.openapi">DefaultOpenApiExtension</a> (implements io.micronaut.gradle.openapi.<a href="io/micronaut/gradle/openapi/OpenApiExtension.html" title="interface in io.micronaut.gradle.openapi">OpenApiExtension</a>)</li>
+<li class="circle">io.micronaut.gradle.<a href="io/micronaut/gradle/DefaultVersions.html" class="type-name-link" title="class in io.micronaut.gradle">DefaultVersions</a></li>
 <li class="circle">io.micronaut.gradle.internal.<a href="io/micronaut/gradle/internal/Dependencies.html" class="type-name-link" title="class in io.micronaut.gradle.internal">Dependencies</a></li>
 <li class="circle">io.micronaut.gradle.internal.<a href="io/micronaut/gradle/internal/Dependencies.Builder.html" class="type-name-link" title="class in io.micronaut.gradle.internal">Dependencies.Builder</a></li>
 <li class="circle">io.micronaut.gradle.docker.tasks.<a href="io/micronaut/gradle/docker/tasks/DockerResourceConfigDirectoryNamer.html" class="type-name-link" title="class in io.micronaut.gradle.docker.tasks">DockerResourceConfigDirectoryNamer</a></li>
@@ -129,6 +145,7 @@ loadScripts(document, 'script');</script>
 </li>
 <li class="circle">io.micronaut.gradle.<a href="io/micronaut/gradle/MicronautMinimalApplicationPlugin.html" class="type-name-link" title="class in io.micronaut.gradle">MicronautMinimalApplicationPlugin</a> (implements org.gradle.api.Plugin&lt;T&gt;)</li>
 <li class="circle">io.micronaut.gradle.<a href="io/micronaut/gradle/MicronautMinimalLibraryPlugin.html" class="type-name-link" title="class in io.micronaut.gradle">MicronautMinimalLibraryPlugin</a> (implements org.gradle.api.Plugin&lt;T&gt;)</li>
+<li class="circle">io.micronaut.gradle.openapi.<a href="io/micronaut/gradle/openapi/MicronautOpenAPIPlugin.html" class="type-name-link" title="class in io.micronaut.gradle.openapi">MicronautOpenAPIPlugin</a> (implements org.gradle.api.Plugin&lt;T&gt;)</li>
 <li class="circle">io.micronaut.gradle.<a href="io/micronaut/gradle/MicronautRuntimeDependencies.html" class="type-name-link" title="class in io.micronaut.gradle">MicronautRuntimeDependencies</a></li>
 <li class="circle">io.micronaut.gradle.testresources.<a href="io/micronaut/gradle/testresources/MicronautTestResourcesConsumerPlugin.html" class="type-name-link" title="class in io.micronaut.gradle.testresources">MicronautTestResourcesConsumerPlugin</a> (implements org.gradle.api.Plugin&lt;T&gt;)</li>
 <li class="circle">io.micronaut.gradle.testresources.<a href="io/micronaut/gradle/testresources/MicronautTestResourcesPlugin.html" class="type-name-link" title="class in io.micronaut.gradle.testresources">MicronautTestResourcesPlugin</a> (implements org.gradle.api.Plugin&lt;T&gt;)</li>
@@ -181,6 +198,13 @@ loadScripts(document, 'script');</script>
 </ul>
 </li>
 <li class="circle">io.micronaut.gradle.aot.<a href="io/micronaut/gradle/aot/NettyOptimizations.html" class="type-name-link" title="interface in io.micronaut.gradle.aot">NettyOptimizations</a></li>
+<li class="circle">io.micronaut.gradle.openapi.<a href="io/micronaut/gradle/openapi/OpenApiExtension.html" class="type-name-link" title="interface in io.micronaut.gradle.openapi">OpenApiExtension</a></li>
+<li class="circle">io.micronaut.gradle.openapi.<a href="io/micronaut/gradle/openapi/OpenApiSpec.html" class="type-name-link" title="interface in io.micronaut.gradle.openapi">OpenApiSpec</a>
+<ul>
+<li class="circle">io.micronaut.gradle.openapi.<a href="io/micronaut/gradle/openapi/OpenApiClientSpec.html" class="type-name-link" title="interface in io.micronaut.gradle.openapi">OpenApiClientSpec</a></li>
+<li class="circle">io.micronaut.gradle.openapi.<a href="io/micronaut/gradle/openapi/OpenApiServerSpec.html" class="type-name-link" title="interface in io.micronaut.gradle.openapi">OpenApiServerSpec</a></li>
+</ul>
+</li>
 <li class="circle">io.micronaut.gradle.aot.<a href="io/micronaut/gradle/aot/OptimizerIO.html" class="type-name-link" title="interface in io.micronaut.gradle.aot">OptimizerIO</a></li>
 </ul>
 </section>

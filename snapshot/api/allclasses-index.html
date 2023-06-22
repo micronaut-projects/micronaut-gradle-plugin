@@ -11,7 +11,7 @@
 <link rel="stylesheet" type="text/css" href="script-dir/jquery-ui.min.css" title="Style">
 <link rel="stylesheet" type="text/css" href="jquery-ui.overrides.css" title="Style">
 <script type="text/javascript" src="script.js"></script>
-<script type="text/javascript" src="script-dir/jquery-3.6.0.min.js"></script>
+<script type="text/javascript" src="script-dir/jquery-3.6.1.min.js"></script>
 <script type="text/javascript" src="script-dir/jquery-ui.min.js"></script>
 </head>
 <body class="all-classes-index-page">
@@ -60,6 +60,10 @@ loadScripts(document, 'script');</script>
 <div class="summary-table two-column-summary" aria-labelledby="all-classes-table-tab0">
 <div class="table-header col-first">Class</div>
 <div class="table-header col-last">Description</div>
+<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/micronaut/gradle/openapi/tasks/AbstractOpenApiGenerator.html" title="class in io.micronaut.gradle.openapi.tasks">AbstractOpenApiGenerator</a>&lt;<a href="io/micronaut/gradle/openapi/tasks/AbstractOpenApiGenerator.html" title="type parameter in AbstractOpenApiGenerator">W</a> extends <a href="io/micronaut/gradle/openapi/tasks/AbstractOpenApiWorkAction.html" title="class in io.micronaut.gradle.openapi.tasks">AbstractOpenApiWorkAction</a>&lt;<a href="io/micronaut/gradle/openapi/tasks/AbstractOpenApiGenerator.html" title="type parameter in AbstractOpenApiGenerator">P</a>&gt;,<wbr><a href="io/micronaut/gradle/openapi/tasks/AbstractOpenApiGenerator.html" title="type parameter in AbstractOpenApiGenerator">P</a> extends io.micronaut.gradle.openapi.tasks.AbstractOpenApiWorkAction.OpenApiParameters&gt;</div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab2">&nbsp;</div>
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/micronaut/gradle/openapi/tasks/AbstractOpenApiWorkAction.html" title="class in io.micronaut.gradle.openapi.tasks">AbstractOpenApiWorkAction</a>&lt;<a href="io/micronaut/gradle/openapi/tasks/AbstractOpenApiWorkAction.html" title="type parameter in AbstractOpenApiWorkAction">T</a> extends io.micronaut.gradle.openapi.tasks.AbstractOpenApiWorkAction.OpenApiParameters&gt;</div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab2">&nbsp;</div>
 <div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/micronaut/gradle/AnnotationProcessing.html" title="class in io.micronaut.gradle">AnnotationProcessing</a></div>
 <div class="col-last even-row-color all-classes-table all-classes-table-tab2">
 <div class="block">Configuration for annotation processing in Micronaut.</div>
@@ -112,6 +116,12 @@ loadScripts(document, 'script');</script>
 <div class="col-last odd-row-color all-classes-table all-classes-table-tab2">&nbsp;</div>
 <div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/micronaut/gradle/docker/model/DefaultMicronautDockerImage.html" title="class in io.micronaut.gradle.docker.model">DefaultMicronautDockerImage</a></div>
 <div class="col-last even-row-color all-classes-table all-classes-table-tab2">&nbsp;</div>
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/micronaut/gradle/openapi/DefaultOpenApiExtension.html" title="class in io.micronaut.gradle.openapi">DefaultOpenApiExtension</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab2">&nbsp;</div>
+<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/micronaut/gradle/DefaultVersions.html" title="class in io.micronaut.gradle">DefaultVersions</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab2">
+<div class="block">Stores default versions used by the Gradle plugins.</div>
+</div>
 <div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/micronaut/gradle/internal/Dependencies.html" title="class in io.micronaut.gradle.internal">Dependencies</a></div>
 <div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
 <div class="block">Builder class to model build dependencies.</div>
@@ -217,96 +227,116 @@ loadScripts(document, 'script');</script>
 <div class="col-last even-row-color all-classes-table all-classes-table-tab2">
 <div class="block">A plugin to build a Micronaut library.</div>
 </div>
-<div class="col-first odd-row-color all-classes-table all-classes-table-tab3"><a href="io/micronaut/gradle/MicronautRuntime.html" title="enum class in io.micronaut.gradle">MicronautRuntime</a></div>
-<div class="col-last odd-row-color all-classes-table all-classes-table-tab3">
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/micronaut/gradle/openapi/MicronautOpenAPIPlugin.html" title="class in io.micronaut.gradle.openapi">MicronautOpenAPIPlugin</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab2">&nbsp;</div>
+<div class="col-first even-row-color all-classes-table all-classes-table-tab3"><a href="io/micronaut/gradle/MicronautRuntime.html" title="enum class in io.micronaut.gradle">MicronautRuntime</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab3">
 <div class="block">The packaging kind of the application.</div>
 </div>
-<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/micronaut/gradle/MicronautRuntimeDependencies.html" title="class in io.micronaut.gradle">MicronautRuntimeDependencies</a></div>
-<div class="col-last even-row-color all-classes-table all-classes-table-tab2">
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/micronaut/gradle/MicronautRuntimeDependencies.html" title="class in io.micronaut.gradle">MicronautRuntimeDependencies</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
 <div class="block">Resolves the dependencies for the current runtime and application type</div>
 </div>
-<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/micronaut/gradle/testresources/MicronautTestResourcesConsumerPlugin.html" title="class in io.micronaut.gradle.testresources">MicronautTestResourcesConsumerPlugin</a></div>
-<div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
+<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/micronaut/gradle/testresources/MicronautTestResourcesConsumerPlugin.html" title="class in io.micronaut.gradle.testresources">MicronautTestResourcesConsumerPlugin</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab2">
 <div class="block">A lightweight test resources plugin, which requires
  that another project of the build actually applies
  the <a href="io/micronaut/gradle/testresources/MicronautTestResourcesPlugin.html" title="class in io.micronaut.gradle.testresources"><code>MicronautTestResourcesPlugin</code></a>: this plugin
  will simply configure builds so that it uses the
  test resources plugin from another project.</div>
 </div>
-<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/micronaut/gradle/testresources/MicronautTestResourcesConsumerPlugin.CopyServerConfiguration.html" title="class in io.micronaut.gradle.testresources">MicronautTestResourcesConsumerPlugin.CopyServerConfiguration</a></div>
-<div class="col-last even-row-color all-classes-table all-classes-table-tab2">&nbsp;</div>
-<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/micronaut/gradle/testresources/MicronautTestResourcesPlugin.html" title="class in io.micronaut.gradle.testresources">MicronautTestResourcesPlugin</a></div>
-<div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/micronaut/gradle/testresources/MicronautTestResourcesConsumerPlugin.CopyServerConfiguration.html" title="class in io.micronaut.gradle.testresources">MicronautTestResourcesConsumerPlugin.CopyServerConfiguration</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab2">&nbsp;</div>
+<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/micronaut/gradle/testresources/MicronautTestResourcesPlugin.html" title="class in io.micronaut.gradle.testresources">MicronautTestResourcesPlugin</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab2">
 <div class="block">This plugin integrates with Micronaut Test Resources.</div>
 </div>
-<div class="col-first even-row-color all-classes-table all-classes-table-tab3"><a href="io/micronaut/gradle/MicronautTestRuntime.html" title="enum class in io.micronaut.gradle">MicronautTestRuntime</a></div>
-<div class="col-last even-row-color all-classes-table all-classes-table-tab3">
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab3"><a href="io/micronaut/gradle/MicronautTestRuntime.html" title="enum class in io.micronaut.gradle">MicronautTestRuntime</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab3">
 <div class="block">An enum with the different supported test runtimes.</div>
 </div>
-<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/micronaut/gradle/docker/NativeImageDockerfile.html" title="class in io.micronaut.gradle.docker">NativeImageDockerfile</a></div>
-<div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
+<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/micronaut/gradle/docker/NativeImageDockerfile.html" title="class in io.micronaut.gradle.docker">NativeImageDockerfile</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab2">
 <div class="block">Specialization of <code>Dockerfile</code> for building native images.</div>
 </div>
-<div class="col-first even-row-color all-classes-table all-classes-table-tab1"><a href="io/micronaut/gradle/aot/NettyOptimizations.html" title="interface in io.micronaut.gradle.aot">NettyOptimizations</a></div>
-<div class="col-last even-row-color all-classes-table all-classes-table-tab1">&nbsp;</div>
-<div class="col-first odd-row-color all-classes-table all-classes-table-tab1"><a href="io/micronaut/gradle/aot/OptimizerIO.html" title="interface in io.micronaut.gradle.aot">OptimizerIO</a></div>
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab1"><a href="io/micronaut/gradle/aot/NettyOptimizations.html" title="interface in io.micronaut.gradle.aot">NettyOptimizations</a></div>
 <div class="col-last odd-row-color all-classes-table all-classes-table-tab1">&nbsp;</div>
-<div class="col-first even-row-color all-classes-table all-classes-table-tab3"><a href="io/micronaut/gradle/aot/OptimizerIO.TargetRuntime.html" title="enum class in io.micronaut.gradle.aot">OptimizerIO.TargetRuntime</a></div>
-<div class="col-last even-row-color all-classes-table all-classes-table-tab3">&nbsp;</div>
-<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/micronaut/gradle/PluginsHelper.html" title="class in io.micronaut.gradle">PluginsHelper</a></div>
-<div class="col-last odd-row-color all-classes-table all-classes-table-tab2">&nbsp;</div>
-<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/micronaut/gradle/docker/tasks/PrepareDockerContext.html" title="class in io.micronaut.gradle.docker.tasks">PrepareDockerContext</a></div>
-<div class="col-last even-row-color all-classes-table all-classes-table-tab2">
+<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/micronaut/gradle/openapi/tasks/OpenApiClientGenerator.html" title="class in io.micronaut.gradle.openapi.tasks">OpenApiClientGenerator</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab2">&nbsp;</div>
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab1"><a href="io/micronaut/gradle/openapi/OpenApiClientSpec.html" title="interface in io.micronaut.gradle.openapi">OpenApiClientSpec</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab1">&nbsp;</div>
+<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/micronaut/gradle/openapi/tasks/OpenApiClientWorkAction.html" title="class in io.micronaut.gradle.openapi.tasks">OpenApiClientWorkAction</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab2">&nbsp;</div>
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab1"><a href="io/micronaut/gradle/openapi/OpenApiExtension.html" title="interface in io.micronaut.gradle.openapi">OpenApiExtension</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab1">
+<div class="block">Configures the OpenAPI code generator.</div>
+</div>
+<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/micronaut/gradle/openapi/tasks/OpenApiServerGenerator.html" title="class in io.micronaut.gradle.openapi.tasks">OpenApiServerGenerator</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab2">&nbsp;</div>
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab1"><a href="io/micronaut/gradle/openapi/OpenApiServerSpec.html" title="interface in io.micronaut.gradle.openapi">OpenApiServerSpec</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab1">&nbsp;</div>
+<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/micronaut/gradle/openapi/tasks/OpenApiServerWorkAction.html" title="class in io.micronaut.gradle.openapi.tasks">OpenApiServerWorkAction</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab2">&nbsp;</div>
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab1"><a href="io/micronaut/gradle/openapi/OpenApiSpec.html" title="interface in io.micronaut.gradle.openapi">OpenApiSpec</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab1">&nbsp;</div>
+<div class="col-first even-row-color all-classes-table all-classes-table-tab1"><a href="io/micronaut/gradle/aot/OptimizerIO.html" title="interface in io.micronaut.gradle.aot">OptimizerIO</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab1">&nbsp;</div>
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab3"><a href="io/micronaut/gradle/aot/OptimizerIO.TargetRuntime.html" title="enum class in io.micronaut.gradle.aot">OptimizerIO.TargetRuntime</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab3">&nbsp;</div>
+<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/micronaut/gradle/PluginsHelper.html" title="class in io.micronaut.gradle">PluginsHelper</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab2">&nbsp;</div>
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/micronaut/gradle/docker/tasks/PrepareDockerContext.html" title="class in io.micronaut.gradle.docker.tasks">PrepareDockerContext</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
 <div class="block">Prepares a docker build context directory by copying a number of
  directories into the output directory.</div>
 </div>
-<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/micronaut/gradle/catalog/RichVersion.html" title="class in io.micronaut.gradle.catalog">RichVersion</a></div>
-<div class="col-last odd-row-color all-classes-table all-classes-table-tab2">&nbsp;</div>
-<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/micronaut/gradle/catalog/RichVersionParser.html" title="class in io.micronaut.gradle.catalog">RichVersionParser</a></div>
+<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/micronaut/gradle/catalog/RichVersion.html" title="class in io.micronaut.gradle.catalog">RichVersion</a></div>
 <div class="col-last even-row-color all-classes-table all-classes-table-tab2">&nbsp;</div>
-<div class="col-first odd-row-color all-classes-table all-classes-table-tab3"><a href="io/micronaut/gradle/docker/model/RuntimeKind.html" title="enum class in io.micronaut.gradle.docker.model">RuntimeKind</a></div>
-<div class="col-last odd-row-color all-classes-table all-classes-table-tab3">
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/micronaut/gradle/catalog/RichVersionParser.html" title="class in io.micronaut.gradle.catalog">RichVersionParser</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab2">&nbsp;</div>
+<div class="col-first even-row-color all-classes-table all-classes-table-tab3"><a href="io/micronaut/gradle/docker/model/RuntimeKind.html" title="enum class in io.micronaut.gradle.docker.model">RuntimeKind</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab3">
 <div class="block">The kind of runtime a layer targets.</div>
 </div>
-<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/micronaut/gradle/testresources/ServerConnectionParametersProvider.html" title="class in io.micronaut.gradle.testresources">ServerConnectionParametersProvider</a></div>
-<div class="col-last even-row-color all-classes-table all-classes-table-tab2">&nbsp;</div>
-<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/micronaut/gradle/ShadowPluginSupport.html" title="class in io.micronaut.gradle">ShadowPluginSupport</a></div>
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/micronaut/gradle/testresources/ServerConnectionParametersProvider.html" title="class in io.micronaut.gradle.testresources">ServerConnectionParametersProvider</a></div>
 <div class="col-last odd-row-color all-classes-table all-classes-table-tab2">&nbsp;</div>
-<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/micronaut/gradle/testresources/StartTestResourcesService.html" title="class in io.micronaut.gradle.testresources">StartTestResourcesService</a></div>
-<div class="col-last even-row-color all-classes-table all-classes-table-tab2">
+<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/micronaut/gradle/ShadowPluginSupport.html" title="class in io.micronaut.gradle">ShadowPluginSupport</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab2">&nbsp;</div>
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/micronaut/gradle/testresources/StartTestResourcesService.html" title="class in io.micronaut.gradle.testresources">StartTestResourcesService</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
 <div class="block">A task responsible for starting a test resources server.</div>
 </div>
-<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/micronaut/gradle/testresources/StopTestResourcesService.html" title="class in io.micronaut.gradle.testresources">StopTestResourcesService</a></div>
-<div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
+<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/micronaut/gradle/testresources/StopTestResourcesService.html" title="class in io.micronaut.gradle.testresources">StopTestResourcesService</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab2">
 <div class="block">A task to explicitly stop the test resources server.</div>
 </div>
-<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/micronaut/gradle/Strings.html" title="class in io.micronaut.gradle">Strings</a></div>
-<div class="col-last even-row-color all-classes-table all-classes-table-tab2">&nbsp;</div>
-<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/micronaut/gradle/crac/TeeStringWriter.html" title="class in io.micronaut.gradle.crac">TeeStringWriter</a></div>
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/micronaut/gradle/Strings.html" title="class in io.micronaut.gradle">Strings</a></div>
 <div class="col-last odd-row-color all-classes-table all-classes-table-tab2">&nbsp;</div>
-<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/micronaut/gradle/testresources/internal/TestResourcesAOT.html" title="class in io.micronaut.gradle.testresources.internal">TestResourcesAOT</a></div>
-<div class="col-last even-row-color all-classes-table all-classes-table-tab2">
+<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/micronaut/gradle/crac/TeeStringWriter.html" title="class in io.micronaut.gradle.crac">TeeStringWriter</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab2">&nbsp;</div>
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/micronaut/gradle/testresources/internal/TestResourcesAOT.html" title="class in io.micronaut.gradle.testresources.internal">TestResourcesAOT</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
 <div class="block">Methods for Micronaut AOT plugin integration,
  separated to make sure we don't run into classloading
  issues.</div>
 </div>
-<div class="col-first odd-row-color all-classes-table all-classes-table-tab1"><a href="io/micronaut/gradle/testresources/TestResourcesConfiguration.html" title="interface in io.micronaut.gradle.testresources">TestResourcesConfiguration</a></div>
-<div class="col-last odd-row-color all-classes-table all-classes-table-tab1">
+<div class="col-first even-row-color all-classes-table all-classes-table-tab1"><a href="io/micronaut/gradle/testresources/TestResourcesConfiguration.html" title="interface in io.micronaut.gradle.testresources">TestResourcesConfiguration</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab1">
 <div class="block">Configuration for the test resources plugin.</div>
 </div>
-<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/micronaut/gradle/testresources/internal/TestResourcesGraalVM.html" title="class in io.micronaut.gradle.testresources.internal">TestResourcesGraalVM</a></div>
-<div class="col-last even-row-color all-classes-table all-classes-table-tab2">
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/micronaut/gradle/testresources/internal/TestResourcesGraalVM.html" title="class in io.micronaut.gradle.testresources.internal">TestResourcesGraalVM</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
 <div class="block">Methods for Micronaut GraalVM plugin integration,
  separated to make sure we don't run into classloading
  issues.</div>
 </div>
-<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/micronaut/gradle/catalog/VersionCatalogTomlModel.html" title="class in io.micronaut.gradle.catalog">VersionCatalogTomlModel</a></div>
-<div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
+<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/micronaut/gradle/catalog/VersionCatalogTomlModel.html" title="class in io.micronaut.gradle.catalog">VersionCatalogTomlModel</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab2">
 <div class="block">A model of a TOML file which can be used to update the file
  automatically.</div>
 </div>
-<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/micronaut/gradle/catalog/VersionModel.html" title="class in io.micronaut.gradle.catalog">VersionModel</a></div>
-<div class="col-last even-row-color all-classes-table all-classes-table-tab2">&nbsp;</div>
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/micronaut/gradle/catalog/VersionModel.html" title="class in io.micronaut.gradle.catalog">VersionModel</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab2">&nbsp;</div>
 </div>
 </div>
 </div>
