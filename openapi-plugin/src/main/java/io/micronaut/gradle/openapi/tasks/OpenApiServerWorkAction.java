@@ -30,7 +30,7 @@ public abstract class OpenApiServerWorkAction extends AbstractOpenApiWorkAction<
         builder.forServer(spec -> {
             spec.withControllerPackage(parameters.getControllerPackage().get());
             spec.withAuthentication(parameters.getUseAuth().get());
-            spec.withGenerateAbstractClasses(true);
+            spec.withGenerateImplementationFiles(false);
             spec.withGenerateControllerFromExamples(false);
             spec.withGenerateOperationsToReturnNotImplemented(false);
         });
