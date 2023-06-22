@@ -76,7 +76,7 @@ public abstract class DefaultOpenApiExtension implements OpenApiExtension {
                 configureCommonProperties(name, task, serverSpec, definition);
                 task.setDescription("Generates OpenAPI controllers from an OpenAPI definition");
                 configureServerTask(serverSpec, task);
-                task.getOutputKinds().add("APIS");
+                task.getOutputKinds().addAll("APIS", "SUPPORTING_FILES");
             });
             var models = project.getTasks().register(generateModelsTaskName(name), OpenApiServerGenerator.class, task -> {
                 configureCommonProperties(name, task, serverSpec, definition);
