@@ -1,9 +1,8 @@
 package io.micronaut.gradle
 
-
 import org.gradle.testkit.runner.TaskOutcome
+import spock.lang.Ignore
 import spock.lang.IgnoreIf
-import spock.lang.PendingFeature
 import spock.lang.Requires
 
 @Requires({ AbstractGradleBuildSpec.graalVmAvailable })
@@ -93,7 +92,7 @@ class Application {
 """
     }
 
-    @PendingFeature(reason="Test fails because of bug in GraalVM 23")
+    @Ignore("Test is flaky because of bug in GraalVM 23")
     void 'test build native image in subproject'() {
         when:
         def result = build('javaToolchains', 'two:nativeCompile', '-i', '--stacktrace')
