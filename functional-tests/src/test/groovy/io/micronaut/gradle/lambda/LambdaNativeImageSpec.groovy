@@ -23,7 +23,7 @@ class LambdaNativeImageSpec extends AbstractFunctionalTest {
             
             micronaut {
                 version "$micronautVersion"
-                runtime "netty"
+                runtime "lambda_provided"
             }
             
             $repositoriesBlock
@@ -39,7 +39,7 @@ class LambdaNativeImageSpec extends AbstractFunctionalTest {
         """
 
         when:
-        def result = build('dockerfileNative', '-Pmicronaut.runtime=lambda')
+        def result = build('dockerfileNative')
 
         def dockerfileNativeTask = result.task(':dockerfileNative')
         def dockerFileNative = new File(testProjectDir.root, 'build/docker/native-main/DockerfileNative').readLines('UTF-8')
@@ -65,7 +65,7 @@ class LambdaNativeImageSpec extends AbstractFunctionalTest {
 
             micronaut {
                 version "$micronautVersion"
-                runtime "lambda"
+                runtime "lambda_provided"
             }
 
             $repositoriesBlock
@@ -164,7 +164,7 @@ class LambdaNativeImageSpec extends AbstractFunctionalTest {
 
             micronaut {
                 version "$micronautVersion"
-                runtime "netty"
+                runtime "lambda_provided"
             }
 
             $repositoriesBlock
@@ -189,7 +189,7 @@ class LambdaNativeImageSpec extends AbstractFunctionalTest {
         """
 
         when:
-        def result = build('dockerfileNative', '-Pmicronaut.runtime=lambda')
+        def result = build('dockerfileNative')
 
         def dockerfileNativeTask = result.task(':dockerfileNative')
         def dockerFileNative = new File(testProjectDir.root, 'build/docker/native-main/DockerfileNative').readLines('UTF-8')
@@ -213,7 +213,7 @@ class LambdaNativeImageSpec extends AbstractFunctionalTest {
 
             micronaut {
                 version "$micronautVersion"
-                runtime "netty"
+                runtime "lambda_provided"
             }
 
             $repositoriesBlock
@@ -242,7 +242,7 @@ class LambdaNativeImageSpec extends AbstractFunctionalTest {
         """
 
         when:
-        def result = build('dockerfileNative', '-Pmicronaut.runtime=lambda')
+        def result = build('dockerfileNative')
 
         def dockerfileNativeTask = result.task(':dockerfileNative')
         def dockerFileNative = new File(testProjectDir.root, 'build/docker/native-main/DockerfileNative').readLines('UTF-8')
@@ -265,7 +265,7 @@ class LambdaNativeImageSpec extends AbstractFunctionalTest {
 
             micronaut {
                 version "$micronautVersion"
-                runtime "netty"
+                runtime "lambda_provided"
             }
 
             $repositoriesBlock
@@ -290,7 +290,7 @@ class LambdaNativeImageSpec extends AbstractFunctionalTest {
         """
 
         when:
-        def result = build('dockerfileNative', '-Pmicronaut.runtime=lambda')
+        def result = build('dockerfileNative')
 
         def dockerfileNativeTask = result.task(':dockerfileNative')
         def dockerFileNative = new File(testProjectDir.root, 'build/docker/native-main/DockerfileNative').readLines('UTF-8')
@@ -315,7 +315,7 @@ class LambdaNativeImageSpec extends AbstractFunctionalTest {
             
             micronaut {
                 version "$micronautVersion"
-                runtime "lambda"
+                runtime "lambda_provided"
             }
             
             $repositoriesBlock

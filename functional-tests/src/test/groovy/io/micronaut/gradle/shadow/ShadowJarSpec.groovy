@@ -81,8 +81,8 @@ public class Application implements Runnable {
         result.output.contains("Hello, all!")
 
         where:
-        runtime   | micronautGradlePlugin
-        'none'    | 'io.micronaut.minimal.application'
-        'lambda'  | 'io.micronaut.minimal.library'
+        runtime           | micronautGradlePlugin
+        'none'            | 'io.micronaut.minimal.application'
+        'lambda_provided' | 'io.micronaut.minimal.library'
     }
 }
