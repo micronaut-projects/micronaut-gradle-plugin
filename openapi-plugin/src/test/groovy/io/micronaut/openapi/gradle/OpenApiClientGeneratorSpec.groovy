@@ -42,7 +42,7 @@ class OpenApiClientGeneratorSpec extends AbstractOpenApiGeneratorSpec {
         result.task(":compileJava").outcome == TaskOutcome.SUCCESS
 
         and:
-        file("build/generated/openapi/client/src/main/java/io/micronaut/openapi/model/Pet.java").exists()
+        file("build/generated/openapi/generateClientOpenApiModels/src/main/java/io/micronaut/openapi/model/Pet.java").exists()
 
     }
 
