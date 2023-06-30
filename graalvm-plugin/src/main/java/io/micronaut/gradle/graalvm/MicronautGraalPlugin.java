@@ -66,7 +66,7 @@ public class MicronautGraalPlugin implements Plugin<Project> {
         project.getPlugins().withType(MicronautComponentPlugin.class, unused -> {
             var extension = PluginsHelper.findMicronautExtension(project);
             var nativeLambdaExtension = extension.getExtensions().create("nativeLambda", NativeLambdaExtension.class);
-            nativeLambdaExtension.getLambdaRuntime().convention(NativeLambdaRuntime.STANDARD);
+            nativeLambdaExtension.getLambdaRuntime().convention(NativeLambdaRuntime.API_GATEWAY_V1);
             nativeLambdaExtension.getLambdaRuntimeClassName().convention(nativeLambdaExtension.getLambdaRuntime().map(NativeLambdaRuntime::getMainClassName));
         });
         GraalVMExtension graal = project.getExtensions().findByType(GraalVMExtension.class);

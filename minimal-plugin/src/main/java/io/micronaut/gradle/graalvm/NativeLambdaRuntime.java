@@ -16,9 +16,9 @@
 package io.micronaut.gradle.graalvm;
 
 public enum NativeLambdaRuntime {
-    STANDARD("io.micronaut.function.aws.runtime.MicronautLambdaRuntime"),
-    API_GATEWAY("io.micronaut.function.aws.runtime.APIGatewayV2HTTPEventMicronautLambdaRuntime"),
-    LOAD_BALANCER("io.micronaut.function.aws.runtime.ApplicationLoadBalancerMicronautLambdaRuntime");
+    API_GATEWAY_V1("io.micronaut.function.aws.runtime.MicronautLambdaRuntime"),
+    API_GATEWAY_V2("io.micronaut.function.aws.runtime.APIGatewayV2HTTPEventMicronautLambdaRuntime"),
+    ALB("io.micronaut.function.aws.runtime.ApplicationLoadBalancerMicronautLambdaRuntime");
 
     private final String mainClassName;
 
