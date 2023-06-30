@@ -494,7 +494,7 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
                     if (baseImageProvider.get().getImage().contains("alpine-glibc")) {
                         return "apk --no-cache update && apk add libstdc++";
                     }
-                    return "";
+                    return null;
                 }));
                 exposePort(getExposedPorts());
                 getInstructions().addAll(additionalInstructions);
