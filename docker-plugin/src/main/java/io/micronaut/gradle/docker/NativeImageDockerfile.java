@@ -59,19 +59,12 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
     );
     private static final String ARM_ARCH = "aarch64";
     private static final String X86_64_ARCH = "amd64";
-    private static final String GRAAL_VERSION_CONVENTION = DefaultVersions.GRAALVM;
 
     /**
      * @return The JDK version to use with native image. Defaults to the toolchain version, or the current Java version.
      */
     @Input
     public abstract Property<String> getJdkVersion();
-
-    /**
-     * @return The Graal version to use.
-     */
-    @Input
-    public abstract Property<String> getGraalVersion();
 
     /**
      * @return The Graal architecture
@@ -165,12 +158,11 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
                         .map(NativeImageDockerfile::toSupportedJavaVersion)
                         .map(v -> "java" + v)
         );
-        getGraalVersion().convention(GRAAL_VERSION_CONVENTION);
         String osArch = System.getProperty("os.arch");
         getGraalArch().convention(ARM_ARCH.equals(osArch) ? ARM_ARCH : X86_64_ARCH);
         getTargetWorkingDirectory().convention(DEFAULT_WORKING_DIR);
         getExposedPorts().convention(Collections.singletonList(8080));
-        getGraalImage().convention(getGraalVersion().zip(getJdkVersion(), NativeImageDockerfile::toGraalVMBaseImageName));
+        getGraalImage().convention(getJdkVersion().map(NativeImageDockerfile::toGraalVMBaseImageName));
         getNativeImageOptions().convention(project
                 .getTasks()
                 .named(NativeImagePlugin.NATIVE_COMPILE_TASK_NAME, BuildNativeImageTask.class)
@@ -373,8 +365,8 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
         });
     }
 
-    private static String toGraalVMBaseImageName(String graalVersion, String jdkVersion) {
-        return "ghcr.io/graalvm/native-image:ol8-" + jdkVersion + '-' + graalVersion;
+    private static String toGraalVMBaseImageName(String jdkVersion) {
+        return "ghcr.io/graalvm/native-image-community:" + jdkVersion + "-ol" + DefaultVersions.ORACLELINUX;
     }
 
     private static int toSupportedJavaVersion(int version) {
@@ -405,12 +397,12 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
             environmentVariable("LANG", "en_US.UTF-8");
             runCommand("yum install -y gcc gcc-c++ libc6-dev zlib1g-dev curl bash zlib zlib-devel zlib-static zip tar gzip");
             String jdkVersion = getJdkVersion().get();
-            String graalVersion = getGraalVersion().get();
             String graalArch = getGraalArch().get();
-            String fileName = "graalvm-ce-" + jdkVersion + "-linux-" + graalArch + "-" + graalVersion + ".tar.gz";
-            String releasesUrl = getGraalReleasesUrl().getOrElse("https://github.com/graalvm/graalvm-ce-builds/releases/download");
-            runCommand("curl -4 -L " + releasesUrl + "/vm-" + graalVersion + "/" + fileName + " -o /tmp/" + fileName);
-            runCommand("tar -zxf /tmp/" + fileName + " -C /tmp && mv /tmp/graalvm-ce-" + jdkVersion + "-" + graalVersion + " /usr/lib/graalvm");
+            // https://download.oracle.com/graalvm/17/latest/graalvm-jdk-17_linux-aarch64_bin.tar.gz
+            String fileName = "graalvm-jdk-" + jdkVersion + "_linux-" + graalArch + "_bin.tar.gz";
+            String releasesUrl = getGraalReleasesUrl().getOrElse("https://download.oracle.com/graalvm");
+            runCommand("curl -4 -L " + releasesUrl + "/" + jdkVersion + "/latest/" + fileName + " -o /tmp/" + fileName);
+            runCommand("tar -zxf /tmp/" + fileName + " -C /tmp && mv /tmp/graalvm-jdk-" + jdkVersion + " /usr/lib/graalvm");
             runCommand("rm -rf /tmp/*");
             runCommand("/usr/lib/graalvm/bin/gu install native-image");
             defaultCommand("/usr/lib/graalvm/bin/native-image");
