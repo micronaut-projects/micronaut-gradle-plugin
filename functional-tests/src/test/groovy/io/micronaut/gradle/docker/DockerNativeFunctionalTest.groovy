@@ -97,7 +97,7 @@ micronaut:
         where:
         runtime  | nativeImage
         "netty"  | 'FROM ghcr.io/graalvm/native-image:ol8-java'
-        "lambda" | 'FROM amazonlinux:2 AS graalvm'
+        "lambda_provided" | 'FROM amazonlinux:2 AS graalvm'
         "jetty"  | 'FROM ghcr.io/graalvm/native-image:ol8-java'
     }
 
@@ -151,7 +151,7 @@ micronaut:
         dockerFileNative.find { s -> s.contains('-H:+StaticExecutableWithDynamicLibC') }
 
         where:
-        runtime << ['netty', 'lambda']
+        runtime << ['netty', 'lambda_provided']
     }
 
     void 'use alpine-glibc by default and do not build mostly static native images'() {
@@ -195,7 +195,7 @@ micronaut:
         dockerFileNative.find { s -> !s.contains('-H:+StaticExecutableWithDynamicLibC') }
     }
 
-    void 'do not use alpine-glibc for lambda runtime'() {
+    void 'do not use alpine-glibc for lambda_provided runtime'() {
         given:
         settingsFile << "rootProject.name = 'hello-world'"
         buildFile << """
@@ -207,7 +207,7 @@ micronaut:
 
             micronaut {
                 version "$micronautVersion"
-                runtime "lambda"
+                runtime "lambda_provided"
             }
 
             $repositoriesBlock
@@ -236,7 +236,7 @@ micronaut:
         dockerFileNative.find { s -> !s.contains('-H:+StaticExecutableWithDynamicLibC') }
     }
 
-    def "test build docker native image for lambda with custom main"() {
+    def "test build docker native image for lambda_provided with custom main"() {
         given:
         settingsFile << "rootProject.name = 'hello-world'"
         buildFile << """
@@ -248,7 +248,7 @@ micronaut:
             
             micronaut {
                 version "$micronautVersion"
-                runtime "lambda"
+                runtime "lambda_provided"
             }
             
             $repositoriesBlock
@@ -495,7 +495,7 @@ class Application {
         where:
         runtime  | nativeImage
         "netty"  | 'FROM ghcr.io/graalvm/native-image:ol8-java'
-        "lambda" | 'FROM amazonlinux:2 AS graalvm'
+        "lambda_provided" | 'FROM amazonlinux:2 AS graalvm'
         "jetty"  | 'FROM ghcr.io/graalvm/native-image:ol8-java'
     }
 
