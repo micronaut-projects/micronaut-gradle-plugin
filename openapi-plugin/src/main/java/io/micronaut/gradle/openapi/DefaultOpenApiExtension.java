@@ -23,6 +23,7 @@ import org.gradle.api.Action;
 import org.gradle.api.GradleException;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
+import org.gradle.api.file.Directory;
 import org.gradle.api.file.RegularFile;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.SourceSet;
@@ -86,8 +87,8 @@ public abstract class DefaultOpenApiExtension implements OpenApiExtension {
             });
             withJavaSourceSets(sourceSets -> {
                 var javaMain = sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME).getJava();
-                javaMain.srcDir(controllers);
-                javaMain.srcDir(models);
+                javaMain.srcDir(controllers.map(DefaultOpenApiExtension::mainSrcDir));
+                javaMain.srcDir(models.map(DefaultOpenApiExtension::mainSrcDir));
             });
         } else {
             throwDuplicateEntryFor(name);
@@ -123,7 +124,7 @@ public abstract class DefaultOpenApiExtension implements OpenApiExtension {
         task.getInvokerPackageName().convention(openApiSpec.getInvokerPackageName());
         task.getModelPackageName().convention(openApiSpec.getModelPackageName());
         task.getOutputDirectory().convention(
-                project.getLayout().getBuildDirectory().dir("generated/openapi/" + name)
+                project.getLayout().getBuildDirectory().dir("generated/openapi/" + task.getName())
         );
         task.getUseBeanValidation().convention(openApiSpec.getUseBeanValidation());
         task.getUseOptional().convention(openApiSpec.getUseOptional());
@@ -161,8 +162,8 @@ public abstract class DefaultOpenApiExtension implements OpenApiExtension {
             });
             withJavaSourceSets(sourceSets -> {
                 var javaMain = sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME).getJava();
-                javaMain.srcDir(client);
-                javaMain.srcDir(models);
+                javaMain.srcDir(client.map(DefaultOpenApiExtension::mainSrcDir));
+                javaMain.srcDir(models.map(DefaultOpenApiExtension::mainSrcDir));
             });
             withJava(() -> {
                         var implDeps = project.getConfigurations().getByName("implementation").getDependencies();
@@ -175,6 +176,10 @@ public abstract class DefaultOpenApiExtension implements OpenApiExtension {
         } else {
             throwDuplicateEntryFor(name);
         }
+    }
+
+    private static Provider<Directory> mainSrcDir(AbstractOpenApiGenerator<?,?> t) {
+        return t.getOutputDirectory().dir("src/main/java");
     }
 
     private static void configureClientTask(OpenApiClientSpec clientSpec, OpenApiClientGenerator task) {
