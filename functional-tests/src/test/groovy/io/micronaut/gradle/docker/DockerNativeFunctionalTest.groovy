@@ -778,5 +778,44 @@ ENTRYPOINT ["java", "-jar", "/home/app/application.jar"]
 
     }
 
+    @Issue("https://github.com/micronaut-projects/micronaut-gradle-plugin/issues/756")
+    def "should not generate empty RUN command"() {
+        given:
+        settingsFile << "rootProject.name = 'hello-world'"
+        buildFile << """
+            plugins {
+                id "io.micronaut.minimal.application"
+                id "io.micronaut.docker"
+                id "io.micronaut.graalvm"
+            }
+
+            micronaut {
+                version "3.4.0"
+
+                runtime "netty"
+            }
+
+            $repositoriesBlock
+
+            application {
+                mainClass.set("com.example.Application")
+            }
+
+            tasks.named("dockerfileNative") {
+                baseImage('ubuntu:22.04')
+                instruction 'RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*'
+                instruction 'HEALTHCHECK CMD curl -s localhost:8080/endpoints/health | grep \\'"status":"UP"\\''
+            }
+            
+        """
+
+        when:
+        def result = build('dockerfileNative')
+        def dockerFileNative = new File(testProjectDir.root, 'build/docker/native-main/DockerfileNative').readLines('UTF-8')
+        def emptyRunLines = dockerFileNative.findAll { it == "RUN " }
+
+        then:
+        emptyRunLines.isEmpty()
+    }
 
 }
