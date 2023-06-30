@@ -26,4 +26,11 @@ public interface NativeLambdaExtension {
      * @return the runtime
      */
     Property<NativeLambdaRuntime> getLambdaRuntime();
+
+    /**
+     * The native lambda runtime main class. Defaults to the
+     * {@link #getLambdaRuntime lambda runtime main class}.
+     * @return the main class name
+     */
+    Property<String> getLambdaRuntimeClassName();
 }

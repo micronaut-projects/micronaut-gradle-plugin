@@ -67,6 +67,7 @@ public class MicronautGraalPlugin implements Plugin<Project> {
             var extension = PluginsHelper.findMicronautExtension(project);
             var nativeLambdaExtension = extension.getExtensions().create("nativeLambda", NativeLambdaExtension.class);
             nativeLambdaExtension.getLambdaRuntime().convention(NativeLambdaRuntime.STANDARD);
+            nativeLambdaExtension.getLambdaRuntimeClassName().convention(nativeLambdaExtension.getLambdaRuntime().map(NativeLambdaRuntime::getMainClassName));
         });
         GraalVMExtension graal = project.getExtensions().findByType(GraalVMExtension.class);
         GraalVMReachabilityMetadataRepositoryExtension reachability = ((ExtensionAware) graal).getExtensions().getByType(GraalVMReachabilityMetadataRepositoryExtension.class);
@@ -95,7 +96,7 @@ public class MicronautGraalPlugin implements Plugin<Project> {
 
                     if (isAwsApp) {
                         var nativeLambdaExtension = findMicronautExtension(project).getExtensions().getByType(NativeLambdaExtension.class);
-                        nativeImageTask.getOptions().get().getMainClass().set(nativeLambdaExtension.getLambdaRuntime().get().getMainClassName());
+                        nativeImageTask.getOptions().get().getMainClass().set(nativeLambdaExtension.getLambdaRuntimeClassName());
                     }
                 }
             });
