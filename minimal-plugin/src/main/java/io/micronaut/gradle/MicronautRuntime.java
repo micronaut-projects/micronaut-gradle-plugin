@@ -37,13 +37,6 @@ public enum MicronautRuntime {
 
     /**
      * AWS lambda deployed to a Provided runtime.
-     * @deprecated Use {@link #LAMBDA_PROVIDED} instead.
-     */
-    @Deprecated
-    LAMBDA(DockerBuildStrategy.LAMBDA),
-
-    /**
-     * AWS lambda deployed to a Provided runtime.
      */
     LAMBDA_PROVIDED(DockerBuildStrategy.LAMBDA),
 
@@ -81,7 +74,7 @@ public enum MicronautRuntime {
         return this == LAMBDA_JAVA || isLambdaProvided();
     }
     public boolean isLambdaProvided() {
-        return this == LAMBDA_PROVIDED || this == LAMBDA;
+        return this == LAMBDA_PROVIDED;
     }
 
 }

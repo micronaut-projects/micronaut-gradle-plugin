@@ -3,6 +3,7 @@ package io.micronaut.gradle.docker;
 import com.bmuschko.gradle.docker.tasks.image.Dockerfile;
 import io.micronaut.gradle.PluginsHelper;
 import io.micronaut.gradle.docker.tasks.DockerResourceConfigDirectoryNamer;
+import io.micronaut.gradle.graalvm.NativeLambdaExtension;
 import org.graalvm.buildtools.gradle.NativeImagePlugin;
 import org.graalvm.buildtools.gradle.dsl.NativeImageOptions;
 import org.graalvm.buildtools.gradle.dsl.NativeResourcesOptions;
@@ -42,6 +43,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import static io.micronaut.gradle.PluginsHelper.findMicronautExtension;
 import static io.micronaut.gradle.docker.MicronautDockerfile.DEFAULT_WORKING_DIR;
 
 /**
@@ -521,12 +523,14 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
             options.getMainClass().set("com.fnproject.fn.runtime.EntryPoint");
             options.getBuildArgs().add("--report-unsupported-elements-at-runtime");
         } else if (buildStrategy == DockerBuildStrategy.LAMBDA) {
+            var micronautExtension = findMicronautExtension(getProject());
+            var nativeLambdaExtension = micronautExtension.getExtensions().getByType(NativeLambdaExtension.class);
             JavaApplication javaApplication = getProject().getExtensions().getByType(JavaApplication.class);
             if (!javaApplication.getMainClass().isPresent()) {
-                options.getMainClass().set("io.micronaut.function.aws.runtime.MicronautLambdaRuntime");
+                options.getMainClass().set(nativeLambdaExtension.getLambdaRuntimeClassName());
             }
             if (!options.getMainClass().isPresent()) {
-                options.getMainClass().set("io.micronaut.function.aws.runtime.MicronautLambdaRuntime");
+                options.getMainClass().set(nativeLambdaExtension.getLambdaRuntimeClassName());
             }
         }
         List<String> commandLine = new ArrayList<>();

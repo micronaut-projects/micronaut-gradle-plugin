@@ -8,7 +8,7 @@ version = "0.1"
 group = "example.micronaut"
 
 micronaut {
-    runtime("lambda")
+    runtime("lambda_provided")
     testRuntime("junit5")
     processing {
         incremental(true)

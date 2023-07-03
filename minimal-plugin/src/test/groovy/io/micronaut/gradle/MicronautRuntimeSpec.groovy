@@ -83,6 +83,6 @@ public class FooControllerTest {
         task.outcome == TaskOutcome.SUCCESS
 
         where:
-        runtime << ["netty", "lambda", "jetty", "oracle_function", "tomcat"]
+        runtime << ["netty", "lambda_provided", "lambda_java", "jetty", "oracle_function", "tomcat"]
     }
 }
