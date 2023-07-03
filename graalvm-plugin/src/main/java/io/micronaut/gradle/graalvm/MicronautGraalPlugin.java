@@ -1,5 +1,6 @@
 package io.micronaut.gradle.graalvm;
 
+import io.micronaut.gradle.MicronautComponentPlugin;
 import io.micronaut.gradle.MicronautExtension;
 import io.micronaut.gradle.MicronautRuntime;
 import io.micronaut.gradle.PluginsHelper;
@@ -29,6 +30,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import static io.micronaut.gradle.PluginsHelper.CORE_VERSION_PROPERTY;
+import static io.micronaut.gradle.PluginsHelper.findMicronautExtension;
 
 /**
  * Support for building GraalVM native images.
@@ -61,8 +63,14 @@ public class MicronautGraalPlugin implements Plugin<Project> {
             MicronautExtension extension = PluginsHelper.findMicronautExtension(project);
             configureAnnotationProcessing(project, extension);
         });
+        project.getPlugins().withType(MicronautComponentPlugin.class, unused -> {
+            var extension = PluginsHelper.findMicronautExtension(project);
+            var nativeLambdaExtension = extension.getExtensions().create("nativeLambda", NativeLambdaExtension.class);
+            nativeLambdaExtension.getLambdaRuntime().convention(NativeLambdaRuntime.API_GATEWAY_V1);
+            nativeLambdaExtension.getLambdaRuntimeClassName().convention(nativeLambdaExtension.getLambdaRuntime().map(NativeLambdaRuntime::getMainClassName));
+        });
         GraalVMExtension graal = project.getExtensions().findByType(GraalVMExtension.class);
-        GraalVMReachabilityMetadataRepositoryExtension reachability = ((ExtensionAware)graal).getExtensions().getByType(GraalVMReachabilityMetadataRepositoryExtension.class);
+        GraalVMReachabilityMetadataRepositoryExtension reachability = ((ExtensionAware) graal).getExtensions().getByType(GraalVMReachabilityMetadataRepositoryExtension.class);
         reachability.getEnabled().convention(true);
         graal.getBinaries().configureEach(options ->
                 {
@@ -87,7 +95,8 @@ public class MicronautGraalPlugin implements Plugin<Project> {
                             .noneMatch(dependency -> Objects.equals(dependency.getGroup(), "io.micronaut.aws") && dependency.getName().equals("micronaut-function-aws"));
 
                     if (isAwsApp) {
-                        nativeImageTask.getOptions().get().getMainClass().set("io.micronaut.function.aws.runtime.MicronautLambdaRuntime");
+                        var nativeLambdaExtension = findMicronautExtension(project).getExtensions().getByType(NativeLambdaExtension.class);
+                        nativeImageTask.getOptions().get().getMainClass().set(nativeLambdaExtension.getLambdaRuntimeClassName());
                     }
                 }
             });
@@ -149,6 +158,7 @@ public class MicronautGraalPlugin implements Plugin<Project> {
      * reason, using internal GraalVM APIs. This shouldn't be the case since Micronaut 4
      * but there may be community modules which are still doing this.
      * In this case the user can directly call this method to add the required exports.
+     *
      * @param options the native binary on which to add options
      */
     @SuppressWarnings("unused")
