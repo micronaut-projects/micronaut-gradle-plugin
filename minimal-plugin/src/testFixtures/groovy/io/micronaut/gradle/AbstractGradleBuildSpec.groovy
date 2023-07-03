@@ -34,6 +34,8 @@ abstract class AbstractGradleBuildSpec extends Specification {
     // This flag is only for local tests, do not push with this flag set to true
     boolean allowMavenLocal = false
 
+    boolean reproducibleArchives = true
+
     String getMicronautVersion() {
         System.getProperty("micronautVersion")
     }
@@ -152,12 +154,32 @@ abstract class AbstractGradleBuildSpec extends Specification {
         """
     }
 
+
     private void prepareBuild() {
         if (postSettingsStatements) {
             postSettingsStatements.each {
                 settingsFile << "\n$it\n"
             }
             postSettingsStatements.clear()
+        }
+        if (reproducibleArchives) {
+            if (buildFile.exists()) {
+                buildFile << """            
+                tasks.withType(AbstractArchiveTask).configureEach {
+                    preserveFileTimestamps = false
+                    reproducibleFileOrder = true
+                }
+            """
+            } else if (kotlinBuildFile.exists()) {
+                kotlinBuildFile << """            
+                tasks.withType<AbstractArchiveTask>().configureEach {
+                    setPreserveFileTimestamps(false)
+                    setReproducibleFileOrder(true)
+                }
+            """
+            }
+            // this is so that we don't append the same text on every invocation of builds
+            reproducibleArchives = false
         }
     }
 
@@ -173,7 +195,7 @@ abstract class AbstractGradleBuildSpec extends Specification {
 
     BuildResult fails(String... args) {
         configureRunner(args)
-            .buildAndFail()
+                .buildAndFail()
     }
 
     GradleRunner configureRunner(String... args) {

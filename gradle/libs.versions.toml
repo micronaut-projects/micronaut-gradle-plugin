@@ -6,6 +6,7 @@ diffplug = "3.42.1"
 shadow = "8.1.1"
 groovy = "3.0.18"
 spock = "2.1-groovy-3.0"
+oraclelinux = "9"
 graalvmPlugin = "0.9.23"
 micronaut-platform = "4.0.0-M4" # This is the platform version, used in our tests
 micronaut-aot = "2.0.0-M4"

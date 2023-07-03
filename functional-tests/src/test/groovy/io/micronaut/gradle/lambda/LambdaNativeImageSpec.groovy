@@ -54,7 +54,6 @@ class LambdaNativeImageSpec extends AbstractFunctionalTest {
 
     void 'native lambdas build in docker fetch the correct graalvm for #desc'() {
         given:
-        def graalVersion = '22.3.2'
         settingsFile << "rootProject.name = 'hello-world'"
         buildFile << """
             plugins {
@@ -94,12 +93,12 @@ class LambdaNativeImageSpec extends AbstractFunctionalTest {
         dockerfileNativeTask.outcome == TaskOutcome.SUCCESS
 
         and:
-        dockerFileNative.find() { it.contains("linux-${archset}-${graalVersion}.tar.gz ") }
+        dockerFileNative.find() { it.contains("graalvm-jdk-17_linux-${archset}_bin.tar.gz ") }
 
         where:
         archset   | desc
         'aarch64' | 'ARM architecture'
-        'amd64'   | 'Intel architecture'
+        'x64'     | 'Intel architecture'
     }
 
     void 'it is possible to define the mainclass for a dockerfile native'() {
