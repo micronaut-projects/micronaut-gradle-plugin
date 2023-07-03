@@ -98,7 +98,7 @@ class LambdaNativeImageSpec extends AbstractFunctionalTest {
         where:
         archset   | desc
         'aarch64' | 'ARM architecture'
-        'amd64'   | 'Intel architecture'
+        'x64'     | 'Intel architecture'
     }
 
     void 'it is possible to define the mainclass for a dockerfile native'() {

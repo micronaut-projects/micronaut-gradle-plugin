@@ -1050,7 +1050,7 @@ To override this automatic selection, you can configure the `graalArch` property
 [source, groovy]
 ----
 dockerfileNative {
-    graalArch.set("amd64")
+    graalArch.set("x64")
 }
 ----
 
