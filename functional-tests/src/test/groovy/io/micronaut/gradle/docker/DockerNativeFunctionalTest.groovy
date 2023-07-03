@@ -96,10 +96,10 @@ micronaut:
         task.outcome == TaskOutcome.SUCCESS
 
         where:
-        runtime  | nativeImage
-        "netty"  | "FROM ghcr.io/graalvm/native-image-community:17-ol${DefaultVersions.ORACLELINUX}"
-        "lambda" | 'FROM amazonlinux:2 AS graalvm'
-        "jetty"  | "FROM ghcr.io/graalvm/native-image-community:17-ol${DefaultVersions.ORACLELINUX}"
+        runtime           | nativeImage
+        "netty"           | "FROM ghcr.io/graalvm/native-image-community:17-ol${DefaultVersions.ORACLELINUX}"
+        "lambda_provided" | 'FROM amazonlinux:2 AS graalvm'
+        "jetty"           | "FROM ghcr.io/graalvm/native-image-community:17-ol${DefaultVersions.ORACLELINUX}"
     }
 
     void 'build mostly static native images when using distroless docker image for runtime=#runtime'() {
@@ -494,10 +494,10 @@ class Application {
         dockerFileNative.find { s -> s.contains('-Xmx64m') }
 
         where:
-        runtime  | nativeImage
-        "netty"  | "FROM ghcr.io/graalvm/native-image-community:17-ol${DefaultVersions.ORACLELINUX}"
-        "lambda" | 'FROM amazonlinux:2 AS graalvm'
-        "jetty"  | "FROM ghcr.io/graalvm/native-image-community:17-ol${DefaultVersions.ORACLELINUX}"
+        runtime           | nativeImage
+        "netty"           | "FROM ghcr.io/graalvm/native-image-community:17-ol${DefaultVersions.ORACLELINUX}"
+        "lambda_provided" | 'FROM amazonlinux:2 AS graalvm'
+        "jetty"           | "FROM ghcr.io/graalvm/native-image-community:17-ol${DefaultVersions.ORACLELINUX}"
     }
 
     @Issue("https://github.com/micronaut-projects/micronaut-gradle-plugin/issues/402")
