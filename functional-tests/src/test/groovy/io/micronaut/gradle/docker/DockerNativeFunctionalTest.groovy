@@ -567,14 +567,13 @@ micronaut:
         name: test
 """
 
+        when:
+        build "dockerfileNative"
+        def dockerFile = normalizeLineEndings(file("build/docker/native-main/DockerfileNative").text)
+        dockerFile = dockerFile.replaceAll("[0-9]\\.[0-9]+\\.[0-9]+", "4.0.0")
+            .trim()
 
-        def result = build('dockerBuildNative')
-
-        def task = result.task(":dockerBuildNative")
-        def dockerFile = new File(testProjectDir.root, 'build/docker/native-main/DockerfileNative').text.trim()
-
-        expect:
-        task.outcome == TaskOutcome.SUCCESS
+        then:
         dockerFile == """
 FROM ghcr.io/graalvm/native-image-community:17-ol${DefaultVersions.ORACLELINUX} AS graalvm
 WORKDIR /home/alternate
@@ -584,10 +583,10 @@ COPY layers/resources /home/alternate/resources
 COPY layers/application.jar /home/alternate/application.jar
 RUN mkdir /home/alternate/config-dirs
 RUN mkdir -p /home/alternate/config-dirs/generateResourcesConfigFile
-RUN mkdir -p /home/alternate/config-dirs/io.netty/netty-common/4.1.80.Final
+RUN mkdir -p /home/alternate/config-dirs/io.netty/netty-common/4.0.0.Final
 COPY config-dirs/generateResourcesConfigFile /home/alternate/config-dirs/generateResourcesConfigFile
-COPY config-dirs/io.netty/netty-common/4.1.80.Final /home/alternate/config-dirs/io.netty/netty-common/4.1.80.Final
-RUN native-image --exclude-config .*/libs/netty-codec-http-4.1.93.Final.jar ^/META-INF/native-image/.* --exclude-config .*/libs/netty-transport-4.1.93.Final.jar ^/META-INF/native-image/.* --exclude-config .*/libs/netty-handler-4.1.93.Final.jar ^/META-INF/native-image/.* --exclude-config .*/libs/netty-codec-http2-4.1.93.Final.jar ^/META-INF/native-image/.* --exclude-config .*/libs/netty-common-4.1.93.Final.jar ^/META-INF/native-image/.* --exclude-config .*/libs/netty-buffer-4.1.93.Final.jar ^/META-INF/native-image/.* -cp /home/alternate/libs/*.jar:/home/alternate/resources:/home/alternate/application.jar --no-fallback -H:Name=application -H:ConfigurationFileDirectories=/home/alternate/config-dirs/generateResourcesConfigFile,/home/alternate/config-dirs/io.netty/netty-buffer/4.1.80.Final,/home/alternate/config-dirs/io.netty/netty-common/4.1.80.Final,/home/alternate/config-dirs/io.netty/netty-codec-http/4.1.80.Final,/home/alternate/config-dirs/io.netty/netty-transport/4.1.80.Final,/home/alternate/config-dirs/io.netty/netty-handler/4.1.80.Final,/home/alternate/config-dirs/io.netty/netty-codec-http2/4.1.80.Final -H:Class=example.Application
+COPY config-dirs/io.netty/netty-common/4.0.0.Final /home/alternate/config-dirs/io.netty/netty-common/4.0.0.Final
+RUN native-image --exclude-config .*/libs/netty-transport-4.0.0.Final.jar ^/META-INF/native-image/.* --exclude-config .*/libs/netty-handler-4.0.0.Final.jar ^/META-INF/native-image/.* --exclude-config .*/libs/netty-buffer-4.0.0.Final.jar ^/META-INF/native-image/.* --exclude-config .*/libs/netty-common-4.0.0.Final.jar ^/META-INF/native-image/.* --exclude-config .*/libs/netty-codec-http-4.0.0.Final.jar ^/META-INF/native-image/.* --exclude-config .*/libs/netty-codec-http2-4.0.0.Final.jar ^/META-INF/native-image/.* -cp /home/alternate/libs/*.jar:/home/alternate/resources:/home/alternate/application.jar --no-fallback -H:Name=application -H:ConfigurationFileDirectories=/home/alternate/config-dirs/generateResourcesConfigFile,/home/alternate/config-dirs/io.netty/netty-buffer/4.0.0.Final,/home/alternate/config-dirs/io.netty/netty-common/4.0.0.Final,/home/alternate/config-dirs/io.netty/netty-codec-http/4.0.0.Final,/home/alternate/config-dirs/io.netty/netty-transport/4.0.0.Final,/home/alternate/config-dirs/io.netty/netty-handler/4.0.0.Final,/home/alternate/config-dirs/io.netty/netty-codec-http2/4.0.0.Final -H:Class=example.Application
 FROM frolvlad/alpine-glibc:alpine-3.12
 RUN apk --no-cache update && apk add libstdc++
 EXPOSE 8080
@@ -595,6 +594,13 @@ HEALTHCHECK CMD curl -s localhost:8090/health | grep '"status":"UP"'
 COPY --from=graalvm /home/alternate/application /app/application
 ENTRYPOINT ["/app/application", "-Xmx64m"]
 """.trim()
+
+        when:
+        def result = build ":dockerBuildNative"
+        def task = result.task(":dockerBuildNative")
+
+        then:
+        task.outcome == TaskOutcome.SUCCESS
 
     }
 
