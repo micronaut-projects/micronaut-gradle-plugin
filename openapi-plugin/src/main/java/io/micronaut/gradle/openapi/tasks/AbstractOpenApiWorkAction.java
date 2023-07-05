@@ -15,8 +15,11 @@
  */
 package io.micronaut.gradle.openapi.tasks;
 
+import io.micronaut.gradle.openapi.ResponseBodyMappingModel;
+import io.micronaut.openapi.generator.AbstractMicronautJavaCodegen;
 import io.micronaut.openapi.generator.MicronautCodeGeneratorBuilder;
 import io.micronaut.openapi.generator.MicronautCodeGeneratorEntryPoint;
+import io.micronaut.openapi.generator.MicronautCodeGeneratorOptionsBuilder;
 import io.micronaut.openapi.generator.SerializationLibraryKind;
 import org.gradle.api.file.DirectoryProperty;
 import org.gradle.api.file.RegularFileProperty;
@@ -48,6 +51,14 @@ public abstract class AbstractOpenApiWorkAction<T extends AbstractOpenApiWorkAct
         Property<String> getSerializationFramework();
 
         DirectoryProperty getOutputDirectory();
+
+        Property<Boolean> getAlwaysUseGenerateHttpResponse();
+
+        Property<Boolean> getGenerateHttpResponseWhereRequired();
+
+        Property<String> getDateTimeFormat();
+
+        ListProperty<ResponseBodyMappingModel> getResponseBodyMappings();
     }
 
     protected abstract void configureBuilder(MicronautCodeGeneratorBuilder builder);
@@ -72,6 +83,15 @@ public abstract class AbstractOpenApiWorkAction<T extends AbstractOpenApiWorkAct
                     options.withOptional(parameters.getUseOptional().get());
                     options.withReactive(parameters.getUseReactive().get());
                     options.withSerializationLibrary(SerializationLibraryKind.valueOf(parameters.getSerializationFramework().get().toUpperCase(Locale.US)));
+                    options.withGenerateHttpResponseAlways(parameters.getAlwaysUseGenerateHttpResponse().get());
+                    options.withGenerateHttpResponseWhereRequired(parameters.getGenerateHttpResponseWhereRequired().get());
+                    options.withDateTimeFormat(MicronautCodeGeneratorOptionsBuilder.DateTimeFormat.valueOf(parameters.getDateTimeFormat().get().toUpperCase(Locale.US)));
+                    options.withResponseBodyMappings(parameters.getResponseBodyMappings()
+                            .get()
+                            .stream()
+                            .map(mapping -> new AbstractMicronautJavaCodegen.ResponseBodyMapping(mapping.headerName(), mapping.mappedBodyType(), mapping.isListWrapper(), mapping.isValidated()))
+                            .toList()
+                    );
                 });
         configureBuilder(builder);
         builder.build().generate();

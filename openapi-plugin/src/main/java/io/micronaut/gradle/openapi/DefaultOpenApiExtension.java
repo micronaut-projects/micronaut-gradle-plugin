@@ -104,6 +104,9 @@ public abstract class DefaultOpenApiExtension implements OpenApiExtension {
         spec.getUseOptional().convention(false);
         spec.getUseReactive().convention(true);
         spec.getSerializationFramework().convention(DEFAULT_SERIALIZATION_FRAMEWORK);
+        spec.getAlwaysUseGenerateHttpResponse().convention(false);
+        spec.getGenerateHttpResponseWhereRequired().convention(false);
+        spec.getDateTimeFormat().convention("ZONED_DATETIME");
         withJava(() -> {
                     var implDeps = project.getConfigurations().getByName("implementation").getDependencies();
                     implDeps.add(project.getDependencies().create("io.micronaut.openapi:micronaut-openapi"));
@@ -131,6 +134,10 @@ public abstract class DefaultOpenApiExtension implements OpenApiExtension {
         task.getUseReactive().convention(openApiSpec.getUseReactive());
         task.getDefinitionFile().convention(definitionFile);
         task.getSerializationFramework().convention(openApiSpec.getSerializationFramework());
+        task.getAlwaysUseGenerateHttpResponse().convention(openApiSpec.getAlwaysUseGenerateHttpResponse());
+        task.getGenerateHttpResponseWhereRequired().convention(openApiSpec.getGenerateHttpResponseWhereRequired());
+        task.getDateTimeFormat().convention(openApiSpec.getDateTimeFormat());
+        task.getResponseBodyMappings().convention(openApiSpec.getResponseBodyMappings());
     }
 
     private void withJavaSourceSets(Consumer<? super SourceSetContainer> consumer) {
