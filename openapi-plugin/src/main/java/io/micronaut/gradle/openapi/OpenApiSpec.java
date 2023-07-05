@@ -15,6 +15,7 @@
  */
 package io.micronaut.gradle.openapi;
 
+import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Property;
 
 public interface OpenApiSpec {
@@ -31,4 +32,12 @@ public interface OpenApiSpec {
     Property<Boolean> getUseReactive();
 
     Property<String> getSerializationFramework();
+
+    Property<Boolean> getAlwaysUseGenerateHttpResponse();
+
+    Property<Boolean> getGenerateHttpResponseWhereRequired();
+
+    Property<String> getDateTimeFormat();
+
+    ListProperty<ResponseBodyMappingModel> getResponseBodyMappings();
 }
