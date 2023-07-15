@@ -11,7 +11,7 @@ graalvmPlugin = "0.9.23"
 micronaut-platform = "4.0.0-RC1" # This is the platform version, used in our tests
 micronaut-aot = "2.0.0"
 micronaut-testresources = "2.0.0"
-micronaut-openapi = "5.0.0"
+micronaut-openapi = "5.0.1"
 log4j2 = { require = "2.17.1", reject = ["]0, 2.17["] }
 jetbrains-annotations = "24.0.1"
 tomlj = "1.1.0"
