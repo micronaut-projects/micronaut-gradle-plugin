@@ -310,7 +310,7 @@ public abstract class MicronautAotPlugin implements Plugin<Project> {
                 conf.setCanBeConsumed(false);
                 conf.setCanBeConsumed(true);
                 // Use the same attributes as runtimeClasspath for resolution
-                AttributeUtils.copyAttributes(conf, runtimeClasspath);
+                AttributeUtils.copyAttributes(runtimeClasspath, conf);
             });
 
             tasks.register("optimizedRun", JavaExec.class, task -> {
