@@ -1,7 +1,9 @@
 package io.micronaut.gradle.aot
 
+import io.micronaut.gradle.AbstractGradleBuildSpec
 import org.gradle.testkit.runner.TaskOutcome
 import spock.lang.Issue
+import spock.lang.Requires
 
 class BasicMicronautAOTSpec extends AbstractAOTPluginSpec {
 
@@ -151,6 +153,22 @@ class BasicMicronautAOTSpec extends AbstractAOTPluginSpec {
 
         then:
         result.task(":prepareJitOptimizations").outcome == TaskOutcome.SUCCESS
+    }
+
+    @Requires({ AbstractGradleBuildSpec.graalVmAvailable && !os.windows })
+    def "can compile standard and optimized native apps"() {
+        withSample("aot/basic-app")
+        withPlugins(Plugins.APPLICATION)
+
+        when:
+        def result = build(task)
+
+        then:
+        result.task(":$task").outcome == TaskOutcome.SUCCESS
+
+        where:
+        task << ["nativeCompile", "nativeOptimizedCompile"]
+
     }
 
 }
