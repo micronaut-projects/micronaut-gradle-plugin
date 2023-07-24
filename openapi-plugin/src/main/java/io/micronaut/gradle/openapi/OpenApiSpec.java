@@ -39,5 +39,7 @@ public interface OpenApiSpec {
 
     Property<String> getDateTimeFormat();
 
+    ListProperty<ParameterMappingModel> getParameterMappings();
+
     ListProperty<ResponseBodyMappingModel> getResponseBodyMappings();
 }

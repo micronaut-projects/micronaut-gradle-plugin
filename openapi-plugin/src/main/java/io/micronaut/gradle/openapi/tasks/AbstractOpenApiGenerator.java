@@ -15,6 +15,7 @@
  */
 package io.micronaut.gradle.openapi.tasks;
 
+import io.micronaut.gradle.openapi.ParameterMappingModel;
 import io.micronaut.gradle.openapi.ResponseBodyMappingModel;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.file.ConfigurableFileCollection;
@@ -75,6 +76,9 @@ public abstract class AbstractOpenApiGenerator<W extends AbstractOpenApiWorkActi
 
     @Input
     public abstract Property<String> getDateTimeFormat();
+
+    @Input
+    public abstract ListProperty<ParameterMappingModel> getParameterMappings();
 
     @Input
     public abstract ListProperty<ResponseBodyMappingModel> getResponseBodyMappings();

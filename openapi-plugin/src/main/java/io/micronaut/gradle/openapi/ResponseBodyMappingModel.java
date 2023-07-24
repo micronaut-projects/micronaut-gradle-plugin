@@ -15,17 +15,88 @@
  */
 package io.micronaut.gradle.openapi;
 
+import java.io.Serializable;
+
 /**
- * An equivalent to Micronaut OpenAPI's ResponseBodyMapping but
+ * A model that can be used to specify body mappings during OpenAPI generation.
+ *
+ * <p>An equivalent to Micronaut OpenAPI's ResponseBodyMapping but
  * without using classes from that dependency so that we can isolate
- * execution in workers.
- * @param headerName the header name
- * @param mappedBodyType the mapped body type
- * @param isListWrapper if it's a list wrapper
- * @param isValidated if it's validated
+ * execution in workers.</p>
  */
-public record ResponseBodyMappingModel(String headerName,
-                                       String mappedBodyType,
-                                       boolean isListWrapper,
-                                       boolean isValidated) {
+public final class ResponseBodyMappingModel implements Serializable {
+
+    /**
+     * The response header name that triggers the change of response type.
+     */
+    private final String headerName;
+
+    /**
+     * The type in which will be used as the response type. The type must take
+     * a single type parameter, which will be the original body.
+     */
+    private final String mappedBodyType;
+
+    /**
+     * Whether the mapped body type needs to be supplied list items as property.
+     */
+    boolean isListWrapper;
+
+    /**
+     * Whether the mapped response body type required validation.
+     */
+    boolean isValidated;
+
+    /**
+     * Create a response body mapping.
+     *
+     * @param headerName The response header name that triggers the change of response type.
+     * @param mappedBodyType The type in which will be used as the response type. The type must take
+     *                       a single type parameter, which will be the original body. If the value is null,
+     *                       the header will be removed and body not changed.
+     */
+    public ResponseBodyMappingModel(String headerName, String mappedBodyType) {
+        this.headerName = headerName;
+        this.mappedBodyType = mappedBodyType;
+    }
+
+    /**
+     * Specify whether the mapped body is a list wrapper.
+     * Then the mapped body type needs to be supplied list items as property
+     *
+     * @param isListWrapper whether it is a list wrapper
+     * @return this instance
+     */
+    public ResponseBodyMappingModel withListWrapper(boolean isListWrapper) {
+        this.isListWrapper = isListWrapper;
+        return this;
+    }
+
+    /**
+     * Specify whether the mapped response body type required validation.
+     *
+     * @param isValidated whether it should be validated
+     * @return this instance
+     */
+    public ResponseBodyMappingModel withValidated(boolean isValidated) {
+        this.isValidated = isValidated;
+        return this;
+    }
+
+    public String getHeaderName() {
+        return headerName;
+    }
+
+    public String getMappedBodyType() {
+        return mappedBodyType;
+    }
+
+    public boolean isListWrapper() {
+        return isListWrapper;
+    }
+
+    public boolean isValidated() {
+        return isValidated;
+    }
+
 }
