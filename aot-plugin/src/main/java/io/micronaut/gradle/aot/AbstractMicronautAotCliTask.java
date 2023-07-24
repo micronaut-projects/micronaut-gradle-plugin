@@ -20,6 +20,7 @@ import org.gradle.api.GradleException;
 import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.internal.file.FileOperations;
+import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.MapProperty;
 import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.Classpath;
@@ -59,6 +60,10 @@ abstract class AbstractMicronautAotCliTask extends DefaultTask implements Optimi
     @Input
     @Optional
     protected abstract MapProperty<String, String> getEnvironmentVariables();
+
+    @Input
+    @Optional
+    protected abstract ListProperty<String> getJvmArgs();
 
     protected AbstractMicronautAotCliTask() {
         getDebug().convention(false);
@@ -102,9 +107,16 @@ abstract class AbstractMicronautAotCliTask extends DefaultTask implements Optimi
                     spec.args(args);
                 }
                 getLogger().info("Running AOT optimizer {} with parameters: {}", useArgFile ? "using arg file" : "directly", args);
-                if (getDebug().get()) {
+                List<String> jvmArgs = new ArrayList<>();
+                if (Boolean.TRUE.equals(getDebug().get())) {
                     getLogger().info("Running with debug enabled");
-                    spec.jvmArgs("-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5005");
+                    jvmArgs.add("-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5005");
+                }
+                if (getJvmArgs().isPresent()) {
+                    jvmArgs.addAll(getJvmArgs().get());
+                }
+                if (!jvmArgs.isEmpty()) {
+                    spec.jvmArgs(jvmArgs);
                 }
                 if (getEnvironmentVariables().isPresent()) {
                     spec.environment(getEnvironmentVariables().get());
