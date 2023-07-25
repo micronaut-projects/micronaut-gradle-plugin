@@ -111,6 +111,7 @@ public abstract class AbstractOpenApiGenerator<W extends AbstractOpenApiWorkActi
                     params.getAlwaysUseGenerateHttpResponse().set(getAlwaysUseGenerateHttpResponse());
                     params.getGenerateHttpResponseWhereRequired().set(getGenerateHttpResponseWhereRequired());
                     params.getDateTimeFormat().set(getDateTimeFormat());
+                    params.getParameterMappings().set(getParameterMappings());
                     params.getResponseBodyMappings().set(getResponseBodyMappings());
                     configureWorkerParameters(params);
                 });
