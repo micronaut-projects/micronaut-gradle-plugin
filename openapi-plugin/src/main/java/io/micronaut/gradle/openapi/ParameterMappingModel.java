@@ -49,12 +49,12 @@ public final class ParameterMappingModel implements Serializable {
      * The unique name of the parameter to be used as method parameter name.
      * By default, a name deduced from the parameter type will be used.
      */
-    private String mappedName;
+    private final String mappedName;
 
     /**
      * Whether the mapped parameter requires validation.
      */
-    private boolean isValidated;
+    private final boolean isValidated;
 
     /**
      * Create a prameter mapping
@@ -68,31 +68,66 @@ public final class ParameterMappingModel implements Serializable {
      *                   the package name if required.
      */
     public ParameterMappingModel(String name, ParameterLocation location, String mappedType) {
+        this(name, location, mappedType, null, false);
+    }
+
+    private ParameterMappingModel(String name, ParameterLocation location, String mappedType, String mappedName, boolean isValidated) {
         this.name = name;
         this.location = location;
         this.mappedType = mappedType;
+        this.mappedName = mappedName;
+        this.isValidated = isValidated;
+    }
+
+    /**
+     * Specify the name of the parameter to trigger the mapping.
+     * The name should correspond to a field name in the OpenAPI specification.
+     *
+     * @param name the name
+     * @return new instance with the updated name
+     */
+    public ParameterMappingModel withName(String name) {
+        return new ParameterMappingModel(name, location, mappedType, mappedName, isValidated);
+    }
+
+    /**
+     * Specify the location of the parameter that triggers the mapping.
+     *
+     * @param location the name
+     * @return new instance with the updated location
+     */
+    public ParameterMappingModel withLocation(ParameterLocation location) {
+        return new ParameterMappingModel(name, location, mappedType, mappedName, isValidated);
+    }
+
+    /**
+     * Specify the fully-qualified type to which the parameter will be mapped .
+     *
+     * @param mappedType the type
+     * @return new instance with the updated mapped type
+     */
+    public ParameterMappingModel withMappedType(String mappedType) {
+        return new ParameterMappingModel(name, location, mappedType, mappedName, isValidated);
     }
 
     /**
      * Specify the unique name of the parameter to be used as method parameter name.
      *
      * @param mappedName the name
-     * @return this instance
+     * @return new instance with the name specified
      */
     public ParameterMappingModel withMappedName(String mappedName) {
-        this.mappedName = mappedName;
-        return this;
+        return new ParameterMappingModel(name, location, mappedType, mappedName, isValidated);
     }
 
     /**
      * Specify whether the parameter requires validation.
      *
      * @param isValidated the value
-     * @return this instance
+     * @return new instance with the validation requirement specified
      */
     public ParameterMappingModel withValidated(boolean isValidated) {
-        this.isValidated = isValidated;
-        return this;
+        return new ParameterMappingModel(name, location, mappedType, mappedName, isValidated);
     }
 
     public String getName() {

@@ -40,12 +40,12 @@ public final class ResponseBodyMappingModel implements Serializable {
     /**
      * Whether the mapped body type needs to be supplied list items as property.
      */
-    boolean isListWrapper;
+    private final boolean isListWrapper;
 
     /**
      * Whether the mapped response body type required validation.
      */
-    boolean isValidated;
+    private final boolean isValidated;
 
     /**
      * Create a response body mapping.
@@ -56,8 +56,35 @@ public final class ResponseBodyMappingModel implements Serializable {
      *                       the header will be removed and body not changed.
      */
     public ResponseBodyMappingModel(String headerName, String mappedBodyType) {
+        this(headerName, mappedBodyType, false, false);
+    }
+
+    private ResponseBodyMappingModel(String headerName, String mappedBodyType, boolean isListWrapper, boolean isValidated) {
         this.headerName = headerName;
         this.mappedBodyType = mappedBodyType;
+        this.isListWrapper = isListWrapper;
+        this.isValidated = isValidated;
+    }
+
+    /**
+     * Specify the name of the response header that triggers mapping.
+     *
+     * @param headerName the name
+     * @return new instance with the updated header name
+     */
+    public ResponseBodyMappingModel withHeaderName(String headerName) {
+        return new ResponseBodyMappingModel(headerName, mappedBodyType, isListWrapper, isValidated);
+    }
+
+    /**
+     * Specify the fully-qualified name of the body type that will be generated
+     * as the response return type in case mapping is triggered.
+     *
+     * @param mappedBodyType the type
+     * @return new instance with the updated mapped body type
+     */
+    public ResponseBodyMappingModel withMappedBodyType(String mappedBodyType) {
+        return new ResponseBodyMappingModel(headerName, mappedBodyType, isListWrapper, isValidated);
     }
 
     /**
@@ -65,22 +92,20 @@ public final class ResponseBodyMappingModel implements Serializable {
      * Then the mapped body type needs to be supplied list items as property
      *
      * @param isListWrapper whether it is a list wrapper
-     * @return this instance
+     * @return new instance with the isListWrapper property specified
      */
     public ResponseBodyMappingModel withListWrapper(boolean isListWrapper) {
-        this.isListWrapper = isListWrapper;
-        return this;
+        return new ResponseBodyMappingModel(headerName, mappedBodyType, isListWrapper, isValidated);
     }
 
     /**
      * Specify whether the mapped response body type required validation.
      *
      * @param isValidated whether it should be validated
-     * @return this instance
+     * @return new instance with validation requirement set
      */
     public ResponseBodyMappingModel withValidated(boolean isValidated) {
-        this.isValidated = isValidated;
-        return this;
+        return new ResponseBodyMappingModel(headerName, mappedBodyType, isListWrapper, isValidated);
     }
 
     public String getHeaderName() {
