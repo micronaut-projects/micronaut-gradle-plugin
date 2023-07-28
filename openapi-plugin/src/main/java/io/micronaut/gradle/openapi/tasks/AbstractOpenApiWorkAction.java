@@ -15,6 +15,7 @@
  */
 package io.micronaut.gradle.openapi.tasks;
 
+import io.micronaut.gradle.openapi.ParameterMappingModel;
 import io.micronaut.gradle.openapi.ResponseBodyMappingModel;
 import io.micronaut.openapi.generator.AbstractMicronautJavaCodegen;
 import io.micronaut.openapi.generator.MicronautCodeGeneratorBuilder;
@@ -58,6 +59,8 @@ public abstract class AbstractOpenApiWorkAction<T extends AbstractOpenApiWorkAct
 
         Property<String> getDateTimeFormat();
 
+        ListProperty<ParameterMappingModel> getParameterMappings();
+
         ListProperty<ResponseBodyMappingModel> getResponseBodyMappings();
     }
 
@@ -86,10 +89,22 @@ public abstract class AbstractOpenApiWorkAction<T extends AbstractOpenApiWorkAct
                     options.withGenerateHttpResponseAlways(parameters.getAlwaysUseGenerateHttpResponse().get());
                     options.withGenerateHttpResponseWhereRequired(parameters.getGenerateHttpResponseWhereRequired().get());
                     options.withDateTimeFormat(MicronautCodeGeneratorOptionsBuilder.DateTimeFormat.valueOf(parameters.getDateTimeFormat().get().toUpperCase(Locale.US)));
+                    options.withParameterMappings(parameters.getParameterMappings()
+                            .get()
+                            .stream()
+                            .map(mapping -> new AbstractMicronautJavaCodegen.ParameterMapping(
+                                    mapping.getName(),
+                                    AbstractMicronautJavaCodegen.ParameterMapping.ParameterLocation.valueOf(mapping.getLocation().name()),
+                                    mapping.getMappedType(),
+                                    mapping.getMappedName(),
+                                    mapping.isValidated())
+                            )
+                            .toList()
+                    );
                     options.withResponseBodyMappings(parameters.getResponseBodyMappings()
                             .get()
                             .stream()
-                            .map(mapping -> new AbstractMicronautJavaCodegen.ResponseBodyMapping(mapping.headerName(), mapping.mappedBodyType(), mapping.isListWrapper(), mapping.isValidated()))
+                            .map(mapping -> new AbstractMicronautJavaCodegen.ResponseBodyMapping(mapping.getHeaderName(), mapping.getMappedBodyType(), mapping.isListWrapper(), mapping.isValidated()))
                             .toList()
                     );
                 });
