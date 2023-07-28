@@ -192,7 +192,7 @@ micronaut:
         dockerfileNativeTask.outcome == TaskOutcome.SUCCESS
 
         and:
-        dockerFileNative.find { s -> s.contains('FROM frolvlad/alpine-glibc:alpine-3.12') }
+        dockerFileNative.find { s -> s.contains('FROM frolvlad/alpine-glibc:alpine-') }
         dockerFileNative.find { s -> !s.contains('-H:+StaticExecutableWithDynamicLibC') }
     }
 
@@ -233,7 +233,7 @@ micronaut:
         dockerfileNativeTask.outcome == TaskOutcome.SUCCESS
 
         and:
-        dockerFileNative.find { s -> !s.contains('FROM frolvlad/alpine-glibc:alpine-3.12') }
+        dockerFileNative.find { s -> !s.contains('FROM frolvlad/alpine-glibc:alpine-') }
         dockerFileNative.find { s -> !s.contains('-H:+StaticExecutableWithDynamicLibC') }
     }
 
@@ -587,7 +587,7 @@ RUN mkdir -p /home/alternate/config-dirs/io.netty/netty-common/4.0.0.Final
 COPY config-dirs/generateResourcesConfigFile /home/alternate/config-dirs/generateResourcesConfigFile
 COPY config-dirs/io.netty/netty-common/4.0.0.Final /home/alternate/config-dirs/io.netty/netty-common/4.0.0.Final
 RUN native-image --exclude-config .*/libs/netty-transport-4.0.0.Final.jar ^/META-INF/native-image/.* --exclude-config .*/libs/netty-handler-4.0.0.Final.jar ^/META-INF/native-image/.* --exclude-config .*/libs/netty-buffer-4.0.0.Final.jar ^/META-INF/native-image/.* --exclude-config .*/libs/netty-common-4.0.0.Final.jar ^/META-INF/native-image/.* --exclude-config .*/libs/netty-codec-http-4.0.0.Final.jar ^/META-INF/native-image/.* --exclude-config .*/libs/netty-codec-http2-4.0.0.Final.jar ^/META-INF/native-image/.* -cp /home/alternate/libs/*.jar:/home/alternate/resources:/home/alternate/application.jar --no-fallback -H:Name=application -H:ConfigurationFileDirectories=/home/alternate/config-dirs/generateResourcesConfigFile,/home/alternate/config-dirs/io.netty/netty-buffer/4.0.0.Final,/home/alternate/config-dirs/io.netty/netty-common/4.0.0.Final,/home/alternate/config-dirs/io.netty/netty-codec-http/4.0.0.Final,/home/alternate/config-dirs/io.netty/netty-transport/4.0.0.Final,/home/alternate/config-dirs/io.netty/netty-handler/4.0.0.Final,/home/alternate/config-dirs/io.netty/netty-codec-http2/4.0.0.Final -H:Class=example.Application
-FROM frolvlad/alpine-glibc:alpine-3.12
+FROM frolvlad/alpine-glibc:alpine-${DefaultVersions.ALPINE}
 RUN apk --no-cache update && apk add libstdc++
 EXPOSE 8080
 HEALTHCHECK CMD curl -s localhost:8090/health | grep '"status":"UP"'
@@ -711,7 +711,7 @@ RUN mkdir /home/app/config-dirs
 RUN mkdir -p /home/app/config-dirs/generateResourcesConfigFile
 COPY config-dirs/generateResourcesConfigFile /home/app/config-dirs/generateResourcesConfigFile
 RUN native-image -cp /home/app/libs/*.jar:/home/app/resources:/home/app/application.jar --no-fallback -H:Name=application -H:ConfigurationFileDirectories=/home/app/config-dirs/generateResourcesConfigFile -H:Class=example.Application
-FROM frolvlad/alpine-glibc:alpine-3.12
+FROM frolvlad/alpine-glibc:alpine-${DefaultVersions.ALPINE}
 RUN apk --no-cache update && apk add libstdc++
 EXPOSE 8080
 COPY --from=graalvm /home/app/application /app/application

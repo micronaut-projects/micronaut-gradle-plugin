@@ -701,7 +701,7 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
             if (strategy == DockerBuildStrategy.LAMBDA && baseImage == null) {
                 baseImage = "amazonlinux:2";
             } else if (baseImage == null) {
-                baseImage = "frolvlad/alpine-glibc:alpine-3.12";
+                baseImage = "frolvlad/alpine-glibc:alpine-" + DefaultVersions.ALPINE;
             }
 
             return baseImage;
