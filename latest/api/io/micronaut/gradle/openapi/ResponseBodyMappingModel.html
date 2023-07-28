@@ -5,7 +5,7 @@
 <title>ResponseBodyMappingModel (Micronaut Gradle plugins API)</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-<meta name="description" content="declaration: package: io.micronaut.gradle.openapi, record: ResponseBodyMappingModel">
+<meta name="description" content="declaration: package: io.micronaut.gradle.openapi, class: ResponseBodyMappingModel">
 <meta name="generator" content="javadoc/ClassWriterImpl">
 <link rel="stylesheet" type="text/css" href="../../../../stylesheet.css" title="Style">
 <link rel="stylesheet" type="text/css" href="../../../../script-dir/jquery-ui.min.css" title="Style">
@@ -69,27 +69,33 @@ loadScripts(document, 'script');</script>
 <!-- ======== START OF CLASS DATA ======== -->
 <div class="header">
 <div class="sub-title"><span class="package-label-in-type">Package</span>&nbsp;<a href="package-summary.html">io.micronaut.gradle.openapi</a></div>
-<h1 title="Record Class ResponseBodyMappingModel" class="title">Record Class ResponseBodyMappingModel</h1>
+<h1 title="Class ResponseBodyMappingModel" class="title">Class ResponseBodyMappingModel</h1>
 </div>
 <div class="inheritance" title="Inheritance Tree"><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">java.lang.Object</a>
-<div class="inheritance"><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Record.html" title="class or interface in java.lang" class="external-link">java.lang.Record</a>
 <div class="inheritance">io.micronaut.gradle.openapi.ResponseBodyMappingModel</div>
-</div>
 </div>
 <section class="class-description" id="class-description">
 <dl class="notes">
-<dt>Record Components:</dt>
-<dd><code><span id="param-headerName">headerName</span></code> - the header name</dd>
-<dd><code><span id="param-mappedBodyType">mappedBodyType</span></code> - the mapped body type</dd>
-<dd><code><span id="param-isListWrapper">isListWrapper</span></code> - if it's a list wrapper</dd>
-<dd><code><span id="param-isValidated">isValidated</span></code> - if it's validated</dd>
+<dt>All Implemented Interfaces:</dt>
+<dd><code><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/io/Serializable.html" title="class or interface in java.io" class="external-link">Serializable</a></code></dd>
 </dl>
 <hr>
-<div class="type-signature"><span class="modifiers">public record </span><span class="element-name type-name-label">ResponseBodyMappingModel</span>(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;headerName, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;mappedBodyType, boolean&nbsp;isListWrapper, boolean&nbsp;isValidated)
-<span class="extends-implements">extends <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Record.html" title="class or interface in java.lang" class="external-link">Record</a></span></div>
-<div class="block">An equivalent to Micronaut OpenAPI's ResponseBodyMapping but
+<div class="type-signature"><span class="modifiers">public final class </span><span class="element-name type-name-label">ResponseBodyMappingModel</span>
+<span class="extends-implements">extends <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">Object</a>
+implements <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/io/Serializable.html" title="class or interface in java.io" class="external-link">Serializable</a></span></div>
+<div class="block">A model that can be used to specify body mappings during OpenAPI generation.
+
+ <p>An equivalent to Micronaut OpenAPI's ResponseBodyMapping but
  without using classes from that dependency so that we can isolate
- execution in workers.</div>
+ execution in workers.</p></div>
+<dl class="notes">
+<dt>See Also:</dt>
+<dd>
+<ul class="see-list">
+<li><a href="../../../../serialized-form.html#io.micronaut.gradle.openapi.ResponseBodyMappingModel">Serialized Form</a></li>
+</ul>
+</dd>
+</dl>
 </section>
 <section class="summary">
 <ul class="summary-list">
@@ -101,12 +107,10 @@ loadScripts(document, 'script');</script>
 <div class="summary-table two-column-summary">
 <div class="table-header col-first">Constructor</div>
 <div class="table-header col-last">Description</div>
-<div class="col-constructor-name even-row-color"><code><a href="#%3Cinit%3E(java.lang.String,java.lang.String,boolean,boolean)" class="member-name-link">ResponseBodyMappingModel</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;headerName,
- <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;mappedBodyType,
- boolean&nbsp;isListWrapper,
- boolean&nbsp;isValidated)</code></div>
+<div class="col-constructor-name even-row-color"><code><a href="#%3Cinit%3E(java.lang.String,java.lang.String)" class="member-name-link">ResponseBodyMappingModel</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;headerName,
+ <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;mappedBodyType)</code></div>
 <div class="col-last even-row-color">
-<div class="block">Creates an instance of a <code>ResponseBodyMappingModel</code> record class.</div>
+<div class="block">Create a response body mapping.</div>
 </div>
 </div>
 </section>
@@ -122,47 +126,45 @@ loadScripts(document, 'script');</script>
 <div class="table-header col-first">Modifier and Type</div>
 <div class="table-header col-second">Method</div>
 <div class="table-header col-last">Description</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>final boolean</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#equals(java.lang.Object)" class="member-name-link">equals</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">Object</a>&nbsp;o)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
-<div class="block">Indicates whether some other object is "equal to" this one.</div>
-</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>final int</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#hashCode()" class="member-name-link">hashCode</a>()</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
-<div class="block">Returns a hash code value for this object.</div>
-</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#headerName()" class="member-name-link">headerName</a>()</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
-<div class="block">Returns the value of the <a href="#param-headerName"><code>headerName</code></a> record component.</div>
-</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#isListWrapper()" class="member-name-link">isListWrapper</a>()</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
-<div class="block">Returns the value of the <a href="#param-isListWrapper"><code>isListWrapper</code></a> record component.</div>
-</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#isValidated()" class="member-name-link">isValidated</a>()</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
-<div class="block">Returns the value of the <a href="#param-isValidated"><code>isValidated</code></a> record component.</div>
-</div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getHeaderName()" class="member-name-link">getHeaderName</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#mappedBodyType()" class="member-name-link">mappedBodyType</a>()</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
-<div class="block">Returns the value of the <a href="#param-mappedBodyType"><code>mappedBodyType</code></a> record component.</div>
-</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>final <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#toString()" class="member-name-link">toString</a>()</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getMappedBodyType()" class="member-name-link">getMappedBodyType</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#isListWrapper()" class="member-name-link">isListWrapper</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#isValidated()" class="member-name-link">isValidated</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="ResponseBodyMappingModel.html" title="class in io.micronaut.gradle.openapi">ResponseBodyMappingModel</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#withHeaderName(java.lang.String)" class="member-name-link">withHeaderName</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;headerName)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
-<div class="block">Returns a string representation of this record class.</div>
+<div class="block">Specify the name of the response header that triggers mapping.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="ResponseBodyMappingModel.html" title="class in io.micronaut.gradle.openapi">ResponseBodyMappingModel</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#withListWrapper(boolean)" class="member-name-link">withListWrapper</a><wbr>(boolean&nbsp;isListWrapper)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Specify whether the mapped body is a list wrapper.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="ResponseBodyMappingModel.html" title="class in io.micronaut.gradle.openapi">ResponseBodyMappingModel</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#withMappedBodyType(java.lang.String)" class="member-name-link">withMappedBodyType</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;mappedBodyType)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Specify the fully-qualified name of the body type that will be generated
+ as the response return type in case mapping is triggered.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="ResponseBodyMappingModel.html" title="class in io.micronaut.gradle.openapi">ResponseBodyMappingModel</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#withValidated(boolean)" class="member-name-link">withValidated</a><wbr>(boolean&nbsp;isValidated)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Specify whether the mapped response body type required validation.</div>
 </div>
 </div>
 </div>
 </div>
 <div class="inherited-list">
 <h3 id="methods-inherited-from-class-java.lang.Object">Methods inherited from class&nbsp;java.lang.<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">Object</a></h3>
-<code><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#clone()" title="class or interface in java.lang" class="external-link">clone</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#finalize()" title="class or interface in java.lang" class="external-link">finalize</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#getClass()" title="class or interface in java.lang" class="external-link">getClass</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#notify()" title="class or interface in java.lang" class="external-link">notify</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#notifyAll()" title="class or interface in java.lang" class="external-link">notifyAll</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#wait()" title="class or interface in java.lang" class="external-link">wait</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#wait(long)" title="class or interface in java.lang" class="external-link">wait</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#wait(long,int)" title="class or interface in java.lang" class="external-link">wait</a></code></div>
+<code><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#clone()" title="class or interface in java.lang" class="external-link">clone</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#equals(java.lang.Object)" title="class or interface in java.lang" class="external-link">equals</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#finalize()" title="class or interface in java.lang" class="external-link">finalize</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#getClass()" title="class or interface in java.lang" class="external-link">getClass</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#hashCode()" title="class or interface in java.lang" class="external-link">hashCode</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#notify()" title="class or interface in java.lang" class="external-link">notify</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#notifyAll()" title="class or interface in java.lang" class="external-link">notifyAll</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#toString()" title="class or interface in java.lang" class="external-link">toString</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#wait()" title="class or interface in java.lang" class="external-link">wait</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#wait(long)" title="class or interface in java.lang" class="external-link">wait</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#wait(long,int)" title="class or interface in java.lang" class="external-link">wait</a></code></div>
 </section>
 </li>
 </ul>
@@ -175,19 +177,17 @@ loadScripts(document, 'script');</script>
 <h2>Constructor Details</h2>
 <ul class="member-list">
 <li>
-<section class="detail" id="&lt;init&gt;(java.lang.String,java.lang.String,boolean,boolean)">
+<section class="detail" id="&lt;init&gt;(java.lang.String,java.lang.String)">
 <h3>ResponseBodyMappingModel</h3>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="element-name">ResponseBodyMappingModel</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;headerName,
- <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;mappedBodyType,
- boolean&nbsp;isListWrapper,
- boolean&nbsp;isValidated)</span></div>
-<div class="block">Creates an instance of a <code>ResponseBodyMappingModel</code> record class.</div>
+ <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;mappedBodyType)</span></div>
+<div class="block">Create a response body mapping.</div>
 <dl class="notes">
 <dt>Parameters:</dt>
-<dd><code>headerName</code> - the value for the <a href="#param-headerName"><code>headerName</code></a> record component</dd>
-<dd><code>mappedBodyType</code> - the value for the <a href="#param-mappedBodyType"><code>mappedBodyType</code></a> record component</dd>
-<dd><code>isListWrapper</code> - the value for the <a href="#param-isListWrapper"><code>isListWrapper</code></a> record component</dd>
-<dd><code>isValidated</code> - the value for the <a href="#param-isValidated"><code>isValidated</code></a> record component</dd>
+<dd><code>headerName</code> - The response header name that triggers the change of response type.</dd>
+<dd><code>mappedBodyType</code> - The type in which will be used as the response type. The type must take
+                       a single type parameter, which will be the original body. If the value is null,
+                       the header will be removed and body not changed.</dd>
 </dl>
 </section>
 </li>
@@ -200,88 +200,81 @@ loadScripts(document, 'script');</script>
 <h2>Method Details</h2>
 <ul class="member-list">
 <li>
-<section class="detail" id="toString()">
-<h3>toString</h3>
-<div class="member-signature"><span class="modifiers">public final</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></span>&nbsp;<span class="element-name">toString</span>()</div>
-<div class="block">Returns a string representation of this record class. The representation contains the name of the class, followed by the name and value of each of the record components.</div>
+<section class="detail" id="withHeaderName(java.lang.String)">
+<h3>withHeaderName</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="ResponseBodyMappingModel.html" title="class in io.micronaut.gradle.openapi">ResponseBodyMappingModel</a></span>&nbsp;<span class="element-name">withHeaderName</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;headerName)</span></div>
+<div class="block">Specify the name of the response header that triggers mapping.</div>
 <dl class="notes">
-<dt>Specified by:</dt>
-<dd><code><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Record.html#toString()" title="class or interface in java.lang" class="external-link">toString</a></code>&nbsp;in class&nbsp;<code><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Record.html" title="class or interface in java.lang" class="external-link">Record</a></code></dd>
-<dt>Returns:</dt>
-<dd>a string representation of this object</dd>
-</dl>
-</section>
-</li>
-<li>
-<section class="detail" id="hashCode()">
-<h3>hashCode</h3>
-<div class="member-signature"><span class="modifiers">public final</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">hashCode</span>()</div>
-<div class="block">Returns a hash code value for this object. The value is derived from the hash code of each of the record components.</div>
-<dl class="notes">
-<dt>Specified by:</dt>
-<dd><code><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Record.html#hashCode()" title="class or interface in java.lang" class="external-link">hashCode</a></code>&nbsp;in class&nbsp;<code><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Record.html" title="class or interface in java.lang" class="external-link">Record</a></code></dd>
-<dt>Returns:</dt>
-<dd>a hash code value for this object</dd>
-</dl>
-</section>
-</li>
-<li>
-<section class="detail" id="equals(java.lang.Object)">
-<h3>equals</h3>
-<div class="member-signature"><span class="modifiers">public final</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">equals</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">Object</a>&nbsp;o)</span></div>
-<div class="block">Indicates whether some other object is "equal to" this one. The objects are equal if the other object is of the same class and if all the record components are equal. Reference components are compared with <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/Objects.html#equals(java.lang.Object,java.lang.Object)" title="class or interface in java.util" class="external-link"><code>Objects::equals(Object,Object)</code></a>; primitive components are compared with '=='.</div>
-<dl class="notes">
-<dt>Specified by:</dt>
-<dd><code><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Record.html#equals(java.lang.Object)" title="class or interface in java.lang" class="external-link">equals</a></code>&nbsp;in class&nbsp;<code><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Record.html" title="class or interface in java.lang" class="external-link">Record</a></code></dd>
 <dt>Parameters:</dt>
-<dd><code>o</code> - the object with which to compare</dd>
+<dd><code>headerName</code> - the name</dd>
 <dt>Returns:</dt>
-<dd><code>true</code> if this object is the same as the <code>o</code> argument; <code>false</code> otherwise.</dd>
+<dd>new instance with the updated header name</dd>
 </dl>
 </section>
 </li>
 <li>
-<section class="detail" id="headerName()">
-<h3>headerName</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></span>&nbsp;<span class="element-name">headerName</span>()</div>
-<div class="block">Returns the value of the <a href="#param-headerName"><code>headerName</code></a> record component.</div>
+<section class="detail" id="withMappedBodyType(java.lang.String)">
+<h3>withMappedBodyType</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="ResponseBodyMappingModel.html" title="class in io.micronaut.gradle.openapi">ResponseBodyMappingModel</a></span>&nbsp;<span class="element-name">withMappedBodyType</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;mappedBodyType)</span></div>
+<div class="block">Specify the fully-qualified name of the body type that will be generated
+ as the response return type in case mapping is triggered.</div>
 <dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>mappedBodyType</code> - the type</dd>
 <dt>Returns:</dt>
-<dd>the value of the <a href="#param-headerName"><code>headerName</code></a> record component</dd>
+<dd>new instance with the updated mapped body type</dd>
 </dl>
 </section>
 </li>
 <li>
-<section class="detail" id="mappedBodyType()">
-<h3>mappedBodyType</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></span>&nbsp;<span class="element-name">mappedBodyType</span>()</div>
-<div class="block">Returns the value of the <a href="#param-mappedBodyType"><code>mappedBodyType</code></a> record component.</div>
+<section class="detail" id="withListWrapper(boolean)">
+<h3>withListWrapper</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="ResponseBodyMappingModel.html" title="class in io.micronaut.gradle.openapi">ResponseBodyMappingModel</a></span>&nbsp;<span class="element-name">withListWrapper</span><wbr><span class="parameters">(boolean&nbsp;isListWrapper)</span></div>
+<div class="block">Specify whether the mapped body is a list wrapper.
+ Then the mapped body type needs to be supplied list items as property</div>
 <dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>isListWrapper</code> - whether it is a list wrapper</dd>
 <dt>Returns:</dt>
-<dd>the value of the <a href="#param-mappedBodyType"><code>mappedBodyType</code></a> record component</dd>
+<dd>new instance with the isListWrapper property specified</dd>
 </dl>
+</section>
+</li>
+<li>
+<section class="detail" id="withValidated(boolean)">
+<h3>withValidated</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="ResponseBodyMappingModel.html" title="class in io.micronaut.gradle.openapi">ResponseBodyMappingModel</a></span>&nbsp;<span class="element-name">withValidated</span><wbr><span class="parameters">(boolean&nbsp;isValidated)</span></div>
+<div class="block">Specify whether the mapped response body type required validation.</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>isValidated</code> - whether it should be validated</dd>
+<dt>Returns:</dt>
+<dd>new instance with validation requirement set</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="getHeaderName()">
+<h3>getHeaderName</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></span>&nbsp;<span class="element-name">getHeaderName</span>()</div>
+</section>
+</li>
+<li>
+<section class="detail" id="getMappedBodyType()">
+<h3>getMappedBodyType</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></span>&nbsp;<span class="element-name">getMappedBodyType</span>()</div>
 </section>
 </li>
 <li>
 <section class="detail" id="isListWrapper()">
 <h3>isListWrapper</h3>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">isListWrapper</span>()</div>
-<div class="block">Returns the value of the <a href="#param-isListWrapper"><code>isListWrapper</code></a> record component.</div>
-<dl class="notes">
-<dt>Returns:</dt>
-<dd>the value of the <a href="#param-isListWrapper"><code>isListWrapper</code></a> record component</dd>
-</dl>
 </section>
 </li>
 <li>
 <section class="detail" id="isValidated()">
 <h3>isValidated</h3>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">isValidated</span>()</div>
-<div class="block">Returns the value of the <a href="#param-isValidated"><code>isValidated</code></a> record component.</div>
-<dl class="notes">
-<dt>Returns:</dt>
-<dd>the value of the <a href="#param-isValidated"><code>isValidated</code></a> record component</dd>
-</dl>
 </section>
 </li>
 </ul>
