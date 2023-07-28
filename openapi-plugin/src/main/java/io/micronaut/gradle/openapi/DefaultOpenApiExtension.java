@@ -137,6 +137,7 @@ public abstract class DefaultOpenApiExtension implements OpenApiExtension {
         task.getAlwaysUseGenerateHttpResponse().convention(openApiSpec.getAlwaysUseGenerateHttpResponse());
         task.getGenerateHttpResponseWhereRequired().convention(openApiSpec.getGenerateHttpResponseWhereRequired());
         task.getDateTimeFormat().convention(openApiSpec.getDateTimeFormat());
+        task.getParameterMappings().convention(openApiSpec.getParameterMappings());
         task.getResponseBodyMappings().convention(openApiSpec.getResponseBodyMappings());
     }
 
