@@ -12,5 +12,5 @@ dependencies {
     implementation 'org.asciidoctor:asciidoctor-gradle-jvm:3.3.2'
     implementation 'com.gradle.publish:plugin-publish-plugin:1.2.0'
     implementation 'pl.droidsonroids.gradle.jacoco:pl.droidsonroids.gradle.jacoco:1.0.12'
-    implementation 'io.micronaut.build.internal.quality-checks:io.micronaut.build.internal.quality-checks.gradle.plugin:6.5.3'
+    implementation 'io.micronaut.build.internal.quality-checks:io.micronaut.build.internal.quality-checks.gradle.plugin:6.5.5'
 }
