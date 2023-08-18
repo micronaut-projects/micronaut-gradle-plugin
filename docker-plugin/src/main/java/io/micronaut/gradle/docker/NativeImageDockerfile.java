@@ -614,8 +614,8 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
      */
     private List<String> remapExcludeConfigArgs(List<String> args) {
         return args.stream().map(arg -> {
-            if (arg.startsWith("\\Q") && arg.contains(".jar")) {
-                int index = arg.lastIndexOf(java.io.File.separatorChar);
+            if (arg.startsWith("\\Q") && arg.contains(".jar") && arg.endsWith("\\E")) {
+                int index = arg.substring(0, arg.length() - 2).lastIndexOf(java.io.File.separatorChar);
                 if (index > 0) {
                     // Why aren't we using `\Q` and `\E` here?
                     // Because for some reason, it doesn't when we build under
