@@ -9,10 +9,10 @@ spock = "2.1-groovy-3.0"
 oraclelinux = "9"
 alpine="3.16"
 graalvmPlugin = "0.9.28"
-micronaut-platform = "4.1.2" # This is the platform version, used in our tests
+micronaut-platform = "4.2.0" # This is the platform version, used in our tests
 micronaut-aot = "2.1.1"
 micronaut-testresources = "2.2.0"
-micronaut-openapi = "5.1.1"
+micronaut-openapi = "6.1.0"
 log4j2 = { require = "2.17.1", reject = ["]0, 2.17["] }
 jetbrains-annotations = "24.1.0"
 tomlj = "1.1.0"

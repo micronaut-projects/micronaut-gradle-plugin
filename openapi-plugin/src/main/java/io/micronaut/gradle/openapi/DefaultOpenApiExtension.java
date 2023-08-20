@@ -15,10 +15,19 @@
  */
 package io.micronaut.gradle.openapi;
 
+import java.io.File;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.function.Consumer;
+
+import javax.inject.Inject;
+
 import io.micronaut.gradle.PluginsHelper;
 import io.micronaut.gradle.openapi.tasks.AbstractOpenApiGenerator;
 import io.micronaut.gradle.openapi.tasks.OpenApiClientGenerator;
 import io.micronaut.gradle.openapi.tasks.OpenApiServerGenerator;
+
 import org.gradle.api.Action;
 import org.gradle.api.GradleException;
 import org.gradle.api.Project;
@@ -29,16 +38,10 @@ import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.SourceSetContainer;
 
-import javax.inject.Inject;
-import java.io.File;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.function.Consumer;
-
 import static org.codehaus.groovy.runtime.StringGroovyMethods.capitalize;
 
 public abstract class DefaultOpenApiExtension implements OpenApiExtension {
+
     public static final String OPENAPI_GROUP = "Micronaut OpenAPI";
     // We use a String here because the type is not available at runtime because of classpath isolation
     private static final String DEFAULT_SERIALIZATION_FRAMEWORK = "MICRONAUT_SERDE_JACKSON";
@@ -72,15 +75,18 @@ public abstract class DefaultOpenApiExtension implements OpenApiExtension {
             configureCommonExtensionDefaults(serverSpec);
             serverSpec.getControllerPackage().convention("io.micronaut.openapi.controller");
             serverSpec.getUseAuth().convention(false);
+            serverSpec.getAot().convention(false);
             spec.execute(serverSpec);
             var controllers = project.getTasks().register(generateApisTaskName(name), OpenApiServerGenerator.class, task -> {
                 configureCommonProperties(name, task, serverSpec, definition);
+                task.getAot().set(serverSpec.getAot());
                 task.setDescription("Generates OpenAPI controllers from an OpenAPI definition");
                 configureServerTask(serverSpec, task);
                 task.getOutputKinds().addAll("APIS", "SUPPORTING_FILES");
             });
             var models = project.getTasks().register(generateModelsTaskName(name), OpenApiServerGenerator.class, task -> {
                 configureCommonProperties(name, task, serverSpec, definition);
+                task.getAot().set(serverSpec.getAot());
                 task.setDescription("Generates OpenAPI models from an OpenAPI definition");
                 configureServerTask(serverSpec, task);
                 task.getOutputKinds().add("MODELS");
@@ -103,13 +109,27 @@ public abstract class DefaultOpenApiExtension implements OpenApiExtension {
         spec.getUseBeanValidation().convention(true);
         spec.getUseOptional().convention(false);
         spec.getUseReactive().convention(true);
+        spec.getLombok().convention(false);
+        spec.getGeneratedAnnotation().convention(true);
+        spec.getFluxForArrays().convention(false);
         spec.getSerializationFramework().convention(DEFAULT_SERIALIZATION_FRAMEWORK);
         spec.getAlwaysUseGenerateHttpResponse().convention(false);
         spec.getGenerateHttpResponseWhereRequired().convention(false);
         spec.getDateTimeFormat().convention("ZONED_DATETIME");
+        spec.getLang().convention("java");
         withJava(() -> {
+                    var compileOnlyDeps = project.getConfigurations().getByName("compileOnly").getDependencies();
+                    if ("java".equalsIgnoreCase(spec.getLang().get())) {
+                        compileOnlyDeps.addAllLater(spec.getLombok().map(lombok -> {
+                            if (Boolean.TRUE.equals(lombok)) {
+                                return List.of(project.getDependencies().create("org.projectlombok:lombok"));
+                            }
+                            return List.of();
+                        }));
+                    }
+                    compileOnlyDeps.add(project.getDependencies().create("io.micronaut.openapi:micronaut-openapi"));
+
                     var implDeps = project.getConfigurations().getByName("implementation").getDependencies();
-                    implDeps.add(project.getDependencies().create("io.micronaut.openapi:micronaut-openapi"));
                     implDeps.addAllLater(spec.getUseReactive().map(reactive -> {
                         if (Boolean.TRUE.equals(reactive)) {
                             return List.of(project.getDependencies().create("io.projectreactor:reactor-core"));
@@ -138,6 +158,10 @@ public abstract class DefaultOpenApiExtension implements OpenApiExtension {
         task.getGenerateHttpResponseWhereRequired().convention(openApiSpec.getGenerateHttpResponseWhereRequired());
         task.getDateTimeFormat().convention(openApiSpec.getDateTimeFormat());
         task.getParameterMappings().convention(openApiSpec.getParameterMappings());
+        task.getLang().convention(openApiSpec.getLang());
+        task.getLombok().convention(openApiSpec.getLombok());
+        task.getGeneratedAnnotation().convention(openApiSpec.getGeneratedAnnotation());
+        task.getFluxForArrays().convention(openApiSpec.getFluxForArrays());
         task.getResponseBodyMappings().convention(openApiSpec.getResponseBodyMappings());
     }
 
@@ -186,7 +210,7 @@ public abstract class DefaultOpenApiExtension implements OpenApiExtension {
         }
     }
 
-    private static Provider<Directory> mainSrcDir(AbstractOpenApiGenerator<?,?> t) {
+    private static Provider<Directory> mainSrcDir(AbstractOpenApiGenerator<?, ?> t) {
         return t.getOutputDirectory().dir("src/main/java");
     }
 
@@ -213,6 +237,7 @@ public abstract class DefaultOpenApiExtension implements OpenApiExtension {
     private static void configureServerTask(OpenApiServerSpec serverSpec, OpenApiServerGenerator task) {
         task.getControllerPackage().convention(serverSpec.getControllerPackage());
         task.getUseAuth().convention(serverSpec.getUseAuth());
+        task.getAot().convention(serverSpec.getAot());
     }
 
 }

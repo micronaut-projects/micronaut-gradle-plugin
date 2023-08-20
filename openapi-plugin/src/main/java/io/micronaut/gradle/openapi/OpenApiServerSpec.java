@@ -18,7 +18,10 @@ package io.micronaut.gradle.openapi;
 import org.gradle.api.provider.Property;
 
 public interface OpenApiServerSpec extends OpenApiSpec {
+
     Property<String> getControllerPackage();
 
     Property<Boolean> getUseAuth();
+
+    Property<Boolean> getAot();
 }

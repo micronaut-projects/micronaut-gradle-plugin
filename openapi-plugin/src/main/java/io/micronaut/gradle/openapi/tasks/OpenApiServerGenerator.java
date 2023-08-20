@@ -18,14 +18,20 @@ package io.micronaut.gradle.openapi.tasks;
 import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.CacheableTask;
 import org.gradle.api.tasks.Input;
+import org.gradle.api.tasks.Optional;
 
 @CacheableTask
 public abstract class OpenApiServerGenerator extends AbstractOpenApiGenerator<OpenApiServerWorkAction, OpenApiServerWorkAction.ServerParameters> {
+
     @Input
     public abstract Property<String> getControllerPackage();
 
     @Input
     public abstract Property<Boolean> getUseAuth();
+
+    @Optional
+    @Input
+    public abstract Property<Boolean> getAot();
 
     @Override
     protected Class<OpenApiServerWorkAction> getWorkerAction() {
@@ -36,5 +42,6 @@ public abstract class OpenApiServerGenerator extends AbstractOpenApiGenerator<Op
     protected void configureWorkerParameters(OpenApiServerWorkAction.ServerParameters params) {
         params.getControllerPackage().set(getControllerPackage());
         params.getUseAuth().set(getUseAuth());
+        params.getAot().set(getAot());
     }
 }
