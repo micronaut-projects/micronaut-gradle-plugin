@@ -505,8 +505,11 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
     }
 
     private CopyFileInstruction toCopyResourceDirectoryInstruction(java.io.File resourceDirectory, DockerResourceConfigDirectoryNamer namer) {
-        String relativePath = namer.determineNameFor(resourceDirectory);
-        return new CopyFileInstruction(new CopyFile("config-dirs/" + relativePath, getTargetWorkingDirectory().get() + "/config-dirs/" + relativePath));
+        String relativePath = namer.determineNameFor(resourceDirectory).replace(java.io.File.separatorChar, '/');
+        return new CopyFileInstruction(new CopyFile(
+                "config-dirs/" + relativePath,
+                getTargetWorkingDirectory().get() + "/config-dirs/" + relativePath
+        ));
     }
 
     protected List<String> buildActualCommandLine(Provider<String> executable, DockerBuildStrategy buildStrategy, BaseImageForBuildStrategyResolver imageResolver) {
@@ -615,7 +618,8 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
     private List<String> remapExcludeConfigArgs(List<String> args) {
         return args.stream().map(arg -> {
             if (arg.startsWith("\\Q") && arg.contains(".jar")) {
-                int index = arg.lastIndexOf(java.io.File.separatorChar);
+                // The string ends with \Q or \E. Skip it in the search.
+                int index = arg.lastIndexOf(java.io.File.separatorChar, arg.length() - 3);
                 if (index > 0) {
                     // Why aren't we using `\Q` and `\E` here?
                     // Because for some reason, it doesn't when we build under
