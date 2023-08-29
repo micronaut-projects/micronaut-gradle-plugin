@@ -17,6 +17,7 @@ import org.gradle.api.JavaVersion;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
 import org.gradle.api.file.ConfigurableFileCollection;
+import org.gradle.api.file.DirectoryProperty;
 import org.gradle.api.file.ProjectLayout;
 import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.plugins.BasePlugin;
@@ -352,6 +353,16 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
                         @Override
                         public Property<String> getRequiredVersion() {
                             return delegate.getRequiredVersion();
+                        }
+
+                        @Override
+                        public Property<Boolean> getPgoInstrument() {
+                            return delegate.getPgoInstrument();
+                        }
+
+                        @Override
+                        public DirectoryProperty getPgoProfilesDirectory() {
+                            return delegate.getPgoProfilesDirectory();
                         }
                     };
                 })
