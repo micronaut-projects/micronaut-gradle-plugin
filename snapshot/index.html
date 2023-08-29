@@ -1463,6 +1463,8 @@ application {
 <p>If you are interested in deploying your Micronaut application to AWS Lambda using GraalVM, you only need to set the runtime to <code>lambda</code> and execute <code>./gradlew buildNativeLambda</code>.
 This task will generate a GraalVM native executable inside a Docker container, and create the file <code>build/libs/your-app.zip</code> file ready to be deployed to AWS Lambda using a custom runtime. See more information in <a href="https://micronaut-projects.github.io/micronaut-aws/latest/guide/index.html#customRuntimes">Micronaut AWS documentation</a>.</p>
 </div>
+<div class="sect4">
+<h5 id="_architecture_considerations"><a class="anchor" href="#_architecture_considerations"></a>Architecture considerations</h5>
 <div class="paragraph">
 <p>The plugin will detect the host operating system architecture (based on the <code>os.arch</code> Java system property) and will install the corresponding GraalVM  binary distribution inside the Docker image.
 This means that when running packaging from an X86_64 (Intel/AMD) machine, the produced native executable will be an <code>amd64</code> binary, whilst on an ARM host (such as the new Mac M1) it will be an <code>aarch64</code> binary.</p>
@@ -1475,6 +1477,22 @@ This means that when running packaging from an X86_64 (Intel/AMD) machine, the p
 <pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">dockerfileNative {
     graalArch.set("x64")
 }</code></pre>
+</div>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_base_image_and_pull_limits"><a class="anchor" href="#_base_image_and_pull_limits"></a>Base image and pull limits</h5>
+<div class="paragraph">
+<p>By default, the plugin will use amazonlinux pulled from Docker Hub as a base image for GraalVM native AWS Lambda executables.
+If you wish to switch to using a different base image (for example to use your own Docker repository or to use Amazon&#8217;s public repository), you can configure the <code>baseImage</code> property in a <code>dockerfileNative</code> configuration block in your build:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">dockerfileNative {
+    // Use the image from the Amazon ECR Public Gallery
+    baseImage.set("public.ecr.aws/amazonlinux/amazonlinux:2")
+}</code></pre>
+</div>
 </div>
 </div>
 </div>
