@@ -139,7 +139,7 @@
 <div class="sectionbody">
 
 <div class="paragraph">
-<p>Version 4.0.2</p>
+<p>Version 4.0.3</p>
 </div>
 </div>
 </div>
@@ -147,7 +147,7 @@
 <h2 id="_compatibility_notes"><a class="anchor" href="#_compatibility_notes"></a>1. Compatibility notes</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>This Gradle plugin collection is designed for Micronaut 4.x and requires Gradle 8+. This version defaults to Micronaut 4.0.1 and is tested with Gradle 8.1.1.</p>
+<p>This Gradle plugin collection is designed for Micronaut 4.x and requires Gradle 8+. This version defaults to Micronaut 4.0.5 and is tested with Gradle 8.1.1.</p>
 </div>
 <div class="paragraph">
 <p>Micronaut 3.x users should use the 3.x branch which documentation can be found <a href="https://github.com/micronaut-projects/micronaut-gradle-plugin/tree/3.7.x#readme">here</a>.</p>
@@ -175,7 +175,7 @@
 <p>the <a href="https://plugins.gradle.org/plugin/io.micronaut.library"><code>io.micronaut.library</code></a> plugin is aimed at building Micronaut libraries.</p>
 </li>
 <li>
-<p>the <a href="https://plugins.gradle.org/plugin/io.micronaut.graalvm"><code>io.micronaut.graalvm</code></a> plugin integrates with the official <a href="https://graalvm.github.io/native-build-tools/0.9.23/gradle-plugin.html">GraalVM Native Build Tools plugin</a> and configures it for Micronaut applications.</p>
+<p>the <a href="https://plugins.gradle.org/plugin/io.micronaut.graalvm"><code>io.micronaut.graalvm</code></a> plugin integrates with the official <a href="https://graalvm.github.io/native-build-tools/0.9.25/gradle-plugin.html">GraalVM Native Build Tools plugin</a> and configures it for Micronaut applications.</p>
 </li>
 <li>
 <p>the <a href="https://plugins.gradle.org/plugin/io.micronaut.aot"><code>io.micronaut.aot</code></a> plugin integrates with Micronaut AOT to produce optimized binaries.</p>
@@ -263,14 +263,14 @@ For example, the <code>minimal</code> plugins can be used to reduce the number o
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">plugins {
-  id 'io.micronaut.application' version '4.0.2'
+  id 'io.micronaut.application' version '4.0.3'
 }</code></pre>
 </div>
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">plugins {
-  id("io.micronaut.application") version "4.0.2"
+  id("io.micronaut.application") version "4.0.3"
 }</code></pre>
 </div>
 </div>
@@ -280,9 +280,9 @@ For example, the <code>minimal</code> plugins can be used to reduce the number o
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">plugins {
-  id 'io.micronaut.minimal.application' version '4.0.2'
-  id 'io.micronaut.docker' version '4.0.2'
-  id 'io.micronaut.graalvm' version '4.0.2'
+  id 'io.micronaut.minimal.application' version '4.0.3'
+  id 'io.micronaut.docker' version '4.0.3'
+  id 'io.micronaut.graalvm' version '4.0.3'
 }
 apply plugin: com.diffplug.gradle.eclipse.apt.AptEclipsePlugin</code></pre>
 </div>
@@ -290,9 +290,9 @@ apply plugin: com.diffplug.gradle.eclipse.apt.AptEclipsePlugin</code></pre>
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">plugins {
-  id("io.micronaut.application") version "4.0.2"
-  id("io.micronaut.docker") version "4.0.2"
-  id("io.micronaut.graalvm") version "4.0.2"
+  id("io.micronaut.application") version "4.0.3"
+  id("io.micronaut.docker") version "4.0.3"
+  id("io.micronaut.graalvm") version "4.0.3"
 }
 apply(plugin=com.diffplug.gradle.eclipse.apt.AptEclipsePlugin::class.java)</code></pre>
 </div>
@@ -377,14 +377,14 @@ This is a <strong>settings</strong> plugin, which means that it <strong>must</st
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">plugins {
-  id 'io.micronaut.platform.catalog' version '4.0.2'
+  id 'io.micronaut.platform.catalog' version '4.0.3'
 }</code></pre>
 </div>
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">plugins {
-  id("io.micronaut.platform.catalog") version "4.0.2"
+  id("io.micronaut.platform.catalog") version "4.0.3"
 }</code></pre>
 </div>
 </div>
@@ -432,14 +432,14 @@ Alternatively, you can set the version in your <code>build.gradle(.kts)</code>:<
 <div class="title">Selecting the Micronaut version</div>
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">micronaut {
-    version "4.0.1"
+    version "4.0.5"
 }</code></pre>
 </div>
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">micronaut {
-    version.set("4.0.1")
+    version.set("4.0.5")
 }</code></pre>
 </div>
 </div>
@@ -535,14 +535,14 @@ ehcache = "3.8.2" # override version of ehcache</code></pre>
 <div class="title">Applying the plugin</div>
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">plugins {
-  id 'io.micronaut.library' version '4.0.2'
+  id 'io.micronaut.library' version '4.0.3'
 }</code></pre>
 </div>
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">plugins {
-  id("io.micronaut.library") version "4.0.2"
+  id("io.micronaut.library") version "4.0.3"
 }</code></pre>
 </div>
 </div>
@@ -572,7 +572,7 @@ ehcache = "3.8.2" # override version of ehcache</code></pre>
 <div class="title">Micronaut configuration options</div>
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">micronaut {
-    version "4.0.1"
+    version "4.0.5"
     // If set to false, then the `io.micronaut.platform:micronaut-platform` BOM
     // will not be automatically applied, and you will have to add it yourself
     // to your dependencies, or specify versions of Micronaut modules explicitly
@@ -604,7 +604,7 @@ ehcache = "3.8.2" # override version of ehcache</code></pre>
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">micronaut {
-    version.set("4.0.1")
+    version.set("4.0.5")
     // If set to false, then the `io.micronaut.platform:micronaut-platform` BOM
     // will not be automatically applied, and you will have to add it yourself
     // to your dependencies, or specify versions of Micronaut modules explicitly
@@ -656,7 +656,7 @@ The Micronaut Library plugin also supports Groovy and Kotlin sources.
 <pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">plugins {
     id "org.jetbrains.kotlin.jvm" version "1.8.22"
     id "org.jetbrains.kotlin.kapt" version "1.8.22"
-    id "io.micronaut.library" version "4.0.2"
+    id "io.micronaut.library" version "4.0.3"
 }</code></pre>
 </div>
 </div>
@@ -665,7 +665,7 @@ The Micronaut Library plugin also supports Groovy and Kotlin sources.
 <pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">plugins {
     id("org.jetbrains.kotlin.jvm") version "1.8.22"
     id("org.jetbrains.kotlin.kapt") version "1.8.22"
-    id("io.micronaut.library") version "4.0.2"
+    id("io.micronaut.library") version "4.0.3"
 }</code></pre>
 </div>
 </div>
@@ -679,7 +679,7 @@ The Micronaut Library plugin also supports Groovy and Kotlin sources.
 <div class="title">A minimal build file</div>
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">plugins {
-    id 'io.micronaut.library' version '4.0.2'
+    id 'io.micronaut.library' version '4.0.3'
 }
 
 version "0.1"
@@ -690,7 +690,7 @@ repositories {
 }
 
 micronaut {
-    version = "4.0.1"
+    version = "4.0.5"
 }
 
 dependencies {
@@ -702,7 +702,7 @@ dependencies {
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">plugins {
-    id("io.micronaut.library") version "4.0.2"
+    id("io.micronaut.library") version "4.0.3"
 }
 
 version = "0.1"
@@ -713,7 +713,7 @@ repositories {
 }
 
 micronaut {
-    version.set("4.0.1")
+    version.set("4.0.5")
 }
 
 dependencies {
@@ -732,14 +732,14 @@ dependencies {
 <div class="title">Applying the Micronaut Application plugin</div>
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">plugins {
-  id "io.micronaut.application" version "4.0.2"
+  id "io.micronaut.application" version "4.0.3"
 }</code></pre>
 </div>
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">plugins {
-  id("io.micronaut.application") version "4.0.2"
+  id("io.micronaut.application") version "4.0.3"
 }</code></pre>
 </div>
 </div>
@@ -815,7 +815,7 @@ dependencies {
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">plugins {
-    id 'io.micronaut.application' version '4.0.2'
+    id 'io.micronaut.application' version '4.0.3'
 }
 
 version "0.1"
@@ -826,7 +826,7 @@ repositories {
 }
 
 micronaut {
-    version = "4.0.1"
+    version = "4.0.5"
 }
 
 dependencies {
@@ -844,7 +844,7 @@ application {
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">plugins {
-    id("io.micronaut.application") version "4.0.2"
+    id("io.micronaut.application") version "4.0.3"
 }
 
 version = "0.1"
@@ -855,7 +855,7 @@ repositories {
 }
 
 micronaut {
-    version.set("4.0.1")
+    version.set("4.0.5")
 }
 
 dependencies {
@@ -882,7 +882,7 @@ application {
     id "org.jetbrains.kotlin.jvm" version "1.8.22"
     id "org.jetbrains.kotlin.kapt" version "1.8.22"
     id "org.jetbrains.kotlin.plugin.allopen" version "1.8.22"
-    id "io.micronaut.application" version "4.0.2"
+    id "io.micronaut.application" version "4.0.3"
 }
 
 version "0.1"
@@ -893,7 +893,7 @@ repositories {
 }
 
 micronaut {
-    version = "4.0.1"
+    version = "4.0.5"
 }
 
 dependencies {
@@ -916,7 +916,7 @@ application {
     id("org.jetbrains.kotlin.jvm") version "1.8.22"
     id("org.jetbrains.kotlin.kapt") version "1.8.22"
     id("org.jetbrains.kotlin.plugin.allopen") version "1.8.22"
-    id("io.micronaut.application") version "4.0.2"
+    id("io.micronaut.application") version "4.0.3"
 }
 
 version = "0.1"
@@ -927,7 +927,7 @@ repositories {
 }
 
 micronaut {
-    version.set("4.0.1")
+    version.set("4.0.5")
 }
 
 dependencies {
@@ -948,7 +948,7 @@ application {
 <div class="sect2">
 <h3 id="native-image"><a class="anchor" href="#native-image"></a>6.3. GraalVM Native Image</h3>
 <div class="paragraph">
-<p>Since version 3.0.0, the Micronaut plugins rely on the <a href="https://graalvm.github.io/native-build-tools/0.9.23/gradle-plugin.html">official GraalVM plugin</a> to build native executables.</p>
+<p>Since version 3.0.0, the Micronaut plugins rely on the <a href="https://graalvm.github.io/native-build-tools/0.9.25/gradle-plugin.html">official GraalVM plugin</a> to build native executables.</p>
 </div>
 <div class="paragraph">
 <p>Those plugins make use of <a href="https://docs.gradle.org/8.1.1/userguide/toolchains.html">Gradle toolchains</a> support, which means that the SDK which is used to build the native is decorrelated from the JVM which is used to launch Gradle itself.
@@ -963,7 +963,7 @@ Said differently, you can run Gradle with OpenJDK, while still building native e
 <p>running Gradle with a GraalVM SDK doesn&#8217;t necessarily imply that Gradle will use the same SDK to build native executables</p>
 </li>
 <li>
-<p>Gradle will try to locate a <em>compatible GraalVM toolchain</em> to build executables. You can tweak what GraalVM version to use by following the <a href="https://graalvm.github.io/native-build-tools/0.9.23/gradle-plugin.html#_selecting_the_graalvm_toolchain">official documentation</a>.</p>
+<p>Gradle will try to locate a <em>compatible GraalVM toolchain</em> to build executables. You can tweak what GraalVM version to use by following the <a href="https://graalvm.github.io/native-build-tools/0.9.25/gradle-plugin.html#_selecting_the_graalvm_toolchain">official documentation</a>.</p>
 </li>
 </ul>
 </div>
@@ -1031,7 +1031,7 @@ org.gradle.java.installations.fromEnv=JAVA_HOME</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>You can tweak the native executable options by configuring the <code>graalvmNative</code> extension as explained in the <a href="https://graalvm.github.io/native-build-tools/0.9.23/gradle-plugin.html">plugin documentation</a>.</p>
+<p>You can tweak the native executable options by configuring the <code>graalvmNative</code> extension as explained in the <a href="https://graalvm.github.io/native-build-tools/0.9.25/gradle-plugin.html">plugin documentation</a>.</p>
 </div>
 <div class="paragraph">
 <p>For example, you can add options to the main executable by doing:</p>
@@ -1360,7 +1360,7 @@ You can workaround this issue by configuring the duplicates strategy on the task
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">plugins {
-     id 'io.micronaut.application' version '4.0.2'
+     id 'io.micronaut.application' version '4.0.3'
 }
 version "0.1"
 group "com.example"
@@ -1370,7 +1370,7 @@ repositories {
 }
 
 micronaut {
-    version = "4.0.1"
+    version = "4.0.5"
     runtime "netty"
 }
 
@@ -1386,7 +1386,7 @@ application {
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">plugins {
-     id("io.micronaut.application") version "4.0.2"
+     id("io.micronaut.application") version "4.0.3"
 }
 version = "0.1"
 group = "com.example"
@@ -1396,7 +1396,7 @@ repositories {
 }
 
 micronaut {
-    version.set("4.0.1")
+    version.set("4.0.5")
     runtime.set("netty")
 }
 
@@ -1463,6 +1463,8 @@ application {
 <p>If you are interested in deploying your Micronaut application to AWS Lambda using GraalVM, you only need to set the runtime to <code>lambda</code> and execute <code>./gradlew buildNativeLambda</code>.
 This task will generate a GraalVM native executable inside a Docker container, and create the file <code>build/libs/your-app.zip</code> file ready to be deployed to AWS Lambda using a custom runtime. See more information in <a href="https://micronaut-projects.github.io/micronaut-aws/latest/guide/index.html#customRuntimes">Micronaut AWS documentation</a>.</p>
 </div>
+<div class="sect4">
+<h5 id="_architecture_considerations"><a class="anchor" href="#_architecture_considerations"></a>Architecture considerations</h5>
 <div class="paragraph">
 <p>The plugin will detect the host operating system architecture (based on the <code>os.arch</code> Java system property) and will install the corresponding GraalVM  binary distribution inside the Docker image.
 This means that when running packaging from an X86_64 (Intel/AMD) machine, the produced native executable will be an <code>amd64</code> binary, whilst on an ARM host (such as the new Mac M1) it will be an <code>aarch64</code> binary.</p>
@@ -1475,6 +1477,22 @@ This means that when running packaging from an X86_64 (Intel/AMD) machine, the p
 <pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">dockerfileNative {
     graalArch.set("x64")
 }</code></pre>
+</div>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_base_image_and_pull_limits"><a class="anchor" href="#_base_image_and_pull_limits"></a>Base image and pull limits</h5>
+<div class="paragraph">
+<p>By default, the plugin will use amazonlinux pulled from Docker Hub as a base image for GraalVM native AWS Lambda executables.
+If you wish to switch to using a different base image (for example to use your own Docker repository or to use Amazon&#8217;s public repository), you can configure the <code>baseImage</code> property in a <code>dockerfileNative</code> configuration block in your build:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">dockerfileNative {
+    // Use the image from the Amazon ECR Public Gallery
+    baseImage.set("public.ecr.aws/amazonlinux/amazonlinux:2")
+}</code></pre>
+</div>
 </div>
 </div>
 </div>
@@ -1596,8 +1614,8 @@ Micronaut AOT is a <em>deployment</em> optimization: it adds to build time, in o
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">plugins {
     ...
-    id "io.micronaut.application" version "4.0.2"
-    id "io.micronaut.aot" version "4.0.2"
+    id "io.micronaut.application" version "4.0.3"
+    id "io.micronaut.aot" version "4.0.3"
     ...
 }</code></pre>
 </div>
@@ -1606,8 +1624,8 @@ Micronaut AOT is a <em>deployment</em> optimization: it adds to build time, in o
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">plugins {
     ...
-    id("io.micronaut.application") version "4.0.2"
-    id("io.micronaut.aot") version "4.0.2"
+    id("io.micronaut.application") version "4.0.3"
+    id("io.micronaut.aot") version "4.0.3"
     ...
 }</code></pre>
 </div>
@@ -1942,8 +1960,8 @@ Should this happen to you, you can disable class data sharing explicitly using t
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">plugins {
-    id "io.micronaut.application" version "4.0.1"
-    id "io.micronaut.test-resources" version "4.0.1"
+    id "io.micronaut.application" version "4.0.5"
+    id "io.micronaut.test-resources" version "4.0.5"
     ...
 }</code></pre>
 </div>
@@ -1951,8 +1969,8 @@ Should this happen to you, you can disable class data sharing explicitly using t
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">plugins {
-    id("io.micronaut.application") version "4.0.1"
-    id("io.micronaut.test-resources") version "4.0.1"
+    id("io.micronaut.application") version "4.0.5"
+    id("io.micronaut.test-resources") version "4.0.5"
     ...
 }</code></pre>
 </div>
@@ -2142,7 +2160,7 @@ Here, we&#8217;re going to add a project called <code>shared-testresources</code
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">// shared-testresources/build.gradle
 plugins {
-    id "io.micronaut.test-resources" version "4.0.1" // <b class="conum">(1)</b>
+    id "io.micronaut.test-resources" version "4.0.5" // <b class="conum">(1)</b>
 }
 
 micronaut {
@@ -2156,7 +2174,7 @@ micronaut {
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">// shared-testresources/build.gradle.kts
 plugins {
-    id("io.micronaut.test-resources") version "4.0.1" // <b class="conum">(1)</b>
+    id("io.micronaut.test-resources") version "4.0.5" // <b class="conum">(1)</b>
 }
 
 micronaut {
@@ -2182,8 +2200,8 @@ micronaut {
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">plugins {
-    id "io.micronaut.application" version "4.0.1"
-    id "io.micronaut.test-resources-consumer" version "4.0.1" // <b class="conum">(1)</b>
+    id "io.micronaut.application" version "4.0.5"
+    id "io.micronaut.test-resources-consumer" version "4.0.5" // <b class="conum">(1)</b>
 }
 
 dependencies {
@@ -2194,8 +2212,8 @@ dependencies {
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">plugins {
-    id("io.micronaut.application") version "4.0.1"
-    id("io.micronaut.test-resources-consumer") version "4.0.1" // <b class="conum">(1)</b>
+    id("io.micronaut.application") version "4.0.5"
+    id("io.micronaut.test-resources-consumer") version "4.0.5" // <b class="conum">(1)</b>
 }
 
 dependencies {
@@ -2437,9 +2455,9 @@ Currently CRaC support has only been tested on Ubuntu 18.04, 20.04 and 22.04.  I
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">plugins {
     ...
-    id "io.micronaut.minimal.application" version "4.0.2"
-    id "io.micronaut.docker" version "4.0.2"
-    id "io.micronaut.crac" version "4.0.2"
+    id "io.micronaut.minimal.application" version "4.0.3"
+    id "io.micronaut.docker" version "4.0.3"
+    id "io.micronaut.crac" version "4.0.3"
     ...
 }</code></pre>
 </div>
@@ -2448,9 +2466,9 @@ Currently CRaC support has only been tested on Ubuntu 18.04, 20.04 and 22.04.  I
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">plugins {
     ...
-    id("io.micronaut.minimal.application") version "4.0.2"
-    id("io.micronaut.docker") version "4.0.2"
-    id("io.micronaut.crac") version "4.0.2"
+    id("io.micronaut.minimal.application") version "4.0.3"
+    id("io.micronaut.docker") version "4.0.3"
+    id("io.micronaut.crac") version "4.0.3"
     ...
 }</code></pre>
 </div>
