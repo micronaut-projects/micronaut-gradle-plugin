@@ -17,7 +17,7 @@ class BasicMicronautAOTSpec extends AbstractAOTPluginSpec {
         and: "configuration file is generated"
         hasAOTConfiguration(runtime) {
             withProperty('graalvm.config.enabled', 'native' == runtime ? 'true' : 'false')
-            withProperty('logback.xml.to.java.enabled', 'false')
+            withProperty('logback.xml.to.java.enabled', 'true')
             withProperty('cached.environment.enabled', 'true')
             withProperty('serviceloading.jit.enabled', 'true')
             withProperty('serviceloading.native.enabled', 'true')
@@ -79,7 +79,7 @@ class BasicMicronautAOTSpec extends AbstractAOTPluginSpec {
         and: "configuration file is generated"
         hasAOTConfiguration(runtime) {
             withProperty('graalvm.config.enabled', 'native' == runtime ? 'true' : 'false')
-            withProperty('logback.xml.to.java.enabled', 'false')
+            withProperty('logback.xml.to.java.enabled', 'true')
             withProperty('cached.environment.enabled', 'true')
             withProperty('serviceloading.jit.enabled', 'true')
             withProperty('serviceloading.native.enabled', 'true')
@@ -167,7 +167,7 @@ class BasicMicronautAOTSpec extends AbstractAOTPluginSpec {
         result.task(":$task").outcome == TaskOutcome.SUCCESS
 
         where:
-        task << ["nativeOptimizedCompile"]
+        task << ["nativeCompile", "nativeOptimizedCompile"]
 
     }
 
