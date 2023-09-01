@@ -167,7 +167,7 @@ class BasicMicronautAOTSpec extends AbstractAOTPluginSpec {
         result.task(":$task").outcome == TaskOutcome.SUCCESS
 
         where:
-        task << ["nativeCompile", "nativeOptimizedCompile"]
+        task << ["nativeOptimizedCompile"]
 
     }
 

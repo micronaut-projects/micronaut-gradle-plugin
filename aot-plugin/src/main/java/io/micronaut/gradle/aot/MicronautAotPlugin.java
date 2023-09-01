@@ -51,6 +51,7 @@ import org.gradle.api.plugins.JavaApplication;
 import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.provider.ProviderFactory;
+import org.gradle.api.specs.Spec;
 import org.gradle.api.tasks.JavaExec;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.TaskContainer;
@@ -155,8 +156,8 @@ public abstract class MicronautAotPlugin implements Plugin<Project> {
         TaskProvider<MicronautAotOptimizerTask> prepareJit = registerPrepareOptimizationTask(project, optimizerRuntimeClasspath, applicationClasspath, tasks, aotExtension, OptimizerIO.TargetRuntime.JIT);
         registerJavaExecOptimizedRun(project, tasks, prepareJit);
         TaskProvider<MicronautAotOptimizerTask> prepareNative = registerPrepareOptimizationTask(project, optimizerRuntimeClasspath, applicationClasspath, tasks, aotExtension, OptimizerIO.TargetRuntime.NATIVE);
-        registerOptimizedJar(project, tasks, prepareNative, OptimizerIO.TargetRuntime.NATIVE);
-        project.getPlugins().withType(NativeImagePlugin.class, p -> registerOptimizedBinary(project, prepareNative));
+        var optimizedNativeJarProvider = registerOptimizedJar(project, tasks, prepareNative, OptimizerIO.TargetRuntime.NATIVE);
+        project.getPlugins().withType(NativeImagePlugin.class, p -> registerOptimizedBinary(project, optimizedNativeJarProvider));
 
         registerCreateSamplesTasks(project, optimizerRuntimeClasspath, applicationClasspath, tasks, aotExtension);
     }
@@ -254,16 +255,15 @@ public abstract class MicronautAotPlugin implements Plugin<Project> {
         }
     }
 
-    private void registerOptimizedBinary(Project project, TaskProvider<MicronautAotOptimizerTask> prepareNative) {
+    private void registerOptimizedBinary(Project project, TaskProvider<Jar> optimizedJar) {
         GraalVMExtension graalVMExtension = project.getExtensions().getByType(GraalVMExtension.class);
         NamedDomainObjectContainer<NativeImageOptions> binaries = graalVMExtension.getBinaries();
         binaries.create(OPTIMIZED_BINARY_NAME, binary -> {
             var mainSourceSet = PluginsHelper.findSourceSets(project).getByName(SourceSet.MAIN_SOURCE_SET_NAME);
             NativeImageOptions main = binaries.getByName(MAIN_BINARY_NAME);
             binary.getMainClass().set(main.getMainClass());
-            binary.getClasspath().from(mainSourceSet.getRuntimeClasspath());
-            binary.getClasspath().from(mainSourceSet.getOutput());
-            binary.getClasspath().from(prepareNative.map(MicronautAotOptimizerTask::getGeneratedClassesDirectory));
+            binary.getClasspath().from(optimizedJar);
+            binary.getClasspath().from(project.getConfigurations().findByName(mainSourceSet.getRuntimeClasspathConfigurationName()));
             // The following lines are a hack for the fact that the GraalVM plugin doesn't configure all binaries
             // to use the metadata repository, but only the ones that it knows about (`main` and `test`).
             binary.getConfigurationFileDirectories().from(main.getConfigurationFileDirectories());
@@ -448,6 +448,48 @@ public abstract class MicronautAotPlugin implements Plugin<Project> {
         private static String normalizePath(String path) {
             return path.replace('\\', '/');
         }
+    }
+
+    private static class ExclusionSpec implements Spec<File> {
+        private final Provider<RegularFile> filterFile;
+        private final Set<String> prefixes;
+        private final Logger logger;
+        private Set<String> excludes;
+
+        private ExclusionSpec(Provider<RegularFile> filterFile,
+                                 Set<String> prefixes,
+                                 Logger logger) {
+            this.filterFile = filterFile;
+            this.prefixes = prefixes;
+            this.logger = logger;
+        }
+
+        @Override
+        public boolean isSatisfiedBy(File file) {
+            if (excludes == null) {
+                File resourceFilter = filterFile.get().getAsFile();
+                try {
+                    excludes = new HashSet<>();
+                    Files.readAllLines(resourceFilter.toPath())
+                            .stream()
+                            .map(JarExclusionSpec::normalizePath)
+                            .forEach(excludes::add);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+                logger.debug("Excluded resources: {} ", excludes);
+            }
+            var relativePath = file.toString();
+            if (excludes.contains(normalizePath(relativePath)) || prefixes.stream().anyMatch(p -> normalizePath(relativePath).startsWith(p))) {
+                return false;
+            }
+            return true;
+        }
+
+        private static String normalizePath(String path) {
+            return path.replace('\\', '/');
+        }
+
     }
 
     private static final class Configurations {
