@@ -21,6 +21,7 @@ micronaut {
         precomputeOperations = true
         deduceEnvironment = true
         optimizeNetty = true
+        replaceLogbackXml = true
     }
 }
 
@@ -35,10 +36,10 @@ tasks.named("test", Test) {
 dependencies {
     annotationProcessor("io.micronaut:micronaut-http-validation")
     implementation("io.micronaut:micronaut-http-client")
-    implementation("io.micronaut:micronaut-runtime")
-    implementation("javax.annotation:javax.annotation-api")
+    implementation("jakarta.annotation:jakarta.annotation-api")
     runtimeOnly("ch.qos.logback:logback-classic")
     implementation("io.micronaut.validation:micronaut-validation")
+    runtimeOnly("io.micronaut.serde:micronaut-serde-jackson")
     runtimeOnly("org.yaml:snakeyaml")
 }
 
