@@ -108,7 +108,6 @@ public abstract class MicronautAotPlugin implements Plugin<Project> {
             "io.micronaut.http.HttpResponseFactory",
             "io.micronaut.core.beans.BeanIntrospectionReference",
             "io.micronaut.core.convert.TypeConverterRegistrar",
-            "io.micronaut.context.ApplicationContextConfigurer",
             "io.micronaut.context.env.PropertyExpressionResolver"
     ));
     public static final String AOT_APPLICATION_CLASSPATH = "aotApplicationClasspath";
