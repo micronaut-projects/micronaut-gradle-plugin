@@ -56,12 +56,15 @@ graalvmNative.binaries.all {
 """)
 
         when:
-        def result = build 'nativeRun', "-Dtestresources.native"
+        def result = build 'nativeRun', "-Dtestresources.native$suffix"
 
         then:
         result.task(':nativeRun').outcome == TaskOutcome.SUCCESS
         result.output.contains "Loaded 2 test resources resolvers"
         result.output.contains "io.micronaut.testresources.mysql.MySQLTestResourceProvider"
         result.output.contains "io.micronaut.testresources.testcontainers.GenericTestContainerProvider"
+
+        where:
+        suffix << ["", "=true"]
     }
 }
