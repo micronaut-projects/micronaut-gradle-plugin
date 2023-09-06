@@ -46,7 +46,7 @@ public final class TestResourcesGraalVM {
                 .systemProperty(ENABLED_PROPERTY_NAME)
                 .orElse(providers.gradleProperty(ENABLED_PROPERTY_NAME))
                 .map(s -> {
-                    if (s.equals("")) {
+                    if (s.isEmpty() || "true".equalsIgnoreCase(s)) {
                         // if the property is set without value, consider it's true
                         return "true";
                     }
