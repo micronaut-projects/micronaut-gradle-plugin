@@ -710,7 +710,7 @@ COPY layers/application.jar /home/app/application.jar
 RUN mkdir /home/app/config-dirs
 RUN mkdir -p /home/app/config-dirs/generateResourcesConfigFile
 COPY config-dirs/generateResourcesConfigFile /home/app/config-dirs/generateResourcesConfigFile
-RUN native-image -cp /home/app/libs/*.jar:/home/app/resources:/home/app/application.jar --no-fallback -H:Name=application -H:ConfigurationFileDirectories=/home/app/config-dirs/generateResourcesConfigFile -H:Class=example.Application
+RUN native-image -cp /home/app/libs/*.jar:/home/app/resources:/home/app/application.jar --no-fallback -o application -H:ConfigurationFileDirectories=/home/app/config-dirs/generateResourcesConfigFile example.Application
 FROM frolvlad/alpine-glibc:alpine-${DefaultVersions.ALPINE}
 RUN apk --no-cache update && apk add libstdc++
 EXPOSE 8080
