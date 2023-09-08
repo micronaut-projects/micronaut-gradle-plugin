@@ -3,6 +3,7 @@ package io.micronaut.gradle.testresources
 
 import org.gradle.testkit.runner.TaskOutcome
 import spock.lang.IgnoreIf
+import spock.lang.Issue
 
 @IgnoreIf({ os.windows })
 class TestResourcesWithAotSpec extends AbstractTestResourcesSpec {
@@ -26,5 +27,27 @@ class TestResourcesWithAotSpec extends AbstractTestResourcesSpec {
         result.output.contains "Loaded 2 test resources resolvers"
         result.output.contains "io.micronaut.testresources.mysql.MySQLTestResourceProvider"
         result.output.contains "io.micronaut.testresources.testcontainers.GenericTestContainerProvider"
+    }
+
+    @Issue("https://github.com/micronaut-projects/micronaut-gradle-plugin/issues/815")
+    def "doesn't fail if AOT plugin is applied with test resources and the library plugin"() {
+        settingsFile << "rootProject.name = 'test'"
+        buildFile << """plugins {
+    id("io.micronaut.minimal.library")
+    id("io.micronaut.aot")
+    id("io.micronaut.test-resources")
+}
+
+micronaut {
+    version "$micronautVersion"
+}
+"""
+
+        when:
+        def result = build 'help'
+
+        then:
+        !result.output.contains("Configuration with name 'optimizedRuntimeClasspath' not found.")
+        result.task(':help').outcome == TaskOutcome.SUCCESS
     }
 }
