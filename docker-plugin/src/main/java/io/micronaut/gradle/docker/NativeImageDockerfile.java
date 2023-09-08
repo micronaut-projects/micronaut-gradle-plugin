@@ -566,7 +566,8 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
                 getObjects().property(String.class),
                 getObjects().property(String.class),
                 getObjects().fileProperty(),
-                getProviders().provider(() -> false) // in a docker container we don't use the @arg file
+                getProviders().provider(() -> false), // in a docker container we don't use the @arg file
+                getObjects().property(Integer.class).value(getJdkVersion().map(NativeImageDockerfile::toMajorVersion))
         ).asArguments();
         if (System.getProperty("os.name").toLowerCase().contains("windows")) {
             // This is a dirty workaround for https://github.com/micronaut-projects/micronaut-gradle-plugin/issues/358
@@ -583,6 +584,13 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
                     .toList();
         }
         return args;
+    }
+
+    private static Integer toMajorVersion(String version) {
+        if (version.contains(".")) {
+            return Integer.parseInt(version.substring(0, version.indexOf(".")));
+        }
+        return Integer.parseInt(version);
     }
 
     /**
