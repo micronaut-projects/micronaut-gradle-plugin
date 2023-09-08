@@ -226,14 +226,19 @@ abstract class AbstractGradleBuildSpec extends Specification {
         s.replaceAll("\\r\\n?", "\n")
     }
 
+    private static determineArgFileName(String lookupString) {
+        String name = lookupString.substring(lookupString.lastIndexOf('@') + 1)
+        return name.substring(0, name.indexOf(".args") + 5)
+    }
+
     static String argFileContentsOf(BuildResult result) {
         result.output.lines().filter {
-            it.contains('Starting process') && it.contains('bin/native-image')
+            it.contains('Starting process') && it.contains('bin/native-image') && !it.contains('--version')
         }.map {
             int workingDirIdx = it.indexOf('Working directory: ')
             int commandIdx = it.indexOf('Command: ')
             String workingDirectory = it.substring(workingDirIdx + 'Working directory: '.length(), commandIdx).trim()
-            new File(new File(workingDirectory), it.substring(it.lastIndexOf('@') + 1))
+            new File(new File(workingDirectory), determineArgFileName(it))
         }.findFirst()
                 .map { it.text }
                 .orElse("")

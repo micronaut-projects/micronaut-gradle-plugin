@@ -48,8 +48,8 @@ class LambdaNativeImageSpec extends AbstractFunctionalTest {
         dockerfileNativeTask.outcome == TaskOutcome.SUCCESS
 
         and:
-        dockerFileNative.find() { it.contains('-H:Class=io.micronaut.function.aws.runtime.MicronautLambdaRuntime') }
-        !dockerFileNative.find() { it.contains('com.example.Application') }
+        dockerFileNative.find() { it.endsWith(' io.micronaut.function.aws.runtime.MicronautLambdaRuntime') }
+        !dockerFileNative.find() { it.endsWith('com.example.Application') }
     }
 
     void 'native lambdas build in docker fetch the correct graalvm for #desc'() {
@@ -197,8 +197,8 @@ class LambdaNativeImageSpec extends AbstractFunctionalTest {
         dockerfileNativeTask.outcome == TaskOutcome.SUCCESS
 
         and:
-        !dockerFileNative.find() { it.contains('-H:Class=io.micronaut.function.aws.runtime.MicronautLambdaRuntime') }
-        dockerFileNative.find() { it.contains('-H:Class=com.example.BookLambdaRuntime') }
+        !dockerFileNative.find() { it.endsWith(' io.micronaut.function.aws.runtime.MicronautLambdaRuntime') }
+        dockerFileNative.find() { it.endsWith('com.example.BookLambdaRuntime') }
     }
 
     @Issue("https://github.com/micronaut-projects/micronaut-gradle-plugin/issues/279")
@@ -402,7 +402,7 @@ class LambdaNativeImageSpec extends AbstractFunctionalTest {
         dockerfileNativeTask.outcome == TaskOutcome.SUCCESS
 
         and:
-        dockerFileNative.find() { it.contains("-H:Class=$mainClass") }
+        dockerFileNative.find() { it.endsWith(mainClass) }
 
         where:
         runtime          | mainClass
