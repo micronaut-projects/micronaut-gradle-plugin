@@ -37,9 +37,11 @@ public final class TestResourcesAOT {
         AOTExtension aot = PluginsHelper.findMicronautExtension(project).getExtensions().getByType(AOTExtension.class);
         ConfigurationContainer configurations = project.getConfigurations();
         Configuration aotAppClasspath = configurations.getByName(MicronautAotPlugin.AOT_APPLICATION_CLASSPATH);
-        Configuration optimizedRuntimeClasspath = configurations.getByName(MicronautAotPlugin.OPTIMIZED_RUNTIME_CLASSPATH_CONFIGURATION_NAME);
         aotAppClasspath.extendsFrom(client);
-        optimizedRuntimeClasspath.extendsFrom(client);
+        project.getPluginManager().withPlugin("io.micronaut.minimal.application", unused -> {
+            Configuration optimizedRuntimeClasspath = configurations.getByName(MicronautAotPlugin.OPTIMIZED_RUNTIME_CLASSPATH_CONFIGURATION_NAME);
+            optimizedRuntimeClasspath.extendsFrom(client);
+        });
         project.afterEvaluate(p -> {
             MapProperty<String, String> props = aot.getConfigurationProperties();
             if (props.get().containsKey("service.types")) {
