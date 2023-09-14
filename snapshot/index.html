@@ -58,59 +58,73 @@
                         <h1 class="title title_large first-word-bold first-word-break">Table of Contents</h1>
                         <div class="underline"></div>
                         <ul class="sectlevel1">
-<li><a href="#_whats_new">1. What&#8217;s new</a></li>
+<li><a href="#_compatibility_notes">1. Compatibility notes</a></li>
 <li><a href="#_the_gradle_plugins">2. The Gradle plugins</a>
 <ul class="sectlevel2">
 <li><a href="#_individual_plugins">2.1. Individual plugins</a></li>
 </ul>
 </li>
 <li><a href="#_quick_start">3. Quick Start</a></li>
-<li><a href="#_micronaut_library_plugin">4. Micronaut Library Plugin</a>
+<li><a href="#sec:selecting-micronaut-version">4. Selecting the Micronaut version</a>
 <ul class="sectlevel2">
-<li><a href="#_kotlin_support">4.1. Kotlin Support</a></li>
-<li><a href="#_minimal_build">4.2. Minimal Build</a></li>
+<li><a href="#sec:micronaut-platform-catalog-plugin">4.1. The Micronaut Platform Catalog plugin</a></li>
+<li><a href="#_selecting_the_micronaut_platform_version">4.2. Selecting the Micronaut Platform version</a></li>
+<li><a href="#sec:overriding-version">4.3. Overriding Micronaut module versions</a></li>
 </ul>
 </li>
-<li><a href="#_micronaut_application_plugin">5. Micronaut Application Plugin</a>
+<li><a href="#_micronaut_library_plugin">5. Micronaut Library Plugin</a>
 <ul class="sectlevel2">
-<li><a href="#_minimal_build_2">5.1. Minimal Build</a></li>
-<li><a href="#_kotlin_support_2">5.2. Kotlin Support</a></li>
-<li><a href="#native-image">5.3. GraalVM Native Image</a></li>
-<li><a href="#_testing_native_images">5.4. Testing Native Images</a></li>
-<li><a href="#_docker_support">5.5. Docker Support</a></li>
-<li><a href="#_micronaut_runtimes">5.6. Micronaut Runtimes</a></li>
-<li><a href="#_packaging_the_application">5.7. Packaging the application</a></li>
+<li><a href="#_kotlin_support">5.1. Kotlin Support</a></li>
+<li><a href="#_minimal_build">5.2. Minimal Build</a></li>
 </ul>
 </li>
-<li><a href="#_micronaut_graalvm_plugin">6. Micronaut GraalVM Plugin</a></li>
-<li><a href="#_micronaut_aot_plugin">7. Micronaut AOT Plugin</a>
+<li><a href="#_micronaut_application_plugin">6. Micronaut Application Plugin</a>
 <ul class="sectlevel2">
-<li><a href="#_configuration">7.1. Configuration</a></li>
-<li><a href="#aot:running-jit-mode">7.2. Running an optimized application</a></li>
-<li><a href="#aot:running-optimized-fat-jar">7.3. Running an optimized fat jar</a></li>
-<li><a href="#aot:running-optimized-native-binary">7.4. Building and running an optimized native application</a></li>
-<li><a href="#aot:optimized-docker-image">7.5. Building an optimized Docker image</a></li>
-<li><a href="#aot:optimized-native-docker-image">7.6. Building an optimized native Docker image</a></li>
+<li><a href="#_minimal_build_2">6.1. Minimal Build</a></li>
+<li><a href="#_kotlin_support_2">6.2. Kotlin Support</a></li>
+<li><a href="#native-image">6.3. GraalVM Native Image</a></li>
+<li><a href="#_docker_support">6.4. Docker Support</a></li>
+<li><a href="#_micronaut_runtimes">6.5. Micronaut Runtimes</a></li>
+<li><a href="#_packaging_the_application">6.6. Packaging the application</a></li>
 </ul>
 </li>
-<li><a href="#test-resources">8. Automatic test resources provisioning</a>
+<li><a href="#_micronaut_graalvm_plugin">7. Micronaut GraalVM Plugin</a></li>
+<li><a href="#_micronaut_aot_plugin">8. Micronaut AOT Plugin</a>
 <ul class="sectlevel2">
-<li><a href="#_the_test_resources_plugin">8.1. The test resources plugin</a></li>
-<li><a href="#_configuring_the_test_resources_plugin">8.2. Configuring the test resources plugin</a></li>
-<li><a href="#sec:standalone-test-resources">8.3. Standalone test resources service</a></li>
-<li><a href="#sec:test-resources-lifecycle">8.4. Test resources lifecycle</a></li>
+<li><a href="#_configuration">8.1. Configuration</a></li>
+<li><a href="#aot:running-jit-mode">8.2. Running an optimized application</a></li>
+<li><a href="#aot:running-optimized-fat-jar">8.3. Running an optimized fat jar</a></li>
+<li><a href="#aot:running-optimized-native-binary">8.4. Building and running an optimized native application</a></li>
+<li><a href="#aot:optimized-docker-image">8.5. Building an optimized Docker image</a></li>
+<li><a href="#aot:optimized-native-docker-image">8.6. Building an optimized native Docker image</a></li>
+</ul>
+</li>
+<li><a href="#test-resources">9. Automatic test resources provisioning</a>
+<ul class="sectlevel2">
+<li><a href="#_the_test_resources_plugin">9.1. The test resources plugin</a></li>
+<li><a href="#_configuring_the_test_resources_plugin">9.2. Configuring the test resources plugin</a></li>
+<li><a href="#src:test-resources-native">9.3. Using test resources with native binaries</a></li>
+<li><a href="#sec:standalone-test-resources">9.4. Standalone test resources service</a></li>
+<li><a href="#sec:test-resources-lifecycle">9.5. Test resources lifecycle</a></li>
 <li><a href="#_keeping_test_resources_alive">Keeping test resources alive</a></li>
 <li><a href="#_implementing_your_own_test_resources_resolver">Implementing your own test resources resolver</a></li>
 </ul>
 </li>
-<li><a href="#_micronaut_crac_plugin">9. Micronaut CRaC Plugin</a>
+<li><a href="#_micronaut_crac_plugin">10. Micronaut CRaC Plugin</a>
 <ul class="sectlevel2">
-<li><a href="#_configuration_2">9.1. Configuration</a></li>
+<li><a href="#_configuration_2">10.1. Configuration</a></li>
 </ul>
 </li>
-<li><a href="#_upgrade_notes">10. Upgrade notes</a>
+<li><a href="#_openapi_code_generation">11. OpenAPI code generation</a>
 <ul class="sectlevel2">
-<li><a href="#_upgrading_from_2_x">10.1. Upgrading from 2.x</a></li>
+<li><a href="#_generating_a_client">11.1. Generating a client</a></li>
+<li><a href="#_generating_a_server">11.2. Generating a server</a></li>
+<li><a href="#_advanced_configuration">11.3. Advanced configuration</a></li>
+</ul>
+</li>
+<li><a href="#_upgrade_notes">12. Upgrade notes</a>
+<ul class="sectlevel2">
+<li><a href="#_upgrading_from_2_x">12.1. Upgrading from 2.x</a></li>
 </ul>
 </li>
 </ul>
@@ -125,43 +139,21 @@
 <div class="sectionbody">
 
 <div class="paragraph">
-<p>Version 3.7.11-SNAPSHOT</p>
+<p>Version 4.1.1-SNAPSHOT</p>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_whats_new"><a class="anchor" href="#_whats_new"></a>1. What&#8217;s new</h2>
+<h2 id="_compatibility_notes"><a class="anchor" href="#_compatibility_notes"></a>1. Compatibility notes</h2>
 <div class="sectionbody">
-<div class="admonitionblock note">
-<table>
-<tr>
-<td class="icon">
-<div class="title">Note</div>
-</td>
-<td class="content">
-Documentation for the 2.x branch can be found <a href="https://github.com/micronaut-projects/micronaut-gradle-plugin/tree/2.0.x#readme">here</a>.
-</td>
-</tr>
-</table>
+<div class="paragraph">
+<p>This Gradle plugin collection is designed for Micronaut 4.x and requires Gradle 8+. This version defaults to Micronaut 4.1.0 and is tested with Gradle 8.1.1.</p>
 </div>
 <div class="paragraph">
-<p>The 3.0.0 version of the plugin integrates with the <a href="https://graalvm.github.io/native-build-tools/0.9.20/gradle-plugin.html">official GraalVM plugin</a> which introduces some breaking changes:</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p>the <code>nativeImage</code> task is now replaced with <code>nativeCompile</code></p>
-</li>
-<li>
-<p>native image configuration happens in the <code>graalvmNative</code> DSL block</p>
-</li>
-<li>
-<p>The GraalVM SDK being used depends on how you configure <a href="https://docs.gradle.org/7.5.1/userguide/toolchains.html">toolchains</a></p>
-</li>
-</ul>
+<p>Micronaut 3.x users should use the 3.x branch which documentation can be found <a href="https://github.com/micronaut-projects/micronaut-gradle-plugin/tree/3.7.x#readme">here</a>.</p>
 </div>
 <div class="paragraph">
-<p>Please refer to the <a href="#native-image">native image section</a> for more help: the <a href="#toolchain-behavior">toolchain selection mechanism might be surprising to you</a>.</p>
+<p>Micronaut 2.x users, should use the 2.x branch which documentation can be found <a href="https://github.com/micronaut-projects/micronaut-gradle-plugin/tree/2.0.x#readme">here</a>.</p>
 </div>
 </div>
 </div>
@@ -183,10 +175,13 @@ Documentation for the 2.x branch can be found <a href="https://github.com/micron
 <p>the <a href="https://plugins.gradle.org/plugin/io.micronaut.library"><code>io.micronaut.library</code></a> plugin is aimed at building Micronaut libraries.</p>
 </li>
 <li>
-<p>the <a href="https://plugins.gradle.org/plugin/io.micronaut.graalvm"><code>io.micronaut.graalvm</code></a> plugin integrates with the official <a href="https://graalvm.github.io/native-build-tools/0.9.20/gradle-plugin.html">GraalVM Native Build Tools plugin</a> and configures it for Micronaut applications.</p>
+<p>the <a href="https://plugins.gradle.org/plugin/io.micronaut.graalvm"><code>io.micronaut.graalvm</code></a> plugin integrates with the official <a href="https://graalvm.github.io/native-build-tools/0.9.26/gradle-plugin.html">GraalVM Native Build Tools plugin</a> and configures it for Micronaut applications.</p>
 </li>
 <li>
 <p>the <a href="https://plugins.gradle.org/plugin/io.micronaut.aot"><code>io.micronaut.aot</code></a> plugin integrates with Micronaut AOT to produce optimized binaries.</p>
+</li>
+<li>
+<p>the <a href="https://plugins.gradle.org/plugin/io.micronaut.platform.catalog"><code>io.micronaut.platform.catalog</code></a> plugin imports the Micronaut Platform version catalog so that you can easily add Micronaut dependencies in your build scripts.</p>
 </li>
 </ul>
 </div>
@@ -222,7 +217,7 @@ For example, the <code>minimal</code> plugins can be used to reduce the number o
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><a href="https://plugins.gradle.org/plugin/io.micronaut.graalvm"><code>io.micronaut.graalvm</code></a></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Adds support for building native images</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Adds support for building native executables</p></td>
 <td class="tableblock halign-left valign-top"></td>
 </tr>
 <tr>
@@ -255,6 +250,11 @@ For example, the <code>minimal</code> plugins can be used to reduce the number o
 <td class="tableblock halign-left valign-top"><p class="tableblock">Provides ability to use test resources of other projects of multiproject builds</p></td>
 <td class="tableblock halign-left valign-top"></td>
 </tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="https://plugins.gradle.org/plugin/io.micronaut.openapi"><code>io.micronaut.openapi</code></a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Adds support for generating OpenAPI clients or servers from an OpenAPI definition.</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
 </tbody>
 </table>
 <div class="paragraph">
@@ -263,14 +263,14 @@ For example, the <code>minimal</code> plugins can be used to reduce the number o
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">plugins {
-  id 'io.micronaut.application' version '3.7.11-SNAPSHOT'
+  id 'io.micronaut.application' version '4.1.1-SNAPSHOT'
 }</code></pre>
 </div>
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">plugins {
-  id("io.micronaut.application") version "3.7.11-SNAPSHOT"
+  id("io.micronaut.application") version "4.1.1-SNAPSHOT"
 }</code></pre>
 </div>
 </div>
@@ -280,9 +280,9 @@ For example, the <code>minimal</code> plugins can be used to reduce the number o
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">plugins {
-  id 'io.micronaut.minimal.application' version '3.7.11-SNAPSHOT'
-  id 'io.micronaut.docker' version '3.7.11-SNAPSHOT'
-  id 'io.micronaut.graalvm' version '3.7.11-SNAPSHOT'
+  id 'io.micronaut.minimal.application' version '4.1.1-SNAPSHOT'
+  id 'io.micronaut.docker' version '4.1.1-SNAPSHOT'
+  id 'io.micronaut.graalvm' version '4.1.1-SNAPSHOT'
 }
 apply plugin: com.diffplug.gradle.eclipse.apt.AptEclipsePlugin</code></pre>
 </div>
@@ -290,9 +290,9 @@ apply plugin: com.diffplug.gradle.eclipse.apt.AptEclipsePlugin</code></pre>
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">plugins {
-  id("io.micronaut.application") version "3.7.11-SNAPSHOT"
-  id("io.micronaut.docker") version "3.7.11-SNAPSHOT"
-  id("io.micronaut.graalvm") version "3.7.11-SNAPSHOT"
+  id("io.micronaut.application") version "4.1.1-SNAPSHOT"
+  id("io.micronaut.docker") version "4.1.1-SNAPSHOT"
+  id("io.micronaut.graalvm") version "4.1.1-SNAPSHOT"
 }
 apply(plugin=com.diffplug.gradle.eclipse.apt.AptEclipsePlugin::class.java)</code></pre>
 </div>
@@ -338,20 +338,211 @@ $ curl https://launch.micronaut.io/demo.zip?lang=kotlin \
 </div>
 </div>
 <div class="sect1">
-<h2 id="_micronaut_library_plugin"><a class="anchor" href="#_micronaut_library_plugin"></a>4. Micronaut Library Plugin</h2>
+<h2 id="sec:selecting-micronaut-version"><a class="anchor" href="#sec:selecting-micronaut-version"></a>4. Selecting the Micronaut version</h2>
 <div class="sectionbody">
+<div class="sect2">
+<h3 id="sec:micronaut-platform-catalog-plugin"><a class="anchor" href="#sec:micronaut-platform-catalog-plugin"></a>4.1. The Micronaut Platform Catalog plugin</h3>
+<div class="paragraph">
+<p>We recommend that you apply the <code>io.micronaut.platform.catalog</code> plugin to your <code>settings.gradle(.kts)</code> file.
+This plugin will automatically import the Micronaut version catalog, which provides a number of advantages:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>all supported Micronaut modules are part of the platform catalog, making it easy to add new dependencies on Micronaut modules without having to remember their group, artifact and version numbers</p>
+</li>
+<li>
+<p>all transitive dependencies of Micronaut modules are shipped with a recommended version that you can find in the version catalog</p>
+</li>
+<li>
+<p>you can easily <a href="#sec:overriding-version">override versions</a> of individual Micronaut modules or even transitive dependencies which are managed by the Micronaut platform</p>
+</li>
+</ul>
+</div>
+<div class="admonitionblock important">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Important</div>
+</td>
+<td class="content">
+This is a <strong>settings</strong> plugin, which means that it <strong>must</strong> be applied to your <code>settings.gradle(.kts)</code> file, not <code>build.gradle(.kts)</code>.
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>Add the plugin to your <code>settings.gradle(.kts)</code> file:</p>
+</div>
 <div class="listingblock multi-language-sample">
-<div class="title">Applying the plugin</div>
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">plugins {
-  id 'io.micronaut.library' version '3.7.11-SNAPSHOT'
+  id 'io.micronaut.platform.catalog' version '4.1.1-SNAPSHOT'
 }</code></pre>
 </div>
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">plugins {
-  id("io.micronaut.library") version "3.7.11-SNAPSHOT"
+  id("io.micronaut.platform.catalog") version "4.1.1-SNAPSHOT"
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The catalog is then exposed with the name <code>mn</code> and can be used in your build scripts, for example:</p>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">dependencies {
+  // Use Spring Boot annotations
+  compileOnly mn.micronaut.spring.boot.annotation
+}</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">dependencies {
+  // Use Spring Boot annotations
+  compileOnly(mn.micronaut.spring.boot.annotation)
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_selecting_the_micronaut_platform_version"><a class="anchor" href="#_selecting_the_micronaut_platform_version"></a>4.2. Selecting the Micronaut Platform version</h3>
+<div class="paragraph">
+<p>The minimum requirement is to set the Micronaut version to use.
+Since Micronaut 4, this is the version of the Micronaut Platform (in previous releases, releases were bound to the version of Micronaut Core).</p>
+</div>
+<div class="paragraph">
+<p>The easiest is to set <code>micronautVersion</code> in <code>gradle.properties</code>.
+If you use a <a href="https://docs.gradle.org/current/userguide/platforms.html#sub:central-declaration-of-dependencies">version catalog</a>, you can also set the version of Micronaut directly in your <code>libs.versions.toml</code> file:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="toml" class="language-toml hljs">[versions]
+micronaut="4.0.0"</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This version will be shared by all Micronaut modules of your project.
+Alternatively, you can set the version in your <code>build.gradle(.kts)</code>:</p>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="title">Selecting the Micronaut version</div>
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">micronaut {
+    version "4.1.0"
+}</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">micronaut {
+    version.set("4.1.0")
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="sec:overriding-version"><a class="anchor" href="#sec:overriding-version"></a>4.3. Overriding Micronaut module versions</h3>
+<div class="paragraph">
+<p>Micronaut offers multiple options to override the default versions of its modules.
+For example, you may want to try a <code>SNAPSHOT</code> version of a module, or a release version which is not yet included in a new platform release.
+The easiest to do this is to make use of the Micronaut Platform version catalog.</p>
+</div>
+<div class="sect3">
+<h4 id="_using_the_micronaut_platform_catalog_plugin"><a class="anchor" href="#_using_the_micronaut_platform_catalog_plugin"></a>4.3.1. Using the Micronaut Platform Catalog plugin</h4>
+<div class="paragraph">
+<p>If you use the <a href="#sec:micronaut-platform-catalog-plugin">Micronaut Platform Catalog plugin</a>, then overriding versions of individual modules can easily be done by creating a <code>gradle/mn-override.versions.toml</code> file:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="toml" class="language-toml hljs">[versions]
+micronaut-core = "4.5.0" # override version of Micronaut Core
+ehcache = "3.8.2" # override version of ehcache</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Note that overriding will only work if you use the dependency notations from the platform catalog (e.g <code>implementation(mn.ehcache)</code>).</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_using_the_dsl"><a class="anchor" href="#_using_the_dsl"></a>4.3.2. Using the DSL</h4>
+<div class="paragraph">
+<p>Alternatively, in each project which applies the Micronaut plugins, you can override versions of <em>specific modules</em> via the DSL:</p>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="title">Overriding Micronaut module versions</div>
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">micronaut {
+    coreVersion.set("4.5.0") // override the version of Micronaut Core
+}</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">micronaut {
+    coreVersion.set("4.5.0") // override the version of Micronaut Core
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>There is only a limited list of module versions which can be overridden via the DSL:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>coreVersion</code> for Micronaut Core</p>
+</li>
+<li>
+<p><code>awsVersion</code> for Micronaut AWS</p>
+</li>
+<li>
+<p><code>azureVersion</code> for Micronaut Azure</p>
+</li>
+<li>
+<p><code>dataVersion</code> for Micronaut Data</p>
+</li>
+<li>
+<p><code>gcpVersion</code> for Micronaut Google Cloud</p>
+</li>
+<li>
+<p><code>jaxrsVersion</code> for Micronaut JAX-RS</p>
+</li>
+<li>
+<p><code>oraclecloudVersion</code> for Micronaut Oracle Cloud</p>
+</li>
+<li>
+<p><code>securityVersion</code> for Micronaut Security</p>
+</li>
+<li>
+<p><code>servletVersion</code> for Micronaut Servlet</p>
+</li>
+<li>
+<p><code>validationVersion</code> for Micronaut Validation</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_micronaut_library_plugin"><a class="anchor" href="#_micronaut_library_plugin"></a>5. Micronaut Library Plugin</h2>
+<div class="sectionbody">
+<div class="listingblock multi-language-sample">
+<div class="title">Applying the plugin</div>
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">plugins {
+  id 'io.micronaut.library' version '4.1.1-SNAPSHOT'
+}</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">plugins {
+  id("io.micronaut.library") version "4.1.1-SNAPSHOT"
 }</code></pre>
 </div>
 </div>
@@ -361,7 +552,7 @@ $ curl https://launch.micronaut.io/demo.zip?lang=kotlin \
 <div class="ulist">
 <ul>
 <li>
-<p>Applies the <a href="https://search.maven.org/artifact/io.micronaut/micronaut-bom">Micronaut Bill of Materials (BOM)</a></p>
+<p>Applies the <a href="https://search.maven.org/artifact/io.micronaut.platform/micronaut-platform">Micronaut Bill of Materials (BOM)</a></p>
 </li>
 <li>
 <p>Applies the <code>java-library</code> plugin</p>
@@ -375,31 +566,17 @@ $ curl https://launch.micronaut.io/demo.zip?lang=kotlin \
 <p>The <code>micronaut</code> DSL can be used to configure how this behaves.</p>
 </div>
 <div class="paragraph">
-<p>The minimum requirement is to set the Micronaut version to use. This can be done by setting <code>micronautVersion</code> in <code>gradle.properties</code> or as follows in <code>build.gradle(.kts)</code>:</p>
-</div>
-<div class="listingblock multi-language-sample">
-<div class="title">Selecting the Micronaut version</div>
-<div class="content">
-<pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">micronaut {
-    version "3.5.1"
-}</code></pre>
-</div>
-</div>
-<div class="listingblock multi-language-sample">
-<div class="content">
-<pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">micronaut {
-    version.set("3.5.1")
-}</code></pre>
-</div>
-</div>
-<div class="paragraph">
 <p>Complete example with the default settings:</p>
 </div>
 <div class="listingblock multi-language-sample">
 <div class="title">Micronaut configuration options</div>
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">micronaut {
-    version "3.5.1"
+    version "4.1.0"
+    // If set to false, then the `io.micronaut.platform:micronaut-platform` BOM
+    // will not be automatically applied, and you will have to add it yourself
+    // to your dependencies, or specify versions of Micronaut modules explicitly
+    importMicronautPlatform = true
     processing {
         // Sets whether incremental annotation processing is enabled
         incremental true
@@ -427,8 +604,12 @@ $ curl https://launch.micronaut.io/demo.zip?lang=kotlin \
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">micronaut {
-    version.set("3.5.1")
-    processing {
+    version.set("4.1.0")
+    // If set to false, then the `io.micronaut.platform:micronaut-platform` BOM
+    // will not be automatically applied, and you will have to add it yourself
+    // to your dependencies, or specify versions of Micronaut modules explicitly
+   importMicronautPlatform.set(true)
+   processing {
         // Sets whether incremental annotation processing is enabled
         incremental.set(true)
         // Sets the module name.
@@ -465,7 +646,7 @@ The Micronaut Library plugin also supports Groovy and Kotlin sources.
 </table>
 </div>
 <div class="sect2">
-<h3 id="_kotlin_support"><a class="anchor" href="#_kotlin_support"></a>4.1. Kotlin Support</h3>
+<h3 id="_kotlin_support"><a class="anchor" href="#_kotlin_support"></a>5.1. Kotlin Support</h3>
 <div class="paragraph">
 <p>For Kotlin, the Kotlin <code>jvm</code> and <code>kapt</code> plugins must be configured:</p>
 </div>
@@ -473,24 +654,24 @@ The Micronaut Library plugin also supports Groovy and Kotlin sources.
 <div class="title">Configuring Kotlin support</div>
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">plugins {
-    id "org.jetbrains.kotlin.jvm" version "1.6.21"
-    id "org.jetbrains.kotlin.kapt" version "1.6.21"
-    id "io.micronaut.library" version "3.7.11-SNAPSHOT"
+    id "org.jetbrains.kotlin.jvm" version "1.8.22"
+    id "org.jetbrains.kotlin.kapt" version "1.8.22"
+    id "io.micronaut.library" version "4.1.1-SNAPSHOT"
 }</code></pre>
 </div>
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">plugins {
-    id("org.jetbrains.kotlin.jvm") version "1.6.21"
-    id("org.jetbrains.kotlin.kapt") version "1.6.21"
-    id("io.micronaut.library") version "3.7.11-SNAPSHOT"
+    id("org.jetbrains.kotlin.jvm") version "1.8.22"
+    id("org.jetbrains.kotlin.kapt") version "1.8.22"
+    id("io.micronaut.library") version "4.1.1-SNAPSHOT"
 }</code></pre>
 </div>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_minimal_build"><a class="anchor" href="#_minimal_build"></a>4.2. Minimal Build</h3>
+<h3 id="_minimal_build"><a class="anchor" href="#_minimal_build"></a>5.2. Minimal Build</h3>
 <div class="paragraph">
 <p>With the <code>io.micronaut.library</code> plugin applied a minimal build to get started writing a library for Micronaut that written in Java and is tested with JUnit 5 looks like:</p>
 </div>
@@ -498,7 +679,7 @@ The Micronaut Library plugin also supports Groovy and Kotlin sources.
 <div class="title">A minimal build file</div>
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">plugins {
-    id 'io.micronaut.library' version '3.7.11-SNAPSHOT'
+    id 'io.micronaut.library' version '4.1.1-SNAPSHOT'
 }
 
 version "0.1"
@@ -509,7 +690,7 @@ repositories {
 }
 
 micronaut {
-    version = "3.5.1"
+    version = "4.1.0"
 }
 
 dependencies {
@@ -521,7 +702,7 @@ dependencies {
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">plugins {
-    id("io.micronaut.library") version "3.7.11-SNAPSHOT"
+    id("io.micronaut.library") version "4.1.1-SNAPSHOT"
 }
 
 version = "0.1"
@@ -532,7 +713,7 @@ repositories {
 }
 
 micronaut {
-    version.set("3.5.1")
+    version.set("4.1.0")
 }
 
 dependencies {
@@ -545,20 +726,20 @@ dependencies {
 </div>
 </div>
 <div class="sect1">
-<h2 id="_micronaut_application_plugin"><a class="anchor" href="#_micronaut_application_plugin"></a>5. Micronaut Application Plugin</h2>
+<h2 id="_micronaut_application_plugin"><a class="anchor" href="#_micronaut_application_plugin"></a>6. Micronaut Application Plugin</h2>
 <div class="sectionbody">
 <div class="listingblock multi-language-sample">
 <div class="title">Applying the Micronaut Application plugin</div>
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">plugins {
-  id "io.micronaut.application" version "3.7.11-SNAPSHOT"
+  id "io.micronaut.application" version "4.1.1-SNAPSHOT"
 }</code></pre>
 </div>
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">plugins {
-  id("io.micronaut.application") version "3.7.11-SNAPSHOT"
+  id("io.micronaut.application") version "4.1.1-SNAPSHOT"
 }</code></pre>
 </div>
 </div>
@@ -593,7 +774,7 @@ dependencies {
 <p><code>dockerBuild</code> - Builds a Docker Image using the <a href="https://github.com/bmuschko/gradle-docker-plugin">Docker Gradle plugin</a></p>
 </li>
 <li>
-<p><code>dockerfileNative</code> - Builds a Docker File for for GraalVM Native Image</p>
+<p><code>dockerfileNative</code> - Builds a Docker File for GraalVM Native Image</p>
 </li>
 <li>
 <p><code>dockerBuildNative</code> - Builds a Native Docker Image using GraalVM Native Image</p>
@@ -605,10 +786,7 @@ dependencies {
 <p><code>dockerFileCrac</code> - Builds a Docker File for a CRaC checkpointed image.</p>
 </li>
 <li>
-<p><code>nativeCompile</code> - Builds a GraalVM Native Image</p>
-</li>
-<li>
-<p><code>testNativeImage</code> (since 1.1.0) - Builds a GraalVM Native Image, starts the native server and runs tests against the server</p>
+<p><code>nativeCompile</code> - Builds a GraalVM Native Executable</p>
 </li>
 <li>
 <p><code>dockerPush</code> - Pushes a Docker Image to configured container registry</p>
@@ -630,14 +808,14 @@ dependencies {
 </div>
 </div>
 <div class="sect2">
-<h3 id="_minimal_build_2"><a class="anchor" href="#_minimal_build_2"></a>5.1. Minimal Build</h3>
+<h3 id="_minimal_build_2"><a class="anchor" href="#_minimal_build_2"></a>6.1. Minimal Build</h3>
 <div class="paragraph">
 <p>With the <code>io.micronaut.application</code> plugin applied a minimal build to get started with a Micronaut server application that is written in Java and tested with JUnit 5 looks like:</p>
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">plugins {
-    id 'io.micronaut.application' version '3.7.11-SNAPSHOT'
+    id 'io.micronaut.application' version '4.1.1-SNAPSHOT'
 }
 
 version "0.1"
@@ -648,7 +826,7 @@ repositories {
 }
 
 micronaut {
-    version = "3.5.1"
+    version = "4.1.0"
 }
 
 dependencies {
@@ -666,7 +844,7 @@ application {
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">plugins {
-    id("io.micronaut.application") version "3.7.11-SNAPSHOT"
+    id("io.micronaut.application") version "4.1.1-SNAPSHOT"
 }
 
 version = "0.1"
@@ -677,7 +855,7 @@ repositories {
 }
 
 micronaut {
-    version.set("3.5.1")
+    version.set("4.1.0")
 }
 
 dependencies {
@@ -694,17 +872,17 @@ application {
 </div>
 </div>
 <div class="sect2">
-<h3 id="_kotlin_support_2"><a class="anchor" href="#_kotlin_support_2"></a>5.2. Kotlin Support</h3>
+<h3 id="_kotlin_support_2"><a class="anchor" href="#_kotlin_support_2"></a>6.2. Kotlin Support</h3>
 <div class="paragraph">
 <p>The most simple Kotlin build using a <code>build.gradle(.kts)</code> file looks like:</p>
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">plugins {
-    id "org.jetbrains.kotlin.jvm" version "1.6.21"
-    id "org.jetbrains.kotlin.kapt" version "1.6.21"
-    id "org.jetbrains.kotlin.plugin.allopen" version "1.6.21"
-    id "io.micronaut.application" version "3.7.11-SNAPSHOT"
+    id "org.jetbrains.kotlin.jvm" version "1.8.22"
+    id "org.jetbrains.kotlin.kapt" version "1.8.22"
+    id "org.jetbrains.kotlin.plugin.allopen" version "1.8.22"
+    id "io.micronaut.application" version "4.1.1-SNAPSHOT"
 }
 
 version "0.1"
@@ -715,13 +893,13 @@ repositories {
 }
 
 micronaut {
-    version = "3.5.1"
+    version = "4.1.0"
 }
 
 dependencies {
     implementation "io.micronaut:micronaut-http-server-netty"
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.6.21"
-    implementation "org.jetbrains.kotlin:kotlin-reflect:1.6.21")
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.22"
+    implementation "org.jetbrains.kotlin:kotlin-reflect:1.8.22")
     runtimeOnly "ch.qos.logback:logback-classic")
     testImplementation("io.micronaut.test:micronaut-test-junit5")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
@@ -735,10 +913,10 @@ application {
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">plugins {
-    id("org.jetbrains.kotlin.jvm") version "1.6.21"
-    id("org.jetbrains.kotlin.kapt") version "1.6.21"
-    id("org.jetbrains.kotlin.plugin.allopen") version "1.6.21"
-    id("io.micronaut.application") version "3.7.11-SNAPSHOT"
+    id("org.jetbrains.kotlin.jvm") version "1.8.22"
+    id("org.jetbrains.kotlin.kapt") version "1.8.22"
+    id("org.jetbrains.kotlin.plugin.allopen") version "1.8.22"
+    id("io.micronaut.application") version "4.1.1-SNAPSHOT"
 }
 
 version = "0.1"
@@ -749,13 +927,13 @@ repositories {
 }
 
 micronaut {
-    version.set("3.5.1")
+    version.set("4.1.0")
 }
 
 dependencies {
     implementation("io.micronaut:micronaut-http-server-netty")
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.6.21")
-    implementation("org.jetbrains.kotlin:kotlin-reflect:1.6.21")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.22")
+    implementation("org.jetbrains.kotlin:kotlin-reflect:1.8.22")
     runtimeOnly("ch.qos.logback:logback-classic")
     testImplementation("io.micronaut.test:micronaut-test-junit5")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
@@ -768,13 +946,13 @@ application {
 </div>
 </div>
 <div class="sect2">
-<h3 id="native-image"><a class="anchor" href="#native-image"></a>5.3. GraalVM Native Image</h3>
+<h3 id="native-image"><a class="anchor" href="#native-image"></a>6.3. GraalVM Native Image</h3>
 <div class="paragraph">
-<p>Since version 3.0.0, the Micronaut plugins rely on the <a href="https://graalvm.github.io/native-build-tools/0.9.20/gradle-plugin.html">official GraalVM plugin</a> to build native images.</p>
+<p>Since version 3.0.0, the Micronaut plugins rely on the <a href="https://graalvm.github.io/native-build-tools/0.9.26/gradle-plugin.html">official GraalVM plugin</a> to build native executables.</p>
 </div>
 <div class="paragraph">
-<p>Those plugins make use of the <a href="https://docs.gradle.org/7.5.1/userguide/toolchains.html">Gradle toolchains</a> support, which means that the SDK which is used to build the native is decorrelated from the JVM which is used to launch Gradle itself.
-Said differently, you can run Gradle with OpenJDK, while still building native images using the GraalVM SDK.</p>
+<p>Those plugins make use of <a href="https://docs.gradle.org/8.1.1/userguide/toolchains.html">Gradle toolchains</a> support, which means that the SDK which is used to build the native is decorrelated from the JVM which is used to launch Gradle itself.
+Said differently, you can run Gradle with OpenJDK, while still building native executables using the GraalVM SDK.</p>
 </div>
 <div class="paragraph">
 <p>The Micronaut Gradle plugin will automatically configure the toolchains support for you, but there are a few things that you should be aware of:</p>
@@ -782,10 +960,10 @@ Said differently, you can run Gradle with OpenJDK, while still building native i
 <div class="ulist">
 <ul>
 <li>
-<p>running Gradle with a GraalVM SDK doesn&#8217;t necessarily imply that Gradle will use the same SDK to build native images</p>
+<p>running Gradle with a GraalVM SDK doesn&#8217;t necessarily imply that Gradle will use the same SDK to build native executables</p>
 </li>
 <li>
-<p>Gradle will try to locate a <em>compatible GraalVM toolchain</em> to build images. You can tweak what GraalVM version to use by following the <a href="https://graalvm.github.io/native-build-tools/0.9.20/gradle-plugin.html#_selecting_the_graalvm_toolchain">official documentation</a>.</p>
+<p>Gradle will try to locate a <em>compatible GraalVM toolchain</em> to build executables. You can tweak what GraalVM version to use by following the <a href="https://graalvm.github.io/native-build-tools/0.9.26/gradle-plugin.html#_selecting_the_graalvm_toolchain">official documentation</a>.</p>
 </li>
 </ul>
 </div>
@@ -837,7 +1015,7 @@ org.gradle.java.installations.fromEnv=JAVA_HOME</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>You can build a native image by running the following task:</p>
+<p>You can build a native executable by running the following task:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -853,10 +1031,10 @@ org.gradle.java.installations.fromEnv=JAVA_HOME</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>You can tweak the native image options by configuring the <code>graalvmNative</code> extension as explained in the <a href="https://graalvm.github.io/native-build-tools/0.9.20/gradle-plugin.html">plugin documentation</a>.</p>
+<p>You can tweak the native executable options by configuring the <code>graalvmNative</code> extension as explained in the <a href="https://graalvm.github.io/native-build-tools/0.9.26/gradle-plugin.html">plugin documentation</a>.</p>
 </div>
 <div class="paragraph">
-<p>For example you can add options to the main image by doing:</p>
+<p>For example, you can add options to the main executable by doing:</p>
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
@@ -895,9 +1073,9 @@ If you update an existing Micronaut application that contains the file <code>src
 </table>
 </div>
 <div class="sect3">
-<h4 id="_build_mostly_static_native_images"><a class="anchor" href="#_build_mostly_static_native_images"></a>5.3.1. Build "mostly static" native images</h4>
+<h4 id="_build_mostly_static_native_executables"><a class="anchor" href="#_build_mostly_static_native_executables"></a>6.3.1. Build "mostly static" native executables</h4>
 <div class="paragraph">
-<p>Since GraalVM 21.0 it is possible to create "mostly static" native images that can run in a <em>distroless</em> docker image. You only need to configure the appropriate <em>baseImage</em> and the plugin will automatically configure GraalVM:</p>
+<p>Since GraalVM 21.0, it is possible to create "mostly static" native images that can run in a <em>distroless</em> docker image. You only need to configure the appropriate <em>baseImage</em> and the plugin will automatically configure GraalVM:</p>
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
@@ -935,65 +1113,11 @@ If you update an existing Micronaut application that contains the file <code>src
 </div>
 </div>
 <div class="sect2">
-<h3 id="_testing_native_images"><a class="anchor" href="#_testing_native_images"></a>5.4. Testing Native Images</h3>
-<div class="admonitionblock note">
-<table>
-<tr>
-<td class="icon">
-<div class="title">Note</div>
-</td>
-<td class="content">
-This feature is independent from the official GraalVM testing support, which actually runs a test suite <em>within a native image</em>. Micronaut native test support launches a JVM test suite <em>against a native image server</em>.
-</td>
-</tr>
-</table>
-</div>
-<div class="paragraph">
-<p>Since 1.1.x of the plugin, you can also use the <code>testNativeImage</code> task to start the Micronaut native server and run tests against it.</p>
-</div>
-<div class="admonitionblock important">
-<table>
-<tr>
-<td class="icon">
-<div class="title">Important</div>
-</td>
-<td class="content">
-This feature only works in combination with <code>micronaut-test-core</code> versions 2.2.1 or above. Make sure your test classpath includes at least this version of Micronaut Test.
-</td>
-</tr>
-</table>
-</div>
-<div class="paragraph">
-<p>Using this task will replace the regular embedded server used for tests with the natively built executable:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="highlightjs highlight"><code data-lang="bash" class="language-bash hljs">./gradlew testNativeImage</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>It is important to note that there are some limitations to this approach in that the native server is no longer "embedded" in the test. This has the following implications:</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p>It is not possible to mock components using <code>@MockBean</code> or replace beans using <code>@Replaces</code> since the native server starts in a separate process and beans injected into or defined by the test are no longer shared with the application under test since it is running in a separate process.</p>
-</li>
-<li>
-<p>The native server starts with the <code>test</code> environment active, however the classpath of the application is the runtime classpath not the test classpath. This has the implication that certain testing features (like for example Testcontainers' usage of JDBC URLs to start containers) won&#8217;t work and you have to explicitly start any test containers in the test itself.</p>
-</li>
-</ul>
-</div>
-<div class="paragraph">
-<p>If you wish to split your native image tests from your regular tests you can <a href="https://docs.gradle.org/7.5.1/userguide/java_testing.html#sec:configuring_java_integration_tests">create an additional source set for integration tests</a> and the plugin will add an additional task suffixed with <code>*NativeImage</code> to run the native image tests, for example: <code>gradle integrationTestNativeImage</code>.</p>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_docker_support"><a class="anchor" href="#_docker_support"></a>5.5. Docker Support</h3>
+<h3 id="_docker_support"><a class="anchor" href="#_docker_support"></a>6.4. Docker Support</h3>
 <div class="sect3">
-<h4 id="_building_docker_images"><a class="anchor" href="#_building_docker_images"></a>5.5.1. Building docker images</h4>
+<h4 id="_building_docker_images"><a class="anchor" href="#_building_docker_images"></a>6.4.1. Building docker images</h4>
 <div class="paragraph">
-<p>The Micronaut plugin includes integration with the <a href="https://bmuschko.github.io/gradle-docker-plugin">Gradle Docker plugin</a> allowing you to easily build applications and native images using Docker containers.</p>
+<p>The Micronaut plugin includes integration with the <a href="https://bmuschko.github.io/gradle-docker-plugin">Gradle Docker plugin</a> allowing you to easily build applications and native executables using Docker containers.</p>
 </div>
 <div class="paragraph">
 <p>Applications are built as layered JARs using the <code>buildLayers</code> task ensuring optimized Docker images for Java applications.</p>
@@ -1007,19 +1131,19 @@ This feature only works in combination with <code>micronaut-test-core</code> ver
 </div>
 </div>
 <div class="paragraph">
-<p>The default uses an <code>openjdk:17-alpine</code> base image, however you can easily switch the base image to use by using the <code>baseImage</code> property of the <code>dockerfile</code> task:</p>
+<p>The default uses an <code>openjdk:17-alpine</code> base image, however you can easily switch the base image to use with the <code>baseImage</code> property of the <code>dockerfile</code> task:</p>
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">tasks.named("dockerfile") {
-  baseImage = "oracle/graalvm-ce:22.3.2-java11"
+  baseImage = "oracle/graalvm-ce:22.3.2-java17"
 }</code></pre>
 </div>
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">tasks.named&lt;MicronautDockerfile&gt;("dockerfile") {
-  baseImage.set("oracle/graalvm-ce:22.3.2-java11")
+  baseImage.set("oracle/graalvm-ce:22.3.2-java17")
 }</code></pre>
 </div>
 </div>
@@ -1027,7 +1151,7 @@ This feature only works in combination with <code>micronaut-test-core</code> ver
 <p>The above examples switches to use GraalVM CE 22.3.2 as a base image.</p>
 </div>
 <div class="paragraph">
-<p>To build the application into a Native Image you can run:</p>
+<p>To build the application into a Native Executable you can run:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -1035,7 +1159,7 @@ This feature only works in combination with <code>micronaut-test-core</code> ver
 </div>
 </div>
 <div class="paragraph">
-<p>Note that for this to work you must build the application with the same GraalVM SDK as used to build the image.</p>
+<p>Note that for this to work you must build the application with the same GraalVM SDK as used to build the executable.</p>
 </div>
 <div class="paragraph">
 <p>To build a docker image containing a CRaC enabled JDK and a pre-warmed, checkpointed application, you can run:</p>
@@ -1046,7 +1170,7 @@ This feature only works in combination with <code>micronaut-test-core</code> ver
 </div>
 </div>
 <div class="paragraph">
-<p>To push the container to the currently configured container registry you can use either <code>dockerPush</code>, <code>dockerPushNative</code> for the native image,  or <code>dockerPushCrac</code> for CRaC image:</p>
+<p>To push the container to the currently configured container registry you can use either <code>dockerPush</code>, <code>dockerPushNative</code> for the native executable,  or <code>dockerPushCrac</code> for CRaC image:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -1094,12 +1218,12 @@ tasks.named&lt;DockerBuildImage&gt;("dockerBuildCrac") {
 </div>
 </div>
 <div class="sect3">
-<h4 id="_customized_docker_files"><a class="anchor" href="#_customized_docker_files"></a>5.5.2. Customized docker files</h4>
+<h4 id="_customized_docker_files"><a class="anchor" href="#_customized_docker_files"></a>6.4.2. Customized docker files</h4>
 <div class="paragraph">
 <p>If you wish to customize the docker builds that are used, the easiest way is to run <code>./gradlew dockerfile</code> (or <code>dockerfileNative</code> for the native version) and copy the generated <code>Dockerfile</code> from <code>build/docker</code> to your root directory and modify as required.</p>
 </div>
 <div class="paragraph">
-<p>If you wish to customize the JVM arguments or native image arguments then it is possible to do so with the <code>args</code> method of the <code>dockerfile</code> and <code>dockerfileNative</code> tasks:</p>
+<p>To customize the JVM arguments or native executable arguments, use the <code>args</code> method of the <code>dockerfile</code> and <code>dockerfileNative</code> tasks:</p>
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
@@ -1122,11 +1246,11 @@ tasks.named&lt;io.micronaut.gradle.docker.NativeImageDockerfile&gt;("dockerfileN
 </div>
 </div>
 <div class="paragraph">
-<p>The above configuration uses a max heap setting of <code>128m</code> for Java and <code>64m</code> for native image for the application.</p>
+<p>The above configuration uses a max heap setting of <code>128m</code> for Java and <code>64m</code> for native executable for the application.</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_adding_additional_instructions"><a class="anchor" href="#_adding_additional_instructions"></a>5.5.3. Adding additional instructions</h4>
+<h4 id="_adding_additional_instructions"><a class="anchor" href="#_adding_additional_instructions"></a>6.4.3. Adding additional instructions</h4>
 <div class="paragraph">
 <p>To add additional docker instructions to the generated Dockerfile, such as adding a HEALTHCHECK, you can do the following. The additional instructions will be added at the end of the <code>Dockerfile</code> just before the <code>ENTRYPOINT</code>.</p>
 </div>
@@ -1159,7 +1283,7 @@ tasks.named&lt;io.micronaut.gradle.docker.NativeImageDockerfile&gt;("dockerfileN
 </div>
 </div>
 <div class="sect3">
-<h4 id="_tweaking_the_generated_docker_files"><a class="anchor" href="#_tweaking_the_generated_docker_files"></a>5.5.4. Tweaking the generated docker files</h4>
+<h4 id="_tweaking_the_generated_docker_files"><a class="anchor" href="#_tweaking_the_generated_docker_files"></a>6.4.4. Tweaking the generated docker files</h4>
 <div class="paragraph">
 <p>In case adding instructions doesn&#8217;t generate the expected output, for example because of ordering issues, or because of multi-level docker files, an API will let you modify the generated files.</p>
 </div>
@@ -1206,7 +1330,7 @@ tasks.named&lt;io.micronaut.gradle.docker.NativeImageDockerfile&gt;("dockerfileN
 </div>
 </div>
 <div class="sect3">
-<h4 id="_duplicates_on_classpath"><a class="anchor" href="#_duplicates_on_classpath"></a>5.5.5. Duplicates on classpath</h4>
+<h4 id="_duplicates_on_classpath"><a class="anchor" href="#_duplicates_on_classpath"></a>6.4.5. Duplicates on classpath</h4>
 <div class="paragraph">
 <p>In some projects, it may happen that different transitive dependencies have the same file name.
 In this case, the task which builds the layers will fail with a duplicate error.
@@ -1229,14 +1353,14 @@ You can workaround this issue by configuring the duplicates strategy on the task
 </div>
 </div>
 <div class="sect2">
-<h3 id="_micronaut_runtimes"><a class="anchor" href="#_micronaut_runtimes"></a>5.6. Micronaut Runtimes</h3>
+<h3 id="_micronaut_runtimes"><a class="anchor" href="#_micronaut_runtimes"></a>6.5. Micronaut Runtimes</h3>
 <div class="paragraph">
 <p>A higher level concept of "runtimes" is included in the Micronaut Gradle plugin which essentially allows the plugin to decide which server runtime to include in the dependencies of the application when building the application. For example consider this minimal build:</p>
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">plugins {
-     id 'io.micronaut.application' version '3.7.11-SNAPSHOT'
+     id 'io.micronaut.application' version '4.1.1-SNAPSHOT'
 }
 version "0.1"
 group "com.example"
@@ -1246,7 +1370,7 @@ repositories {
 }
 
 micronaut {
-    version = "3.5.1"
+    version = "4.1.0"
     runtime "netty"
 }
 
@@ -1262,7 +1386,7 @@ application {
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">plugins {
-     id("io.micronaut.application") version "3.7.11-SNAPSHOT"
+     id("io.micronaut.application") version "4.1.1-SNAPSHOT"
 }
 version = "0.1"
 group = "com.example"
@@ -1272,7 +1396,7 @@ repositories {
 }
 
 micronaut {
-    version.set("3.5.1")
+    version.set("4.1.0")
     runtime.set("netty")
 }
 
@@ -1334,14 +1458,16 @@ application {
 <p>The advantage of allowing your dependencies to be dictated by the runtime is that you can potentially take the same application and deploy it to any of the above runtimes without changes.</p>
 </div>
 <div class="sect3">
-<h4 id="_deploying_to_aws_lambda_as_graalvm_native_image"><a class="anchor" href="#_deploying_to_aws_lambda_as_graalvm_native_image"></a>5.6.1. Deploying to AWS Lambda as GraalVM native image</h4>
+<h4 id="_deploying_to_aws_lambda_as_graalvm_native_executable"><a class="anchor" href="#_deploying_to_aws_lambda_as_graalvm_native_executable"></a>6.5.1. Deploying to AWS Lambda as GraalVM native executable</h4>
 <div class="paragraph">
-<p>If you are interested in deploying your Micronaut application to AWS Lambda using GraalVM you only need to set the runtime to <code>lambda</code> and execute <code>./gradlew buildNativeLambda</code>.
-This task will generate a GraalVM native image inside a Docker container and then it will create the file <code>build/libs/your-app.zip</code> file ready to be deployed to AWS Lambda using a custom runtime. See more information in <a href="https://micronaut-projects.github.io/micronaut-aws/latest/guide/index.html#customRuntimes">Micronaut AWS documentation</a>.</p>
+<p>If you are interested in deploying your Micronaut application to AWS Lambda using GraalVM, you only need to set the runtime to <code>lambda</code> and execute <code>./gradlew buildNativeLambda</code>.
+This task will generate a GraalVM native executable inside a Docker container, and create the file <code>build/libs/your-app.zip</code> file ready to be deployed to AWS Lambda using a custom runtime. See more information in <a href="https://micronaut-projects.github.io/micronaut-aws/latest/guide/index.html#customRuntimes">Micronaut AWS documentation</a>.</p>
 </div>
+<div class="sect4">
+<h5 id="_architecture_considerations"><a class="anchor" href="#_architecture_considerations"></a>Architecture considerations</h5>
 <div class="paragraph">
 <p>The plugin will detect the host operating system architecture (based on the <code>os.arch</code> Java system property) and will install the corresponding GraalVM  binary distribution inside the Docker image.
-This means that when running packaging from an X86_64 (Intel/AMD) machine, the produced native image will be an <code>amd64</code> binary, whilst on an ARM host (such as the new Mac M1) it will be an <code>aarch64</code> binary.</p>
+This means that when running packaging from an X86_64 (Intel/AMD) machine, the produced native executable will be an <code>amd64</code> binary, whilst on an ARM host (such as the new Mac M1) it will be an <code>aarch64</code> binary.</p>
 </div>
 <div class="paragraph">
 <p>To override this automatic selection, you can configure the <code>graalArch</code> property in a <code>dockerfileNative</code> configuration block in your build:</p>
@@ -1349,20 +1475,40 @@ This means that when running packaging from an X86_64 (Intel/AMD) machine, the p
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">dockerfileNative {
-    graalArch.set("amd64")
+    graalArch.set("x64")
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The compiled native binary will ultimately be copied into an <code>alpine-glibc</code> base image for X86_64, and <code>cgr.dev/chainguard/wolfi-base</code> for ARM.
+These base images can be overridden via configuration see <a href="#_base_image_and_pull_limits">Base image and pull limits</a> and <a href="#_build_mostly_static_native_executables">Build "mostly static" native executables</a>.</p>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_base_image_and_pull_limits"><a class="anchor" href="#_base_image_and_pull_limits"></a>Base image and pull limits</h5>
+<div class="paragraph">
+<p>By default, the plugin will use amazonlinux pulled from Docker Hub as a base image for GraalVM native AWS Lambda executables.
+If you wish to switch to using a different base image (for example to use your own Docker repository or to use Amazon&#8217;s public repository), you can configure the <code>baseImage</code> property in a <code>dockerfileNative</code> configuration block in your build:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">dockerfileNative {
+    // Use the image from the Amazon ECR Public Gallery
+    baseImage.set("public.ecr.aws/amazonlinux/amazonlinux:2")
 }</code></pre>
 </div>
 </div>
 </div>
 </div>
+</div>
 <div class="sect2">
-<h3 id="_packaging_the_application"><a class="anchor" href="#_packaging_the_application"></a>5.7. Packaging the application</h3>
+<h3 id="_packaging_the_application"><a class="anchor" href="#_packaging_the_application"></a>6.6. Packaging the application</h3>
 <div class="paragraph">
 <p>By default the plugin doesn&#8217;t create a runnable fatjar when running <code>./gradlew assemble</code>.
 There are a couple of options:</p>
 </div>
 <div class="sect3">
-<h4 id="_layered_application"><a class="anchor" href="#_layered_application"></a>5.7.1. Layered application</h4>
+<h4 id="_layered_application"><a class="anchor" href="#_layered_application"></a>6.6.1. Layered application</h4>
 <div class="paragraph">
 <p>The plugin creates a "layered" application in <code>build/docker/main/layers</code> and from that directory you can run <code>java -jar myapp.jar</code>.
 It works because that directory contains a <code>lib</code> directory with all the libraries and a <code>resources</code> directory with the configuration.
@@ -1370,7 +1516,7 @@ Keep in mind that copying the only <code>.jar</code> file to another directory w
 </div>
 </div>
 <div class="sect3">
-<h4 id="_add_shadow_plugin"><a class="anchor" href="#_add_shadow_plugin"></a>5.7.2. Add Shadow plugin</h4>
+<h4 id="_add_shadow_plugin"><a class="anchor" href="#_add_shadow_plugin"></a>6.6.2. Add Shadow plugin</h4>
 <div class="paragraph">
 <p>You can add Gradle Shadow plugin so when running <code>./gradlew assemble</code> a runnable fatjar is created in <code>build/libs</code> directory.</p>
 </div>
@@ -1378,7 +1524,7 @@ Keep in mind that copying the only <code>.jar</code> file to another directory w
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">plugins {
     ...
-    id "com.github.johnrengelman.shadow" version "7.1.2"
+    id "com.github.johnrengelman.shadow" version "8.1.1"
     ...
 }</code></pre>
 </div>
@@ -1387,7 +1533,7 @@ Keep in mind that copying the only <code>.jar</code> file to another directory w
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">plugins {
     ...
-    id("com.github.johnrengelman.shadow") version "7.1.2"
+    id("com.github.johnrengelman.shadow") version "8.1.1"
     ...
 }</code></pre>
 </div>
@@ -1397,12 +1543,12 @@ Keep in mind that copying the only <code>.jar</code> file to another directory w
 </div>
 </div>
 <div class="sect1">
-<h2 id="_micronaut_graalvm_plugin"><a class="anchor" href="#_micronaut_graalvm_plugin"></a>6. Micronaut GraalVM Plugin</h2>
+<h2 id="_micronaut_graalvm_plugin"><a class="anchor" href="#_micronaut_graalvm_plugin"></a>7. Micronaut GraalVM Plugin</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>The <a href="https://plugins.gradle.org/plugin/io.micronaut.graalvm">Micronaut GraalVM plugin</a> is applied automatically by the
 <a href="https://github.com/micronaut-projects/micronaut-gradle-plugin#micronaut-application-plugin">Micronaut application plugin</a> (see below)
-and it provides tasks to generate a GraalVM native image and also creates the GraalVM <code>resource-config.json</code> automatically with all the resources from the application.</p>
+and it provides tasks to generate a GraalVM native executable and also creates the GraalVM <code>resource-config.json</code> automatically with all the resources from the application.</p>
 </div>
 <div class="paragraph">
 <p>This plugin can be applied separately if you use the <code>application</code> plugin without the <code>io.micronaut.application</code> plugin (but we strongly recommend to switch to the <code>io.micronaut.application</code> plugin in this case).</p>
@@ -1410,7 +1556,7 @@ and it provides tasks to generate a GraalVM native image and also creates the Gr
 </div>
 </div>
 <div class="sect1">
-<h2 id="_micronaut_aot_plugin"><a class="anchor" href="#_micronaut_aot_plugin"></a>7. Micronaut AOT Plugin</h2>
+<h2 id="_micronaut_aot_plugin"><a class="anchor" href="#_micronaut_aot_plugin"></a>8. Micronaut AOT Plugin</h2>
 <div class="sectionbody">
 <div class="admonitionblock warning">
 <table>
@@ -1441,13 +1587,13 @@ At the moment, the plugin supports optimizing Micronaut applications only (Micro
 <p>an <a href="#aot:running-optimized-fat-jar">optimized fat jar</a>, which is the same as the previous one, except that it also embeds all transitive dependencies and is a standalone executable.</p>
 </li>
 <li>
-<p>an <a href="#aot:running-optimized-native-binary">optimized native binary</a> which is a GraalVM image compiled with Micronaut AOT optimizations</p>
+<p>an <a href="#aot:running-optimized-native-binary">optimized native binary</a> which is a GraalVM executable compiled with Micronaut AOT optimizations</p>
 </li>
 <li>
 <p>an <a href="#aot:optimized-docker-image">optimized docker image</a> which is a Docker image containing the optimized application</p>
 </li>
 <li>
-<p>an <a href="#aot:optimized-docker-image">optimized native docker image</a> which is a Docker image containing the optimized application compiled as a native image</p>
+<p>an <a href="#aot:optimized-docker-image">optimized native docker image</a> which is a Docker image containing the optimized application compiled as a native executable</p>
 </li>
 </ul>
 </div>
@@ -1458,13 +1604,13 @@ At the moment, the plugin supports optimizing Micronaut applications only (Micro
 <div class="title">Important</div>
 </td>
 <td class="content">
-Micronaut AOT is a <em>deployment</em> optimization: it adds to build time, in order to make the final application faster to start, or the native images smaller. Therefore, if you use the AOT tasks during development, your feedback cycle will be slower (but the application will start faster). It is a good idea, however, to check the result of the optimization locally, similarly to what you&#8217;d do for a native image.
+Micronaut AOT is a <em>deployment</em> optimization: it adds to build time, in order to make the final application faster to start, or the native executables smaller. Therefore, if you use the AOT tasks during development, your feedback cycle will be slower (but the application will start faster). It is a good idea, however, to check the result of the optimization locally, similarly to what you&#8217;d do for a native executable.
 </td>
 </tr>
 </table>
 </div>
 <div class="sect2">
-<h3 id="_configuration"><a class="anchor" href="#_configuration"></a>7.1. Configuration</h3>
+<h3 id="_configuration"><a class="anchor" href="#_configuration"></a>8.1. Configuration</h3>
 <div class="paragraph">
 <p>The <code>io.micronaut.aot</code> plugin is an extension to the <code>io.micronaut.application</code> plugin.</p>
 </div>
@@ -1472,8 +1618,8 @@ Micronaut AOT is a <em>deployment</em> optimization: it adds to build time, in o
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">plugins {
     ...
-    id "io.micronaut.application" version "3.7.11-SNAPSHOT"
-    id "io.micronaut.aot" version "3.7.11-SNAPSHOT"
+    id "io.micronaut.application" version "4.1.1-SNAPSHOT"
+    id "io.micronaut.aot" version "4.1.1-SNAPSHOT"
     ...
 }</code></pre>
 </div>
@@ -1482,8 +1628,8 @@ Micronaut AOT is a <em>deployment</em> optimization: it adds to build time, in o
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">plugins {
     ...
-    id("io.micronaut.application") version "3.7.11-SNAPSHOT"
-    id("io.micronaut.aot") version "3.7.11-SNAPSHOT"
+    id("io.micronaut.application") version "4.1.1-SNAPSHOT"
+    id("io.micronaut.aot") version "4.1.1-SNAPSHOT"
     ...
 }</code></pre>
 </div>
@@ -1625,7 +1771,7 @@ sealed.property.source.enabled = true</pre>
 </div>
 </div>
 <div class="paragraph">
-<p>Another file, <code>build/generated/aot/samples/native/native.properties</code> will contain the same, but with the options which are relevant to an application compiled to a <em>native image</em>:</p>
+<p>Another file, <code>build/generated/aot/samples/native/native.properties</code> will contain the same, but with the options which are relevant to an application compiled to a <em>native executable</em>:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -1666,7 +1812,7 @@ sealed.property.source.enabled = true</pre>
 </div>
 </div>
 <div class="paragraph">
-<p>For native images, it is important to always have the <code>graalvm.config.enabled</code> option set to <code>true</code>, otherwise the AOT optimizations will not be loaded. The plugin takes care of setting this flag to <code>true</code> for you.</p>
+<p>For native executables, it is important to always have the <code>graalvm.config.enabled</code> option set to <code>true</code>, otherwise the AOT optimizations will not be loaded. The plugin takes care of setting this flag to <code>true</code> for you.</p>
 </div>
 <div class="paragraph">
 <p>It is important to understand that Micronaut AOT works <em>at build time</em>.
@@ -1674,7 +1820,7 @@ Therefore, some optimizations like conversion of YAML files to Java configuratio
 </div>
 </div>
 <div class="sect2">
-<h3 id="aot:running-jit-mode"><a class="anchor" href="#aot:running-jit-mode"></a>7.2. Running an optimized application</h3>
+<h3 id="aot:running-jit-mode"><a class="anchor" href="#aot:running-jit-mode"></a>8.2. Running an optimized application</h3>
 <div class="paragraph">
 <p>The plugin provides a couple of tasks aimed at running an optimized application.
 The first one, <code>optimizedJar</code>, will simply run the AOT compiler and produce an "optimized" jar.
@@ -1685,7 +1831,7 @@ If you want to run the application with the resulting jar, you will need to call
 </div>
 </div>
 <div class="sect2">
-<h3 id="aot:running-optimized-fat-jar"><a class="anchor" href="#aot:running-optimized-fat-jar"></a>7.3. Running an optimized fat jar</h3>
+<h3 id="aot:running-optimized-fat-jar"><a class="anchor" href="#aot:running-optimized-fat-jar"></a>8.3. Running an optimized fat jar</h3>
 <div class="paragraph">
 <p>The plugin supports building an optimized fat jar. You will need to apply the <code>shadow</code> plugin to enable this feature:</p>
 </div>
@@ -1693,7 +1839,7 @@ If you want to run the application with the resulting jar, you will need to call
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">plugins {
     ...
-    id "com.github.johnrengelman.shadow" version "7.1.2"
+    id "com.github.johnrengelman.shadow" version "8.1.1"
     ...
 }</code></pre>
 </div>
@@ -1702,7 +1848,7 @@ If you want to run the application with the resulting jar, you will need to call
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">plugins {
     ...
-    id("com.github.johnrengelman.shadow") version "7.1.2"
+    id("com.github.johnrengelman.shadow") version "8.1.1"
     ...
 }</code></pre>
 </div>
@@ -1716,7 +1862,7 @@ The task will generate a fat jar in the <code>build/libs</code> directory, that 
 </div>
 </div>
 <div class="sect2">
-<h3 id="aot:running-optimized-native-binary"><a class="anchor" href="#aot:running-optimized-native-binary"></a>7.4. Building and running an optimized native application</h3>
+<h3 id="aot:running-optimized-native-binary"><a class="anchor" href="#aot:running-optimized-native-binary"></a>8.4. Building and running an optimized native application</h3>
 <div class="paragraph">
 <p>The plugin creates a new native binary called <code>optimized</code>.
 The GraalVM plugin will then automatically create a couple of tasks for you:</p>
@@ -1724,16 +1870,16 @@ The GraalVM plugin will then automatically create a couple of tasks for you:</p>
 <div class="ulist">
 <ul>
 <li>
-<p>the <code>nativeOptimizedCompile</code> task will compile a native image with the AOT optimizations</p>
+<p>the <code>nativeOptimizedCompile</code> task will compile a native executable with the AOT optimizations</p>
 </li>
 <li>
-<p>the <code>nativeOptimizedRun</code> task will run the optimized native image (you can call this task directly, it will precompile the native image before)</p>
+<p>the <code>nativeOptimizedRun</code> task will run the optimized native executable (you can call this task directly, it will precompile the native executable before)</p>
 </li>
 </ul>
 </div>
 </div>
 <div class="sect2">
-<h3 id="aot:optimized-docker-image"><a class="anchor" href="#aot:optimized-docker-image"></a>7.5. Building an optimized Docker image</h3>
+<h3 id="aot:optimized-docker-image"><a class="anchor" href="#aot:optimized-docker-image"></a>8.5. Building an optimized Docker image</h3>
 <div class="paragraph">
 <p>It is also possible to build an optimized application and package it into a Docker image.
 For this, you need to call <code>./gradlew optimizedDockerBuild</code>.
@@ -1747,7 +1893,7 @@ It will produce a docker image that you can start using <code>docker run</code>.
 </div>
 </div>
 <div class="sect2">
-<h3 id="aot:optimized-native-docker-image"><a class="anchor" href="#aot:optimized-native-docker-image"></a>7.6. Building an optimized native Docker image</h3>
+<h3 id="aot:optimized-native-docker-image"><a class="anchor" href="#aot:optimized-native-docker-image"></a>8.6. Building an optimized native Docker image</h3>
 <div class="paragraph">
 <p>This task also produces a Docker image, but it will build a native image containing the optimized application <em>within a container</em>, in order to produce a Docker image which runs the optimized application natively.</p>
 </div>
@@ -1768,7 +1914,7 @@ It will produce a docker image that you can start using <code>docker run</code>.
 </div>
 </div>
 <div class="sect1">
-<h2 id="test-resources"><a class="anchor" href="#test-resources"></a>8. Automatic test resources provisioning</h2>
+<h2 id="test-resources"><a class="anchor" href="#test-resources"></a>9. Automatic test resources provisioning</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>The Micronaut Gradle plugin integrates with <a href="https://github.com/micronaut-projects/micronaut-test-resources">Micronaut Test Resources</a> to automatically provision test resources.
@@ -1811,15 +1957,15 @@ Should this happen to you, you can disable class data sharing explicitly using t
 </table>
 </div>
 <div class="sect2">
-<h3 id="_the_test_resources_plugin"><a class="anchor" href="#_the_test_resources_plugin"></a>8.1. The test resources plugin</h3>
+<h3 id="_the_test_resources_plugin"><a class="anchor" href="#_the_test_resources_plugin"></a>9.1. The test resources plugin</h3>
 <div class="paragraph">
 <p>The easiest way to add test resources support is to apply the <code>io.micronaut.test-resources</code> plugin:</p>
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">plugins {
-    id "io.micronaut.application" version "3.5.1"
-    id "io.micronaut.test-resources" version "3.5.1"
+    id "io.micronaut.application" version "4.1.0"
+    id "io.micronaut.test-resources" version "4.1.0"
     ...
 }</code></pre>
 </div>
@@ -1827,8 +1973,8 @@ Should this happen to you, you can disable class data sharing explicitly using t
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">plugins {
-    id("io.micronaut.application") version "3.5.1"
-    id("io.micronaut.test-resources") version "3.5.1"
+    id("io.micronaut.application") version "4.1.0"
+    id("io.micronaut.test-resources") version "4.1.0"
     ...
 }</code></pre>
 </div>
@@ -1855,7 +2001,7 @@ This will let Gradle automatically start containers, for example, when a particu
 </div>
 </div>
 <div class="sect2">
-<h3 id="_configuring_the_test_resources_plugin"><a class="anchor" href="#_configuring_the_test_resources_plugin"></a>8.2. Configuring the test resources plugin</h3>
+<h3 id="_configuring_the_test_resources_plugin"><a class="anchor" href="#_configuring_the_test_resources_plugin"></a>9.2. Configuring the test resources plugin</h3>
 <div class="paragraph">
 <p>In addition, the plugin will add a <code>testResources</code> extension to the <code>micronaut</code> configuration block, providing a number of options:</p>
 </div>
@@ -1940,7 +2086,33 @@ This will let Gradle automatically start containers, for example, when a particu
 </div>
 </div>
 <div class="sect2">
-<h3 id="sec:standalone-test-resources"><a class="anchor" href="#sec:standalone-test-resources"></a>8.3. Standalone test resources service</h3>
+<h3 id="src:test-resources-native"><a class="anchor" href="#src:test-resources-native"></a>9.3. Using test resources with native binaries</h3>
+<div class="paragraph">
+<p>By default, native binaries are considered production code.
+This implies that the test resources client will <em>not</em> be included in the generated native binaries and therefore, by default, native applications will not make use of test resources.</p>
+</div>
+<div class="paragraph">
+<p>In order to produce a native binary which is capable of using test resources, you must explicitly pass a system property to the build:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="bash" class="language-bash hljs">./gradlew nativeCompile -Dtestresources.native=true</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>or, if you want to run the binary directly:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="bash" class="language-bash hljs">./gradlew nativeRun -Dtestresources.native=true</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Note that you don&#8217;t need to do this for the <code>nativeTest</code> task, which is automatically configured to use test resources.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="sec:standalone-test-resources"><a class="anchor" href="#sec:standalone-test-resources"></a>9.4. Standalone test resources service</h3>
 <div class="paragraph">
 <p>The <code>io.micronaut.test-resources</code> plugin works particularly well in single-module projects, or in multi-projects where test resources are not shared between modules.
 However, in some cases, you may want to reuse test containers for multiple projects of the same multi-project build, in order to save startup times for example.</p>
@@ -1992,7 +2164,7 @@ Here, we&#8217;re going to add a project called <code>shared-testresources</code
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">// shared-testresources/build.gradle
 plugins {
-    id "io.micronaut.test-resources" version "3.5.1" // <b class="conum">(1)</b>
+    id "io.micronaut.test-resources" version "4.1.0" // <b class="conum">(1)</b>
 }
 
 micronaut {
@@ -2006,7 +2178,7 @@ micronaut {
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">// shared-testresources/build.gradle.kts
 plugins {
-    id("io.micronaut.test-resources") version "3.5.1" // <b class="conum">(1)</b>
+    id("io.micronaut.test-resources") version "4.1.0" // <b class="conum">(1)</b>
 }
 
 micronaut {
@@ -2032,8 +2204,8 @@ micronaut {
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">plugins {
-    id "io.micronaut.application" version "3.5.1"
-    id "io.micronaut.test-resources-consumer" version "3.5.1" // <b class="conum">(1)</b>
+    id "io.micronaut.application" version "4.1.0"
+    id "io.micronaut.test-resources-consumer" version "4.1.0" // <b class="conum">(1)</b>
 }
 
 dependencies {
@@ -2044,8 +2216,8 @@ dependencies {
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">plugins {
-    id("io.micronaut.application") version "3.5.1"
-    id("io.micronaut.test-resources-consumer") version "3.5.1" // <b class="conum">(1)</b>
+    id("io.micronaut.application") version "4.1.0"
+    id("io.micronaut.test-resources-consumer") version "4.1.0" // <b class="conum">(1)</b>
 }
 
 dependencies {
@@ -2068,7 +2240,7 @@ dependencies {
 </div>
 </div>
 <div class="sect2">
-<h3 id="sec:test-resources-lifecycle"><a class="anchor" href="#sec:test-resources-lifecycle"></a>8.4. Test resources lifecycle</h3>
+<h3 id="sec:test-resources-lifecycle"><a class="anchor" href="#sec:test-resources-lifecycle"></a>9.5. Test resources lifecycle</h3>
 <div class="paragraph">
 <p>Test resources are handled by a service which is, by default, started at the beginning of a build, and stopped at the end.</p>
 </div>
@@ -2215,7 +2387,7 @@ class DemoTest {
 </div>
 </div>
 <div class="sect1">
-<h2 id="_micronaut_crac_plugin"><a class="anchor" href="#_micronaut_crac_plugin"></a>9. Micronaut CRaC Plugin</h2>
+<h2 id="_micronaut_crac_plugin"><a class="anchor" href="#_micronaut_crac_plugin"></a>10. Micronaut CRaC Plugin</h2>
 <div class="sectionbody">
 <div class="admonitionblock warning">
 <table>
@@ -2279,7 +2451,7 @@ Currently CRaC support has only been tested on Ubuntu 18.04, 20.04 and 22.04.  I
 </div>
 </div>
 <div class="sect2">
-<h3 id="_configuration_2"><a class="anchor" href="#_configuration_2"></a>9.1. Configuration</h3>
+<h3 id="_configuration_2"><a class="anchor" href="#_configuration_2"></a>10.1. Configuration</h3>
 <div class="paragraph">
 <p>The <code>io.micronaut.crac</code> plugin is a standalone plugin which requires the following minimal configuration.</p>
 </div>
@@ -2287,9 +2459,9 @@ Currently CRaC support has only been tested on Ubuntu 18.04, 20.04 and 22.04.  I
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">plugins {
     ...
-    id "io.micronaut.minimal.application" version "3.7.11-SNAPSHOT"
-    id "io.micronaut.docker" version "3.7.11-SNAPSHOT"
-    id "io.micronaut.crac" version "3.7.11-SNAPSHOT"
+    id "io.micronaut.minimal.application" version "4.1.1-SNAPSHOT"
+    id "io.micronaut.docker" version "4.1.1-SNAPSHOT"
+    id "io.micronaut.crac" version "4.1.1-SNAPSHOT"
     ...
 }</code></pre>
 </div>
@@ -2298,9 +2470,9 @@ Currently CRaC support has only been tested on Ubuntu 18.04, 20.04 and 22.04.  I
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">plugins {
     ...
-    id("io.micronaut.minimal.application") version "3.7.11-SNAPSHOT"
-    id("io.micronaut.docker") version "3.7.11-SNAPSHOT"
-    id("io.micronaut.crac") version "3.7.11-SNAPSHOT"
+    id("io.micronaut.minimal.application") version "4.1.1-SNAPSHOT"
+    id("io.micronaut.docker") version "4.1.1-SNAPSHOT"
+    id("io.micronaut.crac") version "4.1.1-SNAPSHOT"
     ...
 }</code></pre>
 </div>
@@ -2382,15 +2554,151 @@ Currently CRaC support has only been tested on Ubuntu 18.04, 20.04 and 22.04.  I
 </div>
 </div>
 <div class="sect1">
-<h2 id="_upgrade_notes"><a class="anchor" href="#_upgrade_notes"></a>10. Upgrade notes</h2>
+<h2 id="_openapi_code_generation"><a class="anchor" href="#_openapi_code_generation"></a>11. OpenAPI code generation</h2>
 <div class="sectionbody">
-<div class="sect2">
-<h3 id="_upgrading_from_2_x"><a class="anchor" href="#_upgrading_from_2_x"></a>10.1. Upgrading from 2.x</h3>
 <div class="paragraph">
-<p>When upgrading from the 2.x version of the plugins, you will need to change the configuration of the GraalVM native image builds if you use them.</p>
+<p>The <code>io.micronaut.openapi</code> plugin adds support for generating <a href="https://www.openapis.org/">OpenAPI</a> clients or servers, given an OpenAPI definition.</p>
 </div>
 <div class="paragraph">
-<p>Typically, instead of configuring image compilation using the <em>task</em>:</p>
+<p>The plugin adds an <a href="api/io/micronaut/gradle/openapi/OpenApiExtension.html">openapi</a> extension to the <code>micronaut</code> configuration block.</p>
+</div>
+<div class="sect2">
+<h3 id="_generating_a_client"><a class="anchor" href="#_generating_a_client"></a>11.1. Generating a client</h3>
+<div class="paragraph">
+<p>You can generate a client by configuring the extension via the <code>client { &#8230;&#8203; }</code> block:</p>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">micronaut {
+    ...
+    openapi {
+        client(file("src/openapi/my-definition.yml")) {
+            apiPackageName = "com.mycompany.api"
+            modelPackageName = "com.mycompany.model"
+            useOptional = true
+            clientId = "some-client-id"
+        }
+    }
+}</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">micronaut {
+    ...
+    openapi {
+        client(file("src/openapi/my-definition.yml")) {
+            apiPackageName.set("com.mycompany.api")
+            modelPackageName.set("com.mycompany.model")
+            useOptional.set(true)
+            clientId.set("some-client-id")
+        }
+    }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The generated sources will be found by default in your <code>$buildDir/generated/openapi/client</code> directory, and automatically added to your main source set (so the classes are directly available for you to use).</p>
+</div>
+<div class="paragraph">
+<p>Please refer to <a href="api/io/micronaut/gradle/openapi/OpenApiClientSpec.html">OpenApiClientSpec</a> for the whole list of client configuration options.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_generating_a_server"><a class="anchor" href="#_generating_a_server"></a>11.2. Generating a server</h3>
+<div class="paragraph">
+<p>You can generate a server by configuring the extension via the <code>server { &#8230;&#8203; }</code> block:</p>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">micronaut {
+    ...
+    openapi {
+        server(file("src/openapi/my-definition.yml")) {
+            apiPackageName = "com.mycompany.api"
+            modelPackageName = "com.mycompany.model"
+            controllerPackage = "com.mycompany.controller"
+        }
+    }
+}</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">micronaut {
+    ...
+    openapi {
+        server(file("src/openapi/my-definition.yml")) {
+            apiPackageName.set("com.mycompany.api")
+            modelPackageName.set("com.mycompany.model")
+            controllerPackage.set("com.mycompany.controller")
+        }
+    }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The generated sources will be found by default in your <code>$buildDir/generated/openapi/server</code> directory, and automatically added to your main source set (so the classes are directly available for you to use).</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Note</div>
+</td>
+<td class="content">
+Server generation will generate interfaces that you have to implement in order to write your server code.
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>Please refer to <a href="api/io/micronaut/gradle/openapi/OpenApiServerSpec.html">OpenApiServerSpec</a> for the whole list of client configuration options.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_advanced_configuration"><a class="anchor" href="#_advanced_configuration"></a>11.3. Advanced configuration</h3>
+<div class="paragraph">
+<p>The Micronaut OpenAPI plugin lets you override the default Micronaut OpenAPI version to use.
+To do this, set the version in the <code>openapi</code> extension:</p>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">micronaut {
+    ...
+    openapi {
+        version = "5.0.2"
+    }
+}</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">micronaut {
+    ...
+    openapi {
+        version.set("5.0.2")
+    }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>In addition, it exposes a <code>openApiGenerator</code> configuration which can be used to declare additional dependencies to put on the generator classpath.
+This can be useful in case you want to implement your own generators, in which case you will also have to implement custom tasks which extend the <a href="api/io/micronaut/gradle/openapi/AbstractOpenApiGenerator.html">AbstractOpenApiGenerator task type</a>.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_upgrade_notes"><a class="anchor" href="#_upgrade_notes"></a>12. Upgrade notes</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_upgrading_from_2_x"><a class="anchor" href="#_upgrading_from_2_x"></a>12.1. Upgrading from 2.x</h3>
+<div class="paragraph">
+<p>When upgrading from the 2.x version of the plugins, you will need to change the configuration of the GraalVM native executable builds if you use them.</p>
+</div>
+<div class="paragraph">
+<p>Typically, instead of configuring executable compilation using the <em>task</em>:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -2400,7 +2708,7 @@ Currently CRaC support has only been tested on Ubuntu 18.04, 20.04 and 22.04.  I
 </div>
 </div>
 <div class="paragraph">
-<p>You now need to use the <code>graalvmNative</code> extension. This extension supports building multiple native images, and the main one is named <code>main</code> (there is another one for tests, called <code>test</code>, which runs unit tests natively):</p>
+<p>You now need to use the <code>graalvmNative</code> extension. This extension supports building multiple native executables, and the main one is named <code>main</code> (there is another one for tests, called <code>test</code>, which runs unit tests natively):</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -2414,14 +2722,14 @@ Currently CRaC support has only been tested on Ubuntu 18.04, 20.04 and 22.04.  I
 </div>
 </div>
 <div class="paragraph">
-<p>Similarly, to compile the native image, you now need to run <code>nativeCompile</code> instead of <code>nativeImage</code>.</p>
+<p>Similarly, to compile the native executable, you now need to run <code>nativeCompile</code> instead of <code>nativeImage</code>.</p>
 </div>
 <div class="paragraph">
 <p>In addition, the official GraalVM plugin makes use of Gradle toolchains support, which can lead to surprising behavior if you are used to switching between local JDKs. If you are facing errors like this one:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre>&gt; No compatible toolchains found for request filter: {languageVersion=11, vendor=matching('GraalVM'), implementation=vendor-specific} (auto-detect true, auto-download true)</pre>
+<pre>&gt; No compatible toolchains found for request filter: {languageVersion=17, vendor=matching('GraalVM'), implementation=vendor-specific} (auto-detect true, auto-download true)</pre>
 </div>
 </div>
 <div class="paragraph">
