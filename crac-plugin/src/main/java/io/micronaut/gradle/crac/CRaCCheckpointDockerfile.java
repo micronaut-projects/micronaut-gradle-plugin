@@ -155,7 +155,7 @@ public abstract class CRaCCheckpointDockerfile extends Dockerfile {
 
         String errorMessage = "No CRaC OpenJDK found for Java version " + javaVersion + " and architecture " + arch;
 
-        String url = "https://api.azul.com/metadata/v1/zulu/packages/?java_version=" + javaVersion + "&arch=" + arch + "&crac_supported=true&latest=true&release_status=ga&certifications=tck&page=1&page_size=100";
+        String url = "https://api.azul.com/metadata/v1/zulu/packages/?java_version=" + javaVersion + "&arch=" + arch + "&crac_supported=true&java_package_type=jdk&latest=true&release_status=ga&certifications=tck&page=1&page_size=100";
         task.runCommand("release_id=$(curl -s \"" + url + "\" -H \"accept: application/json\" | jq -r '.[0] | .package_uuid') \\\n" +
                 "    && if [ \"$release_id\" = \"null\" ]; then \\\n" +
                 "           echo \"" + errorMessage + "\"; \\\n" +

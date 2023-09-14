@@ -136,7 +136,7 @@ class CracCustomizationSpec extends BaseCracGradleBuildSpec {
 
         then:
         result.output.contains("BUILD SUCCESSFUL")
-        fileTextContents("build/docker/main/Dockerfile.CRaCCheckpoint").contains("https://api.azul.com/metadata/v1/zulu/packages/?java_version=$javaVersion&arch=$expectedArch&crac_supported=true&latest=true&release_status=ga&certifications=tck&page=1&page_size=100")
+        fileTextContents("build/docker/main/Dockerfile.CRaCCheckpoint").contains("https://api.azul.com/metadata/v1/zulu/packages/?java_version=$javaVersion&arch=$expectedArch&crac_supported=true&java_package_type=jdk&latest=true&release_status=ga&certifications=tck&page=1&page_size=100")
     }
 
     void "Azul CRaC JDK and arch can be changed"() {
@@ -153,7 +153,7 @@ class CracCustomizationSpec extends BaseCracGradleBuildSpec {
 
         then:
         result.output.contains("BUILD SUCCESSFUL")
-        fileTextContents("build/docker/main/Dockerfile.CRaCCheckpoint").contains("https://api.azul.com/metadata/v1/zulu/packages/?java_version=$javaVersion&arch=$MicronautCRaCPlugin.ARM_ARCH&crac_supported=true&latest=true&release_status=ga&certifications=tck&page=1&page_size=100")
+        fileTextContents("build/docker/main/Dockerfile.CRaCCheckpoint").contains("https://api.azul.com/metadata/v1/zulu/packages/?java_version=$javaVersion&arch=$MicronautCRaCPlugin.ARM_ARCH&crac_supported=true&java_package_type=jdk&latest=true&release_status=ga&certifications=tck&page=1&page_size=100")
     }
 
     void "Weird java versions cause an error"() {
