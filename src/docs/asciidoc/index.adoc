@@ -1056,6 +1056,9 @@ dockerfileNative {
 }
 ----
 
+The compiled native binary will ultimately be copied into an `alpine-glibc` base image for X86_64, and `cgr.dev/chainguard/wolfi-base` for ARM.
+These base images can be overridden via configuration see <<_base_image_and_pull_limits>> and <<_build_mostly_static_native_executables>>.
+
 ===== Base image and pull limits
 
 By default, the plugin will use amazonlinux pulled from Docker Hub as a base image for GraalVM native AWS Lambda executables.
