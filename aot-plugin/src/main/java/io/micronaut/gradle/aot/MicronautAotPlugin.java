@@ -138,12 +138,8 @@ public abstract class MicronautAotPlugin implements Plugin<Project> {
         aotExtension.getDeduceEnvironment().convention(false);
         aotExtension.getTargetPackage().convention(providers.provider(() -> {
             JavaApplication javaApplication = project.getExtensions().findByType(JavaApplication.class);
-            if (javaApplication != null) {
-                String mainClass = javaApplication.getMainClass().get();
-                return mainClass.substring(0, mainClass.lastIndexOf("."));
-            } else {
-                return "io.micronaut.aot.generated";
-            }
+            String mainClass = javaApplication.getMainClass().get();
+            return mainClass.contains(".") ? mainClass.substring(0, mainClass.lastIndexOf(".")) : "io.micronaut.aot.generated";
         }));
         aotExtension.getOptimizeNetty().convention(false);
     }
