@@ -1,7 +1,6 @@
 package io.micronaut.gradle;
 
 import com.google.devtools.ksp.gradle.KspExtension;
-import io.micronaut.gradle.graalvm.GraalUtil;
 import io.micronaut.gradle.internal.AutomaticDependency;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
@@ -199,21 +198,21 @@ public class MicronautKotlinSupport {
         configureAnnotationProcessors(p,
                 implementationConfigurationName,
                 annotationProcessorConfigurationName);
-        if (GraalUtil.isGraalJVM()) {
-            new AutomaticDependency(annotationProcessorConfigurationName,
-                    "io.micronaut:micronaut-graal",
-                    Optional.of(CORE_VERSION_PROPERTY)).applyTo(p);
-        }
+        p.getPluginManager().withPlugin("io.micronaut.graalvm", unused ->
+                new AutomaticDependency(annotationProcessorConfigurationName,
+                "io.micronaut:micronaut-graal",
+                Optional.of(CORE_VERSION_PROPERTY)).applyTo(p)
+        );
     }
 
     private static void addGraalVmDependencies(String[] compilerConfigurations, Project project) {
-        if (GraalUtil.isGraalJVM()) {
+        project.getPluginManager().withPlugin("io.micronaut.graalvm", unused -> {
             for (String configuration : compilerConfigurations) {
                 new AutomaticDependency(configuration,
                         "io.micronaut:micronaut-graal",
                         Optional.of(CORE_VERSION_PROPERTY)).applyTo(project);
             }
-        }
+        });
     }
 
     private static void configureAllOpen(Project project) {
