@@ -1930,7 +1930,7 @@ micronaut {
 ----
 
 In addition, it exposes a `openApiGenerator` configuration which can be used to declare additional dependencies to put on the generator classpath.
-This can be useful in case you want to implement your own generators, in which case you will also have to implement custom tasks which extend the link:api/io/micronaut/gradle/openapi/AbstractOpenApiGenerator.html[AbstractOpenApiGenerator task type].
+This can be useful in case you want to implement your own generators, in which case you will also have to implement custom tasks which extend the link:api/io/micronaut/gradle/openapi/tasks/AbstractOpenApiGenerator.html[AbstractOpenApiGenerator task type].
 
 == Upgrade notes
 
