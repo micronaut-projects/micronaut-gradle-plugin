@@ -30,7 +30,7 @@ import java.io.IOException;
  */
 public abstract class StopTestResourcesService extends DefaultTask {
     @Destroys
-    abstract DirectoryProperty getSettingsDirectory();
+    public abstract DirectoryProperty getSettingsDirectory();
 
     @Inject
     protected abstract FileOperations getFileOperations();
