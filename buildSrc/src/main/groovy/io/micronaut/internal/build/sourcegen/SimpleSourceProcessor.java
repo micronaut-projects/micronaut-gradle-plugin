@@ -38,13 +38,13 @@ import java.util.stream.Stream;
 public abstract class SimpleSourceProcessor extends DefaultTask {
     @InputDirectory
     @PathSensitive(PathSensitivity.RELATIVE)
-    abstract DirectoryProperty getTemplates();
+    public abstract DirectoryProperty getTemplates();
 
     @OutputDirectory
-    abstract DirectoryProperty getOutputDirectory();
+    public abstract DirectoryProperty getOutputDirectory();
 
     @Input
-    abstract MapProperty<String, String> getReplacements();
+    public abstract MapProperty<String, String> getReplacements();
 
     @TaskAction
     public void process() throws IOException {

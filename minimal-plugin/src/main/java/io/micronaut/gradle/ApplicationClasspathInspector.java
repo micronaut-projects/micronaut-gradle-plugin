@@ -35,7 +35,7 @@ import java.util.Set;
 public abstract class ApplicationClasspathInspector extends DefaultTask {
     @InputFiles
     @PathSensitive(PathSensitivity.RELATIVE)
-    abstract ConfigurableFileCollection getResources();
+    public abstract ConfigurableFileCollection getResources();
 
     /**
      * The runtime classpath. Curently we only care about the file names,
@@ -44,10 +44,10 @@ public abstract class ApplicationClasspathInspector extends DefaultTask {
      */
     @InputFiles
     @PathSensitive(PathSensitivity.NAME_ONLY)
-    abstract ConfigurableFileCollection getRuntimeClasspath();
+    public abstract ConfigurableFileCollection getRuntimeClasspath();
 
     @OutputFile
-    abstract RegularFileProperty getReportFile();
+    public abstract RegularFileProperty getReportFile();
 
     @TaskAction
     void inspect() throws IOException {

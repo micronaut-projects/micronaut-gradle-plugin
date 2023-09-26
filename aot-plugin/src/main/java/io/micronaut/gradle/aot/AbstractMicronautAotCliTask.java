@@ -52,18 +52,18 @@ abstract class AbstractMicronautAotCliTask extends DefaultTask implements Optimi
     protected abstract ExecOperations getExecOperations();
 
     @Input
-    protected abstract Property<Boolean> getDebug();
+    public abstract Property<Boolean> getDebug();
 
     @Input
-    protected abstract Property<String> getAotVersion();
-
-    @Input
-    @Optional
-    protected abstract MapProperty<String, String> getEnvironmentVariables();
+    public abstract Property<String> getAotVersion();
 
     @Input
     @Optional
-    protected abstract ListProperty<String> getJvmArgs();
+    public abstract MapProperty<String, String> getEnvironmentVariables();
+
+    @Input
+    @Optional
+    public abstract ListProperty<String> getJvmArgs();
 
     protected AbstractMicronautAotCliTask() {
         getDebug().convention(false);
