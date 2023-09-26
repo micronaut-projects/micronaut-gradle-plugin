@@ -62,7 +62,7 @@ public abstract class StartTestResourcesService extends DefaultTask {
     @InputFiles
     @Classpath
     @Incremental
-    abstract ConfigurableFileCollection getClasspath();
+    public abstract ConfigurableFileCollection getClasspath();
 
     /**
      * The directory where the settings to connect to
