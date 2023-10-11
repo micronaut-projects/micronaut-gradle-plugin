@@ -112,6 +112,7 @@ public abstract class MicronautAotPlugin implements Plugin<Project> {
     ));
     public static final String AOT_APPLICATION_CLASSPATH = "aotApplicationClasspath";
     public static final String OPTIMIZED_RUNTIME_CLASSPATH_CONFIGURATION_NAME = "optimizedRuntimeClasspath";
+    public static final String DEFAULT_GENERATED_PACKAGE = "io.micronaut.aot.generated";
 
     @Inject
     protected abstract ArchiveOperations getArchiveOperations();
@@ -140,10 +141,9 @@ public abstract class MicronautAotPlugin implements Plugin<Project> {
             JavaApplication javaApplication = project.getExtensions().findByType(JavaApplication.class);
             if (javaApplication != null) {
                 String mainClass = javaApplication.getMainClass().get();
-                return mainClass.substring(0, mainClass.lastIndexOf("."));
-            } else {
-                return "io.micronaut.aot.generated";
+                return mainClass.contains(".") ? mainClass.substring(0, mainClass.lastIndexOf(".")) : DEFAULT_GENERATED_PACKAGE;
             }
+            return DEFAULT_GENERATED_PACKAGE;
         }));
         aotExtension.getOptimizeNetty().convention(false);
     }
