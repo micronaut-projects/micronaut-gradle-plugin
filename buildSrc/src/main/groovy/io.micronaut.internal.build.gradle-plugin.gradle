@@ -53,6 +53,12 @@ publishing {
             publications.register(pubName, MavenPublication) {
                 project.afterEvaluate {
                     def component = pub.component
+                    // Dirty trick to restore Gradle <8.3 behavior
+                    if (component.isPresent()) {
+                        component = component.get()
+                    } else {
+                        component = null
+                    }
                     from(component)
                     alias = true
                     groupId = pub.groupId
