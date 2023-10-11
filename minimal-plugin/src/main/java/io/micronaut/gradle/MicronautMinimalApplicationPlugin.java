@@ -87,7 +87,7 @@ public class MicronautMinimalApplicationPlugin implements Plugin<Project> {
             Configuration runtimeClasspath = configurations.getByName("runtimeClasspath");
             conf.extendsFrom(runtimeClasspath);
             conf.extendsFrom(developmentOnlyConfiguration);
-            AttributeUtils.copyAttributes(runtimeClasspath, conf);
+            AttributeUtils.copyAttributes(project.getProviders(), runtimeClasspath, conf);
         });
         tasks.withType(JavaExec.class).configureEach(javaExec -> {
             var sourceSets = PluginsHelper.findSourceSets(project);

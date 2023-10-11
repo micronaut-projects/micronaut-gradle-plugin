@@ -312,7 +312,7 @@ public abstract class MicronautAotPlugin implements Plugin<Project> {
                 conf.setCanBeConsumed(false);
                 conf.setCanBeConsumed(true);
                 // Use the same attributes as runtimeClasspath for resolution
-                AttributeUtils.copyAttributes(runtimeClasspath, conf);
+                AttributeUtils.copyAttributes(project.getProviders(), runtimeClasspath, conf);
             });
 
             tasks.register("optimizedRun", JavaExec.class, task -> {
@@ -371,8 +371,9 @@ public abstract class MicronautAotPlugin implements Plugin<Project> {
     private Configurations prepareConfigurations(Project project, AOTExtension aotExtension) {
         ConfigurationContainer configurations = project.getConfigurations();
         // Internal configurations
+        var providers = project.getProviders();
         Configuration aotOptimizerRuntimeClasspath = configurations.create("aotOptimizerRuntimeClasspath", c -> {
-            configureAsRuntimeClasspath(configurations, c);
+            configureAsRuntimeClasspath(providers, configurations, c);
             c.getDependencies().addLater(aotExtension.getVersion().map(v -> project.getDependencies().create("io.micronaut.aot:micronaut-aot-api:" + v)));
             c.getDependencies().addLater(aotExtension.getVersion().map(v -> project.getDependencies().create("io.micronaut.aot:micronaut-aot-std-optimizers:" + v)));
             c.getDependencies().addLater(aotExtension.getVersion().map(v -> project.getDependencies().create("io.micronaut.aot:micronaut-aot-cli:" + v)));
@@ -388,7 +389,7 @@ public abstract class MicronautAotPlugin implements Plugin<Project> {
             c.setCanBeConsumed(false);
         });
         Configuration aotApplicationClasspath = configurations.create(AOT_APPLICATION_CLASSPATH, c -> {
-            configureAsRuntimeClasspath(configurations, c);
+            configureAsRuntimeClasspath(providers, configurations, c);
             Configuration runtimeClasspath = configurations.findByName(JavaPlugin.RUNTIME_CLASSPATH_CONFIGURATION_NAME);
             runtimeClasspath.getExtendsFrom().forEach(c::extendsFrom);
             c.extendsFrom(aotApplication);
@@ -401,12 +402,12 @@ public abstract class MicronautAotPlugin implements Plugin<Project> {
         );
     }
 
-    private void configureAsRuntimeClasspath(ConfigurationContainer configurations, Configuration configuration) {
+    private void configureAsRuntimeClasspath(ProviderFactory providers, ConfigurationContainer configurations, Configuration configuration) {
         configuration.setCanBeResolved(true);
         configuration.setCanBeConsumed(false);
 
         Configuration runtimeClasspath = configurations.getByName(JavaPlugin.RUNTIME_CLASSPATH_CONFIGURATION_NAME);
-        AttributeUtils.copyAttributes(runtimeClasspath, configuration);
+        AttributeUtils.copyAttributes(providers, runtimeClasspath, configuration);
     }
 
     private static class JarExclusionSpec implements Action<FileCopyDetails> {

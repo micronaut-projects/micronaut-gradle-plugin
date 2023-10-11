@@ -18,6 +18,7 @@ package io.micronaut.gradle;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.attributes.Attribute;
 import org.gradle.api.attributes.AttributeContainer;
+import org.gradle.api.provider.ProviderFactory;
 
 import java.util.Set;
 
@@ -34,13 +35,13 @@ public abstract class AttributeUtils {
      * @param from the source configuration
      * @param to the target configuration
      */
-    public static void copyAttributes(Configuration from, Configuration to) {
+    public static void copyAttributes(ProviderFactory providers, Configuration from, Configuration to) {
         from.attributes(attrs -> {
             AttributeContainer runtimeClasspathAttributes = to.getAttributes();
             Set<Attribute<?>> keySet = runtimeClasspathAttributes.keySet();
             for (Attribute<?> attribute : keySet) {
                 //noinspection unchecked,DataFlowIssue
-                attrs.attribute((Attribute<Object>) attribute, runtimeClasspathAttributes.getAttribute(attribute));
+                attrs.attributeProvider((Attribute<Object>) attribute, providers.provider(() -> runtimeClasspathAttributes.getAttribute(attribute)));
             }
         });
     }
