@@ -46,7 +46,6 @@ import org.gradle.api.file.RelativePath;
 import org.gradle.api.java.archives.Attributes;
 import org.gradle.api.logging.Logger;
 import org.gradle.api.plugins.ApplicationPlugin;
-import org.gradle.api.plugins.ApplicationPluginConvention;
 import org.gradle.api.plugins.JavaApplication;
 import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.provider.Provider;
@@ -183,7 +182,7 @@ public abstract class MicronautAotPlugin implements Plugin<Project> {
     private void registerOptimizedDistribution(Project project,
                                                TaskProvider<Jar> optimizedJar) {
         DistributionContainer distributions = project.getExtensions().getByType(DistributionContainer.class);
-        ApplicationPluginConvention appConvention = project.getConvention().getPlugin(ApplicationPluginConvention.class);
+        JavaApplication appConvention = project.getExtensions().getByType(JavaApplication.class);
         ConfigurableFileCollection classpath = project.getObjects().fileCollection();
         classpath.from(optimizedJar);
         classpath.from(project.getConfigurations().getByName(JavaPlugin.RUNTIME_CLASSPATH_CONFIGURATION_NAME));

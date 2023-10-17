@@ -29,9 +29,7 @@ import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.file.SourceDirectorySet;
 import org.gradle.api.plugins.ApplicationPlugin;
-import org.gradle.api.plugins.JavaApplication;
 import org.gradle.api.plugins.PluginManager;
-import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.JavaExec;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.SourceSetContainer;
@@ -191,17 +189,7 @@ public class MicronautMinimalApplicationPlugin implements Plugin<Project> {
             if (micronautRuntime == MicronautRuntime.GOOGLE_FUNCTION) {
                 configureGoogleCloudFunctionRuntime(project, p, dependencyHandler);
             }
-            ShadowPluginSupport.withShadowPlugin(project, () -> {
-                JavaApplication javaApplication = project
-                        .getExtensions().findByType(JavaApplication.class);
-                if (javaApplication != null) {
-                    Property<String> mainClass = javaApplication.getMainClass();
-                    if (mainClass.isPresent()) {
-                        project.setProperty("mainClassName", mainClass.get());
-                    }
-                }
-                ShadowPluginSupport.mergeServiceFiles(project);
-            });
+            ShadowPluginSupport.withShadowPlugin(project, () -> ShadowPluginSupport.mergeServiceFiles(project));
 
         });
     }
