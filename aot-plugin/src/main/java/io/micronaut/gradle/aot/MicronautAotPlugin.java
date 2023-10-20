@@ -50,7 +50,6 @@ import org.gradle.api.plugins.JavaApplication;
 import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.provider.ProviderFactory;
-import org.gradle.api.specs.Spec;
 import org.gradle.api.tasks.JavaExec;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.TaskContainer;
@@ -447,48 +446,6 @@ public abstract class MicronautAotPlugin implements Plugin<Project> {
         private static String normalizePath(String path) {
             return path.replace('\\', '/');
         }
-    }
-
-    private static class ExclusionSpec implements Spec<File> {
-        private final Provider<RegularFile> filterFile;
-        private final Set<String> prefixes;
-        private final Logger logger;
-        private Set<String> excludes;
-
-        private ExclusionSpec(Provider<RegularFile> filterFile,
-                                 Set<String> prefixes,
-                                 Logger logger) {
-            this.filterFile = filterFile;
-            this.prefixes = prefixes;
-            this.logger = logger;
-        }
-
-        @Override
-        public boolean isSatisfiedBy(File file) {
-            if (excludes == null) {
-                File resourceFilter = filterFile.get().getAsFile();
-                try {
-                    excludes = new HashSet<>();
-                    Files.readAllLines(resourceFilter.toPath())
-                            .stream()
-                            .map(JarExclusionSpec::normalizePath)
-                            .forEach(excludes::add);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-                logger.debug("Excluded resources: {} ", excludes);
-            }
-            var relativePath = file.toString();
-            if (excludes.contains(normalizePath(relativePath)) || prefixes.stream().anyMatch(p -> normalizePath(relativePath).startsWith(p))) {
-                return false;
-            }
-            return true;
-        }
-
-        private static String normalizePath(String path) {
-            return path.replace('\\', '/');
-        }
-
     }
 
     private static final class Configurations {
