@@ -50,4 +50,35 @@ micronaut {
         !result.output.contains("Configuration with name 'optimizedRuntimeClasspath' not found.")
         result.task(':help').outcome == TaskOutcome.SUCCESS
     }
+
+    @Issue("https://github.com/micronaut-projects/micronaut-gradle-plugin/issues/852")
+    def "test resources client shouldn't be on the AOT classpath"() {
+        settingsFile << "rootProject.name = 'test'"
+        buildFile << """plugins {
+    id("io.micronaut.minimal.library")
+    id("io.micronaut.aot")
+    id("io.micronaut.test-resources")
+}
+
+repositories {
+    mavenCentral()
+}
+
+micronaut {
+    version "$micronautVersion"
+}
+
+tasks.named("prepareJitOptimizations") {
+    doFirst {
+        assert classpath.files.stream().noneMatch { it.name.startsWith("micronaut-test-resources-client-") }
+    }
+}
+
+"""
+        when:
+        def result = build 'prepareJitOptimizations'
+
+        then:
+        result.task(":prepareJitOptimizations").outcome == TaskOutcome.SUCCESS
+    }
 }

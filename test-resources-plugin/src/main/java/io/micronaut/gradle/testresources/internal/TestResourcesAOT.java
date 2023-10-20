@@ -36,8 +36,6 @@ public final class TestResourcesAOT {
     public static void configure(Project project, Configuration client) {
         AOTExtension aot = PluginsHelper.findMicronautExtension(project).getExtensions().getByType(AOTExtension.class);
         ConfigurationContainer configurations = project.getConfigurations();
-        Configuration aotAppClasspath = configurations.getByName(MicronautAotPlugin.AOT_APPLICATION_CLASSPATH);
-        aotAppClasspath.extendsFrom(client);
         project.getPluginManager().withPlugin("io.micronaut.minimal.application", unused -> {
             Configuration optimizedRuntimeClasspath = configurations.getByName(MicronautAotPlugin.OPTIMIZED_RUNTIME_CLASSPATH_CONFIGURATION_NAME);
             optimizedRuntimeClasspath.extendsFrom(client);
