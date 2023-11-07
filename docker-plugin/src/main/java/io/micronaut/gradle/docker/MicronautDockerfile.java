@@ -23,6 +23,7 @@ import java.util.List;
 
 public abstract class MicronautDockerfile extends Dockerfile implements DockerBuildOptions {
     public static final String DEFAULT_WORKING_DIR = "/home/app";
+    public static final String DEFAULT_BASE_IMAGE = "eclipse-temurin:17-jre-focal";
 
     @Input
     private final Property<String> baseImage;
@@ -109,7 +110,7 @@ public abstract class MicronautDockerfile extends Dockerfile implements DockerBu
             case LAMBDA:
                 javaApplication.getMainClass().set("io.micronaut.function.aws.runtime.MicronautLambdaRuntime");
             default:
-                from(new Dockerfile.From(from != null ? from : "openjdk:17-alpine"));
+                from(new Dockerfile.From(from != null ? from : DEFAULT_BASE_IMAGE));
                 setupResources(this);
                 exposePort(exposedPorts);
                 getInstructions().addAll(additionalInstructions);

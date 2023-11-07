@@ -80,7 +80,7 @@ class Application {
 """
 
         testProjectDir.newFile("Dockerfile") << """
-FROM openjdk:17-alpine
+FROM eclipse-temurin:17-jre-focal
 WORKDIR /home/alternate
 COPY layers/libs /home/alternate/libs
 COPY layers/classes /home/alternate/classes
@@ -189,7 +189,7 @@ class Application {
 
         and:
         def dockerfile = new File(testProjectDir.root, 'build/docker/main/Dockerfile').text
-        dockerfile == """FROM openjdk:17-alpine
+        dockerfile == """FROM eclipse-temurin:17-jre-focal
 WORKDIR /home/alternate
 COPY layers/libs /home/alternate/libs
 COPY layers/classes /home/alternate/classes
