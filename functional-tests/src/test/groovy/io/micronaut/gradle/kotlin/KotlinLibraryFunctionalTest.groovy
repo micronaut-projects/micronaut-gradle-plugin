@@ -106,6 +106,9 @@ class Foo {}
         given:
         settingsFile << "rootProject.name = 'hello-world'"
         buildFile.delete()
+        file("gradle.properties") << """
+            kapt.verbose=true
+        """
         kotlinBuildFile << """
             plugins {
                 id("org.jetbrains.kotlin.jvm") version("$kotlinVersion")

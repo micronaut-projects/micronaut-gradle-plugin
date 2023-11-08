@@ -110,6 +110,7 @@ public class MicronautKotlinSupport {
 
         final ExtensionContainer extensions = project.getExtensions();
         extensions.configure(KaptExtension.class, kaptExtension -> {
+            kaptExtension.setGenerateStubs(false);
             final MicronautExtension micronautExtension = extensions.getByType(MicronautExtension.class);
             AnnotationProcessing processingConfig = micronautExtension.getProcessing();
             final boolean isIncremental = processingConfig.getIncremental().getOrElse(true);
