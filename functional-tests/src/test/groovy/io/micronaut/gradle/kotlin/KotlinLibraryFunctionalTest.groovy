@@ -75,7 +75,7 @@ class Foo {}
                 processing {
                     incremental(true)
                 }
-            }
+            }   
             
             ${getRepositoriesBlock('kotlin')}
             
@@ -106,9 +106,6 @@ class Foo {}
         given:
         settingsFile << "rootProject.name = 'hello-world'"
         buildFile.delete()
-        file("gradle.properties") << """
-            kapt.verbose=true
-        """
         kotlinBuildFile << """
             plugins {
                 id("org.jetbrains.kotlin.jvm") version("$kotlinVersion")
@@ -117,12 +114,12 @@ class Foo {}
                 id("io.micronaut.$plugin")
             }
             
-            sourceSets {
-                val custom by creating {
-                    compileClasspath += sourceSets["main"].output
-                    runtimeClasspath += sourceSets["main"].output
-                }
-            }            
+            val custom by sourceSets.creating
+            
+            dependencies {
+                "customImplementation"(project)
+            }
+                        
             micronaut {
                 version("$micronautVersion")
                 processing {

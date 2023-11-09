@@ -1,9 +1,11 @@
 package io.micronaut.gradle.graalvm;
 
+import io.micronaut.gradle.AnnotationProcessing;
 import io.micronaut.gradle.MicronautComponentPlugin;
 import io.micronaut.gradle.MicronautExtension;
 import io.micronaut.gradle.MicronautRuntime;
 import io.micronaut.gradle.PluginsHelper;
+import io.micronaut.gradle.SourceSetConfigurerRegistry;
 import io.micronaut.gradle.internal.AutomaticDependency;
 import org.graalvm.buildtools.gradle.NativeImagePlugin;
 import org.graalvm.buildtools.gradle.dsl.GraalVMExtension;
@@ -19,6 +21,8 @@ import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.TaskContainer;
 import org.gradle.language.jvm.tasks.ProcessResources;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.Arrays;
@@ -43,6 +47,7 @@ public class MicronautGraalPlugin implements Plugin<Project> {
 
     public static final String RICH_OUTPUT_PROPERTY = "io.micronaut.graalvm.rich.output";
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(MicronautGraalPlugin.class);
     private static final Set<String> SOURCE_SETS = Collections.unmodifiableSet(new HashSet<>(Arrays.asList("main", "test")));
     private static final List<String> GRAALVM_MODULE_EXPORTS = Collections.unmodifiableList(Arrays.asList(
             "org.graalvm.nativeimage.builder/com.oracle.svm.core.configure",
@@ -123,11 +128,21 @@ public class MicronautGraalPlugin implements Plugin<Project> {
     }
 
     private static void configureAnnotationProcessing(Project project, MicronautExtension extension) {
+        var registry = project.getExtensions().getByType(SourceSetConfigurerRegistry.class);
+        var knownSourceSets = new HashSet<SourceSet>();
+        registry.register(sourceSet -> {
+            addGraalVMAnnotationProcessorDependency(project, Set.of(sourceSet));
+            knownSourceSets.add(sourceSet);
+        });
         var sourceSets = PluginsHelper.findSourceSets(project);
         project.afterEvaluate(unused -> {
             ListProperty<SourceSet> sets = extension.getProcessing().getAdditionalSourceSets();
-            if (sets.isPresent()) {
-                addGraalVMAnnotationProcessorDependency(project, sets.get());
+            var additionalSourceSets = sets.get();
+            for (SourceSet sourceSet : additionalSourceSets) {
+                if (!knownSourceSets.contains(sourceSet)) {
+                    AnnotationProcessing.showAdditionalSourceSetDeprecationWarning(sourceSet);
+                    registry.register(sourceSet1 -> addGraalVMAnnotationProcessorDependency(project, Set.of(sourceSet)));
+                }
             }
         });
 

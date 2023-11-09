@@ -30,10 +30,13 @@ import org.gradle.api.tasks.TaskProvider;
 import org.gradle.api.tasks.compile.GroovyCompile;
 import org.gradle.api.tasks.compile.JavaCompile;
 import org.gradle.api.tasks.testing.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -53,6 +56,8 @@ import static org.gradle.api.plugins.JavaPlugin.TEST_COMPILE_ONLY_CONFIGURATION_
  * library, or a Micronaut application.
  */
 public class MicronautComponentPlugin implements Plugin<Project> {
+    private static final Logger LOGGER = LoggerFactory.getLogger(MicronautComponentPlugin.class);
+
     private static final List<String> SOURCESETS = List.of(
             SourceSet.MAIN_SOURCE_SET_NAME,
             SourceSet.TEST_SOURCE_SET_NAME
@@ -122,40 +127,52 @@ public class MicronautComponentPlugin implements Plugin<Project> {
     private void configureMicronautBom(Project project, MicronautExtension micronautExtension) {
         Configuration micronautBoms = project.getConfigurations().getByName(MICRONAUT_BOMS_CONFIGURATION);
         PluginsHelper.maybeAddMicronautPlaformBom(project, micronautBoms);
+        var registry = project.getExtensions().getByType(SourceSetConfigurerRegistry.class);
+        var knownSourceSets = new HashSet<SourceSet>();
+        registry.register(sourceSet -> {
+            configureSourceSet(project, sourceSet, micronautBoms);
+            knownSourceSets.add(sourceSet);
+        });
         project.afterEvaluate(p -> {
             project.getConfigurations().configureEach(conf -> {
                 if (CONFIGURATIONS_TO_APPLY_BOMS.contains(conf.getName())) {
                     conf.extendsFrom(micronautBoms);
                 }
             });
-            ListProperty<SourceSet> additionalSourceSets =
+            var additionalSourceSets =
                     micronautExtension.getProcessing().getAdditionalSourceSets();
-
             if (additionalSourceSets.isPresent()) {
                 List<SourceSet> configurations = additionalSourceSets.get();
                 if (!configurations.isEmpty()) {
                     for (SourceSet sourceSet : configurations) {
-                        String annotationProcessorConfigurationName = sourceSet
-                                .getAnnotationProcessorConfigurationName();
-                        String implementationConfigurationName = sourceSet
-                                .getImplementationConfigurationName();
-                        List<String> both = Arrays.asList(
-                                implementationConfigurationName,
-                                annotationProcessorConfigurationName
-                        );
-                        for (String configuration : both) {
-                            Configuration conf = project.getConfigurations().findByName(configuration);
-                            if (conf != null) {
-                                conf.extendsFrom(micronautBoms);
-                            }
+                        if (!knownSourceSets.contains(sourceSet)) {
+                            AnnotationProcessing.showAdditionalSourceSetDeprecationWarning(sourceSet);
+                            configureSourceSet(project, sourceSet, micronautBoms);
                         }
-                        configureAnnotationProcessors(p,
-                                implementationConfigurationName,
-                                annotationProcessorConfigurationName);
                     }
                 }
             }
         });
+    }
+
+    private static void configureSourceSet(Project project, SourceSet sourceSet, Configuration micronautBoms) {
+        String annotationProcessorConfigurationName = sourceSet
+                .getAnnotationProcessorConfigurationName();
+        String implementationConfigurationName = sourceSet
+                .getImplementationConfigurationName();
+        List<String> both = Arrays.asList(
+                implementationConfigurationName,
+                annotationProcessorConfigurationName
+        );
+        for (String configuration : both) {
+            Configuration conf = project.getConfigurations().findByName(configuration);
+            if (conf != null) {
+                conf.extendsFrom(micronautBoms);
+            }
+        }
+        configureAnnotationProcessors(project,
+                implementationConfigurationName,
+                annotationProcessorConfigurationName);
     }
 
 

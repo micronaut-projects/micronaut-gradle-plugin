@@ -23,7 +23,9 @@ import static io.micronaut.gradle.MicronautComponentPlugin.MICRONAUT_BOMS_CONFIG
 public class MicronautBasePlugin implements Plugin<Project> {
     @Override
     public void apply(Project project) {
-        project.getExtensions().create("micronaut", MicronautExtension.class);
+        var registry = new SourceSetConfigurerRegistry();
+        project.getExtensions().add("micronautSourceSetConfigurer", registry);
+        project.getExtensions().create("micronaut", MicronautExtension.class, registry);
         project.getConfigurations().create(MICRONAUT_BOMS_CONFIGURATION, conf -> {
             conf.setCanBeResolved(false);
             conf.setCanBeConsumed(false);

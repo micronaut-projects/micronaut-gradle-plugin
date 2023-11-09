@@ -8,7 +8,6 @@ import org.gradle.api.artifacts.Dependency;
 import org.gradle.api.artifacts.dsl.DependencyHandler;
 import org.gradle.api.plugins.ExtensionContainer;
 import org.gradle.api.plugins.PluginManager;
-import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.TaskContainer;
@@ -16,9 +15,12 @@ import org.jetbrains.kotlin.allopen.gradle.AllOpenExtension;
 import org.jetbrains.kotlin.gradle.dsl.KotlinCompile;
 import org.jetbrains.kotlin.gradle.dsl.KotlinJvmOptions;
 import org.jetbrains.kotlin.gradle.plugin.KaptExtension;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -34,13 +36,15 @@ import static io.micronaut.gradle.PluginsHelper.resolveMicronautPlatform;
  * @since 1.0.0
  */
 public class MicronautKotlinSupport {
+    private static final Logger LOGGER = LoggerFactory.getLogger(MicronautKotlinSupport.class);
+
     private static final String[] KAPT_CONFIGURATIONS = new String[]{
-            "kapt",
-            "kaptTest"
+        "kapt",
+        "kaptTest"
     };
     private static final String[] KSP_CONFIGURATIONS = new String[]{
-            "ksp",
-            "kspTest"
+        "ksp",
+        "kspTest"
     };
     public static final String KOTLIN_PROCESSORS = "kotlinProcessors";
 
@@ -150,57 +154,76 @@ public class MicronautKotlinSupport {
         for (String compilerConfiguration : compilerConfigurations) {
             project.getConfigurations().getByName(compilerConfiguration).extendsFrom(kotlinProcessors);
         }
+        PluginsHelper.applyAdditionalProcessors(
+            project,
+            compilerConfigurations
+        );
+        var registry = project.
+            getExtensions()
+            .getByType(SourceSetConfigurerRegistry.class);
+        var dependencyHandler = project.getDependencies();
+        var platform = PluginsHelper.findMicronautVersion(project).map(micronautVersion -> resolveMicronautPlatform(dependencyHandler, micronautVersion));
+        var knownSourceSets = new HashSet<SourceSet>();
+        registry.register(sourceSet -> {
+            configureAdditionalSourceSet(compilerType, project, dependencyHandler, platform, sourceSet);
+            knownSourceSets.add(sourceSet);
+        });
+        for (String compileConfiguration : compilerConfigurations) {
+            dependencyHandler.addProvider(
+                compileConfiguration,
+                platform
+            );
+        }
 
         project.afterEvaluate(p -> {
             PluginsHelper.applyAdditionalProcessors(
-                    p,
-                    compilerConfigurations
+                p,
+                compilerConfigurations
             );
             final MicronautExtension micronautExtension = p
-                    .getExtensions()
-                    .getByType(MicronautExtension.class);
-            ListProperty<SourceSet> additionalSourceSets =
-                    micronautExtension.getProcessing().getAdditionalSourceSets();
-            final DependencyHandler dependencyHandler = p.getDependencies();
-            Provider<Dependency> platform = PluginsHelper.findMicronautVersion(p).map(micronautVersion -> resolveMicronautPlatform(dependencyHandler, micronautVersion));
+                .getExtensions()
+                .getByType(MicronautExtension.class);
+            var additionalSourceSets =
+                micronautExtension.getProcessing()
+                    .getAdditionalSourceSets();
             if (additionalSourceSets.isPresent()) {
                 List<SourceSet> configurations = additionalSourceSets.get();
                 if (!configurations.isEmpty()) {
                     for (SourceSet sourceSet : configurations) {
-                        configureAdditionalSourceSet(compilerType, dependencies, p, dependencyHandler, platform, sourceSet);
+                        if (!knownSourceSets.contains(sourceSet)) {
+                            AnnotationProcessing.showAdditionalSourceSetDeprecationWarning(sourceSet);
+                            configureAdditionalSourceSet(compilerType, p, dependencyHandler, platform, sourceSet);
+                        }
                     }
                 }
             }
-
-
-            for (String compileConfiguration : compilerConfigurations) {
-                dependencyHandler.addProvider(
-                        compileConfiguration,
-                        platform
-                );
-            }
         });
+
     }
 
-    private static void configureAdditionalSourceSet(String compilerType, DependencyHandler dependencies, Project p, DependencyHandler dependencyHandler, Provider<Dependency> platform, SourceSet sourceSet) {
+    private static void configureAdditionalSourceSet(String compilerType,
+                                                     Project p,
+                                                     DependencyHandler dependencyHandler,
+                                                     Provider<Dependency> platform,
+                                                     SourceSet sourceSet) {
         String annotationProcessorConfigurationName = compilerType + Strings.capitalize(sourceSet.getName());
         String implementationConfigurationName = sourceSet
-                .getImplementationConfigurationName();
+            .getImplementationConfigurationName();
         List<String> both = Arrays.asList(
-                implementationConfigurationName,
-                annotationProcessorConfigurationName
+            implementationConfigurationName,
+            annotationProcessorConfigurationName
         );
         for (String configuration : both) {
             dependencyHandler.addProvider(
-                    configuration,
-                    platform
+                configuration,
+                platform
             );
         }
         configureAnnotationProcessors(p,
-                implementationConfigurationName,
-                annotationProcessorConfigurationName);
+            implementationConfigurationName,
+            annotationProcessorConfigurationName);
         p.getPluginManager().withPlugin("io.micronaut.graalvm", unused ->
-                new AutomaticDependency(annotationProcessorConfigurationName,
+            new AutomaticDependency(annotationProcessorConfigurationName,
                 "io.micronaut:micronaut-graal",
                 Optional.of(CORE_VERSION_PROPERTY)).applyTo(p)
         );
@@ -210,8 +233,8 @@ public class MicronautKotlinSupport {
         project.getPluginManager().withPlugin("io.micronaut.graalvm", unused -> {
             for (String configuration : compilerConfigurations) {
                 new AutomaticDependency(configuration,
-                        "io.micronaut:micronaut-graal",
-                        Optional.of(CORE_VERSION_PROPERTY)).applyTo(project);
+                    "io.micronaut:micronaut-graal",
+                    Optional.of(CORE_VERSION_PROPERTY)).applyTo(project);
             }
         });
     }
