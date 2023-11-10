@@ -16,13 +16,10 @@ import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.DependencySet;
 import org.gradle.api.plugins.ExtensionAware;
-import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.TaskContainer;
 import org.gradle.language.jvm.tasks.ProcessResources;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.Arrays;
@@ -47,7 +44,6 @@ public class MicronautGraalPlugin implements Plugin<Project> {
 
     public static final String RICH_OUTPUT_PROPERTY = "io.micronaut.graalvm.rich.output";
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(MicronautGraalPlugin.class);
     private static final Set<String> SOURCE_SETS = Collections.unmodifiableSet(new HashSet<>(Arrays.asList("main", "test")));
     private static final List<String> GRAALVM_MODULE_EXPORTS = Collections.unmodifiableList(Arrays.asList(
             "org.graalvm.nativeimage.builder/com.oracle.svm.core.configure",
@@ -136,7 +132,8 @@ public class MicronautGraalPlugin implements Plugin<Project> {
         });
         var sourceSets = PluginsHelper.findSourceSets(project);
         project.afterEvaluate(unused -> {
-            ListProperty<SourceSet> sets = extension.getProcessing().getAdditionalSourceSets();
+            @SuppressWarnings("deprecation")
+            var sets = extension.getProcessing().getAdditionalSourceSets();
             var additionalSourceSets = sets.get();
             for (SourceSet sourceSet : additionalSourceSets) {
                 if (!knownSourceSets.contains(sourceSet)) {

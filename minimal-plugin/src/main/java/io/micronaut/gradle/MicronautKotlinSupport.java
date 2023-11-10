@@ -15,8 +15,6 @@ import org.jetbrains.kotlin.allopen.gradle.AllOpenExtension;
 import org.jetbrains.kotlin.gradle.dsl.KotlinCompile;
 import org.jetbrains.kotlin.gradle.dsl.KotlinJvmOptions;
 import org.jetbrains.kotlin.gradle.plugin.KaptExtension;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -36,8 +34,6 @@ import static io.micronaut.gradle.PluginsHelper.resolveMicronautPlatform;
  * @since 1.0.0
  */
 public class MicronautKotlinSupport {
-    private static final Logger LOGGER = LoggerFactory.getLogger(MicronautKotlinSupport.class);
-
     private static final String[] KAPT_CONFIGURATIONS = new String[]{
         "kapt",
         "kaptTest"
@@ -146,7 +142,6 @@ public class MicronautKotlinSupport {
 
     private static void configureKotlinCompilerPlugin(Project project, String[] compilerConfigurations, String compilerType, List<String> annotationProcessorModules) {
         // add inject-java to kapt scopes
-        DependencyHandler dependencies = project.getDependencies();
         PluginsHelper.registerAnnotationProcessors(project, annotationProcessorModules, compilerConfigurations);
         addGraalVmDependencies(compilerConfigurations, project);
 
@@ -174,31 +169,35 @@ public class MicronautKotlinSupport {
                 platform
             );
         }
-
         project.afterEvaluate(p -> {
             PluginsHelper.applyAdditionalProcessors(
                 p,
                 compilerConfigurations
             );
-            final MicronautExtension micronautExtension = p
-                .getExtensions()
-                .getByType(MicronautExtension.class);
-            var additionalSourceSets =
-                micronautExtension.getProcessing()
-                    .getAdditionalSourceSets();
-            if (additionalSourceSets.isPresent()) {
-                List<SourceSet> configurations = additionalSourceSets.get();
-                if (!configurations.isEmpty()) {
-                    for (SourceSet sourceSet : configurations) {
-                        if (!knownSourceSets.contains(sourceSet)) {
-                            AnnotationProcessing.showAdditionalSourceSetDeprecationWarning(sourceSet);
-                            configureAdditionalSourceSet(compilerType, p, dependencyHandler, platform, sourceSet);
-                        }
+            configureExtraSourceSetsUsingDeprecatedBehavior(compilerType, p, knownSourceSets, dependencyHandler, platform);
+        });
+
+    }
+
+    private static void configureExtraSourceSetsUsingDeprecatedBehavior(String compilerType, Project p, HashSet<SourceSet> knownSourceSets, DependencyHandler dependencyHandler, Provider<Dependency> platform) {
+        var micronautExtension = p
+            .getExtensions()
+            .getByType(MicronautExtension.class);
+        @SuppressWarnings("deprecation")
+        var additionalSourceSets =
+            micronautExtension.getProcessing()
+                .getAdditionalSourceSets();
+        if (additionalSourceSets.isPresent()) {
+            List<SourceSet> configurations = additionalSourceSets.get();
+            if (!configurations.isEmpty()) {
+                for (SourceSet sourceSet : configurations) {
+                    if (!knownSourceSets.contains(sourceSet)) {
+                        AnnotationProcessing.showAdditionalSourceSetDeprecationWarning(sourceSet);
+                        configureAdditionalSourceSet(compilerType, p, dependencyHandler, platform, sourceSet);
                     }
                 }
             }
-        });
-
+        }
     }
 
     private static void configureAdditionalSourceSet(String compilerType,

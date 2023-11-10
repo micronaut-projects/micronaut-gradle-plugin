@@ -23,15 +23,12 @@ import org.gradle.api.plugins.BasePlugin;
 import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.plugins.JavaPluginExtension;
 import org.gradle.api.plugins.PluginManager;
-import org.gradle.api.provider.ListProperty;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.TaskContainer;
 import org.gradle.api.tasks.TaskProvider;
 import org.gradle.api.tasks.compile.GroovyCompile;
 import org.gradle.api.tasks.compile.JavaCompile;
 import org.gradle.api.tasks.testing.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.Arrays;
@@ -56,8 +53,6 @@ import static org.gradle.api.plugins.JavaPlugin.TEST_COMPILE_ONLY_CONFIGURATION_
  * library, or a Micronaut application.
  */
 public class MicronautComponentPlugin implements Plugin<Project> {
-    private static final Logger LOGGER = LoggerFactory.getLogger(MicronautComponentPlugin.class);
-
     private static final List<String> SOURCESETS = List.of(
             SourceSet.MAIN_SOURCE_SET_NAME,
             SourceSet.TEST_SOURCE_SET_NAME
@@ -267,7 +262,8 @@ public class MicronautComponentPlugin implements Plugin<Project> {
                         }
                     }
                 }
-                ListProperty<SourceSet> additionalSourceSets = micronautExtension.getProcessing().getAdditionalSourceSets();
+                @SuppressWarnings("deprecation")
+                var additionalSourceSets = micronautExtension.getProcessing().getAdditionalSourceSets();
                 if (additionalSourceSets.isPresent()) {
                     List<SourceSet> sourceSets = additionalSourceSets.get();
                     for (SourceSet sourceSet : sourceSets) {
