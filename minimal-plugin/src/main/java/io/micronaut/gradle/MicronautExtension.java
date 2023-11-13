@@ -35,8 +35,8 @@ public abstract class MicronautExtension implements ExtensionAware {
     public abstract Property<Boolean> getImportMicronautPlatform();
 
     @Inject
-    public MicronautExtension(ObjectFactory objectFactory) {
-        this.processing = objectFactory.newInstance(AnnotationProcessing.class);
+    public MicronautExtension(ObjectFactory objectFactory, SourceSetConfigurer sourceSetConfigurer) {
+        this.processing = objectFactory.newInstance(AnnotationProcessing.class, sourceSetConfigurer);
         this.version = objectFactory.property(String.class);
         this.enableNativeImage = objectFactory.property(Boolean.class)
                                     .convention(true);

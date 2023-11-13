@@ -23,7 +23,6 @@ import org.gradle.api.plugins.BasePlugin;
 import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.plugins.JavaPluginExtension;
 import org.gradle.api.plugins.PluginManager;
-import org.gradle.api.provider.ListProperty;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.TaskContainer;
 import org.gradle.api.tasks.TaskProvider;
@@ -34,6 +33,7 @@ import org.gradle.api.tasks.testing.Test;
 import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -122,40 +122,52 @@ public class MicronautComponentPlugin implements Plugin<Project> {
     private void configureMicronautBom(Project project, MicronautExtension micronautExtension) {
         Configuration micronautBoms = project.getConfigurations().getByName(MICRONAUT_BOMS_CONFIGURATION);
         PluginsHelper.maybeAddMicronautPlaformBom(project, micronautBoms);
+        var registry = project.getExtensions().getByType(SourceSetConfigurerRegistry.class);
+        var knownSourceSets = new HashSet<SourceSet>();
+        registry.register(sourceSet -> {
+            configureSourceSet(project, sourceSet, micronautBoms);
+            knownSourceSets.add(sourceSet);
+        });
         project.afterEvaluate(p -> {
             project.getConfigurations().configureEach(conf -> {
                 if (CONFIGURATIONS_TO_APPLY_BOMS.contains(conf.getName())) {
                     conf.extendsFrom(micronautBoms);
                 }
             });
-            ListProperty<SourceSet> additionalSourceSets =
+            var additionalSourceSets =
                     micronautExtension.getProcessing().getAdditionalSourceSets();
-
             if (additionalSourceSets.isPresent()) {
                 List<SourceSet> configurations = additionalSourceSets.get();
                 if (!configurations.isEmpty()) {
                     for (SourceSet sourceSet : configurations) {
-                        String annotationProcessorConfigurationName = sourceSet
-                                .getAnnotationProcessorConfigurationName();
-                        String implementationConfigurationName = sourceSet
-                                .getImplementationConfigurationName();
-                        List<String> both = Arrays.asList(
-                                implementationConfigurationName,
-                                annotationProcessorConfigurationName
-                        );
-                        for (String configuration : both) {
-                            Configuration conf = project.getConfigurations().findByName(configuration);
-                            if (conf != null) {
-                                conf.extendsFrom(micronautBoms);
-                            }
+                        if (!knownSourceSets.contains(sourceSet)) {
+                            AnnotationProcessing.showAdditionalSourceSetDeprecationWarning(sourceSet);
+                            configureSourceSet(project, sourceSet, micronautBoms);
                         }
-                        configureAnnotationProcessors(p,
-                                implementationConfigurationName,
-                                annotationProcessorConfigurationName);
                     }
                 }
             }
         });
+    }
+
+    private static void configureSourceSet(Project project, SourceSet sourceSet, Configuration micronautBoms) {
+        String annotationProcessorConfigurationName = sourceSet
+                .getAnnotationProcessorConfigurationName();
+        String implementationConfigurationName = sourceSet
+                .getImplementationConfigurationName();
+        List<String> both = Arrays.asList(
+                implementationConfigurationName,
+                annotationProcessorConfigurationName
+        );
+        for (String configuration : both) {
+            Configuration conf = project.getConfigurations().findByName(configuration);
+            if (conf != null) {
+                conf.extendsFrom(micronautBoms);
+            }
+        }
+        configureAnnotationProcessors(project,
+                implementationConfigurationName,
+                annotationProcessorConfigurationName);
     }
 
 
@@ -250,7 +262,8 @@ public class MicronautComponentPlugin implements Plugin<Project> {
                         }
                     }
                 }
-                ListProperty<SourceSet> additionalSourceSets = micronautExtension.getProcessing().getAdditionalSourceSets();
+                @SuppressWarnings("deprecation")
+                var additionalSourceSets = micronautExtension.getProcessing().getAdditionalSourceSets();
                 if (additionalSourceSets.isPresent()) {
                     List<SourceSet> sourceSets = additionalSourceSets.get();
                     for (SourceSet sourceSet : sourceSets) {
