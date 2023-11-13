@@ -87,7 +87,7 @@ loadScripts(document, 'script');</script>
 <dd>
 <div class="block">Configuration for annotation processing in Micronaut.</div>
 </dd>
-<dt><a href="io/micronaut/gradle/AnnotationProcessing.html#%3Cinit%3E(org.gradle.api.model.ObjectFactory)" class="member-name-link">AnnotationProcessing(ObjectFactory)</a> - Constructor for class io.micronaut.gradle.<a href="io/micronaut/gradle/AnnotationProcessing.html" title="class in io.micronaut.gradle">AnnotationProcessing</a></dt>
+<dt><a href="io/micronaut/gradle/AnnotationProcessing.html#%3Cinit%3E(org.gradle.api.model.ObjectFactory,io.micronaut.gradle.SourceSetConfigurer)" class="member-name-link">AnnotationProcessing(ObjectFactory, SourceSetConfigurer)</a> - Constructor for class io.micronaut.gradle.<a href="io/micronaut/gradle/AnnotationProcessing.html" title="class in io.micronaut.gradle">AnnotationProcessing</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/micronaut/gradle/AnnotationProcessingConfigBuilder.html" class="type-name-link" title="interface in io.micronaut.gradle">AnnotationProcessingConfigBuilder</a> - Interface in <a href="io/micronaut/gradle/package-summary.html">io.micronaut.gradle</a></dt>
 <dd>
@@ -507,7 +507,11 @@ loadScripts(document, 'script');</script>
  classpath.</div>
 </dd>
 <dt><a href="io/micronaut/gradle/AnnotationProcessing.html#getAdditionalSourceSets()" class="member-name-link">getAdditionalSourceSets()</a> - Method in class io.micronaut.gradle.<a href="io/micronaut/gradle/AnnotationProcessing.html" title="class in io.micronaut.gradle">AnnotationProcessing</a></dt>
-<dd>&nbsp;</dd>
+<dd>
+<div class="deprecation-block"><span class="deprecated-label">Deprecated.</span>
+<div class="deprecation-comment">Use <a href="io/micronaut/gradle/AnnotationProcessing.html#sourceSets(org.gradle.api.tasks.SourceSet...)"><code>AnnotationProcessing.sourceSets(SourceSet...)</code></a> instead.</div>
+</div>
+</dd>
 <dt><a href="io/micronaut/gradle/catalog/Library.html#getAlias()" class="member-name-link">getAlias()</a> - Method in class io.micronaut.gradle.catalog.<a href="io/micronaut/gradle/catalog/Library.html" title="class in io.micronaut.gradle.catalog">Library</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/micronaut/gradle/openapi/OpenApiSpec.html#getAlwaysUseGenerateHttpResponse()" class="member-name-link">getAlwaysUseGenerateHttpResponse()</a> - Method in interface io.micronaut.gradle.openapi.<a href="io/micronaut/gradle/openapi/OpenApiSpec.html" title="interface in io.micronaut.gradle.openapi">OpenApiSpec</a></dt>
@@ -1379,7 +1383,7 @@ loadScripts(document, 'script');</script>
 <dd>
 <div class="block">Configuration for the Micronaut extension.</div>
 </dd>
-<dt><a href="io/micronaut/gradle/MicronautExtension.html#%3Cinit%3E(org.gradle.api.model.ObjectFactory)" class="member-name-link">MicronautExtension(ObjectFactory)</a> - Constructor for class io.micronaut.gradle.<a href="io/micronaut/gradle/MicronautExtension.html" title="class in io.micronaut.gradle">MicronautExtension</a></dt>
+<dt><a href="io/micronaut/gradle/MicronautExtension.html#%3Cinit%3E(org.gradle.api.model.ObjectFactory,io.micronaut.gradle.SourceSetConfigurer)" class="member-name-link">MicronautExtension(ObjectFactory, SourceSetConfigurer)</a> - Constructor for class io.micronaut.gradle.<a href="io/micronaut/gradle/MicronautExtension.html" title="class in io.micronaut.gradle">MicronautExtension</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/micronaut/gradle/graalvm/MicronautGraalPlugin.html" class="type-name-link" title="class in io.micronaut.gradle.graalvm">MicronautGraalPlugin</a> - Class in <a href="io/micronaut/gradle/graalvm/package-summary.html">io.micronaut.gradle.graalvm</a></dt>
 <dd>
@@ -1500,6 +1504,10 @@ loadScripts(document, 'script');</script>
 <dl class="index">
 <dt><a href="io/micronaut/gradle/internal/ConfigurableVersionProperty.html#of(java.lang.String)" class="member-name-link">of(String)</a> - Static method in record class io.micronaut.gradle.internal.<a href="io/micronaut/gradle/internal/ConfigurableVersionProperty.html" title="class in io.micronaut.gradle.internal">ConfigurableVersionProperty</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/micronaut/gradle/SourceSetConfigurer.html#onSourceSet(org.gradle.api.tasks.SourceSet)" class="member-name-link">onSourceSet(SourceSet)</a> - Method in interface io.micronaut.gradle.<a href="io/micronaut/gradle/SourceSetConfigurer.html" title="interface in io.micronaut.gradle">SourceSetConfigurer</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="io/micronaut/gradle/SourceSetConfigurerRegistry.html#onSourceSet(org.gradle.api.tasks.SourceSet)" class="member-name-link">onSourceSet(SourceSet)</a> - Method in class io.micronaut.gradle.<a href="io/micronaut/gradle/SourceSetConfigurerRegistry.html" title="class in io.micronaut.gradle">SourceSetConfigurerRegistry</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/micronaut/gradle/aot/MicronautAotOptimizerTask.html#onSuccess(java.io.File)" class="member-name-link">onSuccess(File)</a> - Method in class io.micronaut.gradle.aot.<a href="io/micronaut/gradle/aot/MicronautAotOptimizerTask.html" title="class in io.micronaut.gradle.aot">MicronautAotOptimizerTask</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/micronaut/gradle/aot/MicronautAotSampleConfTask.html#onSuccess(java.io.File)" class="member-name-link">onSuccess(File)</a> - Method in class io.micronaut.gradle.aot.<a href="io/micronaut/gradle/aot/MicronautAotSampleConfTask.html" title="class in io.micronaut.gradle.aot">MicronautAotSampleConfTask</a></dt>
@@ -1606,6 +1614,8 @@ loadScripts(document, 'script');</script>
 </dl>
 <h2 class="title" id="I:R">R</h2>
 <dl class="index">
+<dt><a href="io/micronaut/gradle/SourceSetConfigurerRegistry.html#register(io.micronaut.gradle.SourceSetConfigurer)" class="member-name-link">register(SourceSetConfigurer)</a> - Method in class io.micronaut.gradle.<a href="io/micronaut/gradle/SourceSetConfigurerRegistry.html" title="class in io.micronaut.gradle">SourceSetConfigurerRegistry</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/micronaut/gradle/docker/editor/DefaultEditor.html#replace(java.lang.String)" class="member-name-link">replace(String)</a> - Method in class io.micronaut.gradle.docker.editor.<a href="io/micronaut/gradle/docker/editor/DefaultEditor.html" title="class in io.micronaut.gradle.docker.editor">DefaultEditor</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/micronaut/gradle/docker/editor/Editor.html#replace(java.lang.String)" class="member-name-link">replace(String)</a> - Method in interface io.micronaut.gradle.docker.editor.<a href="io/micronaut/gradle/docker/editor/Editor.html" title="interface in io.micronaut.gradle.docker.editor">Editor</a></dt>
@@ -1704,6 +1714,14 @@ loadScripts(document, 'script');</script>
 <dt><a href="io/micronaut/gradle/ShadowPluginSupport.html" class="type-name-link" title="class in io.micronaut.gradle">ShadowPluginSupport</a> - Class in <a href="io/micronaut/gradle/package-summary.html">io.micronaut.gradle</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/micronaut/gradle/ShadowPluginSupport.html#%3Cinit%3E()" class="member-name-link">ShadowPluginSupport()</a> - Constructor for class io.micronaut.gradle.<a href="io/micronaut/gradle/ShadowPluginSupport.html" title="class in io.micronaut.gradle">ShadowPluginSupport</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="io/micronaut/gradle/AnnotationProcessing.html#showAdditionalSourceSetDeprecationWarning(org.gradle.api.tasks.SourceSet)" class="member-name-link">showAdditionalSourceSetDeprecationWarning(SourceSet)</a> - Static method in class io.micronaut.gradle.<a href="io/micronaut/gradle/AnnotationProcessing.html" title="class in io.micronaut.gradle">AnnotationProcessing</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="io/micronaut/gradle/SourceSetConfigurer.html" class="type-name-link" title="interface in io.micronaut.gradle">SourceSetConfigurer</a> - Interface in <a href="io/micronaut/gradle/package-summary.html">io.micronaut.gradle</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="io/micronaut/gradle/SourceSetConfigurerRegistry.html" class="type-name-link" title="class in io.micronaut.gradle">SourceSetConfigurerRegistry</a> - Class in <a href="io/micronaut/gradle/package-summary.html">io.micronaut.gradle</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="io/micronaut/gradle/SourceSetConfigurerRegistry.html#%3Cinit%3E()" class="member-name-link">SourceSetConfigurerRegistry()</a> - Constructor for class io.micronaut.gradle.<a href="io/micronaut/gradle/SourceSetConfigurerRegistry.html" title="class in io.micronaut.gradle">SourceSetConfigurerRegistry</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/micronaut/gradle/AnnotationProcessing.html#sourceSets(org.gradle.api.tasks.SourceSet...)" class="member-name-link">sourceSets(SourceSet...)</a> - Method in class io.micronaut.gradle.<a href="io/micronaut/gradle/AnnotationProcessing.html" title="class in io.micronaut.gradle">AnnotationProcessing</a></dt>
 <dd>&nbsp;</dd>
