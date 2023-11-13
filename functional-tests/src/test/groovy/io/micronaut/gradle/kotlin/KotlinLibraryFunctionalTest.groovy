@@ -75,7 +75,7 @@ class Foo {}
                 processing {
                     incremental(true)
                 }
-            }
+            }   
             
             ${getRepositoriesBlock('kotlin')}
             
@@ -114,12 +114,12 @@ class Foo {}
                 id("io.micronaut.$plugin")
             }
             
-            sourceSets {
-                val custom by creating {
-                    compileClasspath += sourceSets["main"].output
-                    runtimeClasspath += sourceSets["main"].output
-                }
-            }            
+            val custom by sourceSets.creating
+            
+            dependencies {
+                "customImplementation"(project)
+            }
+                        
             micronaut {
                 version("$micronautVersion")
                 processing {
