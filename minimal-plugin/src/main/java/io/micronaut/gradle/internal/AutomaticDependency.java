@@ -21,11 +21,12 @@ import org.gradle.api.Project;
 import org.gradle.api.artifacts.MinimalExternalModuleDependency;
 import org.gradle.api.artifacts.VersionCatalog;
 import org.gradle.api.artifacts.VersionCatalogsExtension;
-import org.gradle.api.artifacts.dsl.DependencyHandler;
 import org.gradle.api.provider.Property;
 import org.gradle.api.provider.Provider;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * Represents a dependency which is automatically
@@ -43,36 +44,42 @@ public record AutomaticDependency(
 ) {
     public void applyTo(Project p) {
         p.getPlugins().withType(MicronautComponentPlugin.class, unused -> {
-            DependencyHandler dependencyHandler = p.getDependencies();
-            MicronautExtension micronautExtension = p.getExtensions().getByType(MicronautExtension.class);
-            dependencyHandler.addProvider(configuration, p.getProviders().provider(() -> {
-                if (versionProperty.isPresent()) {
-                    Property<String> provider = (Property<String>) micronautExtension.getExtensions().findByName(versionProperty.get().dslName());
-                    if (provider != null && provider.isPresent()) {
-                        return dependencyHandler.create(coordinates + ":" + provider.get());
+            var dependencyHandler = p.getDependencies();
+            var micronautExtension = p.getExtensions().getByType(MicronautExtension.class);
+            var ignoredDependencies = micronautExtension.getIgnoredAutomaticDependencies();
+            p.getConfigurations().getByName(configuration).getDependencies().addAllLater(
+                p.getProviders().provider(() -> {
+                    var ignored = ignoredDependencies.getOrElse(Set.of());
+                    if (ignored.contains(coordinates)) {
+                        return List.of();
                     }
-                }
-                // If the Micronaut version catalog is applied via the settings plugin, we won't use an "empty" version
-                // but fetch it from the catalog if possible
-                VersionCatalogsExtension versionCatalogs = p.getExtensions().findByType(VersionCatalogsExtension.class);
-                if (versionCatalogs != null) {
-                    Optional<VersionCatalog> mn = versionCatalogs.find("mn");
-                    if (mn.isPresent()) {
-                        VersionCatalog micronautCatalog = mn.get();
-                        Optional<Provider<MinimalExternalModuleDependency>> dependencyProvider = micronautCatalog.getLibraryAliases()
+                    if (versionProperty.isPresent()) {
+                        Property<String> provider = (Property<String>) micronautExtension.getExtensions().findByName(versionProperty.get().dslName());
+                        if (provider != null && provider.isPresent()) {
+                            return List.of(dependencyHandler.create(coordinates + ":" + provider.get()));
+                        }
+                    }
+                    // If the Micronaut version catalog is applied via the settings plugin, we won't use an "empty" version
+                    // but fetch it from the catalog if possible
+                    VersionCatalogsExtension versionCatalogs = p.getExtensions().findByType(VersionCatalogsExtension.class);
+                    if (versionCatalogs != null) {
+                        Optional<VersionCatalog> mn = versionCatalogs.find("mn");
+                        if (mn.isPresent()) {
+                            VersionCatalog micronautCatalog = mn.get();
+                            Optional<Provider<MinimalExternalModuleDependency>> dependencyProvider = micronautCatalog.getLibraryAliases()
                                 .stream()
                                 .map(micronautCatalog::findLibrary)
                                 .map(Optional::get)
                                 .filter(d -> coordinates.equals(d.get().getModule().toString()))
                                 .findFirst();
-                        if (dependencyProvider.isPresent()) {
-                            return dependencyProvider.get().get();
+                            if (dependencyProvider.isPresent()) {
+                                return List.of(dependencyProvider.get().get());
+                            }
                         }
                     }
-                }
-                return dependencyHandler.create(coordinates);
-            }));
-
+                    return List.of(dependencyHandler.create(coordinates));
+                })
+            );
         });
     }
 

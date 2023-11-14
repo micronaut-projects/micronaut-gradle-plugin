@@ -4,6 +4,7 @@ import org.gradle.api.Action;
 import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.plugins.ExtensionAware;
 import org.gradle.api.provider.Property;
+import org.gradle.api.provider.SetProperty;
 
 import javax.inject.Inject;
 import java.util.LinkedHashMap;
@@ -33,6 +34,16 @@ public abstract class MicronautExtension implements ExtensionAware {
      * @return the import platform flag. Defaults to true.
      */
     public abstract Property<Boolean> getImportMicronautPlatform();
+
+    /**
+     * The Micronaut plugins can automatically add dependencies to your project.
+     * If, for some reason, a dependency shouldn't be automatically added, you can
+     * add its coordinates to this set. The format is "group:name". It must not include
+     * the version.
+     *
+     * @return the set of ignored automatic dependencies, as group:name strings.
+     */
+    public abstract SetProperty<String> getIgnoredAutomaticDependencies();
 
     @Inject
     public MicronautExtension(ObjectFactory objectFactory, SourceSetConfigurer sourceSetConfigurer) {
