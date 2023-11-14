@@ -331,9 +331,6 @@ micronaut {
     // will not be automatically applied, and you will have to add it yourself
     // to your dependencies, or specify versions of Micronaut modules explicitly
     importMicronautPlatform = true
-    // In some circumstances, automatic dependencies – e.g. annotation processors listed above – can get in the way.
-    // This should be rare but it is possible to suppress these, as follows:
-    ignoredAutomaticDependencies.add("io.micronaut.data:micronaut-data-processor")
     processing {
         // Sets whether incremental annotation processing is enabled
         incremental true
@@ -355,18 +352,6 @@ micronaut {
              sourceSets.main
         )
     }
-}
-----
-In some circumstances, automatic dependencies – e.g. annotation processors listed above – can get in the way. This should be rare, but it is possible to suppress them, as follows. It has no default and using suppression shifts responsibility of adding the dependencies to the user.
-
-.Suppressing automatic dependencies
-[source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
-----
-micronaut {
-    // The Micronaut plugins can automatically add dependencies to your project. If, for some reason,
-    // a dependency shouldn't be automatically added, you can add its coordinates to this set.
-    // The format is "group:name". It must not include the version.
-    ignoredAutomaticDependencies.add("io.micronaut.data:micronaut-data-processor")
 }
 ----
 
@@ -399,6 +384,29 @@ micronaut {
              sourceSets.findByName("main")
         )
     }
+}
+----
+
+In some circumstances, automatic dependencies – e.g. annotation processors listed above – can get in the way. This should be rare, but it is possible to suppress them, as follows. It has no default and using suppression shifts responsibility of adding the dependencies to the user.
+
+.Suppressing automatic dependencies
+[source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
+----
+micronaut {
+    // The Micronaut plugins can automatically add dependencies to your project. If, for some reason,
+    // a dependency shouldn't be automatically added, you can add its coordinates to this set.
+    // The format is "group:name". It must not include the version.
+    ignoredAutomaticDependencies.add("io.micronaut.data:micronaut-data-processor")
+}
+----
+
+[source, kotlin, subs="verbatim,attributes", role="multi-language-sample"]
+----
+micronaut {
+    // The Micronaut plugins can automatically add dependencies to your project. If, for some reason,
+    // a dependency shouldn't be automatically added, you can add its coordinates to this set.
+    // The format is "group:name". It must not include the version.
+    ignoredAutomaticDependencies.add("io.micronaut.data:micronaut-data-processor")
 }
 ----
 
