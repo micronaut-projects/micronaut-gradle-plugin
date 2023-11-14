@@ -331,4 +331,36 @@ public class ExampleTest {
         result.output.contains('Could not find io.micronaut:micronaut-http-server-netty:2048')
 
     }
+
+    def "can ignore an automatic dependency"() {
+        given:
+        settingsFile << "rootProject.name = 'hello-world'"
+        buildFile << """
+            plugins {
+                id "io.micronaut.minimal.application"
+            }
+            
+            micronaut {
+                version "$micronautVersion"
+                runtime "netty"
+                testRuntime "junit5"
+                ignoredAutomaticDependencies.add("io.micronaut:micronaut-inject-java")
+            }
+            
+            $repositoriesBlock
+            mainClassName="example.Application"
+        """
+        testProjectDir.newFolder("src", "test", "java", "example")
+        def javaFile = writeExampleClass()
+        when:
+        def result = build('test')
+
+        def task = result.task(":test")
+        println result.output
+
+        then:
+        !result.output.contains('Creating bean classes for 1 type elements')
+        task.outcome == TaskOutcome.FAILED
+
+    }
 }
