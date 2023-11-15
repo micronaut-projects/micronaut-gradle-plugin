@@ -51,13 +51,25 @@ public abstract class PluginsHelper {
     public static final ConfigurableVersionProperty CORE_VERSION_PROPERTY = ConfigurableVersionProperty.of("core");
     public static final ConfigurableVersionProperty DATA_VERSION_PROPERTY = ConfigurableVersionProperty.of("data");
     public static final ConfigurableVersionProperty JAXRS_VERSION_PROPERTY = ConfigurableVersionProperty.of("jaxrs");
+    public static final ConfigurableVersionProperty MICROMETER_VERSION_PROPERTY = ConfigurableVersionProperty.of("micrometer");
+    public static final ConfigurableVersionProperty MICROSTREAM_VERSION_PROPERTY = ConfigurableVersionProperty.of("microstream");
+    public static final ConfigurableVersionProperty OPENAPI_VERSION_PROPERTY = ConfigurableVersionProperty.of("openapi");
     public static final ConfigurableVersionProperty SECURITY_VERSION_PROPERTY = ConfigurableVersionProperty.of("security");
+    public static final ConfigurableVersionProperty SERDE_VERSION_PROPERTY = ConfigurableVersionProperty.of("serde");
+    public static final ConfigurableVersionProperty SPRING_VERSION_PROPERTY = ConfigurableVersionProperty.of("spring");
+    public static final ConfigurableVersionProperty TRACING_VERSION_PROPERTY = ConfigurableVersionProperty.of("tracing");
     public static final ConfigurableVersionProperty VALIDATION_VERSION_PROPERTY = ConfigurableVersionProperty.of("validation");
 
     private static final Map<String, AutomaticDependency> GROUP_TO_PROCESSOR_MAP = Map.of(
             "io.micronaut.data", new AutomaticDependency(null, "io.micronaut.data:micronaut-data-processor", Optional.of(DATA_VERSION_PROPERTY)),
             "io.micronaut.jaxrs", new AutomaticDependency(null, "io.micronaut.jaxrs:micronaut-jaxrs-processor", Optional.of(JAXRS_VERSION_PROPERTY)),
+            "io.micronaut.micrometer", new AutomaticDependency(null, "io.micronaut.micrometer:micronaut-micrometer-annotation", Optional.of(MICROMETER_VERSION_PROPERTY)),
+            "io.micronaut.microstream", new AutomaticDependency(null, "io.micronaut.microstream:micronaut-microstream-annotations", Optional.of(MICROSTREAM_VERSION_PROPERTY)),
+            "io.micronaut.openapi", new AutomaticDependency(null, "io.micronaut.openapi:micronaut-openapi", Optional.of(OPENAPI_VERSION_PROPERTY)),
             "io.micronaut.security", new AutomaticDependency(null, "io.micronaut.security:micronaut-security-annotations", Optional.of(SECURITY_VERSION_PROPERTY)),
+            "io.micronaut.serde", new AutomaticDependency(null, "io.micronaut.serde:micronaut-serde-processor", Optional.of(SERDE_VERSION_PROPERTY)),
+            "io.micronaut.spring", new AutomaticDependency(null, "io.micronaut.spring:micronaut-spring-annotation", Optional.of(SPRING_VERSION_PROPERTY)),
+            "io.micronaut.tracing", new AutomaticDependency(null, "io.micronaut.tracing:micronaut-tracing-annotation", Optional.of(TRACING_VERSION_PROPERTY)),
             "io.micronaut.validation", new AutomaticDependency(null, "io.micronaut.validation:micronaut-validation-processor", Optional.of(VALIDATION_VERSION_PROPERTY))
     );
     public static final String MICRONAUT_VERSION_PROPERTY = "micronautVersion";
@@ -68,7 +80,13 @@ public abstract class PluginsHelper {
             CORE_VERSION_PROPERTY,
             DATA_VERSION_PROPERTY,
             JAXRS_VERSION_PROPERTY,
+            MICROMETER_VERSION_PROPERTY,
+            MICROSTREAM_VERSION_PROPERTY,
+            OPENAPI_VERSION_PROPERTY,
             SECURITY_VERSION_PROPERTY,
+            SERDE_VERSION_PROPERTY,
+            SPRING_VERSION_PROPERTY,
+            TRACING_VERSION_PROPERTY,
             VALIDATION_VERSION_PROPERTY
     );
 
