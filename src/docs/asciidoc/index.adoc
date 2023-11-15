@@ -306,17 +306,7 @@ The https://plugins.gradle.org/plugin/io.micronaut.library[Micronaut library plu
 * Applies the https://search.maven.org/artifact/io.micronaut.platform/micronaut-platform[Micronaut Bill of Materials (BOM)]
 * Applies the `java-library` plugin
 * Configures annotation processing for the current language (Groovy, Java or Kotlin)
-* Adds annotation processors automatically for Micronaut modules
-** `io.micronaut.data:micronaut-data-processor`
-** `io.micronaut.jaxrs:micronaut-jaxrs-processor`
-** `io.micronaut.micrometer:micronaut-micrometer-annotation`
-** `io.micronaut.microstream:micronaut-microstream-annotations`
-** `io.micronaut.openapi:micronaut-openapi`
-** `io.micronaut.security:micronaut-security-annotations`
-** `io.micronaut.serde:micronaut-serde-processor`
-** `io.micronaut.spring:micronaut-spring-annotation`
-** `io.micronaut.tracing:micronaut-tracing-annotation`
-** `io.micronaut.validation:micronaut-validation-processor`
+* <<#sec:automatic-annotation-processors, Adds annotation processors automatically>> for Micronaut modules
 
 The `micronaut` DSL can be used to configure how this behaves.
 
@@ -384,29 +374,6 @@ micronaut {
              sourceSets.findByName("main")
         )
     }
-}
-----
-
-In some circumstances, automatic dependencies – e.g. annotation processors listed above – can get in the way. This should be rare, but it is possible to suppress them, as follows. It has no default and using suppression shifts responsibility of adding the dependencies to the user.
-
-.Suppressing automatic dependencies
-[source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
-----
-micronaut {
-    // The Micronaut plugins can automatically add dependencies to your project. If, for some reason,
-    // a dependency shouldn't be automatically added, you can add its coordinates to this set.
-    // The format is "group:name". It must not include the version.
-    ignoredAutomaticDependencies.add("io.micronaut.data:micronaut-data-processor")
-}
-----
-
-[source, kotlin, subs="verbatim,attributes", role="multi-language-sample"]
-----
-micronaut {
-    // The Micronaut plugins can automatically add dependencies to your project. If, for some reason,
-    // a dependency shouldn't be automatically added, you can add its coordinates to this set.
-    // The format is "group:name". It must not include the version.
-    ignoredAutomaticDependencies.add("io.micronaut.data:micronaut-data-processor")
 }
 ----
 
@@ -1966,6 +1933,52 @@ micronaut {
 In addition, it exposes a `openApiGenerator` configuration which can be used to declare additional dependencies to put on the generator classpath.
 This can be useful in case you want to implement your own generators, in which case you will also have to implement custom tasks which extend the link:api/io/micronaut/gradle/openapi/tasks/AbstractOpenApiGenerator.html[AbstractOpenApiGenerator task type].
 
+[[additional-notes]]
+== Additional Notes
+
+[[sec:automatic-annotation-processors]]
+=== Automatic annotationProcessor dependencies
+
+When the plugin detects you have a dependency with a group id corresponding to a known annotation processor for it, it adds the annotation processor automatically. The following annotation processors are currently supported by this feature.
+
+* `io.micronaut.data:micronaut-data-processor`
+* `io.micronaut.jaxrs:micronaut-jaxrs-processor`
+* `io.micronaut.micrometer:micronaut-micrometer-annotation`
+* `io.micronaut.microstream:micronaut-microstream-annotations`
+* `io.micronaut.openapi:micronaut-openapi`
+* `io.micronaut.security:micronaut-security-annotations`
+* `io.micronaut.serde:micronaut-serde-processor`
+* `io.micronaut.spring:micronaut-spring-annotation`
+* `io.micronaut.tracing:micronaut-tracing-annotation`
+* `io.micronaut.validation:micronaut-validation-processor`
+
+[[sec:suppress-automatic-dependencies]]
+=== Suppressing automatic dependencies
+
+In some circumstances, automatic dependencies – e.g. annotation processors listed above – can get in the way. This should be rare, but it is possible to suppress them, as follows. It has no default and using suppression shifts responsibility of adding the dependencies to the user.
+
+.Suppressing automatic dependencies
+[source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
+----
+micronaut {
+    // The Micronaut plugins can automatically add dependencies to your project. If, for some reason,
+    // a dependency shouldn't be automatically added, you can add its coordinates to this set.
+    // The format is "group:name". It must not include the version.
+    ignoredAutomaticDependencies.add("io.micronaut.data:micronaut-data-processor")
+}
+----
+
+[source, kotlin, subs="verbatim,attributes", role="multi-language-sample"]
+----
+micronaut {
+    // The Micronaut plugins can automatically add dependencies to your project. If, for some reason,
+    // a dependency shouldn't be automatically added, you can add its coordinates to this set.
+    // The format is "group:name". It must not include the version.
+    ignoredAutomaticDependencies.add("io.micronaut.data:micronaut-data-processor")
+}
+----
+
+
 == Upgrade notes
 
 === Upgrading from 2.x
@@ -2005,3 +2018,4 @@ In addition, the official GraalVM plugin makes use of Gradle toolchains support,
 then we recommend tweaking toolchain detection as described in <<#toolchain-behavior, this section of the documentation>>.
 
 In any case, make sure to follow the <<#native-image,configuration instructions>>.
+
