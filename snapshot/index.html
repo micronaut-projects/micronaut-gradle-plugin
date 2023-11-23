@@ -122,9 +122,15 @@
 <li><a href="#_advanced_configuration">11.3. Advanced configuration</a></li>
 </ul>
 </li>
-<li><a href="#_upgrade_notes">12. Upgrade notes</a>
+<li><a href="#additional-notes">12. Additional Notes</a>
 <ul class="sectlevel2">
-<li><a href="#_upgrading_from_2_x">12.1. Upgrading from 2.x</a></li>
+<li><a href="#sec:automatic-annotation-processors">12.1. Automatic annotationProcessor dependencies</a></li>
+<li><a href="#sec:suppress-automatic-dependencies">12.2. Suppressing automatic dependencies</a></li>
+</ul>
+</li>
+<li><a href="#_upgrade_notes">13. Upgrade notes</a>
+<ul class="sectlevel2">
+<li><a href="#_upgrading_from_2_x">13.1. Upgrading from 2.x</a></li>
 </ul>
 </li>
 </ul>
@@ -559,6 +565,9 @@ ehcache = "3.8.2" # override version of ehcache</code></pre>
 </li>
 <li>
 <p>Configures annotation processing for the current language (Groovy, Java or Kotlin)</p>
+</li>
+<li>
+<p><a href="#sec:automatic-annotation-processors">Adds annotation processors automatically</a> for Micronaut modules</p>
 </li>
 </ul>
 </div>
@@ -2690,10 +2699,82 @@ This can be useful in case you want to implement your own generators, in which c
 </div>
 </div>
 <div class="sect1">
-<h2 id="_upgrade_notes"><a class="anchor" href="#_upgrade_notes"></a>12. Upgrade notes</h2>
+<h2 id="additional-notes"><a class="anchor" href="#additional-notes"></a>12. Additional Notes</h2>
 <div class="sectionbody">
 <div class="sect2">
-<h3 id="_upgrading_from_2_x"><a class="anchor" href="#_upgrading_from_2_x"></a>12.1. Upgrading from 2.x</h3>
+<h3 id="sec:automatic-annotation-processors"><a class="anchor" href="#sec:automatic-annotation-processors"></a>12.1. Automatic annotationProcessor dependencies</h3>
+<div class="paragraph">
+<p>When the plugin detects you have a dependency with a group id corresponding to a known annotation processor for it, it adds the annotation processor automatically. The following annotation processors are currently supported by this feature.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>io.micronaut.data:micronaut-data-processor</code></p>
+</li>
+<li>
+<p><code>io.micronaut.jaxrs:micronaut-jaxrs-processor</code></p>
+</li>
+<li>
+<p><code>io.micronaut.micrometer:micronaut-micrometer-annotation</code></p>
+</li>
+<li>
+<p><code>io.micronaut.microstream:micronaut-microstream-annotations</code></p>
+</li>
+<li>
+<p><code>io.micronaut.openapi:micronaut-openapi</code></p>
+</li>
+<li>
+<p><code>io.micronaut.security:micronaut-security-annotations</code></p>
+</li>
+<li>
+<p><code>io.micronaut.serde:micronaut-serde-processor</code></p>
+</li>
+<li>
+<p><code>io.micronaut.spring:micronaut-spring-annotation</code></p>
+</li>
+<li>
+<p><code>io.micronaut.tracing:micronaut-tracing-annotation</code></p>
+</li>
+<li>
+<p><code>io.micronaut.validation:micronaut-validation-processor</code></p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="sec:suppress-automatic-dependencies"><a class="anchor" href="#sec:suppress-automatic-dependencies"></a>12.2. Suppressing automatic dependencies</h3>
+<div class="paragraph">
+<p>In some circumstances, automatic dependencies – e.g. annotation processors listed above – can get in the way. This should be rare, but it is possible to suppress them, as follows. It has no default and using suppression shifts responsibility of adding the dependencies to the user.</p>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="title">Suppressing automatic dependencies</div>
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">micronaut {
+    // The Micronaut plugins can automatically add dependencies to your project. If, for some reason,
+    // a dependency shouldn't be automatically added, you can add its coordinates to this set.
+    // The format is "group:name". It must not include the version.
+    ignoredAutomaticDependencies.add("io.micronaut.data:micronaut-data-processor")
+}</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">micronaut {
+    // The Micronaut plugins can automatically add dependencies to your project. If, for some reason,
+    // a dependency shouldn't be automatically added, you can add its coordinates to this set.
+    // The format is "group:name". It must not include the version.
+    ignoredAutomaticDependencies.add("io.micronaut.data:micronaut-data-processor")
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_upgrade_notes"><a class="anchor" href="#_upgrade_notes"></a>13. Upgrade notes</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_upgrading_from_2_x"><a class="anchor" href="#_upgrading_from_2_x"></a>13.1. Upgrading from 2.x</h3>
 <div class="paragraph">
 <p>When upgrading from the 2.x version of the plugins, you will need to change the configuration of the GraalVM native executable builds if you use them.</p>
 </div>
