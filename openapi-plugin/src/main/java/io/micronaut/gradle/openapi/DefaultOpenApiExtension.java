@@ -15,28 +15,27 @@
  */
 package io.micronaut.gradle.openapi;
 
-import java.io.File;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.function.Consumer;
-
-import javax.inject.Inject;
-
 import io.micronaut.gradle.PluginsHelper;
 import io.micronaut.gradle.openapi.tasks.AbstractOpenApiGenerator;
 import io.micronaut.gradle.openapi.tasks.OpenApiClientGenerator;
 import io.micronaut.gradle.openapi.tasks.OpenApiServerGenerator;
-
 import org.gradle.api.Action;
 import org.gradle.api.GradleException;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.file.Directory;
 import org.gradle.api.file.RegularFile;
+import org.gradle.api.file.SourceDirectorySet;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.SourceSetContainer;
+
+import javax.inject.Inject;
+import java.io.File;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.function.Consumer;
 
 import static org.codehaus.groovy.runtime.StringGroovyMethods.capitalize;
 
@@ -95,6 +94,13 @@ public abstract class DefaultOpenApiExtension implements OpenApiExtension {
                 var javaMain = sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME).getJava();
                 javaMain.srcDir(controllers.map(DefaultOpenApiExtension::mainSrcDir));
                 javaMain.srcDir(models.map(DefaultOpenApiExtension::mainSrcDir));
+                project.getPluginManager().withPlugin("org.jetbrains.kotlin.jvm", unused -> {
+                    var ext = sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME).getExtensions().getByName("kotlin");
+                    if (ext instanceof SourceDirectorySet kotlinMain) {
+                        kotlinMain.srcDir(controllers.map(d -> DefaultOpenApiExtension.mainSrcDir(d, "kotlin")));
+                        kotlinMain.srcDir(models.map(d -> DefaultOpenApiExtension.mainSrcDir(d, "kotlin")));
+                    }
+                });
             });
         } else {
             throwDuplicateEntryFor(name);
@@ -196,6 +202,13 @@ public abstract class DefaultOpenApiExtension implements OpenApiExtension {
                 var javaMain = sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME).getJava();
                 javaMain.srcDir(client.map(DefaultOpenApiExtension::mainSrcDir));
                 javaMain.srcDir(models.map(DefaultOpenApiExtension::mainSrcDir));
+                project.getPluginManager().withPlugin("org.jetbrains.kotlin.jvm", unused -> {
+                    var ext = sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME).getExtensions().getByName("kotlin");
+                    if (ext instanceof SourceDirectorySet kotlinMain) {
+                        kotlinMain.srcDir(client.map(d -> DefaultOpenApiExtension.mainSrcDir(d, "kotlin")));
+                        kotlinMain.srcDir(models.map(d -> DefaultOpenApiExtension.mainSrcDir(d, "kotlin")));
+                    }
+                });
             });
             withJava(() -> {
                         var implDeps = project.getConfigurations().getByName("implementation").getDependencies();
@@ -210,8 +223,12 @@ public abstract class DefaultOpenApiExtension implements OpenApiExtension {
         }
     }
 
+    private static Provider<Directory> mainSrcDir(AbstractOpenApiGenerator<?, ?> t, String language) {
+        return t.getOutputDirectory().dir("src/main/" + language);
+    }
+
     private static Provider<Directory> mainSrcDir(AbstractOpenApiGenerator<?, ?> t) {
-        return t.getOutputDirectory().dir("src/main/java");
+        return mainSrcDir(t, "java");
     }
 
     private static void configureClientTask(OpenApiClientSpec clientSpec, OpenApiClientGenerator task) {
