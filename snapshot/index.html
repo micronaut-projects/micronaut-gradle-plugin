@@ -906,10 +906,10 @@ micronaut {
 }
 
 dependencies {
-    implementation "io.micronaut:micronaut-http-server-netty"
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.9.20"
-    implementation "org.jetbrains.kotlin:kotlin-reflect:1.9.20")
-    runtimeOnly "ch.qos.logback:logback-classic")
+    implementation("io.micronaut:micronaut-http-server-netty")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.9.20")
+    implementation("org.jetbrains.kotlin:kotlin-reflect:1.9.20")
+    runtimeOnly("ch.qos.logback:logback-classic")
     testImplementation("io.micronaut.test:micronaut-test-junit5")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
 }
@@ -994,7 +994,7 @@ While the toolchain selection will properly select a GraalVM SDK which matches y
 <div class="ulist">
 <ul>
 <li>
-<p>setup an environment variable named <code>GRAALVM_HOME</code> pointing to your GraalVM installation</p>
+<p>set up an environment variable named <code>GRAALVM_HOME</code> pointing to your GraalVM installation</p>
 </li>
 <li>
 <p>edit your <code>gradle.properties</code> file to add the following options:</p>
@@ -1084,7 +1084,7 @@ If you update an existing Micronaut application that contains the file <code>src
 <div class="sect3">
 <h4 id="_build_mostly_static_native_executables"><a class="anchor" href="#_build_mostly_static_native_executables"></a>6.3.1. Build "mostly static" native executables</h4>
 <div class="paragraph">
-<p>Since GraalVM 21.0, it is possible to create "mostly static" native images that can run in a <em>distroless</em> docker image. You only need to configure the appropriate <em>baseImage</em> and the plugin will automatically configure GraalVM:</p>
+<p>Since GraalVM 21.0, it is possible to create "mostly static" native images that can run in a <em>distroless</em> docker image.You only need to configure the appropriate <em>baseImage</em> and the plugin will automatically configure GraalVM:</p>
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
@@ -1343,7 +1343,7 @@ tasks.named&lt;io.micronaut.gradle.docker.NativeImageDockerfile&gt;("dockerfileN
 <div class="paragraph">
 <p>In some projects, it may happen that different transitive dependencies have the same file name.
 In this case, the task which builds the layers will fail with a duplicate error.
-You can workaround this issue by configuring the duplicates strategy on the task:</p>
+You can work around this issue by configuring the duplicates strategy on the task:</p>
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
@@ -1513,7 +1513,7 @@ If you wish to switch to using a different base image (for example to use your o
 <div class="sect2">
 <h3 id="_packaging_the_application"><a class="anchor" href="#_packaging_the_application"></a>6.6. Packaging the application</h3>
 <div class="paragraph">
-<p>By default the plugin doesn&#8217;t create a runnable fatjar when running <code>./gradlew assemble</code>.
+<p>By default, the plugin doesn&#8217;t create a runnable fatjar when running <code>./gradlew assemble</code>.
 There are a couple of options:</p>
 </div>
 <div class="sect3">
@@ -1556,7 +1556,7 @@ Keep in mind that copying the only <code>.jar</code> file to another directory w
 <div class="sectionbody">
 <div class="paragraph">
 <p>The <a href="https://plugins.gradle.org/plugin/io.micronaut.graalvm">Micronaut GraalVM plugin</a> is applied automatically by the
-<a href="https://github.com/micronaut-projects/micronaut-gradle-plugin#micronaut-application-plugin">Micronaut application plugin</a> (see below)
+<a href="https://github.com/micronaut-projects/micronaut-gradle-plugin#micronaut-application-plugin">Micronaut application plugin</a> (see below),
 and it provides tasks to generate a GraalVM native executable and also creates the GraalVM <code>resource-config.json</code> automatically with all the resources from the application.</p>
 </div>
 <div class="paragraph">
@@ -1933,7 +1933,7 @@ In particular, it makes use of <a href="https://testcontainers.org/">Testcontain
 <p>Test resources are handled by a "test resources service" which is a server accepting requests for test resources, which <a href="#sec:test-resources-lifecycle">lifecycle</a> is handled by the Gradle plugin.
 A test resources request is, to simplify, a request to resolve a <em>missing configuration property</em>.
 For example, if the <code>kafka.bootstrap-servers</code> property isn&#8217;t set, Micronaut will query the test resources service for the value of this property.
-This will trigger the creaton of a a Kafka test container, and the service will answer with the URI to the bootstrap server.</p>
+This will trigger the creaton of a Kafka test container, and the service will answer with the URI to the bootstrap server.</p>
 </div>
 <div class="admonitionblock note">
 <table>
@@ -2064,7 +2064,7 @@ This will let Gradle automatically start containers, for example, when a particu
 <p>the <code>additionalModules</code> property can be used to explicitly declare test resources modules to be loaded. This is useful if inference failed to detect a module, or if you want to use <a href="#sec:standalone-test-resources">a standalone test resources service</a>.</p>
 </li>
 <li>
-<p>if set to <code>true</code>, then the test server which is used by the project can be shared between independent builds (e.g different Git repositories): this can be useful in conjunction with a <a href="#sec:standalone-test-resources">a standalone test resources service</a>, where for example a producer is used in one project, and a consumer is defined in another, but both need to use the same messaging server.</p>
+<p>if set to <code>true</code>, then the test server which is used by the project can be shared between independent builds (e.g. different Git repositories): this can be useful in conjunction with <a href="#sec:standalone-test-resources">a standalone test resources service</a>, where for example a producer is used in one project, and a consumer is defined in another, but both need to use the same messaging server.</p>
 </li>
 <li>
 <p>if set, the <code>sharedServerNamespace</code> property will let you declare that the shared test resources service but be executed in a particular namespace. This can be useful if you need multiple shared servers (the default assumes a single shared server)</p>
@@ -2163,7 +2163,7 @@ For this you have a couple options:</p>
 </ol>
 </div>
 <div class="paragraph">
-<p>The first solution comes with a major drawback: <em>shared servers</em> are shared by all projects in the multi-project build, but also between projects of the same build. However the configuration of the server will depend on the <em>first one started</em>.</p>
+<p>The first solution comes with a major drawback: <em>shared servers</em> are shared by all projects in the multi-project build, but also between projects of the same build. However, the configuration of the server will depend on the <em>first one started</em>.</p>
 </div>
 <div class="paragraph">
 <p>To avoid this problem it is recommended to declare a distinct project to handle test resources.
@@ -2424,7 +2424,7 @@ Micronaut CRaC is a module which adds support for <a href="https://openjdk.org/p
 <div class="title">Important</div>
 </td>
 <td class="content">
-Currently CRaC support has only been tested on Ubuntu 18.04, 20.04 and 22.04.  It also requires an x86 machine architecture.
+Currently, CRaC support has only been tested on Ubuntu 18.04, 20.04 and 22.04.  It also requires an x86 machine architecture.
 </td>
 </tr>
 </table>
