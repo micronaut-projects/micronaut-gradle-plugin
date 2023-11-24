@@ -34,6 +34,7 @@ public abstract class OpenApiClientWorkAction extends AbstractOpenApiWorkAction<
         ListProperty<String> getAdditionalClientTypeAnnotations();
     }
 
+    @Override
     protected void configureBuilder(MicronautCodeGeneratorBuilder builder) {
         var parameters = getParameters();
         builder.forClient(spec -> {

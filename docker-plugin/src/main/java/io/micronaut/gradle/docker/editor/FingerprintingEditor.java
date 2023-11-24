@@ -31,7 +31,6 @@ public class FingerprintingEditor implements Editor {
     private final List<String> fingerprint;
 
     // We use Optional because Gradle doesn't support injecting null values
-    @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
     @Inject
     public FingerprintingEditor(ObjectFactory objects,
                                 List<String> fingerprint) {

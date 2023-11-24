@@ -25,6 +25,7 @@ public abstract class OpenApiServerWorkAction extends AbstractOpenApiWorkAction<
         Property<Boolean> getUseAuth();
     }
 
+    @Override
     protected void configureBuilder(MicronautCodeGeneratorBuilder builder) {
         var parameters = getParameters();
         builder.forServer(spec -> {
