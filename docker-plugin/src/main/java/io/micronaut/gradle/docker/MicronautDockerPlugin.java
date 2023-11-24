@@ -96,7 +96,7 @@ public class MicronautDockerPlugin implements Plugin<Project> {
     private void createDockerImage(Project project, MicronautDockerImage imageSpec) {
         TaskContainer tasks = project.getTasks();
         String imageName = imageSpec.getName();
-        project.getLogger().info("Creating docker tasks for image " + imageName);
+        project.getLogger().info("Creating docker tasks for image {}", imageName);
         TaskProvider<BuildLayersTask> buildLayersTask = tasks.register(adaptTaskName("buildLayers", imageName), BuildLayersTask.class, task -> {
             task.setGroup(BasePlugin.BUILD_GROUP);
             task.setDescription("Builds application layers for use in a Docker container (" + imageName + " image)");
@@ -307,7 +307,7 @@ public class MicronautDockerPlugin implements Plugin<Project> {
                     );
                     task.getRemotePath().set("/function/function.zip");
                     task.getHostPath().set(lambdaZip);
-                    task.doLast(new Action<Task>() {
+                    task.doLast(new Action<>() {
                         @Override
                         public void execute(Task task1) {
                             System.out.println("AWS Lambda ZIP built: " + lambdaZip.get());

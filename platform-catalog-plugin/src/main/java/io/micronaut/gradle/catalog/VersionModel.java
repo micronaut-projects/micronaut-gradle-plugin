@@ -15,6 +15,8 @@
  */
 package io.micronaut.gradle.catalog;
 
+import java.util.Objects;
+
 import org.tomlj.TomlPosition;
 
 import javax.annotation.Nullable;
@@ -55,10 +57,10 @@ public class VersionModel {
 
         VersionModel that = (VersionModel) o;
 
-        if (reference != null ? !reference.equals(that.reference) : that.reference != null) {
+        if (!Objects.equals(reference, that.reference)) {
             return false;
         }
-        return version != null ? version.equals(that.version) : that.version == null;
+        return Objects.equals(version, that.version);
     }
 
     @Override

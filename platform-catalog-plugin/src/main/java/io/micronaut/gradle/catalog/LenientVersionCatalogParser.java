@@ -28,7 +28,6 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * A version catalog parser which is tolerant to errors and
@@ -73,7 +72,7 @@ public class LenientVersionCatalogParser {
         List<String> keys = librariesTable.keySet()
                 .stream()
                 .sorted(Comparator.comparing(String::length))
-                .collect(Collectors.toList());
+                .toList();
         for (String alias : keys) {
             parseLibrary(alias, librariesTable, strictVersionParser);
         }
@@ -86,7 +85,7 @@ public class LenientVersionCatalogParser {
         List<String> keys = versionsTable.keySet()
                 .stream()
                 .sorted(Comparator.comparing(String::length))
-                .collect(Collectors.toList());
+                .toList();
         for (String alias : keys) {
             parseVersion(alias, versionsTable, strictVersionParser);
         }
@@ -152,8 +151,7 @@ public class LenientVersionCatalogParser {
             String require = (String) version;
             RichVersion richVersion = strictVersionParser.parse(require);
             versionModel = new VersionModel(null, richVersion, position);
-        } else if (version instanceof TomlTable) {
-            TomlTable versionTable = (TomlTable) version;
+        } else if (version instanceof TomlTable versionTable) {
             String versionRef = versionTable.getString("ref");
             String require = versionTable.getString("require");
             String prefer = versionTable.getString("prefer");
@@ -161,7 +159,7 @@ public class LenientVersionCatalogParser {
             TomlArray rejectedArray = expectArray(versionTable, "reject");
             List<String> rejectedVersions = rejectedArray != null ? rejectedArray.toList().stream()
                     .map(String::valueOf)
-                    .collect(Collectors.toList()) : null;
+                    .toList() : null;
             Boolean rejectAll = expectBoolean(versionTable, "rejectAll");
             versionModel = new VersionModel(versionRef, versionRef == null ? new RichVersion(
                     require,
@@ -188,15 +186,14 @@ public class LenientVersionCatalogParser {
             require = (String) version;
             RichVersion richVersion = strictVersionParser.parse(require);
             model.addVersion(new VersionModel(alias, richVersion, position));
-        } else if (version instanceof TomlTable) {
-            TomlTable versionTable = (TomlTable) version;
+        } else if (version instanceof TomlTable versionTable) {
             require = versionTable.getString("require");
             prefer = versionTable.getString("prefer");
             strictly = versionTable.getString("strictly");
             TomlArray rejectedArray = expectArray(versionTable, "reject");
             rejectedVersions = rejectedArray != null ? rejectedArray.toList().stream()
                     .map(String::valueOf)
-                    .collect(Collectors.toList()) : null;
+                    .toList() : null;
             rejectAll = expectBoolean(versionTable, "rejectAll");
             model.addVersion(new VersionModel(alias, new RichVersion(
                     require,

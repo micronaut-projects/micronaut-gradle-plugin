@@ -16,7 +16,6 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinCompile;
 import org.jetbrains.kotlin.gradle.dsl.KotlinJvmOptions;
 import org.jetbrains.kotlin.gradle.plugin.KaptExtension;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -34,17 +33,17 @@ import static io.micronaut.gradle.PluginsHelper.resolveMicronautPlatform;
  * @since 1.0.0
  */
 public class MicronautKotlinSupport {
-    private static final String[] KAPT_CONFIGURATIONS = new String[]{
+    private static final String[] KAPT_CONFIGURATIONS = {
         "kapt",
         "kaptTest"
     };
-    private static final String[] KSP_CONFIGURATIONS = new String[]{
+    private static final String[] KSP_CONFIGURATIONS = {
         "ksp",
         "kspTest"
     };
     public static final String KOTLIN_PROCESSORS = "kotlinProcessors";
 
-    private static final List<String> KSP_ANNOTATION_PROCESSOR_MODULES = Arrays.asList("inject-kotlin");
+    private static final List<String> KSP_ANNOTATION_PROCESSOR_MODULES = List.of("inject-kotlin");
 
     public static void whenKotlinSupportPresent(Project p, Consumer<? super Project> action) {
         p.getPluginManager().withPlugin("org.jetbrains.kotlin.jvm", unused -> action.accept(p));
@@ -97,7 +96,7 @@ public class MicronautKotlinSupport {
             final String module = processingConfig.getModule().getOrElse(project.getName());
             if (isIncremental) {
                 kspExtension.arg("micronaut.processing.incremental", "true");
-                if (group.length() > 0) {
+                if (!group.isEmpty()) {
                     kspExtension.arg("micronaut.processing.group", group);
                 }
                 kspExtension.arg("micronaut.processing.module", module);
@@ -124,12 +123,12 @@ public class MicronautKotlinSupport {
                     if (!annotations.isEmpty()) {
                         options.arg("micronaut.processing.annotations", String.join(",", annotations));
                     } else {
-                        if (group.length() > 0) {
+                        if (!group.isEmpty()) {
                             options.arg("micronaut.processing.annotations", group + ".*");
                         }
                     }
 
-                    if (group.length() > 0) {
+                    if (!group.isEmpty()) {
                         options.arg("micronaut.processing.group", group);
                     }
                     options.arg("micronaut.processing.module", module);
@@ -208,7 +207,7 @@ public class MicronautKotlinSupport {
         String annotationProcessorConfigurationName = compilerType + Strings.capitalize(sourceSet.getName());
         String implementationConfigurationName = sourceSet
             .getImplementationConfigurationName();
-        List<String> both = Arrays.asList(
+        List<String> both = List.of(
             implementationConfigurationName,
             annotationProcessorConfigurationName
         );

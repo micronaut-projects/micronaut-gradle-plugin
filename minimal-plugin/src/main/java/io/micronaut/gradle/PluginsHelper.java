@@ -207,11 +207,11 @@ public abstract class PluginsHelper {
             project.afterEvaluate(p -> {
                 final DependencySet allDependencies = project.getConfigurations().getByName(config)
                         .getAllDependencies();
-                for (String group : GROUP_TO_PROCESSOR_MAP.keySet()) {
-                    boolean hasDep = !allDependencies.matching(dependency -> Objects.equals(dependency.getGroup(), group)).isEmpty();
+                for (var entry : GROUP_TO_PROCESSOR_MAP.entrySet()) {
+                    boolean hasDep = !allDependencies.matching(dependency -> Objects.equals(dependency.getGroup(), entry.getKey())).isEmpty();
                     if (hasDep) {
                         for (String configuration : configurations) {
-                            AutomaticDependency automaticDependency = GROUP_TO_PROCESSOR_MAP.get(group);
+                            AutomaticDependency automaticDependency = entry.getValue();
                             automaticDependency.withConfiguration(configuration).applyTo(project);
                         }
                     }

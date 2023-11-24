@@ -37,10 +37,8 @@ import org.gradle.api.tasks.SourceSetOutput;
 import org.gradle.api.tasks.TaskContainer;
 
 import java.io.File;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -56,12 +54,10 @@ public class MicronautMinimalApplicationPlugin implements Plugin<Project> {
     // This flag is used for testing purposes only
     public static final String INTERNAL_CONTINUOUS_FLAG = "io.micronaut.internal.gradle.continuous";
 
-    private static final Map<String, String> LOGGER_CONFIG_FILE_TO_DEPENDENCY = Collections.unmodifiableMap(new HashMap<String, String>() {
-        {
-            put("logback.xml", "ch.qos.logback:logback-classic");
-            put("simplelogger.properties", "org.slf4j:slf4j-simple");
-        }
-    });
+    private static final Map<String, String> LOGGER_CONFIG_FILE_TO_DEPENDENCY = Map.of(
+        "logback.xml", "ch.qos.logback:logback-classic",
+        "simplelogger.properties", "org.slf4j:slf4j-simple"
+    );
 
     @Override
     public void apply(Project project) {
@@ -119,7 +115,7 @@ public class MicronautMinimalApplicationPlugin implements Plugin<Project> {
                     sysProps.put("micronaut.io.watch.restart", true);
                     sysProps.put("micronaut.io.watch.enabled", true);
                     //noinspection Convert2Lambda
-                    javaExec.doFirst(new Action<Task>() {
+                    javaExec.doFirst(new Action<>() {
                         @Override
                         public void execute(Task workaroundEagerSystemProps) {
                             String watchPaths = sourceSet
@@ -205,7 +201,7 @@ public class MicronautMinimalApplicationPlugin implements Plugin<Project> {
             run.dependsOn(taskContainer.findByName("processResources"), taskContainer.findByName("classes"));
             run.getMainClass().set("com.google.cloud.functions.invoker.runner.Invoker");
             run.setClasspath(ic);
-            run.setArgs(Arrays.asList(
+            run.setArgs(List.of(
                     "--target", "io.micronaut.gcp.function.http.HttpFunction",
                     "--port", 8080
             ));
