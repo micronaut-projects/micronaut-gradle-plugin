@@ -54,6 +54,7 @@ public abstract class MicronautDockerfile extends Dockerfile implements DockerBu
         this.targetWorkingDirectory = objects.property(String.class).convention(DEFAULT_WORKING_DIR);
     }
 
+    @Override
     public Property<String> getTargetWorkingDirectory() {
         return targetWorkingDirectory;
     }

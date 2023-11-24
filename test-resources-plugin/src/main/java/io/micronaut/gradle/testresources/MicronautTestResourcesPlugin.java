@@ -94,6 +94,7 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
         return client;
     }
 
+    @Override
     public void apply(Project project) {
         PluginManager pluginManager = project.getPluginManager();
         pluginManager.apply(JavaPlugin.class);

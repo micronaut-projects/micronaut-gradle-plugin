@@ -7,10 +7,10 @@ import spock.lang.Shared
 class KotlinLibraryFunctionalTest extends AbstractEagerConfiguringFunctionalTest {
 
     @Shared
-    private final String kotlinVersion = System.getProperty("kotlinVersion");
+    private final String kotlinVersion = System.getProperty("kotlinVersion")
 
     @Shared
-    private final String kspVersion = System.getProperty("kspVersion");
+    private final String kspVersion = System.getProperty("kspVersion")
 
 
     def "test apply defaults for micronaut-library and KSP with kotlin DSL for #plugin"() {

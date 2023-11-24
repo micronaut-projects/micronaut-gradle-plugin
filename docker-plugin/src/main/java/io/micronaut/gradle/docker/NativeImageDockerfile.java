@@ -86,15 +86,18 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
      */
     @Input
     @Optional
+    @Override
     public abstract Property<String> getBaseImage();
 
     /**
      * @return The arguments to pass to the native image executable when starting up in the docker container.
      */
     @Input
+    @Override
     public abstract ListProperty<String> getArgs();
 
     @Input
+    @Override
     public abstract ListProperty<Integer> getExposedPorts();
 
     /**
@@ -117,6 +120,7 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
 
     @Input
     @Optional
+    @Override
     public abstract Property<String> getDefaultCommand();
 
     /**
