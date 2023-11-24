@@ -46,7 +46,7 @@ public interface TestResourcesConfiguration extends KnownModules {
      * reuse that server, effectively ignoring the
      * existing configuration. This can be used to share
      * a server between multiple independent builds.
-     *
+     * <p>
      * If an explicit port is set, then security is lowered
      * and a token is no longer requested. Any client from
      * the loopback address can access the server.

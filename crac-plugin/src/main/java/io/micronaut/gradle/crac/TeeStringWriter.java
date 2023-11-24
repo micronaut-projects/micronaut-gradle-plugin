@@ -18,13 +18,13 @@ public class TeeStringWriter extends Writer {
 
     @Override
     @SuppressWarnings("java:S2629") // This is done by Gradle
-    public void write(char[] cbuf, int off, int len) throws IOException {
+    public void write(char[] cbuf, int off, int len) {
         delegate.write(cbuf, off, len);
         logger.lifecycle(new String(cbuf, off, len).trim());
     }
 
     @Override
-    public void flush() throws IOException {
+    public void flush() {
         delegate.flush();
     }
 

@@ -40,7 +40,7 @@ public abstract class AttributeUtils {
             AttributeContainer runtimeClasspathAttributes = to.getAttributes();
             Set<Attribute<?>> keySet = runtimeClasspathAttributes.keySet();
             for (Attribute<?> attribute : keySet) {
-                //noinspection unchecked,DataFlowIssue
+                // noinspection unchecked
                 attrs.attributeProvider((Attribute<Object>) attribute, providers.provider(() -> runtimeClasspathAttributes.getAttribute(attribute)));
             }
         });
