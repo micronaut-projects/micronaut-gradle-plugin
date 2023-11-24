@@ -191,7 +191,7 @@ public abstract class MicronautAotPlugin implements Plugin<Project> {
             task.setClasspath(classpath);
             task.getMainClass().set(javaApplication.getMainClass());
             task.getConventionMapping().map("applicationName", appConvention::getApplicationName);
-            task.getConventionMapping().map("outputDir", () -> new File(project.getBuildDir(), "optimizedScripts"));
+            task.getConventionMapping().map("outputDir", () -> new File(project.getLayout().getBuildDirectory().getAsFile().get(), "optimizedScripts"));
             task.getConventionMapping().map("executableDir", appConvention::getExecutableDir);
             task.getConventionMapping().map("defaultJvmOpts", appConvention::getApplicationDefaultJvmArgs);
         });
