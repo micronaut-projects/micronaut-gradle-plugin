@@ -584,10 +584,10 @@ micronaut {
 }
 
 dependencies {
-    implementation "io.micronaut:micronaut-http-server-netty"
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:{kotlin-version}"
-    implementation "org.jetbrains.kotlin:kotlin-reflect:{kotlin-version}")
-    runtimeOnly "ch.qos.logback:logback-classic")
+    implementation("io.micronaut:micronaut-http-server-netty")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:{kotlin-version}")
+    implementation("org.jetbrains.kotlin:kotlin-reflect:{kotlin-version}")
+    runtimeOnly("ch.qos.logback:logback-classic")
     testImplementation("io.micronaut.test:micronaut-test-junit5")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
 }
@@ -649,7 +649,7 @@ IMPORTANT: While the toolchain selection will properly select a GraalVM SDK whic
 
 If you have several GraalVM installations available, or that you want to disable the automatic toolchain recognition, we recommend that you do the following:
 
-- setup an environment variable named `GRAALVM_HOME` pointing to your GraalVM installation
+- set up an environment variable named `GRAALVM_HOME` pointing to your GraalVM installation
 - edit your `gradle.properties` file to add the following options:
 
 [source, subs="verbatim"]
@@ -717,11 +717,12 @@ graalvmNative {
 
 IMPORTANT: If you update an existing Micronaut application that contains the file `src/main/resources/META-INF/native-image/xxxxx/native-image.properties`, please make sure to delete the properties `-H:Name` and `-H:Class` from the file because they are managed automatically by the plugin.
 
+[#_build_mostly_static_native_executables]
 ==== Build "mostly static" native executables
 
-Since GraalVM 21.0, it is possible to create "mostly static" native images that can run in a _distroless_ docker image. You only need to configure the appropriate _baseImage_ and the plugin will automatically configure GraalVM:
+Since GraalVM 21.0, it is possible to create "mostly static" native images that can run in a _distroless_ docker image.You only need to configure the appropriate _baseImage_ and the plugin will automatically configure GraalVM:
 
-[source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
+[source,groovy,subs="verbatim,attributes",role="multi-language-sample"]
 ----
 tasks.named('dockerfileNative') {
     baseImage('gcr.io/distroless/cc-debian10')
@@ -941,7 +942,7 @@ The `editDockerfile` DSL allows you to:
 
 In some projects, it may happen that different transitive dependencies have the same file name.
 In this case, the task which builds the layers will fail with a duplicate error.
-You can workaround this issue by configuring the duplicates strategy on the task:
+You can work around this issue by configuring the duplicates strategy on the task:
 
 [source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
 ----
@@ -1050,7 +1051,7 @@ This means that when running packaging from an X86_64 (Intel/AMD) machine, the p
 
 To override this automatic selection, you can configure the `graalArch` property in a `dockerfileNative` configuration block in your build:
 
-[source, groovy]
+[source,groovy]
 ----
 dockerfileNative {
     graalArch.set("x64")
@@ -1060,12 +1061,13 @@ dockerfileNative {
 The compiled native binary will ultimately be copied into an `alpine-glibc` base image for X86_64, and `cgr.dev/chainguard/wolfi-base` for ARM.
 These base images can be overridden via configuration see <<_base_image_and_pull_limits>> and <<_build_mostly_static_native_executables>>.
 
+[#_base_image_and_pull_limits]
 ===== Base image and pull limits
 
 By default, the plugin will use amazonlinux pulled from Docker Hub as a base image for GraalVM native AWS Lambda executables.
 If you wish to switch to using a different base image (for example to use your own Docker repository or to use Amazon's public repository), you can configure the `baseImage` property in a `dockerfileNative` configuration block in your build:
 
-[source, groovy]
+[source,groovy]
 ----
 dockerfileNative {
     // Use the image from the Amazon ECR Public Gallery
@@ -1075,7 +1077,7 @@ dockerfileNative {
 
 === Packaging the application
 
-By default the plugin doesn't create a runnable fatjar when running `./gradlew assemble`.
+By default, the plugin doesn't create a runnable fatjar when running `./gradlew assemble`.
 There are a couple of options:
 
 ==== Layered application
@@ -1109,7 +1111,7 @@ plugins {
 == Micronaut GraalVM Plugin
 
 The https://plugins.gradle.org/plugin/io.micronaut.graalvm[Micronaut GraalVM plugin] is applied automatically by the
-https://github.com/micronaut-projects/micronaut-gradle-plugin#micronaut-application-plugin[Micronaut application plugin] (see below)
+https://github.com/micronaut-projects/micronaut-gradle-plugin#micronaut-application-plugin[Micronaut application plugin] (see below),
 and it provides tasks to generate a GraalVM native executable and also creates the GraalVM `resource-config.json` automatically with all the resources from the application.
 
 This plugin can be applied separately if you use the `application` plugin without the `io.micronaut.application` plugin (but we strongly recommend to switch to the `io.micronaut.application` plugin in this case).
@@ -1397,7 +1399,7 @@ In particular, it makes use of https://testcontainers.org/[Testcontainers] to au
 Test resources are handled by a "test resources service" which is a server accepting requests for test resources, which <<sec:test-resources-lifecycle,lifecycle>> is handled by the Gradle plugin.
 A test resources request is, to simplify, a request to resolve a _missing configuration property_.
 For example, if the `kafka.bootstrap-servers` property isn't set, Micronaut will query the test resources service for the value of this property.
-This will trigger the creaton of a a Kafka test container, and the service will answer with the URI to the bootstrap server.
+This will trigger the creaton of a Kafka test container, and the service will answer with the URI to the bootstrap server.
 
 [NOTE]
 ====
@@ -1499,7 +1501,7 @@ micronaut {
 - by default, a test resources server will be started. This server uses a randomly available port, but you can override this by setting the `explicitPort` property instead.
 - by default, the plugin will automatically determine which modules to add to the test resources support, by inspecting the dependencies declared in the project. For example, if you use both `micronaut-data-jdbc` and `mysql-connector-java`, it will automatically add support for MySQL provisioning. Under some circumstances, you might want to disable this behavior by setting the `inferClasspath` property to `false`.
 - the `additionalModules` property can be used to explicitly declare test resources modules to be loaded. This is useful if inference failed to detect a module, or if you want to use <<sec:standalone-test-resources,a standalone test resources service>>.
-- if set to `true`, then the test server which is used by the project can be shared between independent builds (e.g different Git repositories): this can be useful in conjunction with a <<sec:standalone-test-resources,a standalone test resources service>>, where for example a producer is used in one project, and a consumer is defined in another, but both need to use the same messaging server.
+- if set to `true`, then the test server which is used by the project can be shared between independent builds (e.g. different Git repositories): this can be useful in conjunction with <<sec:standalone-test-resources,a standalone test resources service>>, where for example a producer is used in one project, and a consumer is defined in another, but both need to use the same messaging server.
 - if set, the `sharedServerNamespace` property will let you declare that the shared test resources service but be executed in a particular namespace. This can be useful if you need multiple shared servers (the default assumes a single shared server)
 
 [NOTE]
@@ -1558,7 +1560,7 @@ For this you have a couple options:
     1. you can use a shared test server, by setting the `sharedServer` property to `true` in the `testResources` extension.
     2. you can define a distinct project which role is to handle the test resources lifecycle
 
-The first solution comes with a major drawback: _shared servers_ are shared by all projects in the multi-project build, but also between projects of the same build. However the configuration of the server will depend on the _first one started_.
+The first solution comes with a major drawback: _shared servers_ are shared by all projects in the multi-project build, but also between projects of the same build. However, the configuration of the server will depend on the _first one started_.
 
 To avoid this problem it is recommended to declare a distinct project to handle test resources.
 Here, we're going to add a project called `shared-testresources` which is going to be a _test resources provider_:
@@ -1708,7 +1710,7 @@ Micronaut CRaC is a module which adds support for https://openjdk.org/projects/c
 
 It is capable of generating a docker image containing a CRaC enabled JDK and a pre-warmed, checkpointed application via a new task `dockerBuildCrac`.
 
-IMPORTANT: Currently CRaC support has only been tested on Ubuntu 18.04, 20.04 and 22.04.  It also requires an x86 machine architecture.
+IMPORTANT: Currently, CRaC support has only been tested on Ubuntu 18.04, 20.04 and 22.04.  It also requires an x86 machine architecture.
 
 When executed, this task will:
 

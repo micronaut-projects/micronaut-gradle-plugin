@@ -202,7 +202,7 @@ public class MicronautCRaCPlugin implements Plugin<Project> {
             task.getTailAll().set(true);
             task.getContainerId().set(start.flatMap(DockerExistingContainer::getContainerId));
             task.getSink().fileValue(checkpointFile);
-            // Do not use lambda or it's not compatible with Gradle's config cache
+            // Do not use lambda, or it's not compatible with Gradle's config cache
             task.doLast(new Action<>() {
                 @Override
                 public void execute(Task t) {

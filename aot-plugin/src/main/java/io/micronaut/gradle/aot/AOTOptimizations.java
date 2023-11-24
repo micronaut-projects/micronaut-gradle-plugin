@@ -120,7 +120,7 @@ public interface AOTOptimizations {
 
     /**
      * The target package for AOT generated classes.
-     * For applications it defaults to the package of the main class.
+     * For applications, it defaults to the package of the main class.
      * @return the target package property
      */
     @Input
@@ -154,7 +154,7 @@ public interface AOTOptimizations {
     }
 
     /**
-     * A short-hand notation to enable Netty optimizations
+     * A shorthand notation to enable Netty optimizations
      * @return the netty optimizations property
      */
     @Internal

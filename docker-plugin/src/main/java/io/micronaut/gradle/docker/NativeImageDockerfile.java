@@ -266,7 +266,7 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
                         @Optional
                         public Property<JavaLauncher> getJavaLauncher() {
                             // The native image docker file generator does NOT require
-                            // GraalVM nor will it use the java launcher so we make
+                            // GraalVM nor will it use the java launcher, so we make
                             // the property optional
                             return getObjects().property(JavaLauncher.class);
                         }
@@ -628,7 +628,7 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
     }
 
     /**
-     * Exclude config args that we get reference files from the original file system
+     * Exclude config args that we get reference files from the original file system,
      * but we are building within docker, and the libraries are now in a different
      * directory, so we're monkey patching the config args to point to the new location.
      *

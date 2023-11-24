@@ -110,7 +110,7 @@ public class MicronautMinimalApplicationPlugin implements Plugin<Project> {
             }
 
             // If -t (continuous mode) is enabled feed parameters to the JVM
-            // that allows it to shutdown on resources changes so a rebuild
+            // that allows it to shut down on resources changes so a rebuild
             // can apply a restart to the application
             if (project.getGradle().getStartParameter().isContinuous() || Boolean.getBoolean(INTERNAL_CONTINUOUS_FLAG)) {
                 SourceSet sourceSet = sourceSets.findByName("main");
