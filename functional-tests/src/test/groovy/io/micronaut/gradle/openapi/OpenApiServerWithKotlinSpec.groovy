@@ -55,10 +55,10 @@ class OpenApiServerWithKotlinSpec extends AbstractOpenApiWithKotlinSpec {
         result.task(":compileKotlin").outcome == TaskOutcome.SUCCESS
 
         and:
-        file("build/generated/openapi/generateServerOpenApiApis/src/main/java/io/micronaut/openapi/api/PetApi.java").exists()
-        file("build/generated/openapi/generateServerOpenApiModels/src/main/java/io/micronaut/openapi/model/Pet.java").exists()
-        file("build/classes/java/main/io/micronaut/openapi/api/PetApi.class").exists()
-        file("build/classes/java/main/io/micronaut/openapi/model/Pet.class").exists()
+        file("build/generated/openapi/generateServerOpenApiApis/src/main/kotlin/io/micronaut/openapi/api/PetApi.kt").exists()
+        file("build/generated/openapi/generateServerOpenApiModels/src/main/kotlin/io/micronaut/openapi/model/Pet.kt").exists()
+        file("build/classes/kotlin/main/io/micronaut/openapi/api/PetApi.class").exists()
+        file("build/classes/kotlin/main/io/micronaut/openapi/model/Pet.class").exists()
     }
 
     def "can generate an kotlin OpenAPI server implementation with properties (KSP)"() {
@@ -111,9 +111,9 @@ class OpenApiServerWithKotlinSpec extends AbstractOpenApiWithKotlinSpec {
         result.task(":compileKotlin").outcome == TaskOutcome.SUCCESS
 
         and:
-        file("build/generated/openapi/generateServerOpenApiApis/src/main/java/io/micronaut/openapi/api/PetApi.java").exists()
-        file("build/generated/openapi/generateServerOpenApiModels/src/main/java/io/micronaut/openapi/model/Pet.java").exists()
-        file("build/classes/java/main/io/micronaut/openapi/api/PetApi.class").exists()
-        file("build/classes/java/main/io/micronaut/openapi/model/Pet.class").exists()
+        file("build/generated/openapi/generateServerOpenApiApis/src/main/kotlin/io/micronaut/openapi/api/PetApi.kt").exists()
+        file("build/generated/openapi/generateServerOpenApiModels/src/main/kotlin/io/micronaut/openapi/model/Pet.kt").exists()
+        file("build/classes/kotlin/main/io/micronaut/openapi/api/PetApi.class").exists()
+        file("build/classes/kotlin/main/io/micronaut/openapi/model/Pet.class").exists()
     }
 }
