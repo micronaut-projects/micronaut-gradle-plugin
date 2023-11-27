@@ -45,6 +45,9 @@ public abstract class AbstractOpenApiGenerator<W extends AbstractOpenApiWorkActi
     public abstract RegularFileProperty getDefinitionFile();
 
     @Input
+    public abstract Property<String> getLang();
+
+    @Input
     public abstract Property<String> getInvokerPackageName();
 
     @Input
@@ -81,6 +84,15 @@ public abstract class AbstractOpenApiGenerator<W extends AbstractOpenApiWorkActi
     public abstract ListProperty<ParameterMappingModel> getParameterMappings();
 
     @Input
+    public abstract Property<Boolean> getLombok();
+
+    @Input
+    public abstract Property<Boolean> getGeneratedAnnotation();
+
+    @Input
+    public abstract Property<Boolean> getFluxForArrays();
+
+    @Input
     public abstract ListProperty<ResponseBodyMappingModel> getResponseBodyMappings();
 
     @OutputDirectory
@@ -98,6 +110,7 @@ public abstract class AbstractOpenApiGenerator<W extends AbstractOpenApiWorkActi
     public final void execute() {
         getWorkerExecutor().classLoaderIsolation(spec -> spec.getClasspath().from(getClasspath()))
                 .submit(getWorkerAction(), params -> {
+                    params.getLang().set(getLang());
                     params.getApiPackageName().set(getApiPackageName());
                     params.getInvokerPackageName().set(getInvokerPackageName());
                     params.getSerializationFramework().set(getSerializationFramework());
@@ -113,6 +126,9 @@ public abstract class AbstractOpenApiGenerator<W extends AbstractOpenApiWorkActi
                     params.getDateTimeFormat().set(getDateTimeFormat());
                     params.getParameterMappings().set(getParameterMappings());
                     params.getResponseBodyMappings().set(getResponseBodyMappings());
+                    params.getFluxForArrays().set(getFluxForArrays());
+                    params.getGeneratedAnnotation().set(getGeneratedAnnotation());
+                    params.getLombok().set(getLombok());
                     configureWorkerParameters(params);
                 });
     }

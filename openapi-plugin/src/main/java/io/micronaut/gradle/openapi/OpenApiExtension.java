@@ -26,6 +26,7 @@ import java.io.File;
  * Configures the OpenAPI code generator.
  */
 public interface OpenApiExtension {
+
     /**
      * The version of the Micronaut OpenAPI generator.
      * @return the version

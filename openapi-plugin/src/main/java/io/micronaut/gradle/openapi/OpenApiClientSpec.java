@@ -19,6 +19,7 @@ import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Property;
 
 public interface OpenApiClientSpec extends OpenApiSpec {
+
     Property<String> getClientId();
 
     Property<Boolean> getUseAuth();

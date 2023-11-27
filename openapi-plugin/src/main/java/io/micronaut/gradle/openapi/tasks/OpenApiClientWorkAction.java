@@ -15,14 +15,18 @@
  */
 package io.micronaut.gradle.openapi.tasks;
 
+import java.util.List;
+
 import io.micronaut.openapi.generator.MicronautCodeGeneratorBuilder;
+import io.micronaut.openapi.generator.MicronautCodeGeneratorOptionsBuilder.GeneratorLanguage;
+
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Property;
 
-import java.util.List;
-
 public abstract class OpenApiClientWorkAction extends AbstractOpenApiWorkAction<OpenApiClientWorkAction.ClientParameters> {
+
     interface ClientParameters extends AbstractOpenApiWorkAction.OpenApiParameters {
+
         Property<String> getClientId();
 
         Property<Boolean> getUseAuth();
@@ -37,19 +41,41 @@ public abstract class OpenApiClientWorkAction extends AbstractOpenApiWorkAction<
     @Override
     protected void configureBuilder(MicronautCodeGeneratorBuilder builder) {
         var parameters = getParameters();
-        builder.forClient(spec -> {
-            spec.withAuthorization(parameters.getUseAuth().get());
-            if (parameters.getClientId().isPresent()) {
-                spec.withClientId(parameters.getClientId().get());
-            }
-            spec.withAdditionalClientTypeAnnotations(parameters.getAdditionalClientTypeAnnotations().getOrElse(List.of()));
-            if (parameters.getBasePathSeparator().isPresent()) {
-                spec.withBasePathSeparator(parameters.getBasePathSeparator().get());
-            }
-            if (parameters.getAuthorizationFilterPattern().isPresent()) {
-                spec.withAuthorizationFilterPattern(parameters.getAuthorizationFilterPattern().get());
-            }
-        });
+        if ("kotlin".equalsIgnoreCase(parameters.getLang().get())) {
+            builder.forKotlinClient(spec -> {
+                spec.withAuthorization(parameters.getUseAuth().get())
+                        .withAdditionalClientTypeAnnotations(parameters.getAdditionalClientTypeAnnotations().getOrElse(List.of()))
+                        .withGeneratedAnnotation(parameters.getGeneratedAnnotation().get());
+
+                if (parameters.getClientId().isPresent()) {
+                    spec.withClientId(parameters.getClientId().get());
+                }
+                if (parameters.getBasePathSeparator().isPresent()) {
+                    spec.withBasePathSeparator(parameters.getBasePathSeparator().get());
+                }
+                if (parameters.getAuthorizationFilterPattern().isPresent()) {
+                    spec.withAuthorizationFilterPattern(parameters.getAuthorizationFilterPattern().get());
+                }
+            });
+        } else {
+            builder.forJavaClient(spec -> {
+                spec.withAuthorization(parameters.getUseAuth().get())
+                        .withAdditionalClientTypeAnnotations(parameters.getAdditionalClientTypeAnnotations().getOrElse(List.of()))
+                        .withLombok(parameters.getLombok().get())
+                        .withGeneratedAnnotation(parameters.getGeneratedAnnotation().get())
+                        .withFluxForArrays(parameters.getFluxForArrays().get());
+
+                if (parameters.getClientId().isPresent()) {
+                    spec.withClientId(parameters.getClientId().get());
+                }
+                if (parameters.getBasePathSeparator().isPresent()) {
+                    spec.withBasePathSeparator(parameters.getBasePathSeparator().get());
+                }
+                if (parameters.getAuthorizationFilterPattern().isPresent()) {
+                    spec.withAuthorizationFilterPattern(parameters.getAuthorizationFilterPattern().get());
+                }
+            });
+        }
     }
 
 }

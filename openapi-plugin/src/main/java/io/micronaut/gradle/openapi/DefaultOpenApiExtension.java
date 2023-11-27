@@ -25,6 +25,7 @@ import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.file.Directory;
 import org.gradle.api.file.RegularFile;
+import org.gradle.api.file.SourceDirectorySet;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.SourceSetContainer;
@@ -39,6 +40,7 @@ import java.util.function.Consumer;
 import static org.codehaus.groovy.runtime.StringGroovyMethods.capitalize;
 
 public abstract class DefaultOpenApiExtension implements OpenApiExtension {
+
     public static final String OPENAPI_GROUP = "Micronaut OpenAPI";
     // We use a String here because the type is not available at runtime because of classpath isolation
     private static final String DEFAULT_SERIALIZATION_FRAMEWORK = "MICRONAUT_SERDE_JACKSON";
@@ -72,15 +74,18 @@ public abstract class DefaultOpenApiExtension implements OpenApiExtension {
             configureCommonExtensionDefaults(serverSpec);
             serverSpec.getControllerPackage().convention("io.micronaut.openapi.controller");
             serverSpec.getUseAuth().convention(false);
+            serverSpec.getAot().convention(false);
             spec.execute(serverSpec);
             var controllers = project.getTasks().register(generateApisTaskName(name), OpenApiServerGenerator.class, task -> {
                 configureCommonProperties(name, task, serverSpec, definition);
+                task.getAot().set(serverSpec.getAot());
                 task.setDescription("Generates OpenAPI controllers from an OpenAPI definition");
                 configureServerTask(serverSpec, task);
                 task.getOutputKinds().addAll("APIS", "SUPPORTING_FILES");
             });
             var models = project.getTasks().register(generateModelsTaskName(name), OpenApiServerGenerator.class, task -> {
                 configureCommonProperties(name, task, serverSpec, definition);
+                task.getAot().set(serverSpec.getAot());
                 task.setDescription("Generates OpenAPI models from an OpenAPI definition");
                 configureServerTask(serverSpec, task);
                 task.getOutputKinds().add("MODELS");
@@ -89,6 +94,13 @@ public abstract class DefaultOpenApiExtension implements OpenApiExtension {
                 var javaMain = sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME).getJava();
                 javaMain.srcDir(controllers.map(DefaultOpenApiExtension::mainSrcDir));
                 javaMain.srcDir(models.map(DefaultOpenApiExtension::mainSrcDir));
+                project.getPluginManager().withPlugin("org.jetbrains.kotlin.jvm", unused -> {
+                    var ext = sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME).getExtensions().getByName("kotlin");
+                    if (ext instanceof SourceDirectorySet kotlinMain) {
+                        kotlinMain.srcDir(controllers.map(d -> DefaultOpenApiExtension.mainSrcDir(d, "kotlin")));
+                        kotlinMain.srcDir(models.map(d -> DefaultOpenApiExtension.mainSrcDir(d, "kotlin")));
+                    }
+                });
             });
         } else {
             throwDuplicateEntryFor(name);
@@ -103,13 +115,27 @@ public abstract class DefaultOpenApiExtension implements OpenApiExtension {
         spec.getUseBeanValidation().convention(true);
         spec.getUseOptional().convention(false);
         spec.getUseReactive().convention(true);
+        spec.getLombok().convention(false);
+        spec.getGeneratedAnnotation().convention(true);
+        spec.getFluxForArrays().convention(false);
         spec.getSerializationFramework().convention(DEFAULT_SERIALIZATION_FRAMEWORK);
         spec.getAlwaysUseGenerateHttpResponse().convention(false);
         spec.getGenerateHttpResponseWhereRequired().convention(false);
         spec.getDateTimeFormat().convention("ZONED_DATETIME");
+        spec.getLang().convention("java");
         withJava(() -> {
+                    var compileOnlyDeps = project.getConfigurations().getByName("compileOnly").getDependencies();
+                    if ("java".equalsIgnoreCase(spec.getLang().get())) {
+                        compileOnlyDeps.addAllLater(spec.getLombok().map(lombok -> {
+                            if (Boolean.TRUE.equals(lombok)) {
+                                return List.of(project.getDependencies().create("org.projectlombok:lombok"));
+                            }
+                            return List.of();
+                        }));
+                    }
+                    compileOnlyDeps.add(project.getDependencies().create("io.micronaut.openapi:micronaut-openapi"));
+
                     var implDeps = project.getConfigurations().getByName("implementation").getDependencies();
-                    implDeps.add(project.getDependencies().create("io.micronaut.openapi:micronaut-openapi"));
                     implDeps.addAllLater(spec.getUseReactive().map(reactive -> {
                         if (Boolean.TRUE.equals(reactive)) {
                             return List.of(project.getDependencies().create("io.projectreactor:reactor-core"));
@@ -138,6 +164,10 @@ public abstract class DefaultOpenApiExtension implements OpenApiExtension {
         task.getGenerateHttpResponseWhereRequired().convention(openApiSpec.getGenerateHttpResponseWhereRequired());
         task.getDateTimeFormat().convention(openApiSpec.getDateTimeFormat());
         task.getParameterMappings().convention(openApiSpec.getParameterMappings());
+        task.getLang().convention(openApiSpec.getLang());
+        task.getLombok().convention(openApiSpec.getLombok());
+        task.getGeneratedAnnotation().convention(openApiSpec.getGeneratedAnnotation());
+        task.getFluxForArrays().convention(openApiSpec.getFluxForArrays());
         task.getResponseBodyMappings().convention(openApiSpec.getResponseBodyMappings());
     }
 
@@ -172,6 +202,13 @@ public abstract class DefaultOpenApiExtension implements OpenApiExtension {
                 var javaMain = sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME).getJava();
                 javaMain.srcDir(client.map(DefaultOpenApiExtension::mainSrcDir));
                 javaMain.srcDir(models.map(DefaultOpenApiExtension::mainSrcDir));
+                project.getPluginManager().withPlugin("org.jetbrains.kotlin.jvm", unused -> {
+                    var ext = sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME).getExtensions().getByName("kotlin");
+                    if (ext instanceof SourceDirectorySet kotlinMain) {
+                        kotlinMain.srcDir(client.map(d -> DefaultOpenApiExtension.mainSrcDir(d, "kotlin")));
+                        kotlinMain.srcDir(models.map(d -> DefaultOpenApiExtension.mainSrcDir(d, "kotlin")));
+                    }
+                });
             });
             withJava(() -> {
                         var implDeps = project.getConfigurations().getByName("implementation").getDependencies();
@@ -186,8 +223,12 @@ public abstract class DefaultOpenApiExtension implements OpenApiExtension {
         }
     }
 
-    private static Provider<Directory> mainSrcDir(AbstractOpenApiGenerator<?,?> t) {
-        return t.getOutputDirectory().dir("src/main/java");
+    private static Provider<Directory> mainSrcDir(AbstractOpenApiGenerator<?, ?> t, String language) {
+        return t.getOutputDirectory().dir("src/main/" + language);
+    }
+
+    private static Provider<Directory> mainSrcDir(AbstractOpenApiGenerator<?, ?> t) {
+        return mainSrcDir(t, "java");
     }
 
     private static void configureClientTask(OpenApiClientSpec clientSpec, OpenApiClientGenerator task) {
@@ -213,6 +254,7 @@ public abstract class DefaultOpenApiExtension implements OpenApiExtension {
     private static void configureServerTask(OpenApiServerSpec serverSpec, OpenApiServerGenerator task) {
         task.getControllerPackage().convention(serverSpec.getControllerPackage());
         task.getUseAuth().convention(serverSpec.getUseAuth());
+        task.getAot().convention(serverSpec.getAot());
     }
 
 }

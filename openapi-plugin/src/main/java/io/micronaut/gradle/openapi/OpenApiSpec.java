@@ -19,6 +19,9 @@ import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Property;
 
 public interface OpenApiSpec {
+
+    Property<String> getLang();
+
     Property<String> getInvokerPackageName();
 
     Property<String> getApiPackageName();
@@ -36,6 +39,12 @@ public interface OpenApiSpec {
     Property<Boolean> getAlwaysUseGenerateHttpResponse();
 
     Property<Boolean> getGenerateHttpResponseWhereRequired();
+
+    Property<Boolean> getLombok();
+
+    Property<Boolean> getGeneratedAnnotation();
+
+    Property<Boolean> getFluxForArrays();
 
     Property<String> getDateTimeFormat();
 

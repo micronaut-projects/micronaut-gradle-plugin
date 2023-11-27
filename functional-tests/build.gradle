@@ -18,6 +18,7 @@ functionalTesting {
     pluginUnderTest('docker')
     pluginUnderTest('aot')
     pluginUnderTest('gradle')
+    pluginUnderTest('openapi')
     pluginUnderTest('test-resources')
 }
 

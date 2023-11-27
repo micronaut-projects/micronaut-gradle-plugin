@@ -35,6 +35,7 @@ abstract class AbstractFunctionalTest extends AbstractGradleBuildSpec {
                     id 'io.micronaut.graalvm' version '${version}'
                     id 'io.micronaut.docker' version '${version}'
                     id 'io.micronaut.aot' version '${version}'
+                    id 'io.micronaut.openapi' version '${version}'
                     id 'io.micronaut.test-resources' version '${version}'
                 }
             }
