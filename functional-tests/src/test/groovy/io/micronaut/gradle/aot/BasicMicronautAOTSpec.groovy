@@ -253,7 +253,7 @@ class BasicMicronautAOTSpec extends AbstractAOTPluginSpec {
 
     private String subpath(File fullpath, File basePath) {
         def path = fullpath.getAbsolutePath()
-        path.substring(basePath.getAbsolutePath().length() + 1, path.size())
+        path.substring(basePath.getAbsolutePath().length() + 1, path.size()).replaceAll("\\\\", "/")
     }
 
 }

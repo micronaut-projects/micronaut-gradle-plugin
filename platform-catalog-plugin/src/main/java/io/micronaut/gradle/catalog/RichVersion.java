@@ -17,6 +17,7 @@ package io.micronaut.gradle.catalog;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Objects;
 
 public class RichVersion {
     public static final RichVersion EMPTY = new RichVersion(null, null, null, null, false);
@@ -77,16 +78,16 @@ public class RichVersion {
         if (rejectAll != that.rejectAll) {
             return false;
         }
-        if (require != null ? !require.equals(that.require) : that.require != null) {
+        if (!Objects.equals(require, that.require)) {
             return false;
         }
-        if (strictly != null ? !strictly.equals(that.strictly) : that.strictly != null) {
+        if (!Objects.equals(strictly, that.strictly)) {
             return false;
         }
-        if (prefer != null ? !prefer.equals(that.prefer) : that.prefer != null) {
+        if (!Objects.equals(prefer, that.prefer)) {
             return false;
         }
-        return rejectedVersions != null ? rejectedVersions.equals(that.rejectedVersions) : that.rejectedVersions == null;
+        return Objects.equals(rejectedVersions, that.rejectedVersions);
     }
 
     @Override

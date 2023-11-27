@@ -69,8 +69,7 @@ public class MicronautTestResourcesConsumerPlugin implements Plugin<Project> {
             conf.setCanBeResolved(false);
             conf.setDescription("Used to declare projects which provide test resources");
             conf.getDependencies().whenObjectAdded(dep -> {
-                if (dep instanceof ProjectDependency) {
-                    ProjectDependency projectDependency = (ProjectDependency) dep;
+                if (dep instanceof ProjectDependency projectDependency) {
                     projectDependency.attributes(attrs -> configureUsageAttribute(project, attrs));
                 } else {
                     throw new InvalidUserDataException("The test resources configuration can only contain project dependencies");

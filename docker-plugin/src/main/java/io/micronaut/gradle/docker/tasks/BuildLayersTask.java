@@ -75,21 +75,11 @@ public abstract class BuildLayersTask extends DefaultTask {
                                                         Provider<Directory> libsDir,
                                                         Provider<Directory> resourcesDir,
                                                         Provider<Directory> classesDir) {
-        Provider<Directory> layerDir = libsDir;
-        switch (layer.getLayerKind().get()) {
-            case APP:
-                layerDir = appDir;
-                break;
-            case LIBS:
-                layerDir = libsDir;
-                break;
-            case EXPANDED_CLASSES:
-                layerDir = classesDir;
-                break;
-            case EXPANDED_RESOURCES:
-                layerDir = resourcesDir;
-                break;
-        }
-        return layerDir;
+        return switch (layer.getLayerKind().get()) {
+            case APP -> appDir;
+            case LIBS -> libsDir;
+            case EXPANDED_CLASSES -> classesDir;
+            case EXPANDED_RESOURCES -> resourcesDir;
+        };
     }
 }

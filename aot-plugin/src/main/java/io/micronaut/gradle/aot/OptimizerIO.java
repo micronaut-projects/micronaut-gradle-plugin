@@ -46,13 +46,10 @@ public interface OptimizerIO {
         }
 
         public String getCapitalizedName() {
-            switch (this) {
-                case JIT:
-                    return "Jit";
-                case NATIVE:
-                    return "Native";
-            }
-            return name();
+            return switch (this) {
+                case JIT -> "Jit";
+                case NATIVE -> "Native";
+            };
         }
     }
 }

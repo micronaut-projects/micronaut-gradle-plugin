@@ -59,11 +59,11 @@ public abstract class SimpleSourceProcessor extends DefaultTask {
                     if (Files.isDirectory(path)) {
                         Files.createDirectories(target);
                     } else if (Files.isRegularFile(path)) {
-                        String contents = new String(Files.readAllBytes(path), StandardCharsets.UTF_8);
+                        String contents = Files.readString(path);
                         for (Map.Entry<String, String> entry : replacements.entrySet()) {
                             contents = contents.replace(entry.getKey(), entry.getValue());
                         }
-                        Files.write(target, contents.getBytes(StandardCharsets.UTF_8));
+                        Files.writeString(target, contents);
                     }
                 } catch (IOException e) {
                     throw new GradleException("Unable to create target directory " + target, e);

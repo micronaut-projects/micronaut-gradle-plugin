@@ -62,7 +62,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -80,7 +79,7 @@ public abstract class MicronautAotPlugin implements Plugin<Project> {
     public static final String OPTIMIZED_DIST_NAME = "optimized";
     public static final String MAIN_BINARY_NAME = "main";
 
-    static final List<String> TYPES_TO_CHECK = Collections.unmodifiableList(Arrays.asList(
+    static final List<String> TYPES_TO_CHECK = List.of(
             "io.reactivex.Observable",
             "reactor.core.publisher.Flux",
             "kotlinx.coroutines.flow.Flow",
@@ -96,9 +95,10 @@ public abstract class MicronautAotPlugin implements Plugin<Project> {
             "io.methvin.watchservice.MacOSXListeningWatchService",
             "io.micronaut.core.async.publisher.CompletableFuturePublisher",
             "io.micronaut.core.async.publisher.Publishers.JustPublisher",
-            "io.micronaut.core.async.subscriber.Completable"));
+            "io.micronaut.core.async.subscriber.Completable"
+    );
 
-    public static final List<String> SERVICE_TYPES = Collections.unmodifiableList(Arrays.asList(
+    public static final List<String> SERVICE_TYPES = List.of(
             "io.micronaut.context.env.PropertySourceLoader",
             "io.micronaut.inject.BeanConfiguration",
             "io.micronaut.inject.BeanDefinitionReference",
@@ -107,7 +107,7 @@ public abstract class MicronautAotPlugin implements Plugin<Project> {
             "io.micronaut.core.beans.BeanIntrospectionReference",
             "io.micronaut.core.convert.TypeConverterRegistrar",
             "io.micronaut.context.env.PropertyExpressionResolver"
-    ));
+    );
     public static final String AOT_APPLICATION_CLASSPATH = "aotApplicationClasspath";
     public static final String OPTIMIZED_RUNTIME_CLASSPATH_CONFIGURATION_NAME = "optimizedRuntimeClasspath";
     public static final String DEFAULT_GENERATED_PACKAGE = "io.micronaut.aot.generated";
@@ -139,7 +139,7 @@ public abstract class MicronautAotPlugin implements Plugin<Project> {
             JavaApplication javaApplication = project.getExtensions().findByType(JavaApplication.class);
             if (javaApplication != null) {
                 String mainClass = javaApplication.getMainClass().get();
-                return mainClass.contains(".") ? mainClass.substring(0, mainClass.lastIndexOf(".")) : DEFAULT_GENERATED_PACKAGE;
+                return mainClass.contains(".") ? mainClass.substring(0, mainClass.lastIndexOf('.')) : DEFAULT_GENERATED_PACKAGE;
             }
             return DEFAULT_GENERATED_PACKAGE;
         }));
@@ -160,9 +160,9 @@ public abstract class MicronautAotPlugin implements Plugin<Project> {
     }
 
     private void registerCreateSamplesTasks(Project project, Configuration optimizerRuntimeClasspath, Configuration applicationClasspath, TaskContainer tasks, AOTExtension aotExtension) {
-        TaskProvider<Task> createAotSampleConfigurationFiles = tasks.register("createAotSampleConfigurationFiles", task -> {
-            task.setDescription("Generates Micronaut AOT sample configuration files");
-        });
+        TaskProvider<Task> createAotSampleConfigurationFiles = tasks.register("createAotSampleConfigurationFiles", task -> 
+            task.setDescription("Generates Micronaut AOT sample configuration files")
+        );
         for (OptimizerIO.TargetRuntime targetRuntime : OptimizerIO.TargetRuntime.values()) {
             TaskProvider<MicronautAotSampleConfTask> createSample = tasks.register("createAot" + targetRuntime.getCapitalizedName() + "Sample", MicronautAotSampleConfTask.class, task -> {
                 task.setDescription("Creates a sample " + targetRuntime.getCapitalizedName() + " AOT configuration file");
@@ -320,13 +320,13 @@ public abstract class MicronautAotPlugin implements Plugin<Project> {
                 // https://github.com/micronaut-projects/micronaut-gradle-plugin/issues/385
                 task.getOutputs().upToDateWhen(t -> false);
                 task.setClasspath(project.files(jarTask, optimizedRuntimeClasspath));
-                task.doFirst(new Action<Task>() {
+                task.doFirst(new Action<>() {
                     @Override
                     public void execute(Task t) {
                         if (task.getLogger().isDebugEnabled()) {
                             task.getLogger().debug(
                                     "Running optimized entry point: " + task.getMainClass().get() +
-                                    "\nClasspath:\n    " + task.getClasspath().getFiles()
+                                            "\nClasspath:\n    " + task.getClasspath().getFiles()
                                             .stream()
                                             .map(File::getName)
                                             .collect(Collectors.joining("\n    "))

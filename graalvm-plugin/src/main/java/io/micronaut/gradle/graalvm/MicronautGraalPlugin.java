@@ -22,8 +22,6 @@ import org.gradle.api.tasks.TaskContainer;
 import org.gradle.language.jvm.tasks.ProcessResources;
 
 import java.io.File;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -44,13 +42,13 @@ public class MicronautGraalPlugin implements Plugin<Project> {
 
     public static final String RICH_OUTPUT_PROPERTY = "io.micronaut.graalvm.rich.output";
 
-    private static final Set<String> SOURCE_SETS = Collections.unmodifiableSet(new HashSet<>(Arrays.asList("main", "test")));
-    private static final List<String> GRAALVM_MODULE_EXPORTS = Collections.unmodifiableList(Arrays.asList(
+    private static final Set<String> SOURCE_SETS = Set.of("main", "test");
+    private static final List<String> GRAALVM_MODULE_EXPORTS = List.of(
             "org.graalvm.nativeimage.builder/com.oracle.svm.core.configure",
             "org.graalvm.nativeimage.builder/com.oracle.svm.core.jdk",
             "org.graalvm.nativeimage.builder/com.oracle.svm.core.jni",
             "org.graalvm.sdk/org.graalvm.nativeimage.impl"
-    ));
+    );
 
     @Override
     public void apply(Project project) {

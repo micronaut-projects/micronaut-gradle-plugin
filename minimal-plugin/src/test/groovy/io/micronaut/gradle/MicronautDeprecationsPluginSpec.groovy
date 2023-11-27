@@ -38,7 +38,7 @@ class MicronautDeprecationsPluginSpec extends AbstractGradleBuildSpec {
         def task = result.task(":assemble")
 
         then:
-        result.output.contains("Source set 'custom' was declared using the additionalSourcesets property. Please use sourceSet(...) instead.\n")
+        result.output.contains("Source set 'custom' was declared using the additionalSourcesets property. Please use sourceSet(...) instead.")
         task.outcome == TaskOutcome.SUCCESS
     }
 
@@ -76,7 +76,7 @@ class MicronautDeprecationsPluginSpec extends AbstractGradleBuildSpec {
         def task = result.task(":assemble")
 
         then:
-        !result.output.contains("Source set 'custom' was declared using the additionalSourcesets property. Please use sourceSet(...) instead.\n")
+        !result.output.contains("Source set 'custom' was declared using the additionalSourcesets property. Please use sourceSet(...) instead.")
         task.outcome == TaskOutcome.SUCCESS
     }
 }
