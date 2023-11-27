@@ -155,7 +155,7 @@ public class MicronautComponentPlugin implements Plugin<Project> {
                 .getAnnotationProcessorConfigurationName();
         String implementationConfigurationName = sourceSet
                 .getImplementationConfigurationName();
-        List<String> both = Arrays.asList(
+        List<String> both = List.of(
                 implementationConfigurationName,
                 annotationProcessorConfigurationName
         );
@@ -214,13 +214,13 @@ public class MicronautComponentPlugin implements Plugin<Project> {
                     if (!annotations.isEmpty()) {
                         compilerArgs.add("-Amicronaut.processing.annotations=" + String.join(",", annotations));
                     } else {
-                        if (group.length() > 0) {
+                        if (!group.isEmpty()) {
                             compilerArgs.add("-Amicronaut.processing.annotations=" + group + ".*");
                         }
                     }
                 }
 
-                if (group.length() > 0) {
+                if (!group.isEmpty()) {
                     compilerArgs.add("-Amicronaut.processing.group=" + group);
                     compilerArgs.add("-Amicronaut.processing.module=" + module);
                 }

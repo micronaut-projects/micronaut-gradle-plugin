@@ -109,7 +109,7 @@ public class AnnotationProcessing implements AnnotationProcessingConfigBuilder {
 
     @Override
     public AnnotationProcessingConfigBuilder annotations(String... annotations) {
-        if (annotations != null && annotations.length > 0) {
+        if (annotations != null) {
             for (String annotation : annotations) {
                 if (annotation != null) {
                     this.annotations.add(annotation);

@@ -328,7 +328,7 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
 
     static ArrayList<Integer> parseVersion(String testedVersion) {
         String version = testedVersion;
-        var index = version.indexOf("-");
+        var index = version.indexOf('-');
         if (index > 0) {
             version = version.substring(0, index);
         }
@@ -355,7 +355,9 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
                 public void beforeComplete() {
                     try {
                         if (Files.exists(shouldStopFile)) {
-                            project.getLogger().debug("Stop file contains " + Files.readAllLines(shouldStopFile));
+                            if (project.getLogger().isDebugEnabled()) {
+                                project.getLogger().debug("Stop file contains {}", Files.readAllLines(shouldStopFile));
+                            }
                             if (Boolean.parseBoolean(Files.readAllLines(shouldStopFile).get(0))) {
                                 ServerUtils.stopServer(settingsDirectory.get().getAsFile().toPath());
                             }

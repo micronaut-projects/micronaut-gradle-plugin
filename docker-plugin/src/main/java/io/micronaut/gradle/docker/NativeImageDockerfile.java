@@ -40,7 +40,6 @@ import org.gradle.jvm.toolchain.JavaToolchainService;
 import javax.inject.Inject;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -56,9 +55,9 @@ import static io.micronaut.gradle.docker.MicronautDockerfile.DEFAULT_WORKING_DIR
  */
 public abstract class NativeImageDockerfile extends Dockerfile implements DockerBuildOptions {
 
-    private static final List<Integer> SUPPORTED_JAVA_VERSIONS = Collections.unmodifiableList(
+    private static final List<Integer> SUPPORTED_JAVA_VERSIONS = List.of(
             // keep those in descending order
-            Arrays.asList(17)
+            17
     );
     private static final String ARM_ARCH = "aarch64";
     private static final String X86_64_ARCH = "x64";
@@ -373,10 +372,10 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
         );
 
         //noinspection Convert2Lambda
-        doLast(new Action<Task>() {
+        doLast(new Action<>() {
             @Override
             public void execute(Task task) {
-                java.io.File f = NativeImageDockerfile.this.getDestFile().get().getAsFile();
+                java.io.File f = getDestFile().get().getAsFile();
                 System.out.println("Dockerfile written to: " + f.getAbsolutePath());
             }
         });
@@ -593,7 +592,7 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
 
     private static Integer toMajorVersion(String version) {
         if (version.contains(".")) {
-            return Integer.parseInt(version.substring(0, version.indexOf(".")));
+            return Integer.parseInt(version.substring(0, version.indexOf('.')));
         }
         return Integer.parseInt(version);
     }
@@ -696,7 +695,7 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
 
     @Override
     public DockerBuildOptions exportPorts(Integer... ports) {
-        this.getExposedPorts().set(Arrays.asList(ports));
+        this.getExposedPorts().set(List.of(ports));
         return this;
     }
 
