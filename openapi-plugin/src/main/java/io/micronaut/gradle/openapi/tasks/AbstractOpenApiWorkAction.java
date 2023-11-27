@@ -15,13 +15,18 @@
  */
 package io.micronaut.gradle.openapi.tasks;
 
+import java.util.Locale;
+
 import io.micronaut.gradle.openapi.ParameterMappingModel;
 import io.micronaut.gradle.openapi.ResponseBodyMappingModel;
-import io.micronaut.openapi.generator.AbstractMicronautJavaCodegen;
 import io.micronaut.openapi.generator.MicronautCodeGeneratorBuilder;
 import io.micronaut.openapi.generator.MicronautCodeGeneratorEntryPoint;
 import io.micronaut.openapi.generator.MicronautCodeGeneratorOptionsBuilder;
+import io.micronaut.openapi.generator.MicronautCodeGeneratorOptionsBuilder.GeneratorLanguage;
+import io.micronaut.openapi.generator.ParameterMapping;
+import io.micronaut.openapi.generator.ResponseBodyMapping;
 import io.micronaut.openapi.generator.SerializationLibraryKind;
+
 import org.gradle.api.file.DirectoryProperty;
 import org.gradle.api.file.RegularFileProperty;
 import org.gradle.api.provider.ListProperty;
@@ -29,10 +34,12 @@ import org.gradle.api.provider.Property;
 import org.gradle.workers.WorkAction;
 import org.gradle.workers.WorkParameters;
 
-import java.util.Locale;
-
 public abstract class AbstractOpenApiWorkAction<T extends AbstractOpenApiWorkAction.OpenApiParameters> implements WorkAction<T> {
+
     interface OpenApiParameters extends WorkParameters {
+
+        Property<String> getLang();
+
         RegularFileProperty getDefinitionFile();
 
         Property<String> getInvokerPackageName();
@@ -59,6 +66,12 @@ public abstract class AbstractOpenApiWorkAction<T extends AbstractOpenApiWorkAct
 
         Property<String> getDateTimeFormat();
 
+        Property<Boolean> getLombok();
+
+        Property<Boolean> getGeneratedAnnotation();
+
+        Property<Boolean> getFluxForArrays();
+
         ListProperty<ParameterMappingModel> getParameterMappings();
 
         ListProperty<ResponseBodyMappingModel> getResponseBodyMappings();
@@ -69,6 +82,7 @@ public abstract class AbstractOpenApiWorkAction<T extends AbstractOpenApiWorkAct
     @Override
     public void execute() {
         var parameters = getParameters();
+        var lang = parameters.getLang().get();
         var builder = MicronautCodeGeneratorEntryPoint.builder()
                 .withDefinitionFile(parameters.getDefinitionFile().get().getAsFile().toURI())
                 .withOutputDirectory(parameters.getOutputDirectory().getAsFile().get())
@@ -78,36 +92,36 @@ public abstract class AbstractOpenApiWorkAction<T extends AbstractOpenApiWorkAct
                                 .map(s -> MicronautCodeGeneratorEntryPoint.OutputKind.valueOf(s.toUpperCase(Locale.US)))
                                 .toArray(MicronautCodeGeneratorEntryPoint.OutputKind[]::new)
                 )
-                .withOptions(options -> {
-                    options.withInvokerPackage(parameters.getInvokerPackageName().get());
-                    options.withApiPackage(parameters.getApiPackageName().get());
-                    options.withModelPackage(parameters.getModelPackageName().get());
-                    options.withBeanValidation(parameters.getUseBeanValidation().get());
-                    options.withOptional(parameters.getUseOptional().get());
-                    options.withReactive(parameters.getUseReactive().get());
-                    options.withSerializationLibrary(SerializationLibraryKind.valueOf(parameters.getSerializationFramework().get().toUpperCase(Locale.US)));
-                    options.withGenerateHttpResponseAlways(parameters.getAlwaysUseGenerateHttpResponse().get());
-                    options.withGenerateHttpResponseWhereRequired(parameters.getGenerateHttpResponseWhereRequired().get());
-                    options.withDateTimeFormat(MicronautCodeGeneratorOptionsBuilder.DateTimeFormat.valueOf(parameters.getDateTimeFormat().get().toUpperCase(Locale.US)));
-                    options.withParameterMappings(parameters.getParameterMappings()
-                            .get()
-                            .stream()
-                            .map(mapping -> new AbstractMicronautJavaCodegen.ParameterMapping(
-                                    mapping.getName(),
-                                    AbstractMicronautJavaCodegen.ParameterMapping.ParameterLocation.valueOf(mapping.getLocation().name()),
-                                    mapping.getMappedType(),
-                                    mapping.getMappedName(),
-                                    mapping.isValidated())
-                            )
-                            .toList()
-                    );
-                    options.withResponseBodyMappings(parameters.getResponseBodyMappings()
-                            .get()
-                            .stream()
-                            .map(mapping -> new AbstractMicronautJavaCodegen.ResponseBodyMapping(mapping.getHeaderName(), mapping.getMappedBodyType(), mapping.isListWrapper(), mapping.isValidated()))
-                            .toList()
-                    );
-                });
+                .withOptions(options -> options.withInvokerPackage(parameters.getInvokerPackageName().get())
+                        .withLang("kotlin".equalsIgnoreCase(lang) ? GeneratorLanguage.KOTLIN : GeneratorLanguage.JAVA)
+                        .withApiPackage(parameters.getApiPackageName().get())
+                        .withModelPackage(parameters.getModelPackageName().get())
+                        .withBeanValidation(parameters.getUseBeanValidation().get())
+                        .withOptional(parameters.getUseOptional().get())
+                        .withReactive(parameters.getUseReactive().get())
+                        .withSerializationLibrary(SerializationLibraryKind.valueOf(parameters.getSerializationFramework().get().toUpperCase(Locale.US)))
+                        .withGenerateHttpResponseAlways(parameters.getAlwaysUseGenerateHttpResponse().get())
+                        .withGenerateHttpResponseWhereRequired(parameters.getGenerateHttpResponseWhereRequired().get())
+                        .withDateTimeFormat(MicronautCodeGeneratorOptionsBuilder.DateTimeFormat.valueOf(parameters.getDateTimeFormat().get().toUpperCase(Locale.US)))
+                        .withParameterMappings(parameters.getParameterMappings()
+                                .get()
+                                .stream()
+                                .map(mapping -> new ParameterMapping(
+                                        mapping.getName(),
+                                        ParameterMapping.ParameterLocation.valueOf(mapping.getLocation().name()),
+                                        mapping.getMappedType(),
+                                        mapping.getMappedName(),
+                                        mapping.isValidated())
+                                )
+                                .toList()
+                        )
+                        .withResponseBodyMappings(parameters.getResponseBodyMappings()
+                                .get()
+                                .stream()
+                                .map(mapping -> new ResponseBodyMapping(mapping.getHeaderName(), mapping.getMappedBodyType(), mapping.isListWrapper(), mapping.isValidated()))
+                                .toList()
+                        ));
+
         configureBuilder(builder);
         builder.build().generate();
     }

@@ -16,25 +16,45 @@
 package io.micronaut.gradle.openapi.tasks;
 
 import io.micronaut.openapi.generator.MicronautCodeGeneratorBuilder;
+import io.micronaut.openapi.generator.MicronautCodeGeneratorOptionsBuilder.GeneratorLanguage;
+
 import org.gradle.api.provider.Property;
 
 public abstract class OpenApiServerWorkAction extends AbstractOpenApiWorkAction<OpenApiServerWorkAction.ServerParameters> {
+
     interface ServerParameters extends OpenApiParameters {
+
         Property<String> getControllerPackage();
 
         Property<Boolean> getUseAuth();
+
+        Property<Boolean> getAot();
     }
 
     @Override
     protected void configureBuilder(MicronautCodeGeneratorBuilder builder) {
         var parameters = getParameters();
-        builder.forServer(spec -> {
-            spec.withControllerPackage(parameters.getControllerPackage().get());
-            spec.withAuthentication(parameters.getUseAuth().get());
-            spec.withGenerateImplementationFiles(false);
-            spec.withGenerateControllerFromExamples(false);
-            spec.withGenerateOperationsToReturnNotImplemented(false);
-        });
-    }
 
+        if ("kotlin".equalsIgnoreCase(parameters.getLang().get())) {
+            builder.forKotlinServer(spec -> spec.withControllerPackage(parameters.getControllerPackage().get())
+                    .withAuthentication(parameters.getUseAuth().get())
+                    .withAot(parameters.getAot().get())
+                    .withGenerateImplementationFiles(false)
+                    .withGenerateControllerFromExamples(false)
+                    .withGenerateOperationsToReturnNotImplemented(false)
+                    .withGeneratedAnnotation(parameters.getGeneratedAnnotation().get())
+            );
+        } else {
+            builder.forJavaServer(spec -> spec.withControllerPackage(parameters.getControllerPackage().get())
+                    .withAuthentication(parameters.getUseAuth().get())
+                    .withAot(parameters.getAot().get())
+                    .withGenerateImplementationFiles(false)
+                    .withGenerateControllerFromExamples(false)
+                    .withGenerateOperationsToReturnNotImplemented(false)
+                    .withGeneratedAnnotation(parameters.getGeneratedAnnotation().get())
+                    .withLombok(parameters.getLombok().get())
+                    .withFluxForArrays(parameters.getFluxForArrays().get())
+            );
+        }
+    }
 }
