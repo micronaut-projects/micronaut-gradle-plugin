@@ -420,7 +420,11 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
             runCommand("curl -4 -L " + releasesUrl + "/" + jdkVersion + "/latest/" + fileName + " -o /tmp/" + fileName);
             runCommand("tar -zxf /tmp/" + fileName + " -C /tmp && ls -d /tmp/graalvm-jdk-"+ jdkVersion + "* | grep -v \"tar.gz\" | xargs -I_ mv _ /usr/lib/graalvm");
             runCommand("rm -rf /tmp/*");
-            runCommand("/usr/lib/graalvm/bin/gu install native-image");
+            if (toMajorVersion(jdkVersion) < 21) {
+                // The GraalVM Updater was removed in GraalVM for JDK 21
+                // https://github.com/oracle/graal/issues/6855
+                runCommand("/usr/lib/graalvm/bin/gu install native-image");
+            }
             defaultCommand("/usr/lib/graalvm/bin/native-image");
             environmentVariable("PATH", "/usr/lib/graalvm/bin:${PATH}");
             from(new From("graalvm").withStage("builder"));
