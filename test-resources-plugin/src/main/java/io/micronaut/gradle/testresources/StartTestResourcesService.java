@@ -118,6 +118,17 @@ public abstract class StartTestResourcesService extends DefaultTask {
     public abstract Property<Integer> getClientTimeout();
 
     /**
+     * Server idle timeout, in minutes. If the server
+     * doesn't receive any request for this amount of
+     * time, it will stop itself.
+     *
+     * @return the server idle timeout
+     */
+    @Input
+    @Optional
+    public abstract Property<Integer> getServerIdleTimeoutMinutes();
+
+    /**
      * Allows starting the test server in foreground
      * instead of background, in which case the build
      * will block.
@@ -228,6 +239,7 @@ public abstract class StartTestResourcesService extends DefaultTask {
                 cdsDir,
                 getClasspath().getFiles(),
                 getClientTimeout().getOrNull(),
+                getServerIdleTimeoutMinutes().getOrNull(),
                 serverFactory);
     }
 
