@@ -33,6 +33,9 @@ import static com.github.jengelman.gradle.plugins.shadow.ShadowJavaPlugin.SHADOW
  */
 class AotShadowSupport {
 
+    private AotShadowSupport() {
+    }
+
     static void registerShadowJar(Project project,
                                   ArchiveOperations archiveOperations,
                                   TaskContainer tasks,

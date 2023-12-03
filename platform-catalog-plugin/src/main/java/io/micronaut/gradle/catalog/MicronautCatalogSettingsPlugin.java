@@ -136,8 +136,8 @@ public abstract class MicronautCatalogSettingsPlugin implements Plugin<Settings>
                         TomlTable versions = toml.getTable("versions");
                         if (versions != null) {
                             Object micronaut = versions.get("micronaut");
-                            if (micronaut instanceof String) {
-                                return (String) micronaut;
+                            if (micronaut instanceof String micronautVer) {
+                                return micronautVer;
                             }
                         }
                         return null;
