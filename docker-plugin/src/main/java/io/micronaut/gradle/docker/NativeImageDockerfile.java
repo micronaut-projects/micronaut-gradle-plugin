@@ -376,7 +376,7 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
             @Override
             public void execute(Task task) {
                 java.io.File f = getDestFile().get().getAsFile();
-                System.out.println("Dockerfile written to: " + f.getAbsolutePath());
+                getLogger().lifecycle("Dockerfile written to: {}", f.getAbsolutePath());
             }
         });
     }

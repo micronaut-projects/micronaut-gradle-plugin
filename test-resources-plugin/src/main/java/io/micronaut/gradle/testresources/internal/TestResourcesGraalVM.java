@@ -29,18 +29,20 @@ import org.gradle.api.tasks.TaskProvider;
  * issues.
  */
 public final class TestResourcesGraalVM {
+
     public static final String ENABLED_PROPERTY_NAME = "testresources.native";
+
+    private TestResourcesGraalVM() {
+    }
 
     public static void configure(Project project,
                                  Configuration client,
                                  TaskProvider<StartTestResourcesService> internalStart) {
         GraalVMExtension graalVMExtension = project.getExtensions().findByType(GraalVMExtension.class);
-        graalVMExtension.getBinaries().all(b -> {
-            b.getRuntimeArgs().addAll(internalStart.map(task -> {
-                ServerConnectionParametersProvider provider = new ServerConnectionParametersProvider(task.getSettingsDirectory());
-                return provider.asArguments();
-            }));
-        });
+        graalVMExtension.getBinaries().all(b -> b.getRuntimeArgs().addAll(internalStart.map(task -> {
+            ServerConnectionParametersProvider provider = new ServerConnectionParametersProvider(task.getSettingsDirectory());
+            return provider.asArguments();
+        })));
         ProviderFactory providers = project.getProviders();
         boolean includeClient = Boolean.TRUE.equals(providers
                 .systemProperty(ENABLED_PROPERTY_NAME)

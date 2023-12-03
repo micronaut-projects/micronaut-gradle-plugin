@@ -26,6 +26,9 @@ import java.util.function.Consumer;
 public class LenientGradle {
     private static final Map<String, Optional<Class<?>>> CLASSES = new ConcurrentHashMap<>();
 
+    private LenientGradle() {
+    }
+
     private static Optional<Class<?>> findClass(String name) {
         return CLASSES.computeIfAbsent(name, LenientGradle::loadClass);
     }

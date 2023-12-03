@@ -117,8 +117,8 @@ public class LenientVersionCatalogParser {
     private void parseLibrary(String alias, TomlTable librariesTable, RichVersionParser strictVersionParser) {
         Object gav = librariesTable.get(alias);
         TomlPosition position = librariesTable.inputPositionOf(alias);
-        if (gav instanceof String) {
-            List<String> splitted = splitToList((String) gav);
+        if (gav instanceof String gavStr) {
+            List<String> splitted = splitToList(gavStr);
             if (splitted.size() == 3) {
                 String group = splitted.get(0);
                 String name = splitted.get(1);
@@ -147,9 +147,8 @@ public class LenientVersionCatalogParser {
             }
         }
         VersionModel versionModel = null;
-        if (version instanceof String) {
-            String require = (String) version;
-            RichVersion richVersion = strictVersionParser.parse(require);
+        if (version instanceof String requireVersion) {
+            RichVersion richVersion = strictVersionParser.parse(requireVersion);
             versionModel = new VersionModel(null, richVersion, position);
         } else if (version instanceof TomlTable versionTable) {
             String versionRef = versionTable.getString("ref");
@@ -182,8 +181,8 @@ public class LenientVersionCatalogParser {
         Boolean rejectAll = null;
         Object version = versionsTable.get(alias);
         TomlPosition position = versionsTable.inputPositionOf(alias);
-        if (version instanceof String) {
-            require = (String) version;
+        if (version instanceof String versionStr) {
+            require = versionStr;
             RichVersion richVersion = strictVersionParser.parse(require);
             model.addVersion(new VersionModel(alias, richVersion, position));
         } else if (version instanceof TomlTable versionTable) {

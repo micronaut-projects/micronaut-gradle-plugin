@@ -32,7 +32,7 @@ extensions.create("functionalTesting", FunctionalTestingExtension)
 
 def prepareRepository = tasks.register("prepareRepository", Sync) {
     from configurations.pluginsUnderTest
-    into file("${buildDir}/aggregatedRepo")
+    into layout.buildDirectory.dir("aggregatedRepo").get().asFile
 }
 
 tasks.withType(Test).configureEach { Test test ->

@@ -16,7 +16,6 @@
 package io.micronaut.gradle.openapi.tasks;
 
 import io.micronaut.openapi.generator.MicronautCodeGeneratorBuilder;
-import io.micronaut.openapi.generator.MicronautCodeGeneratorOptionsBuilder.GeneratorLanguage;
 
 import org.gradle.api.provider.Property;
 
