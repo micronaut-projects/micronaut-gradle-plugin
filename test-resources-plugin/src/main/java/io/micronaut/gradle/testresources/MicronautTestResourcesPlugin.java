@@ -334,7 +334,7 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
         }
         return Arrays.stream(version.split("\\."))
                 .map(String::trim)
-                .map(s -> s.replaceAll("[^0-9]", ""))
+                .map(s -> s.replaceAll("\\D", ""))
                 .map(Integer::parseInt)
                 .collect(Collectors.toCollection(ArrayList::new));
     }

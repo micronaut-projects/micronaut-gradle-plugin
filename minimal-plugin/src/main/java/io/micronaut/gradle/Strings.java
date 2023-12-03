@@ -22,8 +22,12 @@ import java.net.URISyntaxException;
 import static java.util.Locale.ENGLISH;
 
 public abstract class Strings {
+
+    private Strings() {
+    }
+
     public static String capitalize(String name) {
-        if (name == null || name.length() == 0) {
+        if (name == null || name.isEmpty()) {
             return name;
         }
         return name.substring(0, 1).toUpperCase(ENGLISH) + name.substring(1);

@@ -77,23 +77,21 @@ public abstract class MicronautAOTConfigWriterTask extends DefaultTask {
     private static void booleanOptimization(Properties props, String optimizationId, Provider<Boolean> provider) {
         if (provider.isPresent()) {
             String key = optimizationId + ".enabled";
-            if (!props.containsKey(key)) {
-                props.put(key, String.valueOf(provider.get()));
-            }
+            props.computeIfAbsent(key, (k) -> String.valueOf(provider.get()));
         }
     }
 
     private static void stringListParameter(Properties props, String parameter, ListProperty<String> provider) {
         if (provider.isPresent()) {
             List<String> elements = provider.get();
-            if (!props.containsKey(parameter) && !elements.isEmpty()) {
-                props.put(parameter, String.join(",", elements));
+            if (!elements.isEmpty()) {
+                props.computeIfAbsent(parameter, (k) -> String.join(",", elements));
             }
         }
     }
     private static void stringParameter(Properties props, String parameter, Property<String> provider) {
         if (provider.isPresent()) {
-            props.put(parameter, provider.get());
+            props.setProperty(parameter, provider.get());
         }
     }
 
@@ -112,10 +110,10 @@ public abstract class MicronautAOTConfigWriterTask extends DefaultTask {
             props.putAll(optimizations.getConfigurationProperties().get());
         }
         if (!props.containsKey(KnownMissingTypesSourceGenerator.OPTION.key())) {
-            props.put(KnownMissingTypesSourceGenerator.OPTION.key(), String.join(",", MicronautAotPlugin.TYPES_TO_CHECK));
+            props.setProperty(KnownMissingTypesSourceGenerator.OPTION.key(), String.join(",", MicronautAotPlugin.TYPES_TO_CHECK));
         }
         if (!props.containsKey(AbstractStaticServiceLoaderSourceGenerator.SERVICE_TYPES)) {
-            props.put(AbstractStaticServiceLoaderSourceGenerator.SERVICE_TYPES, String.join(",", MicronautAotPlugin.SERVICE_TYPES));
+            props.setProperty(AbstractStaticServiceLoaderSourceGenerator.SERVICE_TYPES, String.join(",", MicronautAotPlugin.SERVICE_TYPES));
         }
         booleanOptimization(props, GraalVMOptimizationFeatureSourceGenerator.ID, getForNative());
         booleanOptimization(props, LogbackConfigurationSourceGenerator.ID, optimizations.getReplaceLogbackXml());

@@ -85,7 +85,7 @@ public class MicronautGraalPlugin implements Plugin<Project> {
                 }
         );
         TaskContainer tasks = project.getTasks();
-        project.getPluginManager().withPlugin("application", plugin -> {
+        project.getPluginManager().withPlugin("application", plugin ->
             tasks.withType(BuildNativeImageTask.class).named("nativeCompile", nativeImageTask -> {
                 MicronautRuntime mr = PluginsHelper.resolveRuntime(project);
                 if (mr.isLambdaProvided()) {
@@ -98,8 +98,7 @@ public class MicronautGraalPlugin implements Plugin<Project> {
                         nativeImageTask.getOptions().get().getMainClass().set(nativeLambdaExtension.getLambdaRuntimeClassName());
                     }
                 }
-            });
-        });
+        }));
     }
 
     private void workaroundForResourcesDirectoryMissing(Project project) {

@@ -127,7 +127,7 @@ abstract class AbstractMicronautAotCliTask extends DefaultTask implements Optimi
             }
         } finally {
             onSuccess(outputDir);
-            argFile.delete();
+            Files.delete(argFile.toPath());
         }
     }
 

@@ -49,7 +49,9 @@ public class VersionCatalogTomlModel {
     }
 
     public void addVersion(VersionModel version) {
-        assert version.getReference() != null && version.getVersion() != null;
+        if (version.getReference() == null || version.getVersion() == null) {
+            throw new IllegalArgumentException("version.getReference() is null or version.getVersion() is null");
+        }
         versions.add(version);
         versionAliasToVersion.put(version.getReference(), version);
     }

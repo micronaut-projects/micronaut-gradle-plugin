@@ -80,7 +80,7 @@ public abstract class MicronautDockerfile extends Dockerfile implements DockerBu
         if (getDockerfileTweaks().isPresent()) {
             DockerfileEditor.apply(getObjects(), this, getDockerfileTweaks().get());
         }
-        System.out.println("Dockerfile written to: " + getDestFile().get().getAsFile().getAbsolutePath());
+        getLogger().lifecycle("Dockerfile written to: {}", getDestFile().get().getAsFile().getAbsolutePath());
     }
 
     protected void setupInstructions(List<Instruction> additionalInstructions) {

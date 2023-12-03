@@ -7,6 +7,9 @@ import java.util.Locale;
  */
 public final class GraalUtil {
 
+    private GraalUtil() {
+    }
+
     /**
      * @return Return whether the JVM in use a GraalVM JVM.
      */

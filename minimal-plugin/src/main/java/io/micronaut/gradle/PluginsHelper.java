@@ -90,6 +90,9 @@ public abstract class PluginsHelper {
             VALIDATION_VERSION_PROPERTY
     );
 
+    private PluginsHelper() {
+    }
+
     public static void maybeAddMicronautPlaformBom(Project p, Configuration configuration) {
         MicronautExtension micronautExtension = p.getExtensions().findByType(MicronautExtension.class);
         configuration.getDependencies().addAllLater(

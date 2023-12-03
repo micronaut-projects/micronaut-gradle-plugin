@@ -37,7 +37,7 @@ public interface CRaCConfiguration {
 
     /**
      * The platform to specify in the FROM instruction defaults to {@value MicronautCRaCPlugin#CRAC_DEFAULT_BASE_IMAGE_PLATFORM}.
-     * @return the platform (can be removed with {@code platform.convention(null)} in the {@link CRaCConfiguration} extension)
+     * @return the platform (can be removed with {@code platform.convention(null)} in the CRaCConfiguration extension)
      * @deprecated use {@link #getArch()} instead
      */
     @SuppressWarnings("java:S6355") // We need Java 8... Java 8 doesn't have forRemoval and since

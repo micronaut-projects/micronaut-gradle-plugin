@@ -310,7 +310,7 @@ public class MicronautDockerPlugin implements Plugin<Project> {
                     task.doLast(new Action<>() {
                         @Override
                         public void execute(Task task1) {
-                            System.out.println("AWS Lambda ZIP built: " + lambdaZip.get());
+                            project.getLogger().lifecycle("AWS Lambda ZIP built: {}", lambdaZip.get());
                         }
                     });
                     task.finalizedBy(removeContainer);

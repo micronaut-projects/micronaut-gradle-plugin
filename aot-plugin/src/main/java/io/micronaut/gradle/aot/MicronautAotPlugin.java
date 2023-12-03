@@ -160,7 +160,7 @@ public abstract class MicronautAotPlugin implements Plugin<Project> {
     }
 
     private void registerCreateSamplesTasks(Project project, Configuration optimizerRuntimeClasspath, Configuration applicationClasspath, TaskContainer tasks, AOTExtension aotExtension) {
-        TaskProvider<Task> createAotSampleConfigurationFiles = tasks.register("createAotSampleConfigurationFiles", task -> 
+        TaskProvider<Task> createAotSampleConfigurationFiles = tasks.register("createAotSampleConfigurationFiles", task ->
             task.setDescription("Generates Micronaut AOT sample configuration files")
         );
         for (OptimizerIO.TargetRuntime targetRuntime : OptimizerIO.TargetRuntime.values()) {
@@ -325,8 +325,8 @@ public abstract class MicronautAotPlugin implements Plugin<Project> {
                     public void execute(Task t) {
                         if (task.getLogger().isDebugEnabled()) {
                             task.getLogger().debug(
-                                    "Running optimized entry point: " + task.getMainClass().get() +
-                                            "\nClasspath:\n    " + task.getClasspath().getFiles()
+                                    "Running optimized entry point: {}\nClasspath:\n    {}",
+                                    task.getMainClass().get(), task.getClasspath().getFiles()
                                             .stream()
                                             .map(File::getName)
                                             .collect(Collectors.joining("\n    "))
