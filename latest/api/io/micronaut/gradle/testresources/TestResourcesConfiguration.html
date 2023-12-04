@@ -134,22 +134,26 @@ extends io.micronaut.testresources.buildtools.KnownModules</span></div>
  the project dependencies: instead the user will need
  to add all modules explicitly.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>org.gradle.api.provider.Property&lt;<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Boolean.html" title="class or interface in java.lang" class="external-link">Boolean</a>&gt;</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#getSharedServer()" class="member-name-link">getSharedServer</a>()</code></div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>org.gradle.api.provider.Property&lt;<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Integer.html" title="class or interface in java.lang" class="external-link">Integer</a>&gt;</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#getServerIdleTimeoutMinutes()" class="member-name-link">getServerIdleTimeoutMinutes</a>()</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">
-<div class="block">When set to true, then the server will be shared between
- independent builds (e.g two different projects built in separate
- checkout directories).</div>
+<div class="block">Server idle timeout, in minutes.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>org.gradle.api.provider.Property&lt;<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&gt;</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#getSharedServerNamespace()" class="member-name-link">getSharedServerNamespace</a>()</code></div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>org.gradle.api.provider.Property&lt;<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Boolean.html" title="class or interface in java.lang" class="external-link">Boolean</a>&gt;</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#getSharedServer()" class="member-name-link">getSharedServer</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">
+<div class="block">When set to true, then the server will be shared between
+ independent builds (e.g.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>org.gradle.api.provider.Property&lt;<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&gt;</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#getSharedServerNamespace()" class="member-name-link">getSharedServerNamespace</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">
 <div class="block">Allows configuring a namespace for the shared test resources
  server.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>org.gradle.api.provider.Property&lt;<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&gt;</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#getVersion()" class="member-name-link">getVersion</a>()</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>org.gradle.api.provider.Property&lt;<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&gt;</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#getVersion()" class="member-name-link">getVersion</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">
 <div class="block">The version of the Micronaut Test Resources library
  to use.</div>
 </div>
@@ -201,7 +205,7 @@ extends io.micronaut.testresources.buildtools.KnownModules</span></div>
  reuse that server, effectively ignoring the
  existing configuration. This can be used to share
  a server between multiple independent builds.
-
+ <p>
  If an explicit port is set, then security is lowered
  and a token is no longer requested. Any client from
  the loopback address can access the server.</div>
@@ -256,7 +260,7 @@ extends io.micronaut.testresources.buildtools.KnownModules</span></div>
 <h3>getSharedServer</h3>
 <div class="member-signature"><span class="return-type">org.gradle.api.provider.Property&lt;<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Boolean.html" title="class or interface in java.lang" class="external-link">Boolean</a>&gt;</span>&nbsp;<span class="element-name">getSharedServer</span>()</div>
 <div class="block">When set to true, then the server will be shared between
- independent builds (e.g two different projects built in separate
+ independent builds (e.g. two different projects built in separate
  checkout directories).</div>
 <dl class="notes">
 <dt>Returns:</dt>
@@ -275,6 +279,19 @@ extends io.micronaut.testresources.buildtools.KnownModules</span></div>
 <dl class="notes">
 <dt>Returns:</dt>
 <dd>the namespace</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="getServerIdleTimeoutMinutes()">
+<h3>getServerIdleTimeoutMinutes</h3>
+<div class="member-signature"><span class="return-type">org.gradle.api.provider.Property&lt;<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Integer.html" title="class or interface in java.lang" class="external-link">Integer</a>&gt;</span>&nbsp;<span class="element-name">getServerIdleTimeoutMinutes</span>()</div>
+<div class="block">Server idle timeout, in minutes. If the server
+ doesn't receive any request for this amount of
+ time, it will stop itself.</div>
+<dl class="notes">
+<dt>Returns:</dt>
+<dd>the server idle timeout</dd>
 </dl>
 </section>
 </li>
