@@ -18,6 +18,7 @@ package io.micronaut.gradle.testresources;
 import io.micronaut.testresources.buildtools.KnownModules;
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Property;
+import org.gradle.api.provider.Provider;
 
 /**
  * Configuration for the test resources plugin.
@@ -101,4 +102,13 @@ public interface TestResourcesConfiguration extends KnownModules {
      * @return the namespace
      */
     Property<String> getSharedServerNamespace();
+
+    /**
+     * Server idle timeout, in minutes. If the server
+     * doesn't receive any request for this amount of
+     * time, it will stop itself.
+     *
+     * @return the server idle timeout
+     */
+    Provider<Integer> getServerIdleTimeoutMinutes();
 }

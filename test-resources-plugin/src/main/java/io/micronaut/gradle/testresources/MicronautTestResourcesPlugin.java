@@ -244,6 +244,7 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
             task.getAccessToken().convention(accessToken);
             task.getExplicitPort().convention(config.getExplicitPort());
             task.getClientTimeout().convention(config.getClientTimeout());
+            task.getServerIdleTimeoutMinutes().convention(config.getServerIdleTimeoutMinutes());
             task.getClasspath().from(server);
             task.getForeground().convention(false);
             task.getStopFile().set(stopFile.toFile());
