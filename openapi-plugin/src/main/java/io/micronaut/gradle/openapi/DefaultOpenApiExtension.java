@@ -223,6 +223,16 @@ public abstract class DefaultOpenApiExtension implements OpenApiExtension {
         }
     }
 
+    @Override
+    public void server(String name, File definition, Action<? super OpenApiServerSpec> spec) {
+        server(name, project.getObjects().fileProperty().fileValue(definition), spec);
+    }
+
+    @Override
+    public void client(String name, File definition, Action<? super OpenApiClientSpec> spec) {
+        client(name, project.getObjects().fileProperty().fileValue(definition), spec);
+    }
+
     private static Provider<Directory> mainSrcDir(AbstractOpenApiGenerator<?, ?> t, String language) {
         return t.getOutputDirectory().dir("src/main/" + language);
     }

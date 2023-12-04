@@ -106,4 +106,61 @@ class OpenApiServerGeneratorSpec extends AbstractOpenApiGeneratorSpec {
         file("build/classes/java/main/io/micronaut/openapi/api/PetApi.class").exists()
         file("build/classes/java/main/io/micronaut/openapi/model/Pet.class").exists()
     }
+
+    def "can generate an java OpenAPI server implementation with custom name and local file"() {
+        given:
+        settingsFile << "rootProject.name = 'openapi-server'"
+        buildFile << """
+            plugins {
+                id "io.micronaut.minimal.application"
+                id "io.micronaut.openapi"
+            }
+            
+            micronaut {
+                version "$micronautVersion"
+                runtime "netty"
+                testRuntime "junit5"
+                openapi {
+                    server("myServer", file("petstore.json")) {
+                        lang = "java"
+                        lombok = true
+                        useReactive = true
+                        generatedAnnotation = false
+                        fluxForArrays = true
+                        aot = true
+                    }
+                }
+            }
+            
+            $repositoriesBlock
+            mainClassName="example.Application"
+
+            dependencies {
+
+                annotationProcessor "org.projectlombok:lombok"
+                annotationProcessor "io.micronaut.serde:micronaut-serde-processor"
+
+                compileOnly "org.projectlombok:lombok"
+
+                implementation "io.micronaut.security:micronaut-security"
+                implementation "io.micronaut.serde:micronaut-serde-jackson"
+            }
+        """
+
+        withPetstore()
+
+        when:
+        def result = build('test')
+
+        then:
+        result.task(":generateMyServerOpenApiApis").outcome == TaskOutcome.SUCCESS
+        result.task(":generateMyServerOpenApiModels").outcome == TaskOutcome.SUCCESS
+        result.task(":compileJava").outcome == TaskOutcome.SUCCESS
+
+        and:
+        file("build/generated/openapi/generateMyServerOpenApiApis/src/main/java/io/micronaut/openapi/api/PetApi.java").exists()
+        file("build/generated/openapi/generateMyServerOpenApiModels/src/main/java/io/micronaut/openapi/model/Pet.java").exists()
+        file("build/classes/java/main/io/micronaut/openapi/api/PetApi.class").exists()
+        file("build/classes/java/main/io/micronaut/openapi/model/Pet.class").exists()
+    }
 }
