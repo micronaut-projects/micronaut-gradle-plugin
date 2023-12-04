@@ -101,4 +101,13 @@ public interface TestResourcesConfiguration extends KnownModules {
      * @return the namespace
      */
     Property<String> getSharedServerNamespace();
+
+    /**
+     * Server idle timeout, in minutes. If the server
+     * doesn't receive any request for this amount of
+     * time, it will stop itself.
+     *
+     * @return the server idle timeout
+     */
+    Property<Integer> getServerIdleTimeoutMinutes();
 }

@@ -1474,6 +1474,7 @@ micronaut {
         inferClasspath = true // true by default
         additionalModules.add(JDBC_MYSQL) // empty by default
         clientTimeout = 60 // in seconds, maximum time to wait for resources to be available, 60s by default
+        serverIdleTimeoutMinutes = 60 // if the server doesn't receive any request for this amount of time, it will be shut down
         sharedServer = true // false by default
         sharedServerNamespace = 'custom' // unset by default
     }
@@ -2020,4 +2021,3 @@ In addition, the official GraalVM plugin makes use of Gradle toolchains support,
 then we recommend tweaking toolchain detection as described in <<#toolchain-behavior, this section of the documentation>>.
 
 In any case, make sure to follow the <<#native-image,configuration instructions>>.
-
