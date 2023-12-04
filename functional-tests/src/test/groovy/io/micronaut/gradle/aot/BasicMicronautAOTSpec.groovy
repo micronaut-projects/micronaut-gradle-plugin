@@ -245,6 +245,25 @@ class BasicMicronautAOTSpec extends AbstractAOTPluginSpec {
 
     }
 
+    @Issue("https://github.com/micronaut-projects/micronaut-gradle-plugin/issues/888")
+    def "prepare optimizations task is cacheable"() {
+        withSample("aot/basic-app")
+        withPlugins(Plugins.MINIMAL_APPLICATION)
+        file("gradle.properties") << "org.gradle.caching=true"
+
+        when:
+        def result = build "prepareJitOptimizations"
+
+        then:
+        result.task(":prepareJitOptimizations").outcome == TaskOutcome.SUCCESS
+
+        when:
+        result = build "clean", "prepareJitOptimizations"
+
+        then:
+        result.task(":prepareJitOptimizations").outcome == TaskOutcome.FROM_CACHE
+    }
+
     private List<GString> calculatePossiblePackages(File outputDir) {
         def list = new ArrayList()
         outputDir.eachDirRecurse { list.add(subpath(it, outputDir)) }
