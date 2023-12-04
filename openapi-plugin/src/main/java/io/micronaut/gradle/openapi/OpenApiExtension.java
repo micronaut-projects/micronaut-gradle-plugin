@@ -62,4 +62,20 @@ public interface OpenApiExtension {
      * @param spec configuration for the server generation
      */
     void client(String name, Provider<RegularFile> definition, Action<? super OpenApiClientSpec> spec);
+
+    /**
+     * Configures generation of a server, given a definition file.
+     * @param name an identifier used to uniquely refer to the generator, used to derive task names
+     * @param definition the OpenAPI definition file provider
+     * @param spec configuration for the server generation
+     */
+    void server(String name, File definition, Action<? super OpenApiServerSpec> spec);
+
+    /**
+     * Configures generation of a server, given a definition file.
+     * @param name an identifier used to uniquely refer to the generator, used to derive task names
+     * @param definition the OpenAPI definition file provider
+     * @param spec configuration for the server generation
+     */
+    void client(String name, File definition, Action<? super OpenApiClientSpec> spec);
 }
