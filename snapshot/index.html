@@ -2024,6 +2024,7 @@ This will let Gradle automatically start containers, for example, when a particu
         inferClasspath = true // true by default
         additionalModules.add(JDBC_MYSQL) // empty by default
         clientTimeout = 60 // in seconds, maximum time to wait for resources to be available, 60s by default
+        serverIdleTimeoutMinutes = 60 // if the server doesn't receive any request for this amount of time, it will be shut down
         sharedServer = true // false by default
         sharedServerNamespace = 'custom' // unset by default
     }

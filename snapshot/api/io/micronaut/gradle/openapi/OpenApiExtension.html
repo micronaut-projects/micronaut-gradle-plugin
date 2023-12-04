@@ -100,19 +100,33 @@ loadScripts(document, 'script');</script>
 <div class="block">Configures generation of a client, given a definition file.</div>
 </div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#client(java.lang.String,org.gradle.api.provider.Provider,org.gradle.api.Action)" class="member-name-link">client</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;name,
- org.gradle.api.provider.Provider&lt;org.gradle.api.file.RegularFile&gt;&nbsp;definition,
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#client(java.lang.String,java.io.File,org.gradle.api.Action)" class="member-name-link">client</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;name,
+ <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/io/File.html" title="class or interface in java.io" class="external-link">File</a>&nbsp;definition,
  org.gradle.api.Action&lt;? super <a href="OpenApiClientSpec.html" title="interface in io.micronaut.gradle.openapi">OpenApiClientSpec</a>&gt;&nbsp;spec)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">
 <div class="block">Configures generation of a server, given a definition file.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>org.gradle.api.provider.Property&lt;<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&gt;</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#getVersion()" class="member-name-link">getVersion</a>()</code></div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#client(java.lang.String,org.gradle.api.provider.Provider,org.gradle.api.Action)" class="member-name-link">client</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;name,
+ org.gradle.api.provider.Provider&lt;org.gradle.api.file.RegularFile&gt;&nbsp;definition,
+ org.gradle.api.Action&lt;? super <a href="OpenApiClientSpec.html" title="interface in io.micronaut.gradle.openapi">OpenApiClientSpec</a>&gt;&nbsp;spec)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">
+<div class="block">Configures generation of a server, given a definition file.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>org.gradle.api.provider.Property&lt;<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&gt;</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#getVersion()" class="member-name-link">getVersion</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">
 <div class="block">The version of the Micronaut OpenAPI generator.</div>
 </div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#server(java.io.File,org.gradle.api.Action)" class="member-name-link">server</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/io/File.html" title="class or interface in java.io" class="external-link">File</a>&nbsp;file,
+ org.gradle.api.Action&lt;? super <a href="OpenApiServerSpec.html" title="interface in io.micronaut.gradle.openapi">OpenApiServerSpec</a>&gt;&nbsp;spec)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">
+<div class="block">Configures generation of a server, given a definition file.</div>
+</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#server(java.io.File,org.gradle.api.Action)" class="member-name-link">server</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/io/File.html" title="class or interface in java.io" class="external-link">File</a>&nbsp;file,
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#server(java.lang.String,java.io.File,org.gradle.api.Action)" class="member-name-link">server</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;name,
+ <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/io/File.html" title="class or interface in java.io" class="external-link">File</a>&nbsp;definition,
  org.gradle.api.Action&lt;? super <a href="OpenApiServerSpec.html" title="interface in io.micronaut.gradle.openapi">OpenApiServerSpec</a>&gt;&nbsp;spec)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">
 <div class="block">Configures generation of a server, given a definition file.</div>
@@ -195,6 +209,36 @@ loadScripts(document, 'script');</script>
 <h3>client</h3>
 <div class="member-signature"><span class="return-type">void</span>&nbsp;<span class="element-name">client</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;name,
  org.gradle.api.provider.Provider&lt;org.gradle.api.file.RegularFile&gt;&nbsp;definition,
+ org.gradle.api.Action&lt;? super <a href="OpenApiClientSpec.html" title="interface in io.micronaut.gradle.openapi">OpenApiClientSpec</a>&gt;&nbsp;spec)</span></div>
+<div class="block">Configures generation of a server, given a definition file.</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>name</code> - an identifier used to uniquely refer to the generator, used to derive task names</dd>
+<dd><code>definition</code> - the OpenAPI definition file provider</dd>
+<dd><code>spec</code> - configuration for the server generation</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="server(java.lang.String,java.io.File,org.gradle.api.Action)">
+<h3>server</h3>
+<div class="member-signature"><span class="return-type">void</span>&nbsp;<span class="element-name">server</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;name,
+ <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/io/File.html" title="class or interface in java.io" class="external-link">File</a>&nbsp;definition,
+ org.gradle.api.Action&lt;? super <a href="OpenApiServerSpec.html" title="interface in io.micronaut.gradle.openapi">OpenApiServerSpec</a>&gt;&nbsp;spec)</span></div>
+<div class="block">Configures generation of a server, given a definition file.</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>name</code> - an identifier used to uniquely refer to the generator, used to derive task names</dd>
+<dd><code>definition</code> - the OpenAPI definition file provider</dd>
+<dd><code>spec</code> - configuration for the server generation</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="client(java.lang.String,java.io.File,org.gradle.api.Action)">
+<h3>client</h3>
+<div class="member-signature"><span class="return-type">void</span>&nbsp;<span class="element-name">client</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;name,
+ <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/io/File.html" title="class or interface in java.io" class="external-link">File</a>&nbsp;definition,
  org.gradle.api.Action&lt;? super <a href="OpenApiClientSpec.html" title="interface in io.micronaut.gradle.openapi">OpenApiClientSpec</a>&gt;&nbsp;spec)</span></div>
 <div class="block">Configures generation of a server, given a definition file.</div>
 <dl class="notes">
