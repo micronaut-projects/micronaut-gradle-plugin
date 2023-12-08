@@ -220,7 +220,7 @@ public abstract class MicronautDockerfile extends Dockerfile implements DockerBu
         return "latest";
     }
 
-    static void setupResources(Dockerfile task, List<Layer> layers, String workDir) {
+    public static void setupResources(Dockerfile task, List<Layer> layers, String workDir) {
         if (workDir == null) {
             workDir = determineWorkingDir(task);
         }

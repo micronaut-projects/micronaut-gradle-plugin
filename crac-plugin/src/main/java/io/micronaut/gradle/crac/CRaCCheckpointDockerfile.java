@@ -2,8 +2,12 @@ package io.micronaut.gradle.crac;
 
 import com.bmuschko.gradle.docker.tasks.image.Dockerfile;
 import io.micronaut.gradle.docker.DockerBuildStrategy;
+import io.micronaut.gradle.docker.DockerfileEditor;
+import io.micronaut.gradle.docker.MicronautDockerfile;
+import io.micronaut.gradle.docker.model.Layer;
 import org.gradle.api.GradleException;
 import org.gradle.api.file.RegularFileProperty;
+import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.plugins.BasePlugin;
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Property;
@@ -16,6 +20,7 @@ import org.gradle.api.tasks.PathSensitivity;
 import org.gradle.api.tasks.TaskAction;
 import org.gradle.jvm.toolchain.JavaLanguageVersion;
 
+import javax.inject.Inject;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -59,6 +64,25 @@ public abstract class CRaCCheckpointDockerfile extends Dockerfile {
     @Input
     public abstract Property<JavaLanguageVersion> getJavaVersion();
 
+    /**
+     * The layers to copy to the image.
+     * @return the layers
+     */
+    @Input
+    public abstract ListProperty<Layer> getLayers();
+
+    /**
+     * If true, the COPY command will use --link option when copying files from the build context.
+     * Defaults to true.
+     * @return The use copy link property
+     */
+    @Input
+    @Optional
+    public abstract Property<Boolean> getUseCopyLink();
+
+    @Inject
+    protected abstract ObjectFactory getObjects();
+
     @SuppressWarnings("java:S5993") // Gradle API
     public CRaCCheckpointDockerfile() {
         setGroup(BasePlugin.BUILD_GROUP);
@@ -86,7 +110,17 @@ public abstract class CRaCCheckpointDockerfile extends Dockerfile {
             }
         }
         super.create();
+        applyStandardTransforms();
         getProject().getLogger().lifecycle("Checkpoint Dockerfile written to: {}", getDestFile().get().getAsFile().getAbsolutePath());
+    }
+
+
+    protected void applyStandardTransforms() {
+        if (Boolean.TRUE.equals(getUseCopyLink().getOrElse(true))) {
+            DockerfileEditor.apply(getObjects(), this, List.of(
+                editor -> editor.replaceRegex("COPY (?!--link)(.*)", "COPY --link $1")
+            ));
+        }
     }
 
     @SuppressWarnings("java:S5738") // Using deprecated method still, until it's removal in 4.0.0
@@ -177,10 +211,7 @@ public abstract class CRaCCheckpointDockerfile extends Dockerfile {
                 "    && rm \"$name\"");
 
         task.instruction("# Copy layers");
-        task.copyFile("layers/libs", workDir + "/libs");
-        task.copyFile("layers/classes", workDir + "/classes");
-        task.copyFile("layers/resources", workDir + "/resources");
-        task.copyFile("layers/application.jar", workDir + "/application.jar");
+        MicronautDockerfile.setupResources(task, task.getLayers().get(), workDir);
 
         task.instruction("# Add build scripts");
         task.copyFile("scripts/checkpoint.sh", workDir + "/checkpoint.sh");
