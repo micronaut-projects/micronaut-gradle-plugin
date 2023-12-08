@@ -22,10 +22,10 @@ class MicronautAOTDockerSpec extends AbstractAOTPluginSpec {
         def dockerFile = normalizeLineEndings(file("build/docker/optimized/Dockerfile").text)
         dockerFile == """FROM eclipse-temurin:17-jre-focal
 WORKDIR /home/app
-COPY layers/libs /home/app/libs
-COPY layers/classes /home/app/classes
-COPY layers/resources /home/app/resources
-COPY layers/application.jar /home/app/application.jar
+COPY --link layers/libs /home/app/libs
+COPY --link layers/snapshot_libs /home/app/libs
+COPY --link layers/project_libs /home/app/libs
+COPY --link layers/app /home/app/
 EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "/home/app/application.jar"]
 """
@@ -49,10 +49,10 @@ ENTRYPOINT ["java", "-jar", "/home/app/application.jar"]
         def dockerFile = normalizeLineEndings(file("build/docker/optimized/Dockerfile").text)
         dockerFile == """FROM eclipse-temurin:17-jre-focal
 WORKDIR /home/app
-COPY layers/libs /home/app/libs
-COPY layers/classes /home/app/classes
-COPY layers/resources /home/app/resources
-COPY layers/application.jar /home/app/application.jar
+COPY --link layers/libs /home/app/libs
+COPY --link layers/snapshot_libs /home/app/libs
+COPY --link layers/project_libs /home/app/libs
+COPY --link layers/app /home/app/
 EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "/home/app/application.jar"]
 """
@@ -71,10 +71,10 @@ ENTRYPOINT ["java", "-jar", "/home/app/application.jar"]
         then:
         dockerFile == """FROM ghcr.io/graalvm/native-image-community:17-ol${DefaultVersions.ORACLELINUX} AS graalvm
 WORKDIR /home/app
-COPY layers/libs /home/app/libs
-COPY layers/classes /home/app/classes
-COPY layers/resources /home/app/resources
-COPY layers/application.jar /home/app/application.jar
+COPY --link layers/libs /home/app/libs
+COPY --link layers/snapshot_libs /home/app/libs
+COPY --link layers/project_libs /home/app/libs
+COPY --link layers/app /home/app/
 RUN mkdir /home/app/config-dirs
 RUN mkdir -p /home/app/config-dirs/generateResourcesConfigFile
 RUN mkdir -p /home/app/config-dirs/io.netty/netty-common/4.0.0.Final

@@ -238,15 +238,11 @@ public abstract class MicronautAotPlugin implements Plugin<Project> {
             });
         } else {
             dockerImages.create("optimized", image -> {
+                MicronautDockerPlugin.createDependencyLayers(image, project.getConfigurations().getByName(RUNTIME_CLASSPATH_CONFIGURATION_NAME));
                 image.addLayer(layer -> {
                     layer.getLayerKind().set(LayerKind.APP);
                     layer.getRuntimeKind().set(runtime == OptimizerIO.TargetRuntime.JIT ? RuntimeKind.JIT : RuntimeKind.NATIVE);
                     layer.getFiles().from(optimizedRunnerJar);
-                });
-                image.addLayer(layer -> {
-                    layer.getLayerKind().set(LayerKind.LIBS);
-                    layer.getFiles().from(layer.getFiles().from(project.getConfigurations().getByName(RUNTIME_CLASSPATH_CONFIGURATION_NAME))
-                    );
                 });
             });
         }

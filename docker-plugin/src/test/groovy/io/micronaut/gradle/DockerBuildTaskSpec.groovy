@@ -83,9 +83,7 @@ class Application {
 FROM eclipse-temurin:17-jre-focal
 WORKDIR /home/alternate
 COPY layers/libs /home/alternate/libs
-COPY layers/classes /home/alternate/classes
-COPY layers/resources /home/alternate/resources
-COPY layers/application.jar /home/alternate/application.jar
+COPY layers/app/application.jar /home/alternate/application.jar
 EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "/home/alternate/application.jar"]
 """
@@ -191,10 +189,10 @@ class Application {
         def dockerfile = new File(testProjectDir.root, 'build/docker/main/Dockerfile').text
         dockerfile == """FROM eclipse-temurin:17-jre-focal
 WORKDIR /home/alternate
-COPY layers/libs /home/alternate/libs
-COPY layers/classes /home/alternate/classes
-COPY layers/resources /home/alternate/resources
-COPY layers/application.jar /home/alternate/application.jar
+COPY --link layers/libs /home/alternate/libs
+COPY --link layers/snapshot_libs /home/alternate/libs
+COPY --link layers/project_libs /home/alternate/libs
+COPY --link layers/app /home/alternate/
 EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "/home/alternate/application.jar"]
 """

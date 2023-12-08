@@ -3,6 +3,7 @@ package io.micronaut.gradle.docker;
 import com.bmuschko.gradle.docker.tasks.image.Dockerfile;
 import io.micronaut.gradle.DefaultVersions;
 import io.micronaut.gradle.PluginsHelper;
+import io.micronaut.gradle.docker.model.Layer;
 import io.micronaut.gradle.docker.tasks.DockerResourceConfigDirectoryNamer;
 import io.micronaut.gradle.graalvm.NativeLambdaExtension;
 import org.graalvm.buildtools.gradle.NativeImagePlugin;
@@ -144,9 +145,25 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
 
     @Input
     @Optional
-    protected Provider<List<String>> getTweaks() {
+    public Provider<List<String>> getTweaks() {
         return getDockerfileTweaks().map(tweaks -> DockerfileEditor.fingerprintOf(getObjects(), tweaks));
     }
+
+    /**
+     * The layers to copy to the image.
+     * @return the layers
+     */
+    @Input
+    public abstract ListProperty<Layer> getLayers();
+
+    /**
+     * If true, the COPY command will use --link option when copying files from the build context.
+     * Defaults to true.
+     * @return The use copy link property
+     */
+    @Input
+    @Optional
+    public abstract Property<Boolean> getUseCopyLink();
 
     public NativeImageDockerfile() {
         Project project = getProject();
@@ -398,8 +415,17 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
     @Override
     public void create() throws IOException {
         super.create();
+        applyStandardTransforms();
         if (getDockerfileTweaks().isPresent()) {
             DockerfileEditor.apply(getObjects(), this, getDockerfileTweaks().get());
+        }
+    }
+
+    protected void applyStandardTransforms() {
+        if (Boolean.TRUE.equals(getUseCopyLink().getOrElse(true))) {
+            DockerfileEditor.apply(getObjects(), this, List.of(
+                editor -> editor.replaceRegex("COPY layers/(.*)", "COPY --link layers/$1")
+            ));
         }
     }
 
@@ -432,7 +458,7 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
             from(new From(getGraalImage().get()).withStage("graalvm"));
         }
 
-        MicronautDockerfile.setupResources(this);
+        MicronautDockerfile.setupResources(this, getLayers().get(), null);
         Property<String> executable = getObjects().property(String.class);
         executable.set("application");
         String workDir = getTargetWorkingDirectory().get();

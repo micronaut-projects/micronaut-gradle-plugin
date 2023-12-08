@@ -53,6 +53,15 @@ public interface Editor {
     void replace(String line, String replacement);
 
     /**
+     * Replaces strings matching the current lower and upper bounds with the
+     * replacement, if they match the line pattern.
+     *
+     * @param regex the regex to look for
+     * @param replacement the replacement
+     */
+    void replaceRegex(String regex, String replacement);
+
+    /**
      * Inserts the provided lines after the current lower bound.
      * @param lines the lines to be inserted
      */

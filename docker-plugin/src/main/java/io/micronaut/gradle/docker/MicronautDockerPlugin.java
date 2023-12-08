@@ -25,6 +25,8 @@ import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
 import org.gradle.api.artifacts.Configuration;
+import org.gradle.api.artifacts.component.ModuleComponentIdentifier;
+import org.gradle.api.artifacts.component.ProjectComponentIdentifier;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.file.RegularFile;
 import org.gradle.api.plugins.BasePlugin;
@@ -63,19 +65,54 @@ public class MicronautDockerPlugin implements Plugin<Project> {
         dockerImages.all(image -> createDockerImage(project, image));
         TaskProvider<Jar> runnerJar = createMainRunnerJar(project, tasks);
         dockerImages.create("main", image -> {
+            createDependencyLayers(image, project.getConfigurations().getByName(RUNTIME_CLASSPATH_CONFIGURATION_NAME));
             image.addLayer(layer -> {
                 layer.getLayerKind().set(LayerKind.APP);
                 layer.getFiles().from(runnerJar);
             });
-            image.addLayer(layer -> {
-                layer.getLayerKind().set(LayerKind.LIBS);
-                layer.getFiles().from(project.getConfigurations().getByName(RUNTIME_CLASSPATH_CONFIGURATION_NAME));
-            });
-            image.addLayer(layer -> {
-                layer.getLayerKind().set(LayerKind.EXPANDED_RESOURCES);
-                layer.getFiles().from(project.getExtensions().getByType(SourceSetContainer.class)
-                        .getByName(SourceSet.MAIN_SOURCE_SET_NAME).getOutput().getResourcesDir());
-            });
+        });
+    }
+
+    public static void createDependencyLayers(MicronautDockerImage image, Configuration configuration) {
+        var projectLibs = configuration.getIncoming()
+            .artifactView(view -> {
+                view.lenient(true);
+                view.componentFilter(ProjectComponentIdentifier.class::isInstance);
+            }).getFiles();
+        var snapshotLibs = configuration.getIncoming()
+            .artifactView(view -> {
+                view.lenient(true);
+                view.componentFilter(component -> {
+                    if (component instanceof ModuleComponentIdentifier module) {
+                        return module.getVersion().endsWith("-SNAPSHOT");
+                    }
+                    return !(component instanceof ProjectComponentIdentifier);
+                });
+            }).getFiles();
+        var allOtherLibs = configuration.getIncoming()
+            .artifactView(view -> {
+                view.lenient(true);
+                view.componentFilter(component -> {
+                    if (component instanceof ModuleComponentIdentifier module) {
+                        return !module.getVersion().endsWith("-SNAPSHOT");
+                    }
+                    return !(component instanceof ProjectComponentIdentifier);
+                });
+            }).getFiles();
+        // First, all dependencies that are not snapshots
+        image.addLayer(layer -> {
+            layer.getLayerKind().set(LayerKind.LIBS);
+            layer.getFiles().from(allOtherLibs);
+        });
+        // Then all snapshots
+        image.addLayer(layer -> {
+            layer.getLayerKind().set(LayerKind.SNAPSHOT_LIBS);
+            layer.getFiles().from(snapshotLibs);
+        });
+        // Finally, all project dependencies
+        image.addLayer(layer -> {
+            layer.getLayerKind().set(LayerKind.PROJECT_LIBS);
+            layer.getFiles().from(projectLibs);
         });
     }
 
@@ -149,10 +186,10 @@ public class MicronautDockerPlugin implements Plugin<Project> {
             jar.dependsOn(tasks.findByName("classes"));
             jar.getArchiveClassifier().set("runner");
             SourceSetContainer sourceSets = project
-                    .getExtensions().getByType(SourceSetContainer.class);
+                .getExtensions().getByType(SourceSetContainer.class);
 
             SourceSet mainSourceSet = sourceSets
-                    .getByName(SourceSet.MAIN_SOURCE_SET_NAME);
+                .getByName(SourceSet.MAIN_SOURCE_SET_NAME);
 
             FileCollection dirs = mainSourceSet.getOutput().getClassesDirs();
 
@@ -164,7 +201,7 @@ public class MicronautDockerPlugin implements Plugin<Project> {
                 attrs.put("Class-Path", project.getProviders().provider(() -> {
                     List<String> classpath = new ArrayList<>();
                     Configuration runtimeClasspath = project.getConfigurations()
-                            .getByName(RUNTIME_CLASSPATH_CONFIGURATION_NAME);
+                        .getByName(RUNTIME_CLASSPATH_CONFIGURATION_NAME);
 
                     classpath.add("resources/");
                     classpath.add("classes/");
@@ -204,6 +241,7 @@ public class MicronautDockerPlugin implements Plugin<Project> {
                 task.setDescription("Builds a Docker File for image " + imageName);
                 task.getDestFile().set(targetDockerFile);
                 task.setupDockerfileInstructions();
+                task.getLayers().convention(buildLayersTask.flatMap(BuildLayersTask::getLayers));
             });
         }
         TaskProvider<DockerBuildImage> dockerBuildTask = tasks.register(adaptTaskName("dockerBuild", imageName), DockerBuildImage.class, task -> {
@@ -246,12 +284,14 @@ public class MicronautDockerPlugin implements Plugin<Project> {
                     throw new GradleException("Unable to configure docker task for image " + imageName, e);
                 }
                 task.getDestFile().set(targetDockerFile);
+                task.getLayers().convention(buildLayersTask.flatMap(BuildLayersTask::getLayers));
             });
         } else {
             dockerFileTask = tasks.register(dockerfileNativeTaskName, NativeImageDockerfile.class, task -> {
                 task.setGroup(BasePlugin.BUILD_GROUP);
                 task.setDescription("Builds a Native Docker File for image " + imageName);
                 task.getDestFile().set(targetDockerFile);
+                task.getLayers().convention(buildLayersTask.flatMap(BuildLayersTask::getLayers));
             });
         }
         TaskProvider<PrepareDockerContext> prepareContext = tasks.register(adaptTaskName("dockerPrepareContext", imageName), PrepareDockerContext.class, context -> {
@@ -259,7 +299,7 @@ public class MicronautDockerPlugin implements Plugin<Project> {
             // copy the configuration file directories into the build context
             context.getOutputDirectory().set(project.getLayout().getBuildDirectory().dir("docker/native-" + imageName + "/config-dirs"));
             context.getInputDirectories().from(dockerFileTask.map(t -> t.getNativeImageOptions()
-                    .map(NativeImageOptions::getConfigurationFileDirectories).get() // drop dependency on building image
+                .map(NativeImageOptions::getConfigurationFileDirectories).get() // drop dependency on building image
             ));
         });
         TaskProvider<DockerBuildImage> dockerBuildTask = tasks.register(adaptTaskName("dockerBuildNative", imageName), DockerBuildImage.class, task -> {
@@ -290,20 +330,20 @@ public class MicronautDockerPlugin implements Plugin<Project> {
                 });
                 TaskProvider<DockerCopyFileFromContainer> buildLambdaZip = taskContainer.register(adaptTaskName("buildNativeLambda", imageName), DockerCopyFileFromContainer.class);
                 Provider<String> lambdaZip = project.getLayout()
-                        .getBuildDirectory()
-                        .dir("libs")
-                        .map(dir -> dir.file(project.getName() + "-" + project.getVersion() + "-" + simpleNameOf("lambda", imageName) + ".zip").getAsFile().getAbsolutePath());
+                    .getBuildDirectory()
+                    .dir("libs")
+                    .map(dir -> dir.file(project.getName() + "-" + project.getVersion() + "-" + simpleNameOf("lambda", imageName) + ".zip").getAsFile().getAbsolutePath());
                 TaskProvider<DockerRemoveContainer> removeContainer = taskContainer.register(adaptTaskName("destroyLambdaContainer", imageName), DockerRemoveContainer.class);
                 removeContainer.configure(task -> {
                     task.mustRunAfter(buildLambdaZip);
                     task.getContainerId().set(
-                            createLambdaContainer.flatMap(DockerCreateContainer::getContainerId)
+                        createLambdaContainer.flatMap(DockerCreateContainer::getContainerId)
                     );
                 });
                 buildLambdaZip.configure(task -> {
                     task.dependsOn(createLambdaContainer);
                     task.getContainerId().set(
-                            createLambdaContainer.flatMap(DockerCreateContainer::getContainerId)
+                        createLambdaContainer.flatMap(DockerCreateContainer::getContainerId)
                     );
                     task.getRemotePath().set("/function/function.zip");
                     task.getHostPath().set(lambdaZip);

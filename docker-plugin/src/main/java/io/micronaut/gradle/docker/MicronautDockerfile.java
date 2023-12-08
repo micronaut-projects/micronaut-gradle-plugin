@@ -1,6 +1,7 @@
 package io.micronaut.gradle.docker;
 
 import com.bmuschko.gradle.docker.tasks.image.Dockerfile;
+import io.micronaut.gradle.docker.model.Layer;
 import org.gradle.api.JavaVersion;
 import org.gradle.api.Project;
 import org.gradle.api.model.ObjectFactory;
@@ -38,6 +39,22 @@ public abstract class MicronautDockerfile extends Dockerfile implements DockerBu
 
     @Input
     private final Property<String> targetWorkingDirectory;
+
+    /**
+     * The layers to copy to the image.
+     * @return the layers
+     */
+    @Input
+    public abstract ListProperty<Layer> getLayers();
+
+    /**
+     * If true, the COPY command will use --link option when copying files from the build context.
+     * Defaults to true.
+     * @return The use copy link property
+     */
+    @Input
+    @Optional
+    public abstract Property<Boolean> getUseCopyLink();
 
     public MicronautDockerfile() {
         Project project = getProject();
@@ -77,10 +94,19 @@ public abstract class MicronautDockerfile extends Dockerfile implements DockerBu
     @Override
     public void create() throws IOException {
         super.create();
+        applyStandardTransforms();
         if (getDockerfileTweaks().isPresent()) {
             DockerfileEditor.apply(getObjects(), this, getDockerfileTweaks().get());
         }
         getLogger().lifecycle("Dockerfile written to: {}", getDestFile().get().getAsFile().getAbsolutePath());
+    }
+
+    protected void applyStandardTransforms() {
+        if (Boolean.TRUE.equals(getUseCopyLink().getOrElse(true))) {
+            DockerfileEditor.apply(getObjects(), this, List.of(
+                editor -> editor.replaceRegex("COPY layers/(.*)", "COPY --link layers/$1")
+            ));
+        }
     }
 
     protected void setupInstructions(List<Instruction> additionalInstructions) {
@@ -96,11 +122,7 @@ public abstract class MicronautDockerfile extends Dockerfile implements DockerBu
                 javaApplication.getMainClass().set("com.fnproject.fn.runtime.EntryPoint");
                 from(new Dockerfile.From(from != null ? from : "fnproject/fn-java-fdk:" + getProjectFnVersion()));
                 workingDir("/function");
-                runCommand("mkdir -p /function/app/resources");
-                copyFile("layers/libs/*.jar", "/function/app/");
-                copyFile("layers/classes", "/function/app/classes");
-                copyFile("layers/resources", "/function/app/resources");
-                copyFile("layers/application.jar", "/function/app/");
+                setupResources(this, getLayers().get(), "function");
                 String cmd = this.defaultCommand.get();
                 if ("none".equals(cmd)) {
                     super.defaultCommand("io.micronaut.oraclecloud.function.http.HttpFunction::handleRequest");
@@ -112,7 +134,7 @@ public abstract class MicronautDockerfile extends Dockerfile implements DockerBu
                 javaApplication.getMainClass().set("io.micronaut.function.aws.runtime.MicronautLambdaRuntime");
             default:
                 from(new Dockerfile.From(from != null ? from : DEFAULT_BASE_IMAGE));
-                setupResources(this);
+                setupResources(this, getLayers().get(), null);
                 exposePort(exposedPorts);
                 getInstructions().addAll(additionalInstructions);
                 if (getInstructions().get().stream().noneMatch(instruction -> instruction.getKeyword().equals(EntryPointInstruction.KEYWORD))) {
@@ -198,15 +220,22 @@ public abstract class MicronautDockerfile extends Dockerfile implements DockerBu
         return "latest";
     }
 
-    static void setupResources(Dockerfile task) {
+    static void setupResources(Dockerfile task, List<Layer> layers, String workDir) {
+        if (workDir == null) {
+            workDir = determineWorkingDir(task);
+        }
+        task.workingDir(workDir);
+        for (Layer layer : layers) {
+            var kind = layer.getLayerKind().get();
+            task.copyFile("layers/" + kind.sourceDirName(), workDir + "/" + kind.targetDirName());
+        }
+    }
+
+    private static String determineWorkingDir(Dockerfile task) {
         String workDir = DEFAULT_WORKING_DIR;
         if (task instanceof DockerBuildOptions dbo) {
             workDir = dbo.getTargetWorkingDirectory().get();
         }
-        task.workingDir(workDir);
-        task.copyFile("layers/libs", workDir + "/libs");
-        task.copyFile("layers/classes", workDir + "/classes");
-        task.copyFile("layers/resources", workDir + "/resources");
-        task.copyFile("layers/application.jar", workDir + "/application.jar");
+        return workDir;
     }
 }
