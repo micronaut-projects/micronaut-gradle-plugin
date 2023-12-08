@@ -2,7 +2,6 @@ package io.micronaut.gradle.crac;
 
 import com.bmuschko.gradle.docker.tasks.image.Dockerfile;
 import io.micronaut.gradle.docker.DockerBuildStrategy;
-import io.micronaut.gradle.docker.DockerfileEditor;
 import io.micronaut.gradle.docker.MicronautDockerfile;
 import io.micronaut.gradle.docker.model.Layer;
 import org.gradle.api.GradleException;
@@ -29,6 +28,7 @@ import java.util.List;
 
 import static io.micronaut.gradle.crac.MicronautCRaCPlugin.ARM_ARCH;
 import static io.micronaut.gradle.crac.MicronautCRaCPlugin.X86_64_ARCH;
+import static io.micronaut.gradle.docker.MicronautDockerfile.applyStandardTransforms;
 
 @CacheableTask
 public abstract class CRaCCheckpointDockerfile extends Dockerfile {
@@ -73,7 +73,7 @@ public abstract class CRaCCheckpointDockerfile extends Dockerfile {
 
     /**
      * If true, the COPY command will use --link option when copying files from the build context.
-     * Defaults to true.
+     * Defaults to false.
      * @return The use copy link property
      */
     @Input
@@ -110,18 +110,10 @@ public abstract class CRaCCheckpointDockerfile extends Dockerfile {
             }
         }
         super.create();
-        applyStandardTransforms();
+        applyStandardTransforms(getUseCopyLink(), getObjects(), this);
         getProject().getLogger().lifecycle("Checkpoint Dockerfile written to: {}", getDestFile().get().getAsFile().getAbsolutePath());
     }
 
-
-    protected void applyStandardTransforms() {
-        if (Boolean.TRUE.equals(getUseCopyLink().getOrElse(true))) {
-            DockerfileEditor.apply(getObjects(), this, List.of(
-                editor -> editor.replaceRegex("COPY (?!--link)(.*)", "COPY --link $1")
-            ));
-        }
-    }
 
     @SuppressWarnings("java:S5738") // Using deprecated method still, until it's removal in 4.0.0
     private void setupInstructions(List<Instruction> additionalInstructions) {

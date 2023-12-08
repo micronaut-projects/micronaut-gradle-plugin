@@ -189,12 +189,68 @@ class Application {
         def dockerfile = new File(testProjectDir.root, 'build/docker/main/Dockerfile').text
         dockerfile == """FROM eclipse-temurin:17-jre-focal
 WORKDIR /home/alternate
-COPY --link layers/libs /home/alternate/libs
-COPY --link layers/snapshot_libs /home/alternate/libs
-COPY --link layers/project_libs /home/alternate/libs
-COPY --link layers/app /home/alternate/
+COPY layers/libs /home/alternate/libs
+COPY layers/snapshot_libs /home/alternate/libs
+COPY layers/project_libs /home/alternate/libs
+COPY layers/app /home/alternate/
 EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "/home/alternate/application.jar"]
+"""
+    }
+
+    def "can use the COPY --link option"() {
+        given:
+        settingsFile << "rootProject.name = 'hello-world'"
+        buildFile << """import io.micronaut.gradle.docker.MicronautDockerfile
+
+            plugins {
+                id "io.micronaut.minimal.application"
+                id "io.micronaut.docker"
+            }
+            
+            micronaut {
+                version "$micronautVersion"
+            }
+            
+            $repositoriesBlock
+
+            mainClassName="example.Application"
+
+            tasks.withType(MicronautDockerfile).configureEach {
+                useCopyLink = true
+            }
+            
+        """
+        testProjectDir.newFolder("src", "main", "java", "example")
+        def javaFile = testProjectDir.newFile("src/main/java/example/Application.java")
+        javaFile.parentFile.mkdirs()
+        javaFile << """
+package example;
+
+class Application {
+    public static void main(String... args) {
+    
+    }
+}
+"""
+
+        when:
+        def result = build('dockerfile', '-s')
+
+        then:
+        def dockerfileTask = result.task(":dockerfile")
+        dockerfileTask.outcome == TaskOutcome.SUCCESS
+
+        and:
+        def dockerfile = new File(testProjectDir.root, 'build/docker/main/Dockerfile').text
+        dockerfile == """FROM eclipse-temurin:17-jre-focal
+WORKDIR /home/app
+COPY --link layers/libs /home/app/libs
+COPY --link layers/snapshot_libs /home/app/libs
+COPY --link layers/project_libs /home/app/libs
+COPY --link layers/app /home/app/
+EXPOSE 8080
+ENTRYPOINT ["java", "-jar", "/home/app/application.jar"]
 """
     }
 

@@ -47,6 +47,7 @@ import java.util.Map;
 
 import static io.micronaut.gradle.PluginsHelper.findMicronautExtension;
 import static io.micronaut.gradle.docker.MicronautDockerfile.DEFAULT_WORKING_DIR;
+import static io.micronaut.gradle.docker.MicronautDockerfile.applyStandardTransforms;
 
 /**
  * Specialization of {@link Dockerfile} for building native images.
@@ -158,7 +159,7 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
 
     /**
      * If true, the COPY command will use --link option when copying files from the build context.
-     * Defaults to true.
+     * Defaults to false.
      * @return The use copy link property
      */
     @Input
@@ -415,17 +416,9 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
     @Override
     public void create() throws IOException {
         super.create();
-        applyStandardTransforms();
+        applyStandardTransforms(getUseCopyLink(), getObjects(), this);
         if (getDockerfileTweaks().isPresent()) {
             DockerfileEditor.apply(getObjects(), this, getDockerfileTweaks().get());
-        }
-    }
-
-    protected void applyStandardTransforms() {
-        if (Boolean.TRUE.equals(getUseCopyLink().getOrElse(true))) {
-            DockerfileEditor.apply(getObjects(), this, List.of(
-                editor -> editor.replaceRegex("COPY (?!--link)(.*)", "COPY --link $1")
-            ));
         }
     }
 

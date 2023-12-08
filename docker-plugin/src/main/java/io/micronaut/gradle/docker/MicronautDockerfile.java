@@ -49,7 +49,7 @@ public abstract class MicronautDockerfile extends Dockerfile implements DockerBu
 
     /**
      * If true, the COPY command will use --link option when copying files from the build context.
-     * Defaults to true.
+     * Defaults to false.
      * @return The use copy link property
      */
     @Input
@@ -94,16 +94,16 @@ public abstract class MicronautDockerfile extends Dockerfile implements DockerBu
     @Override
     public void create() throws IOException {
         super.create();
-        applyStandardTransforms();
+        applyStandardTransforms(getUseCopyLink(), getObjects(), this);
         if (getDockerfileTweaks().isPresent()) {
             DockerfileEditor.apply(getObjects(), this, getDockerfileTweaks().get());
         }
         getLogger().lifecycle("Dockerfile written to: {}", getDestFile().get().getAsFile().getAbsolutePath());
     }
 
-    protected void applyStandardTransforms() {
-        if (Boolean.TRUE.equals(getUseCopyLink().getOrElse(true))) {
-            DockerfileEditor.apply(getObjects(), this, List.of(
+    public static void applyStandardTransforms(Provider<Boolean> useCopyLink, ObjectFactory objects, Dockerfile task) {
+        if (Boolean.TRUE.equals(useCopyLink.getOrElse(false))) {
+            DockerfileEditor.apply(objects, task, List.of(
                 editor -> editor.replaceRegex("COPY (?!--link)(.*)", "COPY --link $1")
             ));
         }
