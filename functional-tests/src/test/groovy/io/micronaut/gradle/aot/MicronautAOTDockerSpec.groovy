@@ -79,14 +79,14 @@ RUN mkdir /home/app/config-dirs
 RUN mkdir -p /home/app/config-dirs/generateResourcesConfigFile
 RUN mkdir -p /home/app/config-dirs/io.netty/netty-common/4.0.0.Final
 RUN mkdir -p /home/app/config-dirs/ch.qos.logback/logback-classic/4.0.0
-COPY config-dirs/generateResourcesConfigFile /home/app/config-dirs/generateResourcesConfigFile
-COPY config-dirs/io.netty/netty-common/4.0.0.Final /home/app/config-dirs/io.netty/netty-common/4.0.0.Final
-COPY config-dirs/ch.qos.logback/logback-classic/4.0.0 /home/app/config-dirs/ch.qos.logback/logback-classic/4.0.0
+COPY --link config-dirs/generateResourcesConfigFile /home/app/config-dirs/generateResourcesConfigFile
+COPY --link config-dirs/io.netty/netty-common/4.0.0.Final /home/app/config-dirs/io.netty/netty-common/4.0.0.Final
+COPY --link config-dirs/ch.qos.logback/logback-classic/4.0.0 /home/app/config-dirs/ch.qos.logback/logback-classic/4.0.0
 RUN native-image --exclude-config .*/libs/netty-transport-4.0.0.Final.jar ^/META-INF/native-image/.* --exclude-config .*/libs/netty-buffer-4.0.0.Final.jar ^/META-INF/native-image/.* --exclude-config .*/libs/netty-codec-http-4.0.0.Final.jar ^/META-INF/native-image/.* --exclude-config .*/libs/netty-handler-4.0.0.Final.jar ^/META-INF/native-image/.* --exclude-config .*/libs/netty-common-4.0.0.Final.jar ^/META-INF/native-image/.* --exclude-config .*/libs/netty-codec-http2-4.0.0.Final.jar ^/META-INF/native-image/.* -cp /home/app/libs/*.jar:/home/app/resources:/home/app/application.jar --no-fallback -o application -H:ConfigurationFileDirectories=/home/app/config-dirs/generateResourcesConfigFile,/home/app/config-dirs/io.netty/netty-buffer/4.0.0.Final,/home/app/config-dirs/io.netty/netty-common/4.0.0.Final,/home/app/config-dirs/io.netty/netty-codec-http/4.0.0.Final,/home/app/config-dirs/io.netty/netty-transport/4.0.0.Final,/home/app/config-dirs/io.netty/netty-handler/4.0.0.Final,/home/app/config-dirs/io.netty/netty-codec-http2/4.0.0.Final,/home/app/config-dirs/ch.qos.logback/logback-classic/4.0.0 demo.app.Application
 FROM frolvlad/alpine-glibc:alpine-${DefaultVersions.ALPINE}
 RUN apk --no-cache update && apk add libstdc++
 EXPOSE 8080
-COPY --from=graalvm /home/app/application /app/application
+COPY --link --from=graalvm /home/app/application /app/application
 ENTRYPOINT ["/app/application"]
 """
 

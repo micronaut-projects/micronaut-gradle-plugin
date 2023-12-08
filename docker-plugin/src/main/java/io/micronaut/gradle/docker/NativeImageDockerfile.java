@@ -424,7 +424,7 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
     protected void applyStandardTransforms() {
         if (Boolean.TRUE.equals(getUseCopyLink().getOrElse(true))) {
             DockerfileEditor.apply(getObjects(), this, List.of(
-                editor -> editor.replaceRegex("COPY layers/(.*)", "COPY --link layers/$1")
+                editor -> editor.replaceRegex("COPY (?!--link)(.*)", "COPY --link $1")
             ));
         }
     }

@@ -590,13 +590,13 @@ COPY --link layers/app /home/alternate/
 RUN mkdir /home/alternate/config-dirs
 RUN mkdir -p /home/alternate/config-dirs/generateResourcesConfigFile
 RUN mkdir -p /home/alternate/config-dirs/io.netty/netty-common/4.0.0.Final
-COPY config-dirs/generateResourcesConfigFile /home/alternate/config-dirs/generateResourcesConfigFile
-COPY config-dirs/io.netty/netty-common/4.0.0.Final /home/alternate/config-dirs/io.netty/netty-common/4.0.0.Final
+COPY --link config-dirs/generateResourcesConfigFile /home/alternate/config-dirs/generateResourcesConfigFile
+COPY --link config-dirs/io.netty/netty-common/4.0.0.Final /home/alternate/config-dirs/io.netty/netty-common/4.0.0.Final
 RUN native-image --exclude-config .*/libs/netty-transport-4.0.0.Final.jar ^/META-INF/native-image/.* --exclude-config .*/libs/netty-buffer-4.0.0.Final.jar ^/META-INF/native-image/.* --exclude-config .*/libs/netty-codec-http-4.0.0.Final.jar ^/META-INF/native-image/.* --exclude-config .*/libs/netty-handler-4.0.0.Final.jar ^/META-INF/native-image/.* --exclude-config .*/libs/netty-common-4.0.0.Final.jar ^/META-INF/native-image/.* --exclude-config .*/libs/netty-codec-http2-4.0.0.Final.jar ^/META-INF/native-image/.* -cp /home/alternate/libs/*.jar:/home/alternate/resources:/home/alternate/application.jar --no-fallback -o application -H:ConfigurationFileDirectories=/home/alternate/config-dirs/generateResourcesConfigFile,/home/alternate/config-dirs/io.netty/netty-buffer/4.0.0.Final,/home/alternate/config-dirs/io.netty/netty-common/4.0.0.Final,/home/alternate/config-dirs/io.netty/netty-codec-http/4.0.0.Final,/home/alternate/config-dirs/io.netty/netty-transport/4.0.0.Final,/home/alternate/config-dirs/io.netty/netty-handler/4.0.0.Final,/home/alternate/config-dirs/io.netty/netty-codec-http2/4.0.0.Final example.Application
 ${defaultDockerFrom}
 EXPOSE 8080
 HEALTHCHECK CMD curl -s localhost:8090/health | grep '"status":"UP"'
-COPY --from=graalvm /home/alternate/application /app/application
+COPY --link --from=graalvm /home/alternate/application /app/application
 ENTRYPOINT ["/app/application", "-Xmx64m"]
 """.trim()
 
@@ -714,11 +714,11 @@ COPY --link layers/project_libs /home/app/libs
 COPY --link layers/app /home/app/
 RUN mkdir /home/app/config-dirs
 RUN mkdir -p /home/app/config-dirs/generateResourcesConfigFile
-COPY config-dirs/generateResourcesConfigFile /home/app/config-dirs/generateResourcesConfigFile
+COPY --link config-dirs/generateResourcesConfigFile /home/app/config-dirs/generateResourcesConfigFile
 RUN native-image -cp /home/app/libs/*.jar:/home/app/resources:/home/app/application.jar --no-fallback -o application -H:ConfigurationFileDirectories=/home/app/config-dirs/generateResourcesConfigFile example.Application
 ${defaultDockerFrom}
 EXPOSE 8080
-COPY --from=graalvm /home/app/application /app/application
+COPY --link --from=graalvm /home/app/application /app/application
 ENTRYPOINT ["/app/application"]
 """
     }
