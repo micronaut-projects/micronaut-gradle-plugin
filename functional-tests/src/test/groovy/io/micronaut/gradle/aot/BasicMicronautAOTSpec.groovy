@@ -250,6 +250,13 @@ class BasicMicronautAOTSpec extends AbstractAOTPluginSpec {
         withSample("aot/basic-app")
         withPlugins(Plugins.MINIMAL_APPLICATION)
         file("gradle.properties") << "org.gradle.caching=true"
+        // Add a random seed to the build.gradle file so that the task is not from cache
+        // when a previous test execution has already cached the result
+        file("build.gradle") << """
+            tasks.named("prepareJitOptimizations") {
+                inputs.property("seed", "${System.currentTimeMillis()}")
+            }
+        """
 
         when:
         def result = build "prepareJitOptimizations"

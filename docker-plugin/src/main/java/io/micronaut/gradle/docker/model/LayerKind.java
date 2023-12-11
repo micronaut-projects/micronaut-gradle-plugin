@@ -16,8 +16,24 @@
 package io.micronaut.gradle.docker.model;
 
 public enum LayerKind {
-    LIBS,
-    APP,
-    EXPANDED_CLASSES,
-    EXPANDED_RESOURCES
+    PROJECT_LIBS("project_libs", "libs"),
+    SNAPSHOT_LIBS("snapshot_libs", "libs"),
+    LIBS("libs", "libs"),
+    APP("app", "");
+
+    private final String sourceDirName;
+    private final String targetDirName;
+
+    LayerKind(String sourceDirName, String targetDirName) {
+        this.sourceDirName = sourceDirName;
+        this.targetDirName = targetDirName;
+    }
+
+    public String targetDirName() {
+        return targetDirName;
+    }
+
+    public String sourceDirName() {
+        return sourceDirName;
+    }
 }

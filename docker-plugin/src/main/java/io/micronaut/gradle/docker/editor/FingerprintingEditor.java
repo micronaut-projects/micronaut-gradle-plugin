@@ -71,6 +71,13 @@ public class FingerprintingEditor implements Editor {
     }
 
     @Override
+    public void replaceRegex(String regex, String replacement) {
+        fingerprint.add("REPLACE_REGEX");
+        fingerprint.add(regex);
+        fingerprint.add(replacement);
+    }
+
+    @Override
     public void insert(String... lines) {
         fingerprint.add("INSERT");
         Collections.addAll(fingerprint, lines);
