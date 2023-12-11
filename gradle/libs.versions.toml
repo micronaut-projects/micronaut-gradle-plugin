@@ -2,7 +2,7 @@
 kotlin = "1.9.21"
 ksp = "1.9.21-1.0.15"
 docker = "9.4.0"
-diffplug = "3.43.0"
+diffplug = "3.44.0"
 shadow = "8.1.1"
 groovy = "3.0.19"
 spock = "2.1-groovy-3.0"
