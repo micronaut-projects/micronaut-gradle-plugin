@@ -81,7 +81,7 @@ public class MicronautDockerPlugin implements Plugin<Project> {
             }).getFiles();
         var snapshotLibs = configuration.getIncoming()
             .artifactView(view -> {
-                view.lenient(true);
+//                view.lenient(true);
                 view.componentFilter(component -> {
                     if (component instanceof ModuleComponentIdentifier module) {
                         return module.getVersion().endsWith("-SNAPSHOT");

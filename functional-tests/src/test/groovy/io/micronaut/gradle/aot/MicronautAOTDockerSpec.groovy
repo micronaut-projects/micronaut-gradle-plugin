@@ -23,8 +23,6 @@ class MicronautAOTDockerSpec extends AbstractAOTPluginSpec {
         dockerFile == """FROM eclipse-temurin:17-jre-focal
 WORKDIR /home/app
 COPY layers/libs /home/app/libs
-COPY layers/snapshot_libs /home/app/libs
-COPY layers/project_libs /home/app/libs
 COPY layers/app /home/app/
 EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "/home/app/application.jar"]
@@ -50,8 +48,6 @@ ENTRYPOINT ["java", "-jar", "/home/app/application.jar"]
         dockerFile == """FROM eclipse-temurin:17-jre-focal
 WORKDIR /home/app
 COPY layers/libs /home/app/libs
-COPY layers/snapshot_libs /home/app/libs
-COPY layers/project_libs /home/app/libs
 COPY layers/app /home/app/
 EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "/home/app/application.jar"]
@@ -72,8 +68,6 @@ ENTRYPOINT ["java", "-jar", "/home/app/application.jar"]
         dockerFile == """FROM ghcr.io/graalvm/native-image-community:17-ol${DefaultVersions.ORACLELINUX} AS graalvm
 WORKDIR /home/app
 COPY layers/libs /home/app/libs
-COPY layers/snapshot_libs /home/app/libs
-COPY layers/project_libs /home/app/libs
 COPY layers/app /home/app/
 RUN mkdir /home/app/config-dirs
 RUN mkdir -p /home/app/config-dirs/generateResourcesConfigFile

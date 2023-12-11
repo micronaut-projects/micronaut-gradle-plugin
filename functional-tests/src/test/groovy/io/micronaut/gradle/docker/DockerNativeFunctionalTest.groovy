@@ -584,8 +584,6 @@ micronaut:
 FROM ghcr.io/graalvm/native-image-community:17-ol${DefaultVersions.ORACLELINUX} AS graalvm
 WORKDIR /home/alternate
 COPY layers/libs /home/alternate/libs
-COPY layers/snapshot_libs /home/alternate/libs
-COPY layers/project_libs /home/alternate/libs
 COPY layers/app /home/alternate/
 RUN mkdir /home/alternate/config-dirs
 RUN mkdir -p /home/alternate/config-dirs/generateResourcesConfigFile
@@ -693,8 +691,6 @@ class Application {
 WORKDIR /home/app
 COPY layers/libs /home/app/libs
 COPY server.iprof /home/app/server.iprof
-COPY layers/snapshot_libs /home/app/libs
-COPY layers/project_libs /home/app/libs
 COPY layers/app /home/app/
 EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "/home/app/application.jar"]
@@ -709,8 +705,6 @@ ENTRYPOINT ["java", "-jar", "/home/app/application.jar"]
 WORKDIR /home/app
 COPY layers/libs /home/app/libs
 COPY server.iprof /home/app/server.iprof
-COPY layers/snapshot_libs /home/app/libs
-COPY layers/project_libs /home/app/libs
 COPY layers/app /home/app/
 RUN mkdir /home/app/config-dirs
 RUN mkdir -p /home/app/config-dirs/generateResourcesConfigFile
@@ -773,8 +767,6 @@ class Application {
 WORKDIR /home/app
 COPY layers/libs /home/app/libs
 COPY server.iprof /home/app/server.iprof
-COPY layers/snapshot_libs /home/app/libs
-COPY layers/project_libs /home/app/libs
 COPY layers/app /home/app/
 EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "/home/app/application.jar"]

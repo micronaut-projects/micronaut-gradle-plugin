@@ -226,8 +226,11 @@ public abstract class MicronautDockerfile extends Dockerfile implements DockerBu
         }
         task.workingDir(workDir);
         for (Layer layer : layers) {
-            var kind = layer.getLayerKind().get();
-            task.copyFile("layers/" + kind.sourceDirName(), workDir + "/" + kind.targetDirName());
+            var files = layer.getFiles();
+            if (!files.isEmpty()) {
+                var kind = layer.getLayerKind().get();
+                task.copyFile("layers/" + kind.sourceDirName(), workDir + "/" + kind.targetDirName());
+            }
         }
     }
 

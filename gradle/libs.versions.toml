@@ -13,6 +13,7 @@ micronaut-platform = "4.2.0" # This is the platform version, used in our tests
 micronaut-aot = "2.1.1"
 micronaut-testresources = "2.3.0"
 micronaut-openapi = "6.3.0"
+mockserver = "5.15.0"
 log4j2 = { require = "2.17.1", reject = ["]0, 2.17["] }
 jetbrains-annotations = "24.1.0"
 tomlj = "1.1.0"
@@ -43,6 +44,9 @@ micronaut-aot-cli = { module = "io.micronaut.aot:micronaut-aot-cli", version.ref
 micronaut-openapi-generator = { module = "io.micronaut.openapi:micronaut-openapi-generator", version.ref = "micronaut-openapi" }
 
 micronaut-testresources = { module = "io.micronaut.testresources:micronaut-test-resources-build-tools", version.ref = "micronaut-testresources" }
+
+mockserver-netty = { module = "org.mock-server:mockserver-netty", version.ref = "mockserver" }
+mockserver-client = { module = "org.mock-server:mockserver-client-java", version.ref = "mockserver" }
 
 jetbrains-annotations = { module = "org.jetbrains:annotations", version.ref = "jetbrains-annotations" }
 tomlj = { module = "org.tomlj:tomlj", version.ref = "tomlj" }
