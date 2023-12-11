@@ -146,6 +146,13 @@ implements <a href="Editor.html" title="interface in io.micronaut.gradle.docker.
 <div class="block">Replaces lines matching the current lower and upper bounds with the
  replacement, if they match the line pattern.</div>
 </div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#replaceRegex(java.lang.String,java.lang.String)" class="member-name-link">replaceRegex</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;regex,
+ <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;replacement)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Replaces strings matching the current lower and upper bounds with the
+ replacement, if they match the line pattern.</div>
+</div>
 </div>
 </div>
 </div>
@@ -239,6 +246,23 @@ implements <a href="Editor.html" title="interface in io.micronaut.gradle.docker.
 <dd><code><a href="Editor.html#replace(java.lang.String,java.lang.String)">replace</a></code>&nbsp;in interface&nbsp;<code><a href="Editor.html" title="interface in io.micronaut.gradle.docker.editor">Editor</a></code></dd>
 <dt>Parameters:</dt>
 <dd><code>line</code> - the line pattern</dd>
+<dd><code>replacement</code> - the replacement</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="replaceRegex(java.lang.String,java.lang.String)">
+<h3>replaceRegex</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">replaceRegex</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;regex,
+ <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;replacement)</span></div>
+<div class="block"><span class="descfrm-type-label">Description copied from interface:&nbsp;<code><a href="Editor.html#replaceRegex(java.lang.String,java.lang.String)">Editor</a></code></span></div>
+<div class="block">Replaces strings matching the current lower and upper bounds with the
+ replacement, if they match the line pattern.</div>
+<dl class="notes">
+<dt>Specified by:</dt>
+<dd><code><a href="Editor.html#replaceRegex(java.lang.String,java.lang.String)">replaceRegex</a></code>&nbsp;in interface&nbsp;<code><a href="Editor.html" title="interface in io.micronaut.gradle.docker.editor">Editor</a></code></dd>
+<dt>Parameters:</dt>
+<dd><code>regex</code> - the regex to look for</dd>
 <dd><code>replacement</code> - the replacement</dd>
 </dl>
 </section>
