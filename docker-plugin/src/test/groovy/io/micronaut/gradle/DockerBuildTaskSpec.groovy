@@ -89,8 +89,8 @@ class Application {
         testProjectDir.newFile("Dockerfile") << """
 FROM eclipse-temurin:17-jre-focal
 WORKDIR /home/alternate
-COPY layers/libs /home/alternate/libs
-COPY layers/app/application.jar /home/alternate/application.jar
+COPY --link layers/libs /home/alternate/libs
+COPY --link layers/app/application.jar /home/alternate/application.jar
 EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "/home/alternate/application.jar"]
 """
@@ -196,14 +196,14 @@ class Application {
         def dockerfile = new File(testProjectDir.root, 'build/docker/main/Dockerfile').text
         dockerfile == """FROM eclipse-temurin:17-jre-focal
 WORKDIR /home/alternate
-COPY layers/libs /home/alternate/libs
-COPY layers/app /home/alternate/
+COPY --link layers/libs /home/alternate/libs
+COPY --link layers/app /home/alternate/
 EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "/home/alternate/application.jar"]
 """
     }
 
-    def "can use the COPY --link option"() {
+    def "can disable the use of the COPY --link option"() {
         given:
         settingsFile << "rootProject.name = 'hello-world'"
         buildFile << """import io.micronaut.gradle.docker.MicronautDockerfile
@@ -222,7 +222,7 @@ ENTRYPOINT ["java", "-jar", "/home/alternate/application.jar"]
             mainClassName="example.Application"
 
             tasks.withType(MicronautDockerfile).configureEach {
-                useCopyLink = true
+                useCopyLink = false
             }
             
         """
@@ -250,8 +250,8 @@ class Application {
         def dockerfile = new File(testProjectDir.root, 'build/docker/main/Dockerfile').text
         dockerfile == """FROM eclipse-temurin:17-jre-focal
 WORKDIR /home/app
-COPY --link layers/libs /home/app/libs
-COPY --link layers/app /home/app/
+COPY layers/libs /home/app/libs
+COPY layers/app /home/app/
 EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "/home/app/application.jar"]
 """
@@ -314,9 +314,9 @@ public class ProjectLib {}
         then:
         task.outcome == TaskOutcome.SUCCESS
         def dockerFile = normalizeLineEndings(file("build/docker/main/Dockerfile").text)
-        dockerFile.contains("COPY layers/libs /home/app/libs")
-        dockerFile.contains("COPY layers/project_libs /home/app/libs")
-        !dockerFile.contains("COPY layers/snapshot_libs /home/app/libs")
+        dockerFile.contains("COPY --link layers/libs /home/app/libs")
+        dockerFile.contains("COPY --link layers/project_libs /home/app/libs")
+        !dockerFile.contains("COPY --link layers/snapshot_libs /home/app/libs")
     }
 
     def "includes snapshot dependencies in different layer"() {
@@ -404,9 +404,9 @@ class Application {
         then:
         task.outcome == TaskOutcome.SUCCESS
         def dockerFile = normalizeLineEndings(file("build/docker/main/Dockerfile").text)
-        dockerFile.contains("COPY layers/libs /home/app/libs")
-        dockerFile.contains("COPY layers/snapshot_libs /home/app/libs")
-        !dockerFile.contains("COPY layers/project_libs /home/app/libs")
+        dockerFile.contains("COPY --link layers/libs /home/app/libs")
+        dockerFile.contains("COPY --link layers/snapshot_libs /home/app/libs")
+        !dockerFile.contains("COPY --link layers/project_libs /home/app/libs")
 
         cleanup:
         snapshotRepository.stop()

@@ -583,18 +583,18 @@ micronaut:
         dockerFile == """
 FROM ghcr.io/graalvm/native-image-community:17-ol${DefaultVersions.ORACLELINUX} AS graalvm
 WORKDIR /home/alternate
-COPY layers/libs /home/alternate/libs
-COPY layers/app /home/alternate/
+COPY --link layers/libs /home/alternate/libs
+COPY --link layers/app /home/alternate/
 RUN mkdir /home/alternate/config-dirs
 RUN mkdir -p /home/alternate/config-dirs/generateResourcesConfigFile
 RUN mkdir -p /home/alternate/config-dirs/io.netty/netty-common/4.0.0.Final
-COPY config-dirs/generateResourcesConfigFile /home/alternate/config-dirs/generateResourcesConfigFile
-COPY config-dirs/io.netty/netty-common/4.0.0.Final /home/alternate/config-dirs/io.netty/netty-common/4.0.0.Final
+COPY --link config-dirs/generateResourcesConfigFile /home/alternate/config-dirs/generateResourcesConfigFile
+COPY --link config-dirs/io.netty/netty-common/4.0.0.Final /home/alternate/config-dirs/io.netty/netty-common/4.0.0.Final
 RUN native-image --exclude-config .*/libs/netty-transport-4.0.0.Final.jar ^/META-INF/native-image/.* --exclude-config .*/libs/netty-buffer-4.0.0.Final.jar ^/META-INF/native-image/.* --exclude-config .*/libs/netty-codec-http-4.0.0.Final.jar ^/META-INF/native-image/.* --exclude-config .*/libs/netty-handler-4.0.0.Final.jar ^/META-INF/native-image/.* --exclude-config .*/libs/netty-common-4.0.0.Final.jar ^/META-INF/native-image/.* --exclude-config .*/libs/netty-codec-http2-4.0.0.Final.jar ^/META-INF/native-image/.* -cp /home/alternate/libs/*.jar:/home/alternate/resources:/home/alternate/application.jar --no-fallback -o application -H:ConfigurationFileDirectories=/home/alternate/config-dirs/generateResourcesConfigFile,/home/alternate/config-dirs/io.netty/netty-buffer/4.0.0.Final,/home/alternate/config-dirs/io.netty/netty-common/4.0.0.Final,/home/alternate/config-dirs/io.netty/netty-codec-http/4.0.0.Final,/home/alternate/config-dirs/io.netty/netty-transport/4.0.0.Final,/home/alternate/config-dirs/io.netty/netty-handler/4.0.0.Final,/home/alternate/config-dirs/io.netty/netty-codec-http2/4.0.0.Final example.Application
 ${defaultDockerFrom}
 EXPOSE 8080
 HEALTHCHECK CMD curl -s localhost:8090/health | grep '"status":"UP"'
-COPY --from=graalvm /home/alternate/application /app/application
+COPY --link --from=graalvm /home/alternate/application /app/application
 ENTRYPOINT ["/app/application", "-Xmx64m"]
 """.trim()
 
@@ -662,8 +662,8 @@ afterEvaluate {
 
             tasks.withType(io.micronaut.gradle.docker.DockerBuildOptions).configureEach {
                 editDockerfile {
-                    after('COPY layers/libs /home/app/libs') {
-                        insert('COPY server.iprof /home/app/server.iprof')
+                    after('COPY --link layers/libs /home/app/libs') {
+                        insert('COPY --link server.iprof /home/app/server.iprof')
                     } 
                 }
             }
@@ -689,9 +689,9 @@ class Application {
         def dockerfile = new File(testProjectDir.root, 'build/docker/main/Dockerfile').text
         dockerfile == """FROM eclipse-temurin:17-jre-focal
 WORKDIR /home/app
-COPY layers/libs /home/app/libs
-COPY server.iprof /home/app/server.iprof
-COPY layers/app /home/app/
+COPY --link layers/libs /home/app/libs
+COPY --link server.iprof /home/app/server.iprof
+COPY --link layers/app /home/app/
 EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "/home/app/application.jar"]
 """
@@ -703,16 +703,16 @@ ENTRYPOINT ["java", "-jar", "/home/app/application.jar"]
         def dockerfileNative = new File(testProjectDir.root, 'build/docker/native-main/DockerfileNative').text
         dockerfileNative == """FROM ghcr.io/graalvm/native-image-community:17-ol${DefaultVersions.ORACLELINUX} AS graalvm
 WORKDIR /home/app
-COPY layers/libs /home/app/libs
-COPY server.iprof /home/app/server.iprof
-COPY layers/app /home/app/
+COPY --link layers/libs /home/app/libs
+COPY --link server.iprof /home/app/server.iprof
+COPY --link layers/app /home/app/
 RUN mkdir /home/app/config-dirs
 RUN mkdir -p /home/app/config-dirs/generateResourcesConfigFile
-COPY config-dirs/generateResourcesConfigFile /home/app/config-dirs/generateResourcesConfigFile
+COPY --link config-dirs/generateResourcesConfigFile /home/app/config-dirs/generateResourcesConfigFile
 RUN native-image -cp /home/app/libs/*.jar:/home/app/resources:/home/app/application.jar --no-fallback -o application -H:ConfigurationFileDirectories=/home/app/config-dirs/generateResourcesConfigFile example.Application
 ${defaultDockerFrom}
 EXPOSE 8080
-COPY --from=graalvm /home/app/application /app/application
+COPY --link --from=graalvm /home/app/application /app/application
 ENTRYPOINT ["/app/application"]
 """
     }
@@ -738,8 +738,8 @@ ENTRYPOINT ["/app/application"]
 
             tasks.withType(io.micronaut.gradle.docker.DockerBuildOptions).configureEach {
                 editDockerfile {
-                    after('COPY layers/libs /home/app/libs') {
-                        insert('COPY server.iprof /home/app/server.iprof')
+                    after('COPY --link layers/libs /home/app/libs') {
+                        insert('COPY --link server.iprof /home/app/server.iprof')
                     } 
                 }
             }
@@ -765,9 +765,9 @@ class Application {
         def dockerfile = new File(testProjectDir.root, 'build/docker/main/Dockerfile').text
         dockerfile == """FROM eclipse-temurin:17-jre-focal
 WORKDIR /home/app
-COPY layers/libs /home/app/libs
-COPY server.iprof /home/app/server.iprof
-COPY layers/app /home/app/
+COPY --link layers/libs /home/app/libs
+COPY --link server.iprof /home/app/server.iprof
+COPY --link layers/app /home/app/
 EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "/home/app/application.jar"]
 """
@@ -782,8 +782,8 @@ ENTRYPOINT ["java", "-jar", "/home/app/application.jar"]
         buildFile << """
             tasks.withType(io.micronaut.gradle.docker.DockerBuildOptions).configureEach {
                 editDockerfile {
-                    after('COPY server.iprof /home/app/server.iprof') {
-                        insert('COPY README.TXT /home/app/README.TXT')
+                    after('COPY --link server.iprof /home/app/server.iprof') {
+                        insert('COPY --link README.TXT /home/app/README.TXT')
                     } 
                 }
             }

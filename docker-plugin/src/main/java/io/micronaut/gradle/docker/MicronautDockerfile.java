@@ -102,7 +102,7 @@ public abstract class MicronautDockerfile extends Dockerfile implements DockerBu
     }
 
     public static void applyStandardTransforms(Provider<Boolean> useCopyLink, ObjectFactory objects, Dockerfile task) {
-        if (Boolean.TRUE.equals(useCopyLink.getOrElse(false))) {
+        if (Boolean.TRUE.equals(useCopyLink.getOrElse(true))) {
             DockerfileEditor.apply(objects, task, List.of(
                 editor -> editor.replaceRegex("COPY (?!--link)(.*)", "COPY --link $1")
             ));
