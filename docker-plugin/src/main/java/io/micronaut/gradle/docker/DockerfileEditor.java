@@ -30,12 +30,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-abstract class DockerfileEditor {
+public abstract class DockerfileEditor {
     private DockerfileEditor() {
 
     }
 
-    static void apply(ObjectFactory objects, Dockerfile task, List<Action<? super Editor>> actions) {
+    public static void apply(ObjectFactory objects, Dockerfile task, List<Action<? super Editor>> actions) {
         try {
             Path dockerFile = task.getDestFile().get().getAsFile().toPath();
             List<String> lines = Files.readAllLines(

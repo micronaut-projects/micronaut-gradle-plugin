@@ -108,6 +108,17 @@ public class DefaultEditor implements Editor {
     }
 
     @Override
+    public void replaceRegex(String regex, String replacement) {
+        Boundaries boundaries = getBoundaries();
+        int startIndex = boundaries.getStart().orElse(0);
+        int endIndex = boundaries.getEnd().orElse(lines.size());
+        for (int idx = startIndex; idx < endIndex; idx++) {
+            var line = lines.get(idx);
+            lines.set(idx, line.replaceAll(regex, replacement));
+        }
+    }
+
+    @Override
     public void insert(String... lines) {
         int startIndex = getBoundaries().getStart().orElse(0);
         this.lines.addAll(startIndex, Arrays.asList(lines));

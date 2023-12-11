@@ -152,6 +152,7 @@ public class MicronautCRaCPlugin implements Plugin<Project> {
             task.getArch().set(configuration.getArch());
             task.getJavaVersion().set(configuration.getJavaVersion());
             task.setupDockerfileInstructions();
+            task.getLayers().convention(buildLayersTask.flatMap(BuildLayersTask::getLayers));
         });
 
         TaskProvider<DockerBuildImage> dockerBuildTask = tasks.register(adaptTaskName("checkpointBuildImage", imageName), DockerBuildImage.class, task -> {

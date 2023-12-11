@@ -19,6 +19,8 @@ import org.gradle.api.tasks.OutputDirectory;
 import org.gradle.api.tasks.TaskAction;
 
 import javax.inject.Inject;
+import java.io.IOException;
+import java.nio.file.Files;
 
 @CacheableTask
 public abstract class BuildLayersTask extends DefaultTask {
@@ -41,19 +43,13 @@ public abstract class BuildLayersTask extends DefaultTask {
         FileOperations fileOperations = getFileOperations();
         fileOperations.delete(getOutputDir());
         // Create folders if case there are no resources/libs in project
-        Provider<Directory> libsDir = getOutputDir().dir("libs");
-        fileOperations.mkdir(libsDir);
-        Provider<Directory> resourcesDir = getOutputDir().dir("resources");
-        fileOperations.mkdir(resourcesDir);
-        Provider<Directory> classesDir = getOutputDir().dir("classes");
-        fileOperations.mkdir(classesDir);
         for (Layer layer : getLayers().get()) {
-            final Provider<Directory> layerDir = layerDirectoryOf(layer, getOutputDir(), libsDir, resourcesDir, classesDir);
+            final Provider<Directory> layerDir = layerDirectoryOf(layer, getOutputDir());
             if (layer.getLayerKind().get() == LayerKind.APP) {
                 // special case for now
                 fileOperations.copy(copy -> {
                     configureDuplicatesStrategy(copy);
-                    copy.from(layer.getFiles()).into(getOutputDir()).rename(s -> "application.jar");
+                    copy.from(layer.getFiles()).into(getOutputDir().dir("app")).rename(s -> "application.jar");
                 });
             } else {
                 fileOperations.copy(copy -> {
@@ -71,15 +67,14 @@ public abstract class BuildLayersTask extends DefaultTask {
     }
 
     private static Provider<Directory> layerDirectoryOf(Layer layer,
-                                                        Provider<Directory> appDir,
-                                                        Provider<Directory> libsDir,
-                                                        Provider<Directory> resourcesDir,
-                                                        Provider<Directory> classesDir) {
-        return switch (layer.getLayerKind().get()) {
-            case APP -> appDir;
-            case LIBS -> libsDir;
-            case EXPANDED_CLASSES -> classesDir;
-            case EXPANDED_RESOURCES -> resourcesDir;
-        };
+                                                        DirectoryProperty outputDir) {
+        var kind = layer.getLayerKind().get();
+        var dir = outputDir.dir(kind.sourceDirName());
+        try {
+            Files.createDirectories(dir.get().getAsFile().toPath());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return dir;
     }
 }

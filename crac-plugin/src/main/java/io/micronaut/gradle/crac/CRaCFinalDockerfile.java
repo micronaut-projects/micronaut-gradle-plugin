@@ -99,10 +99,7 @@ public abstract class CRaCFinalDockerfile extends MicronautDockerfile {
         copyFile("--from=" + createCheckpointImageName(getProject()) + " /azul-crac-jdk", "/azul-crac-jdk");
         instruction("# Copy layers");
         copyFile("cr", workDir + "/cr");
-        copyFile("layers/libs", workDir + "/libs");
-        copyFile("layers/classes", workDir + "/classes");
-        copyFile("layers/resources", workDir + "/resources");
-        copyFile("layers/application.jar", workDir + "/application.jar");
+        MicronautDockerfile.setupResources(this, getLayers().get(), workDir);
         copyFile("scripts/run.sh", workDir + "/run.sh");
     }
 }
