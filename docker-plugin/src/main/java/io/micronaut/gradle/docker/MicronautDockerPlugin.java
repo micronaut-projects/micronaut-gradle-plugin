@@ -33,10 +33,7 @@ import org.gradle.api.plugins.BasePlugin;
 import org.gradle.api.plugins.ExtensionContainer;
 import org.gradle.api.plugins.JavaApplication;
 import org.gradle.api.provider.Provider;
-import org.gradle.api.tasks.SourceSet;
-import org.gradle.api.tasks.SourceSetContainer;
-import org.gradle.api.tasks.TaskContainer;
-import org.gradle.api.tasks.TaskProvider;
+import org.gradle.api.tasks.*;
 import org.gradle.api.tasks.bundling.Jar;
 
 import java.io.File;
@@ -305,7 +302,9 @@ public class MicronautDockerPlugin implements Plugin<Project> {
         TaskProvider<DockerBuildImage> dockerBuildTask = tasks.register(adaptTaskName("dockerBuildNative", imageName), DockerBuildImage.class, task -> {
             task.setGroup(BasePlugin.BUILD_GROUP);
             task.setDescription("Builds a Native Docker Image using GraalVM (image " + imageName + ")");
-            task.getInputs().files(prepareContext);
+            task.getInputs().files(prepareContext)
+                    .withPropertyName("PrepareDockerContext.outputs")
+                    .withPathSensitivity(PathSensitivity.RELATIVE);
             task.getDockerFile().convention(dockerFileTask.flatMap(Dockerfile::getDestFile));
             task.getImages().set(Collections.singletonList(project.getName()));
             task.dependsOn(buildLayersTask);
