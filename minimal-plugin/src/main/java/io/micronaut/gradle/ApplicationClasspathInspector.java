@@ -18,12 +18,7 @@ package io.micronaut.gradle;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.file.RegularFileProperty;
-import org.gradle.api.tasks.CacheableTask;
-import org.gradle.api.tasks.InputFiles;
-import org.gradle.api.tasks.OutputFile;
-import org.gradle.api.tasks.PathSensitive;
-import org.gradle.api.tasks.PathSensitivity;
-import org.gradle.api.tasks.TaskAction;
+import org.gradle.api.tasks.*;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -37,13 +32,8 @@ public abstract class ApplicationClasspathInspector extends DefaultTask {
     @PathSensitive(PathSensitivity.RELATIVE)
     public abstract ConfigurableFileCollection getResources();
 
-    /**
-     * The runtime classpath. Curently we only care about the file names,
-     * which is why the path sensitivity is set to name only.
-     * @return the runtime classpath
-     */
     @InputFiles
-    @PathSensitive(PathSensitivity.NAME_ONLY)
+    @Classpath
     public abstract ConfigurableFileCollection getRuntimeClasspath();
 
     @OutputFile

@@ -300,7 +300,10 @@ public class MicronautComponentPlugin implements Plugin<Project> {
             var javaPluginExtension = PluginsHelper.javaPluginExtensionOf(project);
             task.setGroup(BasePlugin.BUILD_GROUP);
             task.setDescription("Performs sanity checks of the runtime classpath to warn about misconfigured builds");
-            task.getRuntimeClasspath().from(project.getConfigurations().getByName(JavaPlugin.RUNTIME_CLASSPATH_CONFIGURATION_NAME));
+            // Sort the runtimeClasspath before setting it since the order doesn't actually matter for inspection, however it does matter for caching.
+            task.getRuntimeClasspath().from(project.getConfigurations()
+                    .getByName(JavaPlugin.RUNTIME_CLASSPATH_CONFIGURATION_NAME).resolve()
+                    .stream().sorted().toList());
             task.getResources().from(PluginsHelper.findSourceSets(project).getByName(SourceSet.MAIN_SOURCE_SET_NAME).getResources());
             task.getReportFile().set(project.getLayout().getBuildDirectory().file("reports/inspectRuntimeClasspath.txt"));
         });
