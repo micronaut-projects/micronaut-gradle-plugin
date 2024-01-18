@@ -31,8 +31,8 @@ import org.gradle.api.plugins.JavaPluginExtension;
 import org.gradle.api.plugins.PluginManager;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.provider.ProviderFactory;
+import org.gradle.api.tasks.ClasspathNormalizer;
 import org.gradle.api.tasks.JavaExec;
-import org.gradle.api.tasks.PathSensitivity;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.TaskContainer;
 import org.gradle.api.tasks.TaskProvider;
@@ -176,7 +176,7 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
                 return testResourcesSourceSet.getRuntimeClasspath();
             }
             return Collections.emptyList();
-        })).withPropertyName("inputTestResourcesRuntimeClasspath").withPathSensitivity(PathSensitivity.RELATIVE);
+        })).withPropertyName("inputTestResourcesRuntimeClasspath").withNormalizer(ClasspathNormalizer.class);
         var settingsDirectory = internalStart.flatMap(StartTestResourcesService::getSettingsDirectory);
         if (task instanceof JavaForkOptions jfo) {
             jfo.getJvmArgumentProviders().add(new ServerConnectionParametersProvider(settingsDirectory));
