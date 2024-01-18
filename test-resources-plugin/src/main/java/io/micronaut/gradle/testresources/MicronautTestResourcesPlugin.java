@@ -176,7 +176,7 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
                 return testResourcesSourceSet.getRuntimeClasspath();
             }
             return Collections.emptyList();
-        })).withPropertyName("testResourcesSourceSet.RuntimeClasspath").withPathSensitivity(PathSensitivity.RELATIVE);
+        })).withPropertyName("inputTestResourcesRuntimeClasspath").withPathSensitivity(PathSensitivity.RELATIVE);
         var settingsDirectory = internalStart.flatMap(StartTestResourcesService::getSettingsDirectory);
         if (task instanceof JavaForkOptions jfo) {
             jfo.getJvmArgumentProviders().add(new ServerConnectionParametersProvider(settingsDirectory));
