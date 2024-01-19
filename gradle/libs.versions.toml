@@ -1,6 +1,6 @@
 [versions]
 kotlin = "1.9.21"
-ksp = "1.9.21-1.0.15"
+ksp = "1.9.22-1.0.17"
 docker = "9.4.0"
 diffplug = "3.44.0"
 shadow = "8.1.1"
