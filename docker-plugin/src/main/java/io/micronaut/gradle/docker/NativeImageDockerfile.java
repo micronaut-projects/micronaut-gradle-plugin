@@ -751,11 +751,7 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
             if (strategy == DockerBuildStrategy.LAMBDA && baseImage == null) {
                 baseImage = "amazonlinux:2";
             } else if (baseImage == null) {
-                baseImage = getGraalArch()
-                        .map(a -> a.equals(ARM_ARCH)
-                                ? "cgr.dev/chainguard/wolfi-base:latest"
-                                : "frolvlad/alpine-glibc:alpine-" + DefaultVersions.ALPINE)
-                        .getOrElse("frolvlad/alpine-glibc:alpine-" + DefaultVersions.ALPINE);
+                baseImage = "cgr.dev/chainguard/wolfi-base:latest";
             }
 
             return baseImage;

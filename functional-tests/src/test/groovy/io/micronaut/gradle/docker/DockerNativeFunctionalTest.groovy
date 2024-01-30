@@ -13,7 +13,7 @@ import spock.lang.Requires
 class DockerNativeFunctionalTest extends AbstractEagerConfiguringFunctionalTest {
 
     @Lazy
-    String defaultBaseImage = { -> System.properties['os.arch'] == "aarch64" ? 'cgr.dev/chainguard/wolfi-base:latest' : "frolvlad/alpine-glibc:alpine-${DefaultVersions.ALPINE}" }()
+    String defaultBaseImage = 'cgr.dev/chainguard/wolfi-base:latest'
 
     @Lazy
     String defaultDockerFrom = { -> "FROM $defaultBaseImage" + (System.properties['os.arch'] == "aarch64" ? '' : '\nRUN apk --no-cache update && apk add libstdc++') }()
@@ -239,7 +239,7 @@ micronaut:
         dockerfileNativeTask.outcome == TaskOutcome.SUCCESS
 
         and:
-        dockerFileNative.find { s -> !s.contains('FROM frolvlad/alpine-glibc:alpine-') }
+        dockerFileNative.find { s -> !s.contains('FROM cgr.dev/chainguard/wolfi-base:latest') }
         dockerFileNative.find { s -> !s.contains('-H:+StaticExecutableWithDynamicLibC') }
     }
 
