@@ -16,7 +16,3 @@ datasources:
 #    driverClassName: org.postgresql.Driver
 #    schema-generate: CREATE_DROP
 #    dialect: POSTGRES
-test-resources:
-  containers:
-    mysql:
-      image-name: mysql:8.2
