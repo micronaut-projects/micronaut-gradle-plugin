@@ -1711,7 +1711,7 @@ Micronaut CRaC is a module which adds support for https://openjdk.org/projects/c
 
 It is capable of generating a docker image containing a CRaC enabled JDK and a pre-warmed, checkpointed application via a new task `dockerBuildCrac`.
 
-IMPORTANT: Currently, CRaC support has only been tested on Ubuntu 18.04, 20.04 and 22.04.  It also requires an x86 machine architecture.
+IMPORTANT: Currently, CRaC support has only been tested on Ubuntu 18.04, 20.04 and 22.04.
 
 When executed, this task will:
 
@@ -1774,6 +1774,9 @@ micronaut {
         // (currently only 'aarch64' or 'amd64' are supported)
         arch = "aarch64"
 
+        // The OS of the Azul CRaC JDK to use. Defaults to linux-glibc for the default base image.
+        os = "linux-glibc"
+
         // The version of the Azul CRaC JDK to use in the image (currently only 17 is supported)
         javaVersion = JavaLanguageVersion.of(17)
 
@@ -1808,6 +1811,9 @@ micronaut {
         // The architecture of the CRaC JDK to use. Defaults to the architecture of the machine.
         // (currently only 'aarch64' or 'amd64' are supported)
         arch.set("aarch64")
+
+        // The OS of the Azul CRaC JDK to use. Defaults to linux-glibc for the default base image.
+        os.set("linux-glibc")
 
         // The version of the Azul CRaC JDK to use in the image (currently only 17 is supported)
         javaVersion.set(JavaLanguageVersion.of(17))

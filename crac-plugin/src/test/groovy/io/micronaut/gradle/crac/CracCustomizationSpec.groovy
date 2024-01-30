@@ -1,5 +1,6 @@
 package io.micronaut.gradle.crac
 
+import groovy.json.JsonSlurper
 import spock.lang.IgnoreIf
 
 @IgnoreIf({ os.windows })
@@ -133,19 +134,30 @@ class CracCustomizationSpec extends BaseCracGradleBuildSpec {
 
         when:
         def result = build('dockerfileCrac', 'checkpointDockerfile', '-s')
-
         then:
         result.output.contains("BUILD SUCCESSFUL")
-        fileTextContents("build/docker/main/Dockerfile.CRaCCheckpoint").contains("https://api.azul.com/metadata/v1/zulu/packages/?java_version=$javaVersion&arch=$expectedArch&crac_supported=true&java_package_type=jdk&latest=true&release_status=ga&certifications=tck&page=1&page_size=100")
+        fileTextContents("build/docker/main/Dockerfile.CRaCCheckpoint").contains("https://api.azul.com/metadata/v1/zulu/packages/?java_version=$javaVersion&os=$MicronautCRaCPlugin.DEFAULT_OS&arch=$expectedArch&crac_supported=true&java_package_type=jdk&latest=true&release_status=ga&certifications=tck&page=1&page_size=100")
     }
 
-    void "Azul CRaC JDK and arch can be changed"() {
+    void "default CRaC URL returns a single JDK"() {
+        when:
+        def expectedArch = System.properties['os.arch'] == MicronautCRaCPlugin.ARM_ARCH ? MicronautCRaCPlugin.ARM_ARCH : MicronautCRaCPlugin.X86_64_ARCH
+        def json = new URL(CRaCCheckpointDockerfile.getUrl("17", MicronautCRaCPlugin.DEFAULT_OS, expectedArch)).text
+        def result = new JsonSlurper().parseText(json)
+
+        then:
+        result.size() == 1
+    }
+
+    void "Azul CRaC JDK os and arch can be changed"() {
         given:
         def javaVersion = "21"
+        def configuredOs = "configured-os"
         settingsFile << "rootProject.name = 'hello-world'"
         buildFile << getBuildFileBlockWithMicronautConfig(getMicronautConfigBlock("""crac {
     javaVersion.set(JavaLanguageVersion.of($javaVersion))
     arch.set('$MicronautCRaCPlugin.ARM_ARCH')
+    os.set('$configuredOs')
 }"""))
 
         when:
@@ -153,7 +165,7 @@ class CracCustomizationSpec extends BaseCracGradleBuildSpec {
 
         then:
         result.output.contains("BUILD SUCCESSFUL")
-        fileTextContents("build/docker/main/Dockerfile.CRaCCheckpoint").contains("https://api.azul.com/metadata/v1/zulu/packages/?java_version=$javaVersion&arch=$MicronautCRaCPlugin.ARM_ARCH&crac_supported=true&java_package_type=jdk&latest=true&release_status=ga&certifications=tck&page=1&page_size=100")
+        fileTextContents("build/docker/main/Dockerfile.CRaCCheckpoint").contains("https://api.azul.com/metadata/v1/zulu/packages/?java_version=$javaVersion&os=$configuredOs&arch=$MicronautCRaCPlugin.ARM_ARCH&crac_supported=true&java_package_type=jdk&latest=true&release_status=ga&certifications=tck&page=1&page_size=100")
     }
 
     void "Weird java versions cause an error"() {

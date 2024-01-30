@@ -48,6 +48,7 @@ public class MicronautCRaCPlugin implements Plugin<Project> {
     public static final String CRAC_DEFAULT_BASE_IMAGE_PLATFORM = "linux/amd64";
     public static final String ARM_ARCH = "aarch64";
     public static final String X86_64_ARCH = "amd64";
+    public static final String DEFAULT_OS = "linux-glibc";
     public static final String CRAC_DEFAULT_READINESS_COMMAND = "curl --output /dev/null --silent --head http://localhost:8080";
     private static final String CRAC_TASK_GROUP = "CRaC";
     public static final String BUILD_DOCKER_DIRECTORY = "docker/";
@@ -77,6 +78,9 @@ public class MicronautCRaCPlugin implements Plugin<Project> {
         // Default to current architecture
         String osArch = System.getProperty("os.arch");
         crac.getArch().convention(ARM_ARCH.equals(osArch) ? ARM_ARCH : X86_64_ARCH);
+
+        // Default to linux-glibc
+        crac.getOs().convention(DEFAULT_OS);
 
         // Default to Java 17
         crac.getJavaVersion().convention(JavaLanguageVersion.of(17));
@@ -150,6 +154,7 @@ public class MicronautCRaCPlugin implements Plugin<Project> {
             task.getBaseImage().set(configuration.getBaseImage());
             task.getPlatform().set(configuration.getPlatform());
             task.getArch().set(configuration.getArch());
+            task.getOs().set(configuration.getOs());
             task.getJavaVersion().set(configuration.getJavaVersion());
             task.setupDockerfileInstructions();
             task.getLayers().convention(buildLayersTask.flatMap(BuildLayersTask::getLayers));

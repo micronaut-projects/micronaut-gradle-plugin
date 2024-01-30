@@ -18,6 +18,7 @@ import org.gradle.api.tasks.PathSensitive;
 import org.gradle.api.tasks.PathSensitivity;
 import org.gradle.api.tasks.TaskAction;
 import org.gradle.jvm.toolchain.JavaLanguageVersion;
+import org.jetbrains.annotations.NotNull;
 
 import javax.inject.Inject;
 import java.io.IOException;
@@ -60,6 +61,9 @@ public abstract class CRaCCheckpointDockerfile extends Dockerfile {
 
     @Input
     public abstract Property<String> getArch();
+
+    @Input
+    public abstract Property<String> getOs();
 
     @Input
     public abstract Property<JavaLanguageVersion> getJavaVersion();
@@ -180,7 +184,7 @@ public abstract class CRaCCheckpointDockerfile extends Dockerfile {
 
         String errorMessage = "No CRaC OpenJDK found for Java version " + javaVersion + " and architecture " + arch;
 
-        String url = "https://api.azul.com/metadata/v1/zulu/packages/?java_version=" + javaVersion + "&arch=" + arch + "&crac_supported=true&java_package_type=jdk&latest=true&release_status=ga&certifications=tck&page=1&page_size=100";
+        String url = getUrl(javaVersion, task.getOs().get(), arch);
         task.runCommand("release_id=$(curl -s \"" + url + "\" -H \"accept: application/json\" | jq -r '.[0] | .package_uuid') \\\n" +
                 "    && if [ \"$release_id\" = \"null\" ]; then \\\n" +
                 "           echo \"" + errorMessage + "\"; \\\n" +
@@ -208,5 +212,21 @@ public abstract class CRaCCheckpointDockerfile extends Dockerfile {
         task.instruction("# Add build scripts");
         task.copyFile("scripts/checkpoint.sh", workDir + "/checkpoint.sh");
         task.copyFile("scripts/warmup.sh", workDir + "/warmup.sh");
+    }
+
+    @NotNull
+    static String getUrl(String javaVersion, String os, String arch) {
+        return """
+            https://api.azul.com/metadata/v1/zulu/packages/\
+            ?java_version=%s\
+            &os=%s\
+            &arch=%s\
+            &crac_supported=true\
+            &java_package_type=jdk\
+            &latest=true\
+            &release_status=ga\
+            &certifications=tck\
+            &page=1\
+            &page_size=100""".formatted(javaVersion, os, arch);
     }
 }
