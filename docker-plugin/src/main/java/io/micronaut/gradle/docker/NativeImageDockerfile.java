@@ -521,13 +521,6 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
                 break;
             default:
                 from(baseImageProvider);
-                // mandatory dependency for alpine-glibc docker images
-                runCommand(getProviders().provider(() -> {
-                    if (baseImageProvider.get().getImage().contains("alpine-glibc")) {
-                        return "apk --no-cache update && apk add libstdc++";
-                    }
-                    return null;
-                }));
                 exposePort(getExposedPorts());
                 getInstructions().addAll(additionalInstructions);
                 copyFile(new CopyFile(workDir + "/application", "/app/application").withStage("graalvm"));
@@ -751,11 +744,7 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
             if (strategy == DockerBuildStrategy.LAMBDA && baseImage == null) {
                 baseImage = "amazonlinux:2";
             } else if (baseImage == null) {
-                baseImage = getGraalArch()
-                        .map(a -> a.equals(ARM_ARCH)
-                                ? "cgr.dev/chainguard/wolfi-base:latest"
-                                : "frolvlad/alpine-glibc:alpine-" + DefaultVersions.ALPINE)
-                        .getOrElse("frolvlad/alpine-glibc:alpine-" + DefaultVersions.ALPINE);
+                baseImage = "cgr.dev/chainguard/wolfi-base:latest";
             }
 
             return baseImage;
