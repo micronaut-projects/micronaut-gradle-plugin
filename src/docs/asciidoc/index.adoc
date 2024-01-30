@@ -1058,7 +1058,7 @@ dockerfileNative {
 }
 ----
 
-The compiled native binary will ultimately be copied into an `alpine-glibc` base image for X86_64, and `cgr.dev/chainguard/wolfi-base` for ARM.
+The compiled native binary will ultimately be copied into an `cgr.dev/chainguard/wolfi-base:latest` base image.
 These base images can be overridden via configuration see <<_base_image_and_pull_limits>> and <<_build_mostly_static_native_executables>>.
 
 [#_base_image_and_pull_limits]

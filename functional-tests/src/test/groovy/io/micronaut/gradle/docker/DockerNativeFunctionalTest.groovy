@@ -16,7 +16,7 @@ class DockerNativeFunctionalTest extends AbstractEagerConfiguringFunctionalTest 
     String defaultBaseImage = 'cgr.dev/chainguard/wolfi-base:latest'
 
     @Lazy
-    String defaultDockerFrom = { -> "FROM $defaultBaseImage" + (System.properties['os.arch'] == "aarch64" ? '' : '\nRUN apk --no-cache update && apk add libstdc++') }()
+    String defaultDockerFrom = "FROM $defaultBaseImage"
 
     def "test build docker native image for runtime #runtime"() {
         given:
@@ -161,7 +161,7 @@ micronaut:
         runtime << ['netty', 'lambda_provided']
     }
 
-    void 'use alpine-glibc by default and do not build mostly static native images'() {
+    void 'use wolfi-base by default and do not build mostly static native images'() {
         given:
         settingsFile << "rootProject.name = 'hello-world'"
         buildFile << """
@@ -202,7 +202,7 @@ micronaut:
         dockerFileNative.find { s -> !s.contains('-H:+StaticExecutableWithDynamicLibC') }
     }
 
-    void 'do not use alpine-glibc for lambda_provided runtime'() {
+    void 'do not use wolfi-base for lambda_provided runtime'() {
         given:
         settingsFile << "rootProject.name = 'hello-world'"
         buildFile << """
