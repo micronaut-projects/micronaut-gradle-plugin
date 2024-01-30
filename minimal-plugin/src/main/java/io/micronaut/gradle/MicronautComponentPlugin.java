@@ -297,7 +297,6 @@ public class MicronautComponentPlugin implements Plugin<Project> {
 
     private static TaskProvider<ApplicationClasspathInspector> registerInspectRuntimeClasspath(Project project, TaskContainer tasks) {
         return tasks.register(INSPECT_RUNTIME_CLASSPATH_TASK_NAME, ApplicationClasspathInspector.class, task -> {
-            var javaPluginExtension = PluginsHelper.javaPluginExtensionOf(project);
             task.setGroup(BasePlugin.BUILD_GROUP);
             task.setDescription("Performs sanity checks of the runtime classpath to warn about misconfigured builds");
             task.getRuntimeClasspath().from(project.getConfigurations().getByName(JavaPlugin.RUNTIME_CLASSPATH_CONFIGURATION_NAME));
