@@ -1489,7 +1489,7 @@ This means that when running packaging from an X86_64 (Intel/AMD) machine, the p
 </div>
 </div>
 <div class="paragraph">
-<p>The compiled native binary will ultimately be copied into an <code>alpine-glibc</code> base image for X86_64, and <code>cgr.dev/chainguard/wolfi-base</code> for ARM.
+<p>The compiled native binary will ultimately be copied into an <code>cgr.dev/chainguard/wolfi-base:latest</code> base image.
 These base images can be overridden via configuration see <a href="#_base_image_and_pull_limits">Base image and pull limits</a> and <a href="#_build_mostly_static_native_executables">Build "mostly static" native executables</a>.</p>
 </div>
 </div>
@@ -2425,7 +2425,7 @@ Micronaut CRaC is a module which adds support for <a href="https://openjdk.org/p
 <div class="title">Important</div>
 </td>
 <td class="content">
-Currently, CRaC support has only been tested on Ubuntu 18.04, 20.04 and 22.04.  It also requires an x86 machine architecture.
+Currently, CRaC support has only been tested on Ubuntu 18.04, 20.04 and 22.04.
 </td>
 </tr>
 </table>
@@ -2508,6 +2508,9 @@ Currently, CRaC support has only been tested on Ubuntu 18.04, 20.04 and 22.04.  
         // (currently only 'aarch64' or 'amd64' are supported)
         arch = "aarch64"
 
+        // The OS of the Azul CRaC JDK to use. Defaults to linux-glibc for the default base image.
+        os = "linux-glibc"
+
         // The version of the Azul CRaC JDK to use in the image (currently only 17 is supported)
         javaVersion = JavaLanguageVersion.of(17)
 
@@ -2542,6 +2545,9 @@ Currently, CRaC support has only been tested on Ubuntu 18.04, 20.04 and 22.04.  
         // The architecture of the CRaC JDK to use. Defaults to the architecture of the machine.
         // (currently only 'aarch64' or 'amd64' are supported)
         arch.set("aarch64")
+
+        // The OS of the Azul CRaC JDK to use. Defaults to linux-glibc for the default base image.
+        os.set("linux-glibc")
 
         // The version of the Azul CRaC JDK to use in the image (currently only 17 is supported)
         javaVersion.set(JavaLanguageVersion.of(17))
