@@ -30,6 +30,12 @@ public interface CRaCConfiguration {
     Property<String> getArch();
 
     /**
+     * Filters the jdk result by the operating system the package is targeting. Defaults to {@value MicronautCRaCPlugin#DEFAULT_OS}.
+     * @return the operating system
+     */
+    Property<String> getOs();
+
+    /**
      * The java version to use for building the CRaC enabled images. Currently only '17' is supported.
      * @return the java version
      */
