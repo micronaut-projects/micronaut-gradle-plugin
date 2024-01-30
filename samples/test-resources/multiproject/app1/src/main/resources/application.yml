@@ -11,3 +11,7 @@ datasources:
   default:
     schema-generate: CREATE_DROP
     dialect: MYSQL
+test-resources:
+  containers:
+    mysql:
+      image-name: mysql:8.2

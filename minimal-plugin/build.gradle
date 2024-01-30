@@ -28,7 +28,6 @@ var writeVersions = tasks.register("writeDefaultVersions", WriteVersions) {
     versions.put('test-resources', libs.versions.micronaut.testresources)
     versions.put('openapi', libs.versions.micronaut.openapi)
     versions.put('oraclelinux', libs.versions.oraclelinux)
-    versions.put('alpine', libs.versions.alpine)
     packageName = 'io.micronaut.gradle'
 }
 
