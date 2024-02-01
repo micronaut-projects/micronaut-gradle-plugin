@@ -236,7 +236,7 @@ class LambdaNativeImageSpec extends AbstractFunctionalTest {
             }
 
             dockerfileNative {
-                baseImage('internal.proxy.com/amazonlinux:2')
+                baseImage('internal.proxy.com/amazonlinux:2023')
             }
         """
 
@@ -250,7 +250,7 @@ class LambdaNativeImageSpec extends AbstractFunctionalTest {
         dockerfileNativeTask.outcome == TaskOutcome.SUCCESS
 
         and:
-        dockerFileNative.find() { it.contains('internal.proxy.com/amazonlinux:2') }
+        dockerFileNative.find() { it.contains('internal.proxy.com/amazonlinux:2023') }
     }
 
     @Issue("https://github.com/micronaut-projects/micronaut-gradle-plugin/issues/279")
@@ -298,7 +298,7 @@ class LambdaNativeImageSpec extends AbstractFunctionalTest {
         dockerfileNativeTask.outcome == TaskOutcome.SUCCESS
 
         and:
-        dockerFileNative.find() { it.contains('amazonlinux:2') }
+        dockerFileNative.find() { it.contains('amazonlinux:2023') }
     }
 
     @Issue("https://github.com/micronaut-projects/micronaut-gradle-plugin/pull/537")

@@ -104,7 +104,7 @@ micronaut:
         where:
         runtime           | nativeImage
         "netty"           | "FROM ghcr.io/graalvm/native-image-community:17-ol${DefaultVersions.ORACLELINUX}"
-        "lambda_provided" | 'FROM amazonlinux:2 AS graalvm'
+        "lambda_provided" | 'FROM amazonlinux:2023 AS graalvm'
         "jetty"           | "FROM ghcr.io/graalvm/native-image-community:17-ol${DefaultVersions.ORACLELINUX}"
     }
 
@@ -502,7 +502,7 @@ class Application {
         where:
         runtime           | nativeImage
         "netty"           | "FROM ghcr.io/graalvm/native-image-community:17-ol${DefaultVersions.ORACLELINUX}"
-        "lambda_provided" | 'FROM amazonlinux:2 AS graalvm'
+        "lambda_provided" | 'FROM amazonlinux:2023 AS graalvm'
         "jetty"           | "FROM ghcr.io/graalvm/native-image-community:17-ol${DefaultVersions.ORACLELINUX}"
     }
 
