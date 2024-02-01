@@ -9,13 +9,11 @@ import io.micronaut.gradle.SourceSetConfigurerRegistry;
 import io.micronaut.gradle.internal.AutomaticDependency;
 import org.graalvm.buildtools.gradle.NativeImagePlugin;
 import org.graalvm.buildtools.gradle.dsl.GraalVMExtension;
-import org.graalvm.buildtools.gradle.dsl.GraalVMReachabilityMetadataRepositoryExtension;
 import org.graalvm.buildtools.gradle.dsl.NativeImageOptions;
 import org.graalvm.buildtools.gradle.tasks.BuildNativeImageTask;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.DependencySet;
-import org.gradle.api.plugins.ExtensionAware;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.TaskContainer;
@@ -69,8 +67,6 @@ public class MicronautGraalPlugin implements Plugin<Project> {
             nativeLambdaExtension.getLambdaRuntimeClassName().convention(nativeLambdaExtension.getLambdaRuntime().map(NativeLambdaRuntime::getMainClassName));
         });
         GraalVMExtension graal = project.getExtensions().findByType(GraalVMExtension.class);
-        GraalVMReachabilityMetadataRepositoryExtension reachability = ((ExtensionAware) graal).getExtensions().getByType(GraalVMReachabilityMetadataRepositoryExtension.class);
-        reachability.getEnabled().convention(true);
         graal.getBinaries().configureEach(options ->
                 {
                     options.resources(rsrc -> rsrc.autodetection(inf -> {
