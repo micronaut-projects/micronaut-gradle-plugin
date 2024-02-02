@@ -1071,7 +1071,7 @@ If you wish to switch to using a different base image (for example to use your o
 ----
 dockerfileNative {
     // Use the image from the Amazon ECR Public Gallery
-    baseImage.set("public.ecr.aws/amazonlinux/amazonlinux:2")
+    baseImage.set("public.ecr.aws/amazonlinux/amazonlinux:2023")
 }
 ----
 
