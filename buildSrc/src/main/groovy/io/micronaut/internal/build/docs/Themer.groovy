@@ -2,6 +2,7 @@ package io.micronaut.internal.build.docs
 
 import groovy.transform.CompileStatic
 import org.gradle.api.DefaultTask
+import org.gradle.api.GradleException
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.internal.file.FileOperations
@@ -72,9 +73,13 @@ abstract class Themer extends DefaultTask {
 </div>
 </div>
 </div>
-<link rel="stylesheet" href="highlight/styles/github.min.css">
 <script src="highlight/highlight.min.js"></script>
-<script>hljs.initHighlighting()</script>
+<script>
+if (!hljs.initHighlighting.called) {
+  hljs.initHighlighting.called = true
+  ;[].slice.call(document.querySelectorAll('pre.highlight > code[data-lang]')).forEach(function (el) { hljs.highlightBlock(el) })
+}
+</script>
 </body>
 ''')) : ''
                     content = content != '' ? ('''\
@@ -87,7 +92,7 @@ abstract class Themer extends DefaultTask {
                     text = text.replace("@toccontent@", toc)
                     text = text.replace("@content@", content)
                 } catch (Throwable ex) {
-                    logger.warn("Error while processing template", ex)
+                    throw new GradleException("Error while processing template", ex)
                 }
                 new File(outputDirRoot, relativePath).setText(text, 'utf-8')
             } else {
