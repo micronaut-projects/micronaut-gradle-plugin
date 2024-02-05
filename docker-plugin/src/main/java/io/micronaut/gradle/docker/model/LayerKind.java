@@ -19,7 +19,8 @@ public enum LayerKind {
     PROJECT_LIBS("project_libs", "libs"),
     SNAPSHOT_LIBS("snapshot_libs", "libs"),
     LIBS("libs", "libs"),
-    APP("app", "");
+    APP("app", ""),
+    EXPANDED_RESOURCES("resources", "resources");
 
     private final String sourceDirName;
     private final String targetDirName;

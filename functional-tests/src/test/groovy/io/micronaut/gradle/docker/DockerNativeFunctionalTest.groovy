@@ -585,6 +585,7 @@ FROM ghcr.io/graalvm/native-image-community:17-ol${DefaultVersions.ORACLELINUX} 
 WORKDIR /home/alternate
 COPY --link layers/libs /home/alternate/libs
 COPY --link layers/app /home/alternate/
+COPY --link layers/resources /home/alternate/resources
 RUN mkdir /home/alternate/config-dirs
 RUN mkdir -p /home/alternate/config-dirs/generateResourcesConfigFile
 RUN mkdir -p /home/alternate/config-dirs/io.netty/netty-common/4.0.0.Final
@@ -692,6 +693,7 @@ WORKDIR /home/app
 COPY --link layers/libs /home/app/libs
 COPY --link server.iprof /home/app/server.iprof
 COPY --link layers/app /home/app/
+COPY --link layers/resources /home/app/resources
 EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "/home/app/application.jar"]
 """
@@ -706,6 +708,7 @@ WORKDIR /home/app
 COPY --link layers/libs /home/app/libs
 COPY --link server.iprof /home/app/server.iprof
 COPY --link layers/app /home/app/
+COPY --link layers/resources /home/app/resources
 RUN mkdir /home/app/config-dirs
 RUN mkdir -p /home/app/config-dirs/generateResourcesConfigFile
 COPY --link config-dirs/generateResourcesConfigFile /home/app/config-dirs/generateResourcesConfigFile
@@ -768,6 +771,7 @@ WORKDIR /home/app
 COPY --link layers/libs /home/app/libs
 COPY --link server.iprof /home/app/server.iprof
 COPY --link layers/app /home/app/
+COPY --link layers/resources /home/app/resources
 EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "/home/app/application.jar"]
 """
