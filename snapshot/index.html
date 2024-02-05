@@ -268,14 +268,14 @@ For example, the <code>minimal</code> plugins can be used to reduce the number o
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">plugins {
+<pre class="highlightjs highlight"><code class="language-groovy hljs" data-lang="groovy">plugins {
   id 'io.micronaut.application' version '4.3.1-SNAPSHOT'
 }</code></pre>
 </div>
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">plugins {
+<pre class="highlightjs highlight"><code class="language-kotlin hljs" data-lang="kotlin">plugins {
   id("io.micronaut.application") version "4.3.1-SNAPSHOT"
 }</code></pre>
 </div>
@@ -285,7 +285,7 @@ For example, the <code>minimal</code> plugins can be used to reduce the number o
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">plugins {
+<pre class="highlightjs highlight"><code class="language-groovy hljs" data-lang="groovy">plugins {
   id 'io.micronaut.minimal.application' version '4.3.1-SNAPSHOT'
   id 'io.micronaut.docker' version '4.3.1-SNAPSHOT'
   id 'io.micronaut.graalvm' version '4.3.1-SNAPSHOT'
@@ -295,7 +295,7 @@ apply plugin: com.diffplug.gradle.eclipse.apt.AptEclipsePlugin</code></pre>
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">plugins {
+<pre class="highlightjs highlight"><code class="language-kotlin hljs" data-lang="kotlin">plugins {
   id("io.micronaut.application") version "4.3.1-SNAPSHOT"
   id("io.micronaut.docker") version "4.3.1-SNAPSHOT"
   id("io.micronaut.graalvm") version "4.3.1-SNAPSHOT"
@@ -320,7 +320,7 @@ apply(plugin=com.diffplug.gradle.eclipse.apt.AptEclipsePlugin::class.java)</code
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="bash" class="language-bash hljs">$ mn create-app demo --lang java
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">$ mn create-app demo --lang java
 $ mn create-app demo --lang groovy
 $ mn create-app demo --lang kotlin</code></pre>
 </div>
@@ -330,7 +330,7 @@ $ mn create-app demo --lang kotlin</code></pre>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="bash" class="language-bash hljs"># for Java
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash"># for Java
 $ curl https://launch.micronaut.io/demo.zip?lang=java \
   -o demo.zip &amp;&amp; unzip demo.zip -d demo &amp;&amp; cd demo
 # for Groovy
@@ -382,14 +382,14 @@ This is a <strong>settings</strong> plugin, which means that it <strong>must</st
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">plugins {
+<pre class="highlightjs highlight"><code class="language-groovy hljs" data-lang="groovy">plugins {
   id 'io.micronaut.platform.catalog' version '4.3.1-SNAPSHOT'
 }</code></pre>
 </div>
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">plugins {
+<pre class="highlightjs highlight"><code class="language-kotlin hljs" data-lang="kotlin">plugins {
   id("io.micronaut.platform.catalog") version "4.3.1-SNAPSHOT"
 }</code></pre>
 </div>
@@ -399,7 +399,7 @@ This is a <strong>settings</strong> plugin, which means that it <strong>must</st
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">dependencies {
+<pre class="highlightjs highlight"><code class="language-groovy hljs" data-lang="groovy">dependencies {
   // Use Spring Boot annotations
   compileOnly mn.micronaut.spring.boot.annotation
 }</code></pre>
@@ -407,7 +407,7 @@ This is a <strong>settings</strong> plugin, which means that it <strong>must</st
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">dependencies {
+<pre class="highlightjs highlight"><code class="language-kotlin hljs" data-lang="kotlin">dependencies {
   // Use Spring Boot annotations
   compileOnly(mn.micronaut.spring.boot.annotation)
 }</code></pre>
@@ -426,7 +426,7 @@ If you use a <a href="https://docs.gradle.org/current/userguide/platforms.html#s
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="toml" class="language-toml hljs">[versions]
+<pre class="highlightjs highlight"><code class="language-toml hljs" data-lang="toml">[versions]
 micronaut="4.0.0"</code></pre>
 </div>
 </div>
@@ -437,14 +437,14 @@ Alternatively, you can set the version in your <code>build.gradle(.kts)</code>:<
 <div class="listingblock multi-language-sample">
 <div class="title">Selecting the Micronaut version</div>
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">micronaut {
+<pre class="highlightjs highlight"><code class="language-groovy hljs" data-lang="groovy">micronaut {
     version "4.2.1"
 }</code></pre>
 </div>
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">micronaut {
+<pre class="highlightjs highlight"><code class="language-kotlin hljs" data-lang="kotlin">micronaut {
     version.set("4.2.1")
 }</code></pre>
 </div>
@@ -464,7 +464,7 @@ The easiest to do this is to make use of the Micronaut Platform version catalog.
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="toml" class="language-toml hljs">[versions]
+<pre class="highlightjs highlight"><code class="language-toml hljs" data-lang="toml">[versions]
 micronaut-core = "4.5.0" # override version of Micronaut Core
 ehcache = "3.8.2" # override version of ehcache</code></pre>
 </div>
@@ -481,14 +481,14 @@ ehcache = "3.8.2" # override version of ehcache</code></pre>
 <div class="listingblock multi-language-sample">
 <div class="title">Overriding Micronaut module versions</div>
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">micronaut {
+<pre class="highlightjs highlight"><code class="language-groovy hljs" data-lang="groovy">micronaut {
     coreVersion.set("4.5.0") // override the version of Micronaut Core
 }</code></pre>
 </div>
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">micronaut {
+<pre class="highlightjs highlight"><code class="language-kotlin hljs" data-lang="kotlin">micronaut {
     coreVersion.set("4.5.0") // override the version of Micronaut Core
 }</code></pre>
 </div>
@@ -540,14 +540,14 @@ ehcache = "3.8.2" # override version of ehcache</code></pre>
 <div class="listingblock multi-language-sample">
 <div class="title">Applying the plugin</div>
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">plugins {
+<pre class="highlightjs highlight"><code class="language-groovy hljs" data-lang="groovy">plugins {
   id 'io.micronaut.library' version '4.3.1-SNAPSHOT'
 }</code></pre>
 </div>
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">plugins {
+<pre class="highlightjs highlight"><code class="language-kotlin hljs" data-lang="kotlin">plugins {
   id("io.micronaut.library") version "4.3.1-SNAPSHOT"
 }</code></pre>
 </div>
@@ -580,7 +580,7 @@ ehcache = "3.8.2" # override version of ehcache</code></pre>
 <div class="listingblock multi-language-sample">
 <div class="title">Micronaut configuration options</div>
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">micronaut {
+<pre class="highlightjs highlight"><code class="language-groovy hljs" data-lang="groovy">micronaut {
     version "4.2.1"
     // If set to false, then the `io.micronaut.platform:micronaut-platform` BOM
     // will not be automatically applied, and you will have to add it yourself
@@ -612,7 +612,7 @@ ehcache = "3.8.2" # override version of ehcache</code></pre>
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">micronaut {
+<pre class="highlightjs highlight"><code class="language-kotlin hljs" data-lang="kotlin">micronaut {
     version.set("4.2.1")
     // If set to false, then the `io.micronaut.platform:micronaut-platform` BOM
     // will not be automatically applied, and you will have to add it yourself
@@ -662,7 +662,7 @@ The Micronaut Library plugin also supports Groovy and Kotlin sources.
 <div class="listingblock multi-language-sample">
 <div class="title">Configuring Kotlin support</div>
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">plugins {
+<pre class="highlightjs highlight"><code class="language-groovy hljs" data-lang="groovy">plugins {
     id "org.jetbrains.kotlin.jvm" version "1.9.22"
     id "org.jetbrains.kotlin.kapt" version "1.9.22"
     id "io.micronaut.library" version "4.3.1-SNAPSHOT"
@@ -671,7 +671,7 @@ The Micronaut Library plugin also supports Groovy and Kotlin sources.
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">plugins {
+<pre class="highlightjs highlight"><code class="language-kotlin hljs" data-lang="kotlin">plugins {
     id("org.jetbrains.kotlin.jvm") version "1.9.22"
     id("org.jetbrains.kotlin.kapt") version "1.9.22"
     id("io.micronaut.library") version "4.3.1-SNAPSHOT"
@@ -687,7 +687,7 @@ The Micronaut Library plugin also supports Groovy and Kotlin sources.
 <div class="listingblock multi-language-sample">
 <div class="title">A minimal build file</div>
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">plugins {
+<pre class="highlightjs highlight"><code class="language-groovy hljs" data-lang="groovy">plugins {
     id 'io.micronaut.library' version '4.3.1-SNAPSHOT'
 }
 
@@ -710,7 +710,7 @@ dependencies {
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">plugins {
+<pre class="highlightjs highlight"><code class="language-kotlin hljs" data-lang="kotlin">plugins {
     id("io.micronaut.library") version "4.3.1-SNAPSHOT"
 }
 
@@ -740,14 +740,14 @@ dependencies {
 <div class="listingblock multi-language-sample">
 <div class="title">Applying the Micronaut Application plugin</div>
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">plugins {
+<pre class="highlightjs highlight"><code class="language-groovy hljs" data-lang="groovy">plugins {
   id "io.micronaut.application" version "4.3.1-SNAPSHOT"
 }</code></pre>
 </div>
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">plugins {
+<pre class="highlightjs highlight"><code class="language-kotlin hljs" data-lang="kotlin">plugins {
   id("io.micronaut.application") version "4.3.1-SNAPSHOT"
 }</code></pre>
 </div>
@@ -813,7 +813,7 @@ dependencies {
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="bash" class="language-bash hljs">$ ./gradlew run -t</code></pre>
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">$ ./gradlew run -t</code></pre>
 </div>
 </div>
 <div class="sect2">
@@ -823,7 +823,7 @@ dependencies {
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">plugins {
+<pre class="highlightjs highlight"><code class="language-groovy hljs" data-lang="groovy">plugins {
     id 'io.micronaut.application' version '4.3.1-SNAPSHOT'
 }
 
@@ -852,7 +852,7 @@ application {
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">plugins {
+<pre class="highlightjs highlight"><code class="language-kotlin hljs" data-lang="kotlin">plugins {
     id("io.micronaut.application") version "4.3.1-SNAPSHOT"
 }
 
@@ -887,7 +887,7 @@ application {
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">plugins {
+<pre class="highlightjs highlight"><code class="language-groovy hljs" data-lang="groovy">plugins {
     id "org.jetbrains.kotlin.jvm" version "1.9.22"
     id "org.jetbrains.kotlin.kapt" version "1.9.22"
     id "org.jetbrains.kotlin.plugin.allopen" version "1.9.22"
@@ -921,7 +921,7 @@ application {
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">plugins {
+<pre class="highlightjs highlight"><code class="language-kotlin hljs" data-lang="kotlin">plugins {
     id("org.jetbrains.kotlin.jvm") version "1.9.22"
     id("org.jetbrains.kotlin.kapt") version "1.9.22"
     id("org.jetbrains.kotlin.plugin.allopen") version "1.9.22"
@@ -1017,7 +1017,7 @@ org.gradle.java.installations.fromEnv=JAVA_HOME</code></pre>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="bash" class="language-bash hljs">./gradlew -Porg.gradle.java.installations.auto-download=false \
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">./gradlew -Porg.gradle.java.installations.auto-download=false \
   -Porg.gradle.java.installations.auto-detect=false \
   -Porg.gradle.java.installations.fromEnv=JAVA_HOME \
   build</code></pre>
@@ -1028,7 +1028,7 @@ org.gradle.java.installations.fromEnv=JAVA_HOME</code></pre>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="bash" class="language-bash hljs">$ ./gradlew nativeCompile</code></pre>
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">$ ./gradlew nativeCompile</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -1036,7 +1036,7 @@ org.gradle.java.installations.fromEnv=JAVA_HOME</code></pre>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="bash" class="language-bash hljs">$ ./gradlew nativeRun</code></pre>
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">$ ./gradlew nativeRun</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -1047,7 +1047,7 @@ org.gradle.java.installations.fromEnv=JAVA_HOME</code></pre>
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">graalvmNative {
+<pre class="highlightjs highlight"><code class="language-groovy hljs" data-lang="groovy">graalvmNative {
     binaries {
         main {
             buildArgs.add("-H:-DeleteLocalSymbols")
@@ -1059,7 +1059,7 @@ org.gradle.java.installations.fromEnv=JAVA_HOME</code></pre>
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">graalvmNative {
+<pre class="highlightjs highlight"><code class="language-kotlin hljs" data-lang="kotlin">graalvmNative {
     binaries {
         named("main") {
             buildArgs.add("-H:-DeleteLocalSymbols")
@@ -1088,14 +1088,14 @@ If you update an existing Micronaut application that contains the file <code>src
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">tasks.named('dockerfileNative') {
+<pre class="highlightjs highlight"><code class="language-groovy hljs" data-lang="groovy">tasks.named('dockerfileNative') {
     baseImage('gcr.io/distroless/cc-debian10')
 }</code></pre>
 </div>
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">tasks.named&lt;io.micronaut.gradle.docker.NativeImageDockerfile&gt;("dockerfileNative") {
+<pre class="highlightjs highlight"><code class="language-kotlin hljs" data-lang="kotlin">tasks.named&lt;io.micronaut.gradle.docker.NativeImageDockerfile&gt;("dockerfileNative") {
     baseImage("gcr.io/distroless/cc-debian10")
 }</code></pre>
 </div>
@@ -1105,7 +1105,7 @@ If you update an existing Micronaut application that contains the file <code>src
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">tasks.named('dockerfileNative') {
+<pre class="highlightjs highlight"><code class="language-groovy hljs" data-lang="groovy">tasks.named('dockerfileNative') {
     baseImage(...)
     args('-H:+StaticExecutableWithDynamicLibC')
 }</code></pre>
@@ -1113,7 +1113,7 @@ If you update an existing Micronaut application that contains the file <code>src
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">tasks.named&lt;io.micronaut.gradle.docker.NativeImageDockerfile&gt;("dockerfileNative") {
+<pre class="highlightjs highlight"><code class="language-kotlin hljs" data-lang="kotlin">tasks.named&lt;io.micronaut.gradle.docker.NativeImageDockerfile&gt;("dockerfileNative") {
     baseImage(...)
     args("-H:+StaticExecutableWithDynamicLibC")
 }</code></pre>
@@ -1136,7 +1136,7 @@ If you update an existing Micronaut application that contains the file <code>src
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="bash" class="language-bash hljs">$ ./gradlew dockerBuild</code></pre>
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">$ ./gradlew dockerBuild</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -1144,14 +1144,14 @@ If you update an existing Micronaut application that contains the file <code>src
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">tasks.named("dockerfile") {
+<pre class="highlightjs highlight"><code class="language-groovy hljs" data-lang="groovy">tasks.named("dockerfile") {
   baseImage = "oracle/graalvm-ce:22.3.2-java17"
 }</code></pre>
 </div>
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">tasks.named&lt;MicronautDockerfile&gt;("dockerfile") {
+<pre class="highlightjs highlight"><code class="language-kotlin hljs" data-lang="kotlin">tasks.named&lt;MicronautDockerfile&gt;("dockerfile") {
   baseImage.set("oracle/graalvm-ce:22.3.2-java17")
 }</code></pre>
 </div>
@@ -1164,7 +1164,7 @@ If you update an existing Micronaut application that contains the file <code>src
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="bash" class="language-bash hljs">$ ./gradlew dockerBuildNative</code></pre>
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">$ ./gradlew dockerBuildNative</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -1175,7 +1175,7 @@ If you update an existing Micronaut application that contains the file <code>src
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="bash" class="language-bash hljs">$ ./gradlew dockerBuildCrac</code></pre>
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">$ ./gradlew dockerBuildCrac</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -1183,7 +1183,7 @@ If you update an existing Micronaut application that contains the file <code>src
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="bash" class="language-bash hljs">$ ./gradlew dockerPush</code></pre>
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">$ ./gradlew dockerPush</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -1194,7 +1194,7 @@ If you update an existing Micronaut application that contains the file <code>src
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">tasks.named("dockerBuild") {
+<pre class="highlightjs highlight"><code class="language-groovy hljs" data-lang="groovy">tasks.named("dockerBuild") {
     images = ["eu-frankfurt-1.ocir.io/xyzzyz/repo/my-image:$project.version"]
 }
 
@@ -1209,7 +1209,7 @@ tasks.named("dockerBuildCrac") {
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">tasks.named&lt;DockerBuildImage&gt;("dockerBuild") {
+<pre class="highlightjs highlight"><code class="language-kotlin hljs" data-lang="kotlin">tasks.named&lt;DockerBuildImage&gt;("dockerBuild") {
     images.add("eu-frankfurt-1.ocir.io/xyzzyz/repo/my-image:$project.version")
 }
 
@@ -1236,7 +1236,7 @@ tasks.named&lt;DockerBuildImage&gt;("dockerBuildCrac") {
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">tasks.named("dockerfile") {
+<pre class="highlightjs highlight"><code class="language-groovy hljs" data-lang="groovy">tasks.named("dockerfile") {
    args("-Xmx128m")
 }
 tasks.named("dockerfileNative") {
@@ -1246,7 +1246,7 @@ tasks.named("dockerfileNative") {
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">tasks.named&lt;MicronautDockerfile&gt;("dockerfile") {
+<pre class="highlightjs highlight"><code class="language-kotlin hljs" data-lang="kotlin">tasks.named&lt;MicronautDockerfile&gt;("dockerfile") {
    args("-Xmx128m")
 }
 tasks.named&lt;io.micronaut.gradle.docker.NativeImageDockerfile&gt;("dockerfileNative") {
@@ -1265,7 +1265,7 @@ tasks.named&lt;io.micronaut.gradle.docker.NativeImageDockerfile&gt;("dockerfileN
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">tasks.named("dockerfile") {
+<pre class="highlightjs highlight"><code class="language-groovy hljs" data-lang="groovy">tasks.named("dockerfile") {
  args("-Xmx128m")
  instruction """HEALTHCHECK CMD curl -s localhost:8090/health | grep '"status":"UP"' """
 }
@@ -1277,7 +1277,7 @@ tasks.named("dockerfileNative") {
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">tasks.named&lt;Dockerfile&gt;("dockerfile") {
+<pre class="highlightjs highlight"><code class="language-kotlin hljs" data-lang="kotlin">tasks.named&lt;Dockerfile&gt;("dockerfile") {
  args("-Xmx128m")
  instruction("""HEALTHCHECK CMD curl -s localhost:8090/health | grep '"status":"UP"' """)
 }
@@ -1301,7 +1301,7 @@ tasks.named&lt;io.micronaut.gradle.docker.NativeImageDockerfile&gt;("dockerfileN
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">tasks.named("dockerfile") {
+<pre class="highlightjs highlight"><code class="language-groovy hljs" data-lang="groovy">tasks.named("dockerfile") {
     editDockerfile {
         after('COPY --link layers/libs /home/app/libs') {
             insert('COPY --link server.iprof /home/app/server.iprof')
@@ -1312,7 +1312,7 @@ tasks.named&lt;io.micronaut.gradle.docker.NativeImageDockerfile&gt;("dockerfileN
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">tasks.named&lt;io.micronaut.gradle.docker.DockerBuildOptions&gt;("dockerfile") {
+<pre class="highlightjs highlight"><code class="language-kotlin hljs" data-lang="kotlin">tasks.named&lt;io.micronaut.gradle.docker.DockerBuildOptions&gt;("dockerfile") {
     editDockerfile {
         after("COPY --link layers/libs /home/app/libs") {
             insert("COPY --link server.iprof /home/app/server.iprof")
@@ -1347,14 +1347,14 @@ You can work around this issue by configuring the duplicates strategy on the tas
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">tasks.withType&lt;io.micronaut.gradle.docker.tasks.BuildLayersTask&gt; {
+<pre class="highlightjs highlight"><code class="language-groovy hljs" data-lang="groovy">tasks.withType&lt;io.micronaut.gradle.docker.tasks.BuildLayersTask&gt; {
     duplicatesStrategy = DuplicatesStrategy.INCLUDE
 }</code></pre>
 </div>
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">tasks.withType(io.micronaut.gradle.docker.tasks.BuildLayersTask) {
+<pre class="highlightjs highlight"><code class="language-kotlin hljs" data-lang="kotlin">tasks.withType(io.micronaut.gradle.docker.tasks.BuildLayersTask) {
     duplicatesStrategy.set(DuplicatesStrategy.INCLUDE)
 }</code></pre>
 </div>
@@ -1368,7 +1368,7 @@ You can work around this issue by configuring the duplicates strategy on the tas
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">plugins {
+<pre class="highlightjs highlight"><code class="language-groovy hljs" data-lang="groovy">plugins {
      id 'io.micronaut.application' version '4.3.1-SNAPSHOT'
 }
 version "0.1"
@@ -1394,7 +1394,7 @@ application {
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">plugins {
+<pre class="highlightjs highlight"><code class="language-kotlin hljs" data-lang="kotlin">plugins {
      id("io.micronaut.application") version "4.3.1-SNAPSHOT"
 }
 version = "0.1"
@@ -1426,7 +1426,7 @@ application {
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="bash" class="language-bash hljs">./gradlew run -Pmicronaut.runtime=google_function</code></pre>
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">./gradlew run -Pmicronaut.runtime=google_function</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -1483,7 +1483,7 @@ This means that when running packaging from an X86_64 (Intel/AMD) machine, the p
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">dockerfileNative {
+<pre class="highlightjs highlight"><code class="language-groovy hljs" data-lang="groovy">dockerfileNative {
     graalArch.set("x64")
 }</code></pre>
 </div>
@@ -1501,7 +1501,7 @@ If you wish to switch to using a different base image (for example to use your o
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">dockerfileNative {
+<pre class="highlightjs highlight"><code class="language-groovy hljs" data-lang="groovy">dockerfileNative {
     // Use the image from the Amazon ECR Public Gallery
     baseImage.set("public.ecr.aws/amazonlinux/amazonlinux:2023")
 }</code></pre>
@@ -1531,7 +1531,7 @@ Keep in mind that copying the only <code>.jar</code> file to another directory w
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">plugins {
+<pre class="highlightjs highlight"><code class="language-groovy hljs" data-lang="groovy">plugins {
     ...
     id "com.github.johnrengelman.shadow" version "8.1.1"
     ...
@@ -1540,7 +1540,7 @@ Keep in mind that copying the only <code>.jar</code> file to another directory w
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">plugins {
+<pre class="highlightjs highlight"><code class="language-kotlin hljs" data-lang="kotlin">plugins {
     ...
     id("com.github.johnrengelman.shadow") version "8.1.1"
     ...
@@ -1625,7 +1625,7 @@ Micronaut AOT is a <em>deployment</em> optimization: it adds to build time, in o
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">plugins {
+<pre class="highlightjs highlight"><code class="language-groovy hljs" data-lang="groovy">plugins {
     ...
     id "io.micronaut.application" version "4.3.1-SNAPSHOT"
     id "io.micronaut.aot" version "4.3.1-SNAPSHOT"
@@ -1635,7 +1635,7 @@ Micronaut AOT is a <em>deployment</em> optimization: it adds to build time, in o
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">plugins {
+<pre class="highlightjs highlight"><code class="language-kotlin hljs" data-lang="kotlin">plugins {
     ...
     id("io.micronaut.application") version "4.3.1-SNAPSHOT"
     id("io.micronaut.aot") version "4.3.1-SNAPSHOT"
@@ -1648,7 +1648,7 @@ Micronaut AOT is a <em>deployment</em> optimization: it adds to build time, in o
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">micronaut {
+<pre class="highlightjs highlight"><code class="language-groovy hljs" data-lang="groovy">micronaut {
     ...
     aot {
         // optional, override the Micronaut AOT version
@@ -1668,7 +1668,7 @@ Micronaut AOT is a <em>deployment</em> optimization: it adds to build time, in o
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">micronaut {
+<pre class="highlightjs highlight"><code class="language-kotlin hljs" data-lang="kotlin">micronaut {
     ...
     aot {
         // optional, override the Micronaut AOT version
@@ -1691,14 +1691,14 @@ Micronaut AOT is a <em>deployment</em> optimization: it adds to build time, in o
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">dependencies {
+<pre class="highlightjs highlight"><code class="language-groovy hljs" data-lang="groovy">dependencies {
     aotPlugins 'io.micronaut.security:micronaut-security-aot:1.0.0'
 }</code></pre>
 </div>
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">dependencies {
+<pre class="highlightjs highlight"><code class="language-kotlin hljs" data-lang="kotlin">dependencies {
     aotPlugins("io.micronaut.security:micronaut-security-aot:1.0.0")
 }</code></pre>
 </div>
@@ -1709,7 +1709,7 @@ For this reason, it is possible to provide a <em>Micronaut AOT configuration fil
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">micronaut {
+<pre class="highlightjs highlight"><code class="language-groovy hljs" data-lang="groovy">micronaut {
     ...
     aot {
         configFile = file("gradle/micronaut-aot.properties")
@@ -1719,7 +1719,7 @@ For this reason, it is possible to provide a <em>Micronaut AOT configuration fil
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">micronaut {
+<pre class="highlightjs highlight"><code class="language-kotlin hljs" data-lang="kotlin">micronaut {
     ...
     aot {
         configFile.set(file("gradle/micronaut-aot.properties"))
@@ -1846,7 +1846,7 @@ If you want to run the application with the resulting jar, you will need to call
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">plugins {
+<pre class="highlightjs highlight"><code class="language-groovy hljs" data-lang="groovy">plugins {
     ...
     id "com.github.johnrengelman.shadow" version "8.1.1"
     ...
@@ -1855,7 +1855,7 @@ If you want to run the application with the resulting jar, you will need to call
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">plugins {
+<pre class="highlightjs highlight"><code class="language-kotlin hljs" data-lang="kotlin">plugins {
     ...
     id("com.github.johnrengelman.shadow") version "8.1.1"
     ...
@@ -1949,14 +1949,14 @@ Should this happen to you, you can disable class data sharing explicitly using t
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">tasks.withType(StartTestResourcesService).configureEach {
+<pre class="highlightjs highlight"><code class="language-groovy hljs" data-lang="groovy">tasks.withType(StartTestResourcesService).configureEach {
     useClassDataSharing = false
 }</code></pre>
 </div>
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">tasks.withType&lt;StartTestResourcesService&gt;().configureEach {
+<pre class="highlightjs highlight"><code class="language-kotlin hljs" data-lang="kotlin">tasks.withType&lt;StartTestResourcesService&gt;().configureEach {
     useClassDataSharing.set(false)
 }</code></pre>
 </div>
@@ -1972,7 +1972,7 @@ Should this happen to you, you can disable class data sharing explicitly using t
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">plugins {
+<pre class="highlightjs highlight"><code class="language-groovy hljs" data-lang="groovy">plugins {
     id "io.micronaut.application" version "4.2.1"
     id "io.micronaut.test-resources" version "4.2.1"
     ...
@@ -1981,7 +1981,7 @@ Should this happen to you, you can disable class data sharing explicitly using t
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">plugins {
+<pre class="highlightjs highlight"><code class="language-kotlin hljs" data-lang="kotlin">plugins {
     id("io.micronaut.application") version "4.2.1"
     id("io.micronaut.test-resources") version "4.2.1"
     ...
@@ -1997,7 +1997,7 @@ This will let Gradle automatically start containers, for example, when a particu
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="yaml" class="language-yaml hljs">datasources:
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">datasources:
   default:
     dialect: MYSQL</code></pre>
 </div>
@@ -2016,7 +2016,7 @@ This will let Gradle automatically start containers, for example, when a particu
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">micronaut {
+<pre class="highlightjs highlight"><code class="language-groovy hljs" data-lang="groovy">micronaut {
     testResources {
         enabled = true // true by default
         version = "1.0.0" // override Micronaut Test Resources version
@@ -2033,7 +2033,7 @@ This will let Gradle automatically start containers, for example, when a particu
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">micronaut {
+<pre class="highlightjs highlight"><code class="language-kotlin hljs" data-lang="kotlin">micronaut {
     testResources {
         enabled.set(true) // true by default
         version.set("1.0.0") // override Micronaut Test Resources version
@@ -2084,7 +2084,7 @@ This will let Gradle automatically start containers, for example, when a particu
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">dependencies {
+<pre class="highlightjs highlight"><code class="language-groovy hljs" data-lang="groovy">dependencies {
     // declare an additional dependency on test resources classpath
     testResourcesService "my:jdbc-driver:1.0"
 }</code></pre>
@@ -2106,7 +2106,7 @@ This implies that the test resources client will <em>not</em> be included in the
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="bash" class="language-bash hljs">./gradlew nativeCompile -Dtestresources.native=true</code></pre>
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">./gradlew nativeCompile -Dtestresources.native=true</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -2114,7 +2114,7 @@ This implies that the test resources client will <em>not</em> be included in the
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="bash" class="language-bash hljs">./gradlew nativeRun -Dtestresources.native=true</code></pre>
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">./gradlew nativeRun -Dtestresources.native=true</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -2172,7 +2172,7 @@ Here, we&#8217;re going to add a project called <code>shared-testresources</code
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">// shared-testresources/build.gradle
+<pre class="highlightjs highlight"><code class="language-groovy hljs" data-lang="groovy">// shared-testresources/build.gradle
 plugins {
     id "io.micronaut.test-resources" version "4.2.1" // <b class="conum">(1)</b>
 }
@@ -2186,7 +2186,7 @@ micronaut {
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">// shared-testresources/build.gradle.kts
+<pre class="highlightjs highlight"><code class="language-kotlin hljs" data-lang="kotlin">// shared-testresources/build.gradle.kts
 plugins {
     id("io.micronaut.test-resources") version "4.2.1" // <b class="conum">(1)</b>
 }
@@ -2213,7 +2213,7 @@ micronaut {
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">plugins {
+<pre class="highlightjs highlight"><code class="language-groovy hljs" data-lang="groovy">plugins {
     id "io.micronaut.application" version "4.2.1"
     id "io.micronaut.test-resources-consumer" version "4.2.1" // <b class="conum">(1)</b>
 }
@@ -2225,7 +2225,7 @@ dependencies {
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">plugins {
+<pre class="highlightjs highlight"><code class="language-kotlin hljs" data-lang="kotlin">plugins {
     id("io.micronaut.application") version "4.2.1"
     id("io.micronaut.test-resources-consumer") version "4.2.1" // <b class="conum">(1)</b>
 }
@@ -2329,7 +2329,7 @@ You therefore write your test resources directly in <code>src/testResources/java
 <div class="listingblock">
 <div class="title">src/testResources/java/demo/GreetingTestResource.java</div>
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">package demo;
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">package demo;
 
 import io.micronaut.testresources.core.TestResourcesResolver;
 
@@ -2367,7 +2367,7 @@ public class GreetingTestResource implements TestResourcesResolver {
 <div class="listingblock">
 <div class="title">src/testResources/resources/META-INF/services/io.micronaut.testresources.core.TestResourcesResolver</div>
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="text" class="language-text hljs">demo.GreetingTestResource</code></pre>
+<pre class="highlightjs highlight"><code class="language-text hljs" data-lang="text">demo.GreetingTestResource</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -2376,7 +2376,7 @@ public class GreetingTestResource implements TestResourcesResolver {
 <div class="listingblock">
 <div class="title">src/test/java/demo/DemoTest.java</div>
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">@MicronautTest
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">@MicronautTest
 class DemoTest {
 
     @Value("${greeting.message}")
@@ -2457,7 +2457,7 @@ Currently, CRaC support has only been tested on Ubuntu 18.04, 20.04 and 22.04.
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="bash" class="language-bash hljs">docker run --cap-add=cap_sys_ptrace -p 8080:8080 &lt;image-name&gt;</code></pre>
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">docker run --cap-add=cap_sys_ptrace -p 8080:8080 &lt;image-name&gt;</code></pre>
 </div>
 </div>
 <div class="sect2">
@@ -2467,7 +2467,7 @@ Currently, CRaC support has only been tested on Ubuntu 18.04, 20.04 and 22.04.
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">plugins {
+<pre class="highlightjs highlight"><code class="language-groovy hljs" data-lang="groovy">plugins {
     ...
     id "io.micronaut.minimal.application" version "4.3.1-SNAPSHOT"
     id "io.micronaut.docker" version "4.3.1-SNAPSHOT"
@@ -2478,7 +2478,7 @@ Currently, CRaC support has only been tested on Ubuntu 18.04, 20.04 and 22.04.
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">plugins {
+<pre class="highlightjs highlight"><code class="language-kotlin hljs" data-lang="kotlin">plugins {
     ...
     id("io.micronaut.minimal.application") version "4.3.1-SNAPSHOT"
     id("io.micronaut.docker") version "4.3.1-SNAPSHOT"
@@ -2492,7 +2492,7 @@ Currently, CRaC support has only been tested on Ubuntu 18.04, 20.04 and 22.04.
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">micronaut {
+<pre class="highlightjs highlight"><code class="language-groovy hljs" data-lang="groovy">micronaut {
     ...
     crac {
         // is the plugin enabled or not
@@ -2530,7 +2530,7 @@ Currently, CRaC support has only been tested on Ubuntu 18.04, 20.04 and 22.04.
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">micronaut {
+<pre class="highlightjs highlight"><code class="language-kotlin hljs" data-lang="kotlin">micronaut {
     ...
     crac {
         // is the plugin enabled or not
@@ -2585,7 +2585,7 @@ Currently, CRaC support has only been tested on Ubuntu 18.04, 20.04 and 22.04.
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">micronaut {
+<pre class="highlightjs highlight"><code class="language-groovy hljs" data-lang="groovy">micronaut {
     ...
     openapi {
         client(file("src/openapi/my-definition.yml")) {
@@ -2600,7 +2600,7 @@ Currently, CRaC support has only been tested on Ubuntu 18.04, 20.04 and 22.04.
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">micronaut {
+<pre class="highlightjs highlight"><code class="language-kotlin hljs" data-lang="kotlin">micronaut {
     ...
     openapi {
         client(file("src/openapi/my-definition.yml")) {
@@ -2627,7 +2627,7 @@ Currently, CRaC support has only been tested on Ubuntu 18.04, 20.04 and 22.04.
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">micronaut {
+<pre class="highlightjs highlight"><code class="language-groovy hljs" data-lang="groovy">micronaut {
     ...
     openapi {
         server(file("src/openapi/my-definition.yml")) {
@@ -2641,7 +2641,7 @@ Currently, CRaC support has only been tested on Ubuntu 18.04, 20.04 and 22.04.
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">micronaut {
+<pre class="highlightjs highlight"><code class="language-kotlin hljs" data-lang="kotlin">micronaut {
     ...
     openapi {
         server(file("src/openapi/my-definition.yml")) {
@@ -2680,7 +2680,7 @@ To do this, set the version in the <code>openapi</code> extension:</p>
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">micronaut {
+<pre class="highlightjs highlight"><code class="language-groovy hljs" data-lang="groovy">micronaut {
     ...
     openapi {
         version = "5.0.2"
@@ -2690,7 +2690,7 @@ To do this, set the version in the <code>openapi</code> extension:</p>
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">micronaut {
+<pre class="highlightjs highlight"><code class="language-kotlin hljs" data-lang="kotlin">micronaut {
     ...
     openapi {
         version.set("5.0.2")
@@ -2756,7 +2756,7 @@ This can be useful in case you want to implement your own generators, in which c
 <div class="listingblock multi-language-sample">
 <div class="title">Suppressing automatic dependencies</div>
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">micronaut {
+<pre class="highlightjs highlight"><code class="language-groovy hljs" data-lang="groovy">micronaut {
     // The Micronaut plugins can automatically add dependencies to your project. If, for some reason,
     // a dependency shouldn't be automatically added, you can add its coordinates to this set.
     // The format is "group:name". It must not include the version.
@@ -2766,7 +2766,7 @@ This can be useful in case you want to implement your own generators, in which c
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">micronaut {
+<pre class="highlightjs highlight"><code class="language-kotlin hljs" data-lang="kotlin">micronaut {
     // The Micronaut plugins can automatically add dependencies to your project. If, for some reason,
     // a dependency shouldn't be automatically added, you can add its coordinates to this set.
     // The format is "group:name". It must not include the version.
@@ -2790,7 +2790,7 @@ This can be useful in case you want to implement your own generators, in which c
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">nativeImage {
+<pre class="highlightjs highlight"><code class="language-groovy hljs" data-lang="groovy">nativeImage {
     imageName.set("custom")
 }</code></pre>
 </div>
@@ -2800,7 +2800,7 @@ This can be useful in case you want to implement your own generators, in which c
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="groovy" class="language-groovy hljs">graalvmNative {
+<pre class="highlightjs highlight"><code class="language-groovy hljs" data-lang="groovy">graalvmNative {
     binaries {
         named("main") {
             imageName.set("custom")
