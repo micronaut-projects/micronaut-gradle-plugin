@@ -71,6 +71,11 @@ public class MicronautDockerPlugin implements Plugin<Project> {
                 layer.getLayerKind().set(LayerKind.APP);
                 layer.getFiles().from(runnerJar);
             });
+            image.addLayer(layer -> {
+                layer.getLayerKind().set(LayerKind.EXPANDED_RESOURCES);
+                layer.getFiles().from(project.getExtensions().getByType(SourceSetContainer.class)
+                    .getByName(SourceSet.MAIN_SOURCE_SET_NAME).getOutput().getResourcesDir());
+            });
         });
     }
 

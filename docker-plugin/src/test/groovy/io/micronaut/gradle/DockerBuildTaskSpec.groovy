@@ -198,6 +198,7 @@ class Application {
 WORKDIR /home/alternate
 COPY --link layers/libs /home/alternate/libs
 COPY --link layers/app /home/alternate/
+COPY --link layers/resources /home/alternate/resources
 EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "/home/alternate/application.jar"]
 """
@@ -252,6 +253,7 @@ class Application {
 WORKDIR /home/app
 COPY layers/libs /home/app/libs
 COPY layers/app /home/app/
+COPY layers/resources /home/app/resources
 EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "/home/app/application.jar"]
 """
