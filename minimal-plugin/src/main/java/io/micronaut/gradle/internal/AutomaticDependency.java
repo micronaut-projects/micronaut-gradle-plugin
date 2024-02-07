@@ -42,8 +42,10 @@ public record AutomaticDependency(
         String coordinates,
         Optional<ConfigurableVersionProperty> versionProperty
 ) {
+
     public void applyTo(Project p) {
         p.getPlugins().withType(MicronautComponentPlugin.class, unused -> {
+            p.afterEvaluate(unusedProject -> VersionCatalogLookupCache.get().clear());
             var dependencyHandler = p.getDependencies();
             var micronautExtension = p.getExtensions().getByType(MicronautExtension.class);
             var ignoredDependencies = micronautExtension.getIgnoredAutomaticDependencies();
@@ -65,13 +67,11 @@ public record AutomaticDependency(
                     if (versionCatalogs != null) {
                         Optional<VersionCatalog> mn = versionCatalogs.find("mn");
                         if (mn.isPresent()) {
+                            // The cache should ideally use Gradle build services, but that's currently impossible due to
+                            // https://github.com/gradle/gradle/issues/17559
+                            var catalogCache = VersionCatalogLookupCache.get();
                             VersionCatalog micronautCatalog = mn.get();
-                            Optional<Provider<MinimalExternalModuleDependency>> dependencyProvider = micronautCatalog.getLibraryAliases()
-                                .stream()
-                                .map(micronautCatalog::findLibrary)
-                                .map(Optional::get)
-                                .filter(d -> coordinates.equals(d.get().getModule().toString()))
-                                .findFirst();
+                            Optional<Provider<MinimalExternalModuleDependency>> dependencyProvider = catalogCache.findDependencyFromCatalog(micronautCatalog, coordinates);
                             if (dependencyProvider.isPresent()) {
                                 return List.of(dependencyProvider.get().get());
                             }
