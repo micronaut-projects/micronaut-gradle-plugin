@@ -221,16 +221,17 @@ public abstract class MicronautDockerfile extends Dockerfile implements DockerBu
     }
 
     public static void setupResources(Dockerfile task, List<Layer> layers, String workDir) {
-        if (workDir == null) {
-            workDir = determineWorkingDir(task);
-        }
-        task.workingDir(workDir);
+        final String finalWorkDir = workDir != null ? workDir : determineWorkingDir(task);
+        task.workingDir(finalWorkDir);
+
         for (Layer layer : layers) {
-            var files = layer.getFiles();
-            if (!files.isEmpty()) {
+            task.copyFile(task.getProject().provider(() -> {
+                if (layer.getFiles().isEmpty()) {
+                    return null;
+                }
                 var kind = layer.getLayerKind().get();
-                task.copyFile("layers/" + kind.sourceDirName(), workDir + "/" + kind.targetDirName());
-            }
+                return new CopyFile("layers/" + kind.sourceDirName(), finalWorkDir + "/" + kind.targetDirName());
+            }));
         }
     }
 
