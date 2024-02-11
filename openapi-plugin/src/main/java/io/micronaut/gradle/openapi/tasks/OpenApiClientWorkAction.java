@@ -44,7 +44,8 @@ public abstract class OpenApiClientWorkAction extends AbstractOpenApiWorkAction<
             builder.forKotlinClient(spec -> {
                 spec.withAuthorization(parameters.getUseAuth().get())
                         .withAdditionalClientTypeAnnotations(parameters.getAdditionalClientTypeAnnotations().getOrElse(List.of()))
-                        .withGeneratedAnnotation(parameters.getGeneratedAnnotation().get());
+                        .withGeneratedAnnotation(parameters.getGeneratedAnnotation().get())
+                        .withKsp(parameters.getKsp().get());
 
                 if (parameters.getClientId().isPresent()) {
                     spec.withClientId(parameters.getClientId().get());
