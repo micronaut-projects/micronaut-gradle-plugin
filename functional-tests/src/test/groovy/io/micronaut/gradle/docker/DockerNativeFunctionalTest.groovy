@@ -1,6 +1,5 @@
 package io.micronaut.gradle.docker
 
-import io.micronaut.gradle.AbstractGradleBuildSpec
 import io.micronaut.gradle.DefaultVersions
 import io.micronaut.gradle.fixtures.AbstractEagerConfiguringFunctionalTest
 import org.gradle.testkit.runner.TaskOutcome
@@ -8,7 +7,7 @@ import spock.lang.IgnoreIf
 import spock.lang.Issue
 import spock.lang.Requires
 
-@Requires({ AbstractGradleBuildSpec.graalVmAvailable })
+@Requires({ graalVmAvailable })
 @IgnoreIf({ os.windows })
 class DockerNativeFunctionalTest extends AbstractEagerConfiguringFunctionalTest {
 
@@ -581,23 +580,22 @@ micronaut:
 
         then:
         dockerFile == """
-FROM ghcr.io/graalvm/native-image-community:17-ol${DefaultVersions.ORACLELINUX} AS graalvm
-WORKDIR /home/alternate
-COPY --link layers/libs /home/alternate/libs
-COPY --link layers/app /home/alternate/
-COPY --link layers/resources /home/alternate/resources
-RUN mkdir /home/alternate/config-dirs
-RUN mkdir -p /home/alternate/config-dirs/generateResourcesConfigFile
-RUN mkdir -p /home/alternate/config-dirs/io.netty/netty-common/4.0.0.Final
-COPY --link config-dirs/generateResourcesConfigFile /home/alternate/config-dirs/generateResourcesConfigFile
-COPY --link config-dirs/io.netty/netty-common/4.0.0.Final /home/alternate/config-dirs/io.netty/netty-common/4.0.0.Final
-RUN native-image --exclude-config .*/libs/netty-transport-4.0.0.Final.jar ^/META-INF/native-image/.* --exclude-config .*/libs/netty-buffer-4.0.0.Final.jar ^/META-INF/native-image/.* --exclude-config .*/libs/netty-codec-http-4.0.0.Final.jar ^/META-INF/native-image/.* --exclude-config .*/libs/netty-handler-4.0.0.Final.jar ^/META-INF/native-image/.* --exclude-config .*/libs/netty-common-4.0.0.Final.jar ^/META-INF/native-image/.* --exclude-config .*/libs/netty-codec-http2-4.0.0.Final.jar ^/META-INF/native-image/.* -cp /home/alternate/libs/*.jar:/home/alternate/resources:/home/alternate/application.jar --no-fallback -o application -H:ConfigurationFileDirectories=/home/alternate/config-dirs/generateResourcesConfigFile,/home/alternate/config-dirs/io.netty/netty-buffer/4.0.0.Final,/home/alternate/config-dirs/io.netty/netty-common/4.0.0.Final,/home/alternate/config-dirs/io.netty/netty-codec-http/4.0.0.Final,/home/alternate/config-dirs/io.netty/netty-transport/4.0.0.Final,/home/alternate/config-dirs/io.netty/netty-handler/4.0.0.Final,/home/alternate/config-dirs/io.netty/netty-codec-http2/4.0.0.Final example.Application
-${defaultDockerFrom}
-EXPOSE 8080
-HEALTHCHECK CMD curl -s localhost:8090/health | grep '"status":"UP"'
-COPY --link --from=graalvm /home/alternate/application /app/application
-ENTRYPOINT ["/app/application", "-Xmx64m"]
-""".trim()
+            FROM ghcr.io/graalvm/native-image-community:17-ol${DefaultVersions.ORACLELINUX} AS graalvm
+            WORKDIR /home/alternate
+            COPY --link layers/libs /home/alternate/libs
+            COPY --link layers/app /home/alternate/
+            COPY --link layers/resources /home/alternate/resources
+            RUN mkdir /home/alternate/config-dirs
+            RUN mkdir -p /home/alternate/config-dirs/generateResourcesConfigFile
+            RUN mkdir -p /home/alternate/config-dirs/io.netty/netty-common/4.0.0.Final
+            COPY --link config-dirs/generateResourcesConfigFile /home/alternate/config-dirs/generateResourcesConfigFile
+            COPY --link config-dirs/io.netty/netty-common/4.0.0.Final /home/alternate/config-dirs/io.netty/netty-common/4.0.0.Final
+            RUN native-image --exclude-config .*/libs/netty-transport-4.0.0.Final.jar ^/META-INF/native-image/.* --exclude-config .*/libs/netty-common-4.0.0.Final.jar ^/META-INF/native-image/.* --exclude-config .*/libs/netty-codec-http2-4.0.0.Final.jar ^/META-INF/native-image/.* --exclude-config .*/libs/netty-buffer-4.0.0.Final.jar ^/META-INF/native-image/.* --exclude-config .*/libs/netty-codec-http-4.0.0.Final.jar ^/META-INF/native-image/.* --exclude-config .*/libs/netty-handler-4.0.0.Final.jar ^/META-INF/native-image/.* -cp /home/alternate/libs/*.jar:/home/alternate/resources:/home/alternate/application.jar --no-fallback -o application -H:ConfigurationFileDirectories=/home/alternate/config-dirs/generateResourcesConfigFile,/home/alternate/config-dirs/io.netty/netty-buffer/4.0.0.Final,/home/alternate/config-dirs/io.netty/netty-common/4.0.0.Final,/home/alternate/config-dirs/io.netty/netty-codec-http/4.0.0.Final,/home/alternate/config-dirs/io.netty/netty-transport/4.0.0.Final,/home/alternate/config-dirs/io.netty/netty-handler/4.0.0.Final,/home/alternate/config-dirs/io.netty/netty-codec-http2/4.0.0.Final example.Application
+            FROM cgr.dev/chainguard/wolfi-base:latest
+            EXPOSE 8080
+            HEALTHCHECK CMD curl -s localhost:8090/health | grep '"status":"UP"'
+            COPY --link --from=graalvm /home/alternate/application /app/application
+            ENTRYPOINT ["/app/application", "-Xmx64m"]""".stripIndent().trim()
 
         when:
         def result = build ":dockerBuildNative"
