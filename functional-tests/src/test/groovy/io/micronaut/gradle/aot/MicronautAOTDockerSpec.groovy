@@ -1,6 +1,5 @@
 package io.micronaut.gradle.aot
 
-import io.micronaut.gradle.AbstractGradleBuildSpec
 import io.micronaut.gradle.DefaultVersions
 import org.gradle.testkit.runner.TaskOutcome
 import spock.lang.IgnoreIf
@@ -55,7 +54,7 @@ ENTRYPOINT ["java", "-jar", "/home/app/application.jar"]
 
     }
 
-    @Requires({ AbstractGradleBuildSpec.graalVmAvailable && !os.windows })
+    @Requires({ graalVmAvailable && !os.windows })
     def "generates a native optimized docker image"() {
         withSample("aot/basic-app")
 
@@ -63,25 +62,26 @@ ENTRYPOINT ["java", "-jar", "/home/app/application.jar"]
         build "optimizedDockerfileNative"
         def dockerFile = normalizeLineEndings(file("build/docker/native-optimized/DockerfileNative").text)
         dockerFile = dockerFile.replaceAll("[0-9]\\.[0-9]+\\.[0-9]+", "4.0.0")
+                .trim()
 
         then:
-        dockerFile == """FROM ghcr.io/graalvm/native-image-community:17-ol${DefaultVersions.ORACLELINUX} AS graalvm
-WORKDIR /home/app
-COPY --link layers/libs /home/app/libs
-COPY --link layers/app /home/app/
-RUN mkdir /home/app/config-dirs
-RUN mkdir -p /home/app/config-dirs/generateResourcesConfigFile
-RUN mkdir -p /home/app/config-dirs/io.netty/netty-common/4.0.0.Final
-RUN mkdir -p /home/app/config-dirs/ch.qos.logback/logback-classic/4.0.0
-COPY --link config-dirs/generateResourcesConfigFile /home/app/config-dirs/generateResourcesConfigFile
-COPY --link config-dirs/io.netty/netty-common/4.0.0.Final /home/app/config-dirs/io.netty/netty-common/4.0.0.Final
-COPY --link config-dirs/ch.qos.logback/logback-classic/4.0.0 /home/app/config-dirs/ch.qos.logback/logback-classic/4.0.0
-RUN native-image --exclude-config .*/libs/netty-transport-4.0.0.Final.jar ^/META-INF/native-image/.* --exclude-config .*/libs/netty-buffer-4.0.0.Final.jar ^/META-INF/native-image/.* --exclude-config .*/libs/netty-codec-http-4.0.0.Final.jar ^/META-INF/native-image/.* --exclude-config .*/libs/netty-handler-4.0.0.Final.jar ^/META-INF/native-image/.* --exclude-config .*/libs/netty-common-4.0.0.Final.jar ^/META-INF/native-image/.* --exclude-config .*/libs/netty-codec-http2-4.0.0.Final.jar ^/META-INF/native-image/.* -cp /home/app/libs/*.jar:/home/app/resources:/home/app/application.jar --no-fallback -o application -H:ConfigurationFileDirectories=/home/app/config-dirs/generateResourcesConfigFile,/home/app/config-dirs/io.netty/netty-buffer/4.0.0.Final,/home/app/config-dirs/io.netty/netty-common/4.0.0.Final,/home/app/config-dirs/io.netty/netty-codec-http/4.0.0.Final,/home/app/config-dirs/io.netty/netty-transport/4.0.0.Final,/home/app/config-dirs/io.netty/netty-handler/4.0.0.Final,/home/app/config-dirs/io.netty/netty-codec-http2/4.0.0.Final,/home/app/config-dirs/ch.qos.logback/logback-classic/4.0.0 demo.app.Application
-FROM cgr.dev/chainguard/wolfi-base:latest
-EXPOSE 8080
-COPY --link --from=graalvm /home/app/application /app/application
-ENTRYPOINT ["/app/application"]
-"""
+        dockerFile == """
+            FROM ghcr.io/graalvm/native-image-community:17-ol${DefaultVersions.ORACLELINUX} AS graalvm
+            WORKDIR /home/app
+            COPY --link layers/libs /home/app/libs
+            COPY --link layers/app /home/app/
+            RUN mkdir /home/app/config-dirs
+            RUN mkdir -p /home/app/config-dirs/generateResourcesConfigFile
+            RUN mkdir -p /home/app/config-dirs/io.netty/netty-common/4.0.0.Final
+            RUN mkdir -p /home/app/config-dirs/ch.qos.logback/logback-classic/4.0.0
+            COPY --link config-dirs/generateResourcesConfigFile /home/app/config-dirs/generateResourcesConfigFile
+            COPY --link config-dirs/io.netty/netty-common/4.0.0.Final /home/app/config-dirs/io.netty/netty-common/4.0.0.Final
+            COPY --link config-dirs/ch.qos.logback/logback-classic/4.0.0 /home/app/config-dirs/ch.qos.logback/logback-classic/4.0.0
+            RUN native-image --exclude-config .*/libs/netty-transport-4.0.0.Final.jar ^/META-INF/native-image/.* --exclude-config .*/libs/netty-common-4.0.0.Final.jar ^/META-INF/native-image/.* --exclude-config .*/libs/netty-codec-http2-4.0.0.Final.jar ^/META-INF/native-image/.* --exclude-config .*/libs/netty-buffer-4.0.0.Final.jar ^/META-INF/native-image/.* --exclude-config .*/libs/netty-codec-http-4.0.0.Final.jar ^/META-INF/native-image/.* --exclude-config .*/libs/netty-handler-4.0.0.Final.jar ^/META-INF/native-image/.* -cp /home/app/libs/*.jar:/home/app/resources:/home/app/application.jar --no-fallback -o application -H:ConfigurationFileDirectories=/home/app/config-dirs/generateResourcesConfigFile,/home/app/config-dirs/io.netty/netty-buffer/4.0.0.Final,/home/app/config-dirs/io.netty/netty-common/4.0.0.Final,/home/app/config-dirs/io.netty/netty-codec-http/4.0.0.Final,/home/app/config-dirs/io.netty/netty-transport/4.0.0.Final,/home/app/config-dirs/io.netty/netty-handler/4.0.0.Final,/home/app/config-dirs/io.netty/netty-codec-http2/4.0.0.Final,/home/app/config-dirs/ch.qos.logback/logback-classic/4.0.0 demo.app.Application
+            FROM cgr.dev/chainguard/wolfi-base:latest
+            EXPOSE 8080
+            COPY --link --from=graalvm /home/app/application /app/application
+            ENTRYPOINT ["/app/application"]""".stripIndent().trim()
 
         when:
         def result = build "optimizedDockerBuildNative"
