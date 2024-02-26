@@ -30,6 +30,7 @@ import io.micronaut.openapi.generator.SerializationLibraryKind;
 import org.gradle.api.file.DirectoryProperty;
 import org.gradle.api.file.RegularFileProperty;
 import org.gradle.api.provider.ListProperty;
+import org.gradle.api.provider.MapProperty;
 import org.gradle.api.provider.Property;
 import org.gradle.workers.WorkAction;
 import org.gradle.workers.WorkParameters;
@@ -68,6 +69,8 @@ public abstract class AbstractOpenApiWorkAction<T extends AbstractOpenApiWorkAct
 
         Property<Boolean> getLombok();
 
+        Property<Boolean> getKsp();
+
         Property<Boolean> getGeneratedAnnotation();
 
         Property<Boolean> getFluxForArrays();
@@ -75,6 +78,32 @@ public abstract class AbstractOpenApiWorkAction<T extends AbstractOpenApiWorkAct
         ListProperty<ParameterMappingModel> getParameterMappings();
 
         ListProperty<ResponseBodyMappingModel> getResponseBodyMappings();
+
+        MapProperty<String, String> getSchemaMapping();
+
+        MapProperty<String, String> getImportMapping();
+
+        MapProperty<String, String> getNameMapping();
+
+        MapProperty<String, String> getTypeMapping();
+
+        MapProperty<String, String> getEnumNameMapping();
+
+        MapProperty<String, String> getModelNameMapping();
+
+        MapProperty<String, String> getInlineSchemaNameMapping();
+
+        MapProperty<String, String> getInlineSchemaOption();
+
+        MapProperty<String, String> getOpenapiNormalizer();
+
+        Property<String> getApiNamePrefix();
+
+        Property<String> getApiNameSuffix();
+
+        Property<String> getModelNamePrefix();
+
+        Property<String> getModelNameSuffix();
     }
 
     protected abstract void configureBuilder(MicronautCodeGeneratorBuilder builder);
@@ -118,9 +147,27 @@ public abstract class AbstractOpenApiWorkAction<T extends AbstractOpenApiWorkAct
                         .withResponseBodyMappings(parameters.getResponseBodyMappings()
                                 .get()
                                 .stream()
-                                .map(mapping -> new ResponseBodyMapping(mapping.getHeaderName(), mapping.getMappedBodyType(), mapping.isListWrapper(), mapping.isValidated()))
+                                .map(mapping -> new ResponseBodyMapping(
+                                        mapping.getHeaderName(),
+                                        mapping.getMappedBodyType(),
+                                        mapping.isListWrapper(),
+                                        mapping.isValidated()))
                                 .toList()
-                        ));
+                        )
+                        .withSchemaMapping(parameters.getSchemaMapping().get())
+                        .withImportMapping(parameters.getImportMapping().get())
+                        .withNameMapping(parameters.getNameMapping().get())
+                        .withTypeMapping(parameters.getTypeMapping().get())
+                        .withEnumNameMapping(parameters.getEnumNameMapping().get())
+                        .withModelNameMapping(parameters.getModelNameMapping().get())
+                        .withInlineSchemaNameMapping(parameters.getInlineSchemaNameMapping().get())
+                        .withInlineSchemaOption(parameters.getInlineSchemaOption().get())
+                        .withOpenapiNormalizer(parameters.getOpenapiNormalizer().get())
+                        .withApiNamePrefix(parameters.getApiNamePrefix().orElse("").get())
+                        .withApiNameSuffix(parameters.getApiNameSuffix().orElse("").get())
+                        .withModelNamePrefix(parameters.getModelNamePrefix().orElse("").get())
+                        .withModelNameSuffix(parameters.getModelNameSuffix().orElse("").get())
+                );
 
         configureBuilder(builder);
         builder.build().generate();

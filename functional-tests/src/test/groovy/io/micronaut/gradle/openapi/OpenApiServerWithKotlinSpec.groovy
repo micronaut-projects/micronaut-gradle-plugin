@@ -28,6 +28,7 @@ class OpenApiServerWithKotlinSpec extends AbstractOpenApiWithKotlinSpec {
                         generatedAnnotation = false
                         fluxForArrays = true
                         aot = true
+                        nameMapping = [test: "changedTest"]
                     }
                 }
             }
@@ -84,6 +85,8 @@ class OpenApiServerWithKotlinSpec extends AbstractOpenApiWithKotlinSpec {
                         generatedAnnotation = false
                         fluxForArrays = true
                         aot = true
+                        ksp = true
+                        nameMapping = [test: "changedTest"]
                     }
                 }
             }

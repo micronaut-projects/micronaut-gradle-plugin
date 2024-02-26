@@ -42,6 +42,7 @@ public abstract class OpenApiServerWorkAction extends AbstractOpenApiWorkAction<
                     .withGenerateControllerFromExamples(false)
                     .withGenerateOperationsToReturnNotImplemented(false)
                     .withGeneratedAnnotation(parameters.getGeneratedAnnotation().get())
+                    .withKsp(parameters.getKsp().get())
             );
         } else {
             builder.forJavaServer(spec -> spec.withControllerPackage(parameters.getControllerPackage().get())

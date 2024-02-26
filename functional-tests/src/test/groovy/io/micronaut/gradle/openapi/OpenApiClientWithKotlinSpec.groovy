@@ -25,6 +25,7 @@ class OpenApiClientWithKotlinSpec extends AbstractOpenApiWithKotlinSpec {
                         useReactive = true
                         generatedAnnotation = false
                         fluxForArrays = true
+                        nameMapping = [test: "changedTest"]
                     }
                 }
             }
@@ -76,6 +77,8 @@ class OpenApiClientWithKotlinSpec extends AbstractOpenApiWithKotlinSpec {
                         useReactive = true
                         generatedAnnotation = false
                         fluxForArrays = true
+                        ksp = true
+                        nameMapping = [test: "changedTest"]
                     }
                 }
             }

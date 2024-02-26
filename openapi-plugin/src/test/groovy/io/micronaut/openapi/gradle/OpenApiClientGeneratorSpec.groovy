@@ -66,6 +66,7 @@ class OpenApiClientGeneratorSpec extends AbstractOpenApiGeneratorSpec {
                         useReactive = true
                         generatedAnnotation = false
                         fluxForArrays = true
+                        nameMapping = [test: "changedTest"]
                     }
                 }
             }
