@@ -963,6 +963,10 @@
         },
         "complete": {
           "type": "boolean"
+        },
+        "test": {
+          "type": "string",
+          "description": "Test prop"
         }
       },
       "xml": {

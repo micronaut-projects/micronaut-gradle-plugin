@@ -71,6 +71,10 @@ class OpenApiServerGeneratorSpec extends AbstractOpenApiGeneratorSpec {
                         generatedAnnotation = false
                         fluxForArrays = true
                         aot = true
+                        apiNamePrefix = "ApiPrefix"
+                        apiNameSuffix = "ApiSuffix"
+                        modelNamePrefix = "ModelPrefix"
+                        modelNameSuffix = "ModelSuffix"
                     }
                 }
             }
@@ -101,10 +105,10 @@ class OpenApiServerGeneratorSpec extends AbstractOpenApiGeneratorSpec {
         result.task(":compileJava").outcome == TaskOutcome.SUCCESS
 
         and:
-        file("build/generated/openapi/generateServerOpenApiApis/src/main/java/io/micronaut/openapi/api/PetApi.java").exists()
-        file("build/generated/openapi/generateServerOpenApiModels/src/main/java/io/micronaut/openapi/model/Pet.java").exists()
-        file("build/classes/java/main/io/micronaut/openapi/api/PetApi.class").exists()
-        file("build/classes/java/main/io/micronaut/openapi/model/Pet.class").exists()
+        file("build/generated/openapi/generateServerOpenApiApis/src/main/java/io/micronaut/openapi/api/ApiPrefixPetApiSuffix.java").exists()
+        file("build/generated/openapi/generateServerOpenApiModels/src/main/java/io/micronaut/openapi/model/ModelPrefixPetModelSuffix.java").exists()
+        file("build/classes/java/main/io/micronaut/openapi/api/ApiPrefixPetApiSuffix.class").exists()
+        file("build/classes/java/main/io/micronaut/openapi/model/ModelPrefixPetModelSuffix.class").exists()
     }
 
     def "can generate an java OpenAPI server implementation with custom name and local file"() {

@@ -22,11 +22,13 @@ import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.file.DirectoryProperty;
 import org.gradle.api.file.RegularFileProperty;
 import org.gradle.api.provider.ListProperty;
+import org.gradle.api.provider.MapProperty;
 import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.Classpath;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.InputFile;
 import org.gradle.api.tasks.Internal;
+import org.gradle.api.tasks.Optional;
 import org.gradle.api.tasks.OutputDirectory;
 import org.gradle.api.tasks.PathSensitive;
 import org.gradle.api.tasks.PathSensitivity;
@@ -87,6 +89,9 @@ public abstract class AbstractOpenApiGenerator<W extends AbstractOpenApiWorkActi
     public abstract Property<Boolean> getLombok();
 
     @Input
+    public abstract Property<Boolean> getKsp();
+
+    @Input
     public abstract Property<Boolean> getGeneratedAnnotation();
 
     @Input
@@ -94,6 +99,49 @@ public abstract class AbstractOpenApiGenerator<W extends AbstractOpenApiWorkActi
 
     @Input
     public abstract ListProperty<ResponseBodyMappingModel> getResponseBodyMappings();
+
+    @Input
+    public abstract MapProperty<String, String> getSchemaMapping();
+
+    @Input
+    public abstract MapProperty<String, String> getImportMapping();
+
+    @Input
+    public abstract MapProperty<String, String> getNameMapping();
+
+    @Input
+    public abstract MapProperty<String, String> getTypeMapping();
+
+    @Input
+    public abstract MapProperty<String, String> getEnumNameMapping();
+
+    @Input
+    public abstract MapProperty<String, String> getModelNameMapping();
+
+    @Input
+    public abstract MapProperty<String, String> getInlineSchemaNameMapping();
+
+    @Input
+    public abstract MapProperty<String, String> getInlineSchemaOption();
+
+    @Input
+    public abstract MapProperty<String, String> getOpenapiNormalizer();
+
+    @Optional
+    @Input
+    public abstract Property<String> getApiNamePrefix();
+
+    @Optional
+    @Input
+    public abstract Property<String> getApiNameSuffix();
+
+    @Optional
+    @Input
+    public abstract Property<String> getModelNamePrefix();
+
+    @Optional
+    @Input
+    public abstract Property<String> getModelNameSuffix();
 
     @OutputDirectory
     public abstract DirectoryProperty getOutputDirectory();
@@ -129,6 +177,22 @@ public abstract class AbstractOpenApiGenerator<W extends AbstractOpenApiWorkActi
                     params.getFluxForArrays().set(getFluxForArrays());
                     params.getGeneratedAnnotation().set(getGeneratedAnnotation());
                     params.getLombok().set(getLombok());
+                    params.getKsp().set(getKsp());
+
+                    params.getSchemaMapping().set(getSchemaMapping());
+                    params.getImportMapping().set(getImportMapping());
+                    params.getNameMapping().set(getNameMapping());
+                    params.getTypeMapping().set(getTypeMapping());
+                    params.getEnumNameMapping().set(getEnumNameMapping());
+                    params.getModelNameMapping().set(getModelNameMapping());
+                    params.getInlineSchemaNameMapping().set(getInlineSchemaNameMapping());
+                    params.getInlineSchemaOption().set(getInlineSchemaOption());
+                    params.getOpenapiNormalizer().set(getOpenapiNormalizer());
+                    params.getApiNamePrefix().set(getApiNamePrefix().orElse(""));
+                    params.getApiNameSuffix().set(getApiNameSuffix().orElse(""));
+                    params.getModelNamePrefix().set(getModelNamePrefix().orElse(""));
+                    params.getModelNameSuffix().set(getModelNameSuffix().orElse(""));
+
                     configureWorkerParameters(params);
                 });
     }

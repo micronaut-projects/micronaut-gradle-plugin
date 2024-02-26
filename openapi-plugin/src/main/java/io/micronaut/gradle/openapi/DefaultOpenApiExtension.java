@@ -116,6 +116,7 @@ public abstract class DefaultOpenApiExtension implements OpenApiExtension {
         spec.getUseOptional().convention(false);
         spec.getUseReactive().convention(true);
         spec.getLombok().convention(false);
+        spec.getKsp().convention(false);
         spec.getGeneratedAnnotation().convention(true);
         spec.getFluxForArrays().convention(false);
         spec.getSerializationFramework().convention(DEFAULT_SERIALIZATION_FRAMEWORK);
@@ -166,9 +167,25 @@ public abstract class DefaultOpenApiExtension implements OpenApiExtension {
         task.getParameterMappings().convention(openApiSpec.getParameterMappings());
         task.getLang().convention(openApiSpec.getLang());
         task.getLombok().convention(openApiSpec.getLombok());
+        task.getKsp().convention(openApiSpec.getKsp());
         task.getGeneratedAnnotation().convention(openApiSpec.getGeneratedAnnotation());
         task.getFluxForArrays().convention(openApiSpec.getFluxForArrays());
         task.getResponseBodyMappings().convention(openApiSpec.getResponseBodyMappings());
+
+        task.getSchemaMapping().convention(openApiSpec.getSchemaMapping());
+        task.getImportMapping().convention(openApiSpec.getImportMapping());
+        task.getNameMapping().convention(openApiSpec.getNameMapping());
+        task.getTypeMapping().convention(openApiSpec.getTypeMapping());
+        task.getEnumNameMapping().convention(openApiSpec.getEnumNameMapping());
+        task.getModelNameMapping().convention(openApiSpec.getModelNameMapping());
+        task.getInlineSchemaNameMapping().convention(openApiSpec.getInlineSchemaNameMapping());
+        task.getInlineSchemaOption().convention(openApiSpec.getInlineSchemaOption());
+        task.getOpenapiNormalizer().convention(openApiSpec.getOpenapiNormalizer());
+
+        task.getApiNamePrefix().convention(openApiSpec.getApiNamePrefix());
+        task.getApiNameSuffix().convention(openApiSpec.getApiNameSuffix());
+        task.getModelNamePrefix().convention(openApiSpec.getModelNamePrefix());
+        task.getModelNameSuffix().convention(openApiSpec.getModelNameSuffix());
     }
 
     private void withJavaSourceSets(Consumer<? super SourceSetContainer> consumer) {

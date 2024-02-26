@@ -16,6 +16,7 @@
 package io.micronaut.gradle.openapi;
 
 import org.gradle.api.provider.ListProperty;
+import org.gradle.api.provider.MapProperty;
 import org.gradle.api.provider.Property;
 
 public interface OpenApiSpec {
@@ -42,6 +43,8 @@ public interface OpenApiSpec {
 
     Property<Boolean> getLombok();
 
+    Property<Boolean> getKsp();
+
     Property<Boolean> getGeneratedAnnotation();
 
     Property<Boolean> getFluxForArrays();
@@ -51,4 +54,30 @@ public interface OpenApiSpec {
     ListProperty<ParameterMappingModel> getParameterMappings();
 
     ListProperty<ResponseBodyMappingModel> getResponseBodyMappings();
+
+    MapProperty<String, String> getSchemaMapping();
+
+    MapProperty<String, String> getImportMapping();
+
+    MapProperty<String, String> getNameMapping();
+
+    MapProperty<String, String> getTypeMapping();
+
+    MapProperty<String, String> getEnumNameMapping();
+
+    MapProperty<String, String> getModelNameMapping();
+
+    MapProperty<String, String> getInlineSchemaNameMapping();
+
+    MapProperty<String, String> getInlineSchemaOption();
+
+    MapProperty<String, String> getOpenapiNormalizer();
+
+    Property<String> getApiNamePrefix();
+
+    Property<String> getApiNameSuffix();
+
+    Property<String> getModelNamePrefix();
+
+    Property<String> getModelNameSuffix();
 }
