@@ -71,6 +71,12 @@ netty:
         then:
         result.output.contains("Successfully tagged hello-world:latest")
         result.output.contains("CRaC checkpoint files may contain sensitive information.")
+        with(baseDir.resolve("build/docker/main/Dockerfile").text) {
+            contains("COPY --link layers/libs /home/app/libs")
+            contains("COPY --link layers/app /home/app")
+            contains("COPY --link layers/resources /home/app/resources")
+            contains("COPY --link scripts/run.sh /home/app/run.sh")
+        }
         task.outcome == TaskOutcome.SUCCESS
 
         where:

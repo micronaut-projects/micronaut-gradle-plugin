@@ -272,6 +272,7 @@ public class MicronautCRaCPlugin implements Plugin<Project> {
             task.getBaseImage().set(configuration.getBaseImage());
             task.getPlatform().set(configuration.getPlatform());
             task.getArgs().set(configuration.getFinalArgs());
+            task.getLayers().convention(buildLayersTask.flatMap(BuildLayersTask::getLayers));
             task.setupDockerfileInstructions();
         });
         @SuppressWarnings("java:S1604") // Needs to be an anonymous action for cache config serialization
