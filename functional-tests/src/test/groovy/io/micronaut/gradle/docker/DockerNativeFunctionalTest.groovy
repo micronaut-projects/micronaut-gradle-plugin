@@ -160,6 +160,79 @@ micronaut:
         runtime << ['netty', 'lambda_provided']
     }
 
+    void 'can set jdkVersion as #jdkVersion with #dsl DSL for native images'() {
+        given:
+        settingsFile << "rootProject.name = 'hello-world'"
+        if (kotlinDsl) {
+            kotlinBuildFile << """
+                plugins {
+                    id("io.micronaut.minimal.application")
+                    id("io.micronaut.docker")
+                    id("io.micronaut.graalvm")
+                }
+
+                micronaut {
+                    version("$micronautVersion")
+                    runtime("netty")
+                }
+
+                $repositoriesBlock
+
+                application {
+                    mainClass.set("com.example.Application")
+                }
+
+                tasks.named<io.micronaut.gradle.docker.NativeImageDockerfile>("dockerfileNative") {
+                   jdkVersion.set("$jdkVersion")
+                }
+            """.stripIndent()
+        } else {
+            buildFile << """
+                plugins {
+                    id "io.micronaut.minimal.application"
+                    id "io.micronaut.docker"
+                    id "io.micronaut.graalvm"
+                }
+
+                micronaut {
+                    version "$micronautVersion"
+                    runtime "netty"
+                }
+
+                $repositoriesBlock
+
+                application {
+                    mainClass.set("com.example.Application")
+                }
+
+                dockerfileNative {
+                    jdkVersion = '$jdkVersion'
+                }
+            """.stripIndent()
+        }
+
+        when:
+        def result = build('dockerfileNative')
+
+        def dockerfileNativeTask = result.task(':dockerfileNative')
+        def dockerFileNative = new File(testProjectDir.root, 'build/docker/native-main/DockerfileNative').readLines('UTF-8')
+
+        then:
+        dockerfileNativeTask.outcome == TaskOutcome.SUCCESS
+
+        and:
+        dockerFileNative.find { s -> s.contains("FROM ghcr.io/graalvm/native-image-community:$expected AS graalvm") }
+
+        where:
+        jdkVersion | kotlinDsl || expected
+        '21'       | true      || '21-ol9'
+        '21'       | false     || '21-ol9'
+        '17'       | true      || '17-ol9'
+        '17'       | false     || '17-ol9'
+
+        dsl = kotlinDsl ? 'kotlin' : 'groovy'
+    }
+
     void 'use wolfi-base by default and do not build mostly static native images'() {
         given:
         settingsFile << "rootProject.name = 'hello-world'"

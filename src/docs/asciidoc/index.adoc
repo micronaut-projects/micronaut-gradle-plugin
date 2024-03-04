@@ -874,6 +874,25 @@ tasks.named<io.micronaut.gradle.docker.NativeImageDockerfile>("dockerfileNative"
 
 The above configuration uses a max heap setting of `128m` for Java and `64m` for native executable for the application.
 
+==== GraalVM JDK version
+
+By default, the `dockerfileNative` task will create a dockerfile that uses the Graal JDK base image with the current JDK version.
+To build a native executable inside docker with a specific GraalVM JDK version, you can use the `jdkVersion` property of the `dockerfileNative` task:
+
+[source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
+----
+dockerfileNative {
+    jdkVersion = '21'
+}
+----
+
+[source, kotlin, subs="verbatim,attributes", role="multi-language-sample"]
+----
+tasks.named<io.micronaut.gradle.docker.NativeImageDockerfile>("dockerfileNative") {
+   jdkVersion.set("21")
+}
+----
+
 ==== Adding additional instructions
 
 To add additional docker instructions to the generated Dockerfile, such as adding a HEALTHCHECK, you can do the following. The additional instructions will be added at the end of the `Dockerfile` just before the `ENTRYPOINT`.
