@@ -1259,7 +1259,28 @@ tasks.named&lt;io.micronaut.gradle.docker.NativeImageDockerfile&gt;("dockerfileN
 </div>
 </div>
 <div class="sect3">
-<h4 id="_adding_additional_instructions"><a class="anchor" href="#_adding_additional_instructions"></a>6.4.3. Adding additional instructions</h4>
+<h4 id="_graalvm_jdk_version"><a class="anchor" href="#_graalvm_jdk_version"></a>6.4.3. GraalVM JDK version</h4>
+<div class="paragraph">
+<p>By default, the <code>dockerfileNative</code> task will create a dockerfile that uses the Graal JDK base image with the current JDK version.
+To build a native executable inside docker with a specific GraalVM JDK version, you can use the <code>jdkVersion</code> property of the <code>dockerfileNative</code> task:</p>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-groovy hljs" data-lang="groovy">dockerfileNative {
+    jdkVersion = '21'
+}</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-kotlin hljs" data-lang="kotlin">tasks.named&lt;io.micronaut.gradle.docker.NativeImageDockerfile&gt;("dockerfileNative") {
+   jdkVersion.set("21")
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_adding_additional_instructions"><a class="anchor" href="#_adding_additional_instructions"></a>6.4.4. Adding additional instructions</h4>
 <div class="paragraph">
 <p>To add additional docker instructions to the generated Dockerfile, such as adding a HEALTHCHECK, you can do the following. The additional instructions will be added at the end of the <code>Dockerfile</code> just before the <code>ENTRYPOINT</code>.</p>
 </div>
@@ -1292,7 +1313,7 @@ tasks.named&lt;io.micronaut.gradle.docker.NativeImageDockerfile&gt;("dockerfileN
 </div>
 </div>
 <div class="sect3">
-<h4 id="_tweaking_the_generated_docker_files"><a class="anchor" href="#_tweaking_the_generated_docker_files"></a>6.4.4. Tweaking the generated docker files</h4>
+<h4 id="_tweaking_the_generated_docker_files"><a class="anchor" href="#_tweaking_the_generated_docker_files"></a>6.4.5. Tweaking the generated docker files</h4>
 <div class="paragraph">
 <p>In case adding instructions doesn&#8217;t generate the expected output, for example because of ordering issues, or because of multi-level docker files, an API will let you modify the generated files.</p>
 </div>
@@ -1339,7 +1360,7 @@ tasks.named&lt;io.micronaut.gradle.docker.NativeImageDockerfile&gt;("dockerfileN
 </div>
 </div>
 <div class="sect3">
-<h4 id="_duplicates_on_classpath"><a class="anchor" href="#_duplicates_on_classpath"></a>6.4.5. Duplicates on classpath</h4>
+<h4 id="_duplicates_on_classpath"><a class="anchor" href="#_duplicates_on_classpath"></a>6.4.6. Duplicates on classpath</h4>
 <div class="paragraph">
 <p>In some projects, it may happen that different transitive dependencies have the same file name.
 In this case, the task which builds the layers will fail with a duplicate error.
