@@ -226,6 +226,7 @@ public abstract class CRaCCheckpointDockerfile extends Dockerfile {
             &latest=true\
             &release_status=ga\
             &certifications=tck\
+            &archive_type=tar.gz\
             &page=1\
             &page_size=100""".formatted(javaVersion, os, arch);
     }
