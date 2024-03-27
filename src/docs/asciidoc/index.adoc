@@ -1853,7 +1853,7 @@ micronaut {
 
 == OpenAPI code generation
 
-The `io.micronaut.openapi` plugin adds support for generating https://www.openapis.org/[OpenAPI] clients or servers, given an OpenAPI definition.
+The `io.micronaut.openapi` plugin adds support for generating https://www.openapis.org/[OpenAPI] clients or servers, given an OpenAPI definition, in both Java and Kotlin.
 
 The plugin adds an link:api/io/micronaut/gradle/openapi/OpenApiExtension.html[openapi] extension to the `micronaut` configuration block.
 
@@ -1886,6 +1886,8 @@ micronaut {
             modelPackageName.set("com.mycompany.model")
             useOptional.set(true)
             clientId.set("some-client-id")
+            // Supports Kotlin codegen too
+            lang.set("kotlin")
         }
     }
 }
@@ -1922,6 +1924,8 @@ micronaut {
             apiPackageName.set("com.mycompany.api")
             modelPackageName.set("com.mycompany.model")
             controllerPackage.set("com.mycompany.controller")
+            // Supports Kotlin codegen too
+            lang.set("kotlin")
         }
     }
 }
