@@ -2594,7 +2594,7 @@ Currently, CRaC support has only been tested on Ubuntu 18.04, 20.04 and 22.04.
 <h2 id="_openapi_code_generation"><a class="anchor" href="#_openapi_code_generation"></a>11. OpenAPI code generation</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>The <code>io.micronaut.openapi</code> plugin adds support for generating <a href="https://www.openapis.org/">OpenAPI</a> clients or servers, given an OpenAPI definition.</p>
+<p>The <code>io.micronaut.openapi</code> plugin adds support for generating <a href="https://www.openapis.org/">OpenAPI</a> clients or servers, given an OpenAPI definition, in both Java and Kotlin.</p>
 </div>
 <div class="paragraph">
 <p>The plugin adds an <a href="api/io/micronaut/gradle/openapi/OpenApiExtension.html">openapi</a> extension to the <code>micronaut</code> configuration block.</p>
@@ -2629,6 +2629,8 @@ Currently, CRaC support has only been tested on Ubuntu 18.04, 20.04 and 22.04.
             modelPackageName.set("com.mycompany.model")
             useOptional.set(true)
             clientId.set("some-client-id")
+            // Supports Kotlin codegen too
+            lang.set("kotlin")
         }
     }
 }</code></pre>
@@ -2669,6 +2671,8 @@ Currently, CRaC support has only been tested on Ubuntu 18.04, 20.04 and 22.04.
             apiPackageName.set("com.mycompany.api")
             modelPackageName.set("com.mycompany.model")
             controllerPackage.set("com.mycompany.controller")
+            // Supports Kotlin codegen too
+            lang.set("kotlin")
         }
     }
 }</code></pre>
