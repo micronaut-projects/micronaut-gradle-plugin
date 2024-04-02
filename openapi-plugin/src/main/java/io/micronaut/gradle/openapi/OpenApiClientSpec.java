@@ -22,6 +22,8 @@ public interface OpenApiClientSpec extends OpenApiSpec {
 
     Property<String> getClientId();
 
+    Property<Boolean> getClientPath();
+
     Property<Boolean> getUseAuth();
 
     Property<String> getAuthorizationFilterPattern();
