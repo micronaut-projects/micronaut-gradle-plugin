@@ -29,6 +29,7 @@ import org.gradle.api.file.SourceDirectorySet;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.SourceSetContainer;
+import org.openapitools.codegen.CodegenConstants;
 
 import javax.inject.Inject;
 import java.io.File;
@@ -81,14 +82,14 @@ public abstract class DefaultOpenApiExtension implements OpenApiExtension {
                 task.getAot().set(serverSpec.getAot());
                 task.setDescription("Generates OpenAPI controllers from an OpenAPI definition");
                 configureServerTask(serverSpec, task);
-                task.getOutputKinds().addAll("APIS", "SUPPORTING_FILES");
+                task.getOutputKinds().addAll(CodegenConstants.APIS, CodegenConstants.SUPPORTING_FILES);
             });
             var models = project.getTasks().register(generateModelsTaskName(name), OpenApiServerGenerator.class, task -> {
                 configureCommonProperties(name, task, serverSpec, definition);
                 task.getAot().set(serverSpec.getAot());
                 task.setDescription("Generates OpenAPI models from an OpenAPI definition");
                 configureServerTask(serverSpec, task);
-                task.getOutputKinds().add("MODELS");
+                task.getOutputKinds().add(CodegenConstants.MODELS);
             });
             withJavaSourceSets(sourceSets -> {
                 var javaMain = sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME).getJava();
@@ -207,13 +208,13 @@ public abstract class DefaultOpenApiExtension implements OpenApiExtension {
                 configureCommonProperties(name, task, clientSpec, definition);
                 task.setDescription("Generates OpenAPI client from an OpenAPI definition");
                 configureClientTask(clientSpec, task);
-                task.getOutputKinds().add("APIS");
+                task.getOutputKinds().add(CodegenConstants.APIS);
             });
             var models = project.getTasks().register(generateModelsTaskName(name), OpenApiClientGenerator.class, task -> {
                 configureCommonProperties(name, task, clientSpec, definition);
                 task.setDescription("Generates OpenAPI client models from an OpenAPI definition");
                 configureClientTask(clientSpec, task);
-                task.getOutputKinds().add("MODELS");
+                task.getOutputKinds().add(CodegenConstants.MODELS);
             });
             withJavaSourceSets(sourceSets -> {
                 var javaMain = sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME).getJava();
@@ -260,6 +261,7 @@ public abstract class DefaultOpenApiExtension implements OpenApiExtension {
 
     private static void configureClientTask(OpenApiClientSpec clientSpec, OpenApiClientGenerator task) {
         task.getClientId().convention(clientSpec.getClientId());
+        task.getClientPath().convention(clientSpec.getClientPath());
         task.getAdditionalClientTypeAnnotations().set(clientSpec.getAdditionalClientTypeAnnotations());
         task.getBasePathSeparator().convention(clientSpec.getBasePathSeparator());
         task.getAuthorizationFilterPattern().convention(clientSpec.getAuthorizationFilterPattern());

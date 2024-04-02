@@ -28,6 +28,8 @@ public abstract class OpenApiClientWorkAction extends AbstractOpenApiWorkAction<
 
         Property<String> getClientId();
 
+        Property<Boolean> getClientPath();
+
         Property<Boolean> getUseAuth();
 
         Property<String> getAuthorizationFilterPattern();
@@ -50,6 +52,9 @@ public abstract class OpenApiClientWorkAction extends AbstractOpenApiWorkAction<
                 if (parameters.getClientId().isPresent()) {
                     spec.withClientId(parameters.getClientId().get());
                 }
+                if (parameters.getClientPath().isPresent()) {
+                    spec.withClientPath(parameters.getClientPath().get());
+                }
                 if (parameters.getBasePathSeparator().isPresent()) {
                     spec.withBasePathSeparator(parameters.getBasePathSeparator().get());
                 }
@@ -67,6 +72,9 @@ public abstract class OpenApiClientWorkAction extends AbstractOpenApiWorkAction<
 
                 if (parameters.getClientId().isPresent()) {
                     spec.withClientId(parameters.getClientId().get());
+                }
+                if (parameters.getClientPath().isPresent()) {
+                    spec.withClientPath(parameters.getClientPath().get());
                 }
                 if (parameters.getBasePathSeparator().isPresent()) {
                     spec.withBasePathSeparator(parameters.getBasePathSeparator().get());

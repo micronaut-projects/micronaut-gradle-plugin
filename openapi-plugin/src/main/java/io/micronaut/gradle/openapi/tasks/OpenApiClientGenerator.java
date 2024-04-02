@@ -29,6 +29,10 @@ public abstract class OpenApiClientGenerator extends AbstractOpenApiGenerator<Op
     public abstract Property<String> getClientId();
 
     @Input
+    @Optional
+    public abstract Property<Boolean> getClientPath();
+
+    @Input
     public abstract Property<Boolean> getUseAuth();
 
     @Input
@@ -50,6 +54,7 @@ public abstract class OpenApiClientGenerator extends AbstractOpenApiGenerator<Op
     @Override
     protected void configureWorkerParameters(OpenApiClientWorkAction.ClientParameters params) {
         params.getClientId().set(getClientId());
+        params.getClientPath().set(getClientPath());
         params.getUseAuth().set(getUseAuth());
         params.getAuthorizationFilterPattern().set(getAuthorizationFilterPattern());
         params.getBasePathSeparator().set(getBasePathSeparator());

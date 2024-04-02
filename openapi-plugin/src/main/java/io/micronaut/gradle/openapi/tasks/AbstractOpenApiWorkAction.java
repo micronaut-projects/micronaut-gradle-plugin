@@ -118,7 +118,7 @@ public abstract class AbstractOpenApiWorkAction<T extends AbstractOpenApiWorkAct
                 .withOutputs(
                         parameters.getOutputKinds().get()
                                 .stream()
-                                .map(s -> MicronautCodeGeneratorEntryPoint.OutputKind.valueOf(s.toUpperCase(Locale.US)))
+                                .map(MicronautCodeGeneratorEntryPoint.OutputKind::of)
                                 .toArray(MicronautCodeGeneratorEntryPoint.OutputKind[]::new)
                 )
                 .withOptions(options -> options.withInvokerPackage(parameters.getInvokerPackageName().get())
