@@ -77,7 +77,7 @@ public abstract class MicronautDockerfile extends Dockerfile implements DockerBu
                     .convention(Collections.singletonList(8080));
         this.targetWorkingDirectory = objects.property(String.class).convention(DEFAULT_WORKING_DIR);
         JavaPluginExtension javaExtension = PluginsHelper.javaPluginExtensionOf(project);
-        getJdkVersion().set(javaExtension.getTargetCompatibility());
+        getJdkVersion().convention(javaExtension.getTargetCompatibility());
     }
 
     @Override
