@@ -59,6 +59,7 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
 
     private static final List<Integer> SUPPORTED_JAVA_VERSIONS = List.of(
             // keep those in descending order
+            21,
             17
     );
     private static final String ARM_ARCH = "aarch64";
@@ -548,6 +549,7 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
         if (buildStrategy == DockerBuildStrategy.ORACLE_FUNCTION) {
             options.getMainClass().set("com.fnproject.fn.runtime.EntryPoint");
             options.getBuildArgs().add("--report-unsupported-elements-at-runtime");
+            options.getBuildArgs().add("-H:PageSize=64k");
         } else if (buildStrategy == DockerBuildStrategy.LAMBDA) {
             var micronautExtension = findMicronautExtension(getProject());
             var nativeLambdaExtension = micronautExtension.getExtensions().getByType(NativeLambdaExtension.class);

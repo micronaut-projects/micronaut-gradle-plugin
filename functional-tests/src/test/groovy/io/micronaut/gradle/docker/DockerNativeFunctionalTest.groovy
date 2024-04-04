@@ -759,7 +759,7 @@ class Application {
 
         then:
         def dockerfile = new File(testProjectDir.root, 'build/docker/main/Dockerfile').text
-        dockerfile == """FROM eclipse-temurin:17-jre-focal
+        dockerfile == """FROM eclipse-temurin:17-jre
 WORKDIR /home/app
 COPY --link layers/libs /home/app/libs
 COPY --link server.iprof /home/app/server.iprof
@@ -837,7 +837,7 @@ class Application {
 
         then:
         def dockerfile = new File(testProjectDir.root, 'build/docker/main/Dockerfile').text
-        dockerfile == """FROM eclipse-temurin:17-jre-focal
+        dockerfile == """FROM eclipse-temurin:17-jre
 WORKDIR /home/app
 COPY --link layers/libs /home/app/libs
 COPY --link server.iprof /home/app/server.iprof
