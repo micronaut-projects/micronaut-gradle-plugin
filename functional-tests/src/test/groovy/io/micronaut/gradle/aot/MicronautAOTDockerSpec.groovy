@@ -19,7 +19,7 @@ class MicronautAOTDockerSpec extends AbstractAOTPluginSpec {
         result.task(":optimizedDockerfile").outcome != TaskOutcome.FAILED
 
         def dockerFile = normalizeLineEndings(file("build/docker/optimized/Dockerfile").text)
-        dockerFile == """FROM eclipse-temurin:17-jre-focal
+        dockerFile == """FROM eclipse-temurin:17-jre
 WORKDIR /home/app
 COPY --link layers/libs /home/app/libs
 COPY --link layers/app /home/app/
@@ -44,7 +44,7 @@ ENTRYPOINT ["java", "-jar", "/home/app/application.jar"]
         result.task(":optimizedDockerBuild").outcome != TaskOutcome.FAILED
 
         def dockerFile = normalizeLineEndings(file("build/docker/optimized/Dockerfile").text)
-        dockerFile == """FROM eclipse-temurin:17-jre-focal
+        dockerFile == """FROM eclipse-temurin:17-jre
 WORKDIR /home/app
 COPY --link layers/libs /home/app/libs
 COPY --link layers/app /home/app/
