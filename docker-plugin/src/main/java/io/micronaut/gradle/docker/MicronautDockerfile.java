@@ -1,19 +1,20 @@
 package io.micronaut.gradle.docker;
 
 import com.bmuschko.gradle.docker.tasks.image.Dockerfile;
+import io.micronaut.gradle.PluginsHelper;
 import io.micronaut.gradle.docker.model.Layer;
 import org.gradle.api.JavaVersion;
 import org.gradle.api.Project;
 import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.plugins.BasePlugin;
 import org.gradle.api.plugins.JavaApplication;
+import org.gradle.api.plugins.JavaPluginExtension;
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Property;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.Optional;
 import org.gradle.api.tasks.TaskAction;
-import org.gradle.internal.jvm.Jvm;
 
 import javax.inject.Inject;
 import java.io.IOException;
@@ -24,7 +25,7 @@ import java.util.List;
 
 public abstract class MicronautDockerfile extends Dockerfile implements DockerBuildOptions {
     public static final String DEFAULT_WORKING_DIR = "/home/app";
-    public static final String DEFAULT_BASE_IMAGE = "eclipse-temurin:17-jre-focal";
+    public static final String DEFAULT_BASE_IMAGE = "eclipse-temurin:";
 
     @Input
     private final Property<String> baseImage;
@@ -36,6 +37,12 @@ public abstract class MicronautDockerfile extends Dockerfile implements DockerBu
     protected final Property<DockerBuildStrategy> buildStrategy;
     @Input
     private final Property<String> defaultCommand;
+
+    /**
+     * @return The JDK version to use with native image. Defaults to the toolchain version, or the current Java version.
+     */
+    @Input
+    public abstract Property<JavaVersion> getJdkVersion();
 
     @Input
     private final Property<String> targetWorkingDirectory;
@@ -69,6 +76,8 @@ public abstract class MicronautDockerfile extends Dockerfile implements DockerBu
         this.exposedPorts = objects.listProperty(Integer.class)
                     .convention(Collections.singletonList(8080));
         this.targetWorkingDirectory = objects.property(String.class).convention(DEFAULT_WORKING_DIR);
+        JavaPluginExtension javaExtension = PluginsHelper.javaPluginExtensionOf(project);
+        getJdkVersion().convention(javaExtension.getTargetCompatibility());
     }
 
     @Override
@@ -120,20 +129,32 @@ public abstract class MicronautDockerfile extends Dockerfile implements DockerBu
         switch (buildStrategy) {
             case ORACLE_FUNCTION:
                 javaApplication.getMainClass().set("com.fnproject.fn.runtime.EntryPoint");
-                from(new Dockerfile.From(from != null ? from : "fnproject/fn-java-fdk:" + getProjectFnVersion()));
-                workingDir("/function");
-                setupResources(this, getLayers().get(), "function");
+                from(new From("fnproject/fn-java-fdk:jre17-latest").withStage("fnfdk"));
+                from(new Dockerfile.From(from != null ? from : DEFAULT_BASE_IMAGE + getDockerDefaultImageJavaTag()));
+                copyFile(new CopyFile("/function/", "./function").withStage("fnfdk"));
+                setupResources(this, getLayers().get(), "/function");
                 String cmd = this.defaultCommand.get();
                 if ("none".equals(cmd)) {
                     super.defaultCommand("io.micronaut.oraclecloud.function.http.HttpFunction::handleRequest");
                 } else {
                     super.defaultCommand(cmd);
                 }
+                super.entryPoint(
+                    "java",
+                    "-XX:-UsePerfData",
+                    "-XX:+UseSerialGC",
+                    "-Xshare:auto",
+                    "-Djava.awt.headless=true",
+                    "-Djava.library.path=/function/runtime/lib",
+                    "-cp",
+                    "/function/libs/*:/function/runtime/*:/function/*:/function/resources",
+                    "com.fnproject.fn.runtime.EntryPoint"
+                );
                 break;
             case LAMBDA:
                 javaApplication.getMainClass().set("io.micronaut.function.aws.runtime.MicronautLambdaRuntime");
             default:
-                from(new Dockerfile.From(from != null ? from : DEFAULT_BASE_IMAGE));
+                from(new Dockerfile.From(from != null ? from : DEFAULT_BASE_IMAGE + getDockerDefaultImageJavaTag()));
                 setupResources(this, getLayers().get(), null);
                 exposePort(exposedPorts);
                 getInstructions().addAll(additionalInstructions);
@@ -212,10 +233,14 @@ public abstract class MicronautDockerfile extends Dockerfile implements DockerBu
         return this;
     }
 
-    private String getProjectFnVersion() {
-        JavaVersion javaVersion = Jvm.current().getJavaVersion();
-        if (javaVersion != null && javaVersion.isCompatibleWith(JavaVersion.VERSION_17)) {
-            return "jre17-latest";
+    private String getDockerDefaultImageJavaTag() {
+        JavaVersion javaVersion = getJdkVersion().get();
+
+        if (javaVersion.isCompatibleWith(JavaVersion.VERSION_21)) {
+            return "21-jre";
+        }
+        if (javaVersion.isCompatibleWith(JavaVersion.VERSION_17)) {
+            return "17-jre";
         }
         return "latest";
     }
