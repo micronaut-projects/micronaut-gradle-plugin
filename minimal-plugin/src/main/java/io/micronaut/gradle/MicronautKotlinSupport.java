@@ -72,7 +72,7 @@ public class MicronautKotlinSupport {
         PluginManager pluginManager = project.getPluginManager();
         final TaskContainer tasks = project.getTasks();
         project.getConfigurations().create(KOTLIN_PROCESSORS, conf -> {
-            conf.setCanBeConsumed(false);
+            conf.setCanBeResolved(false);
             conf.setCanBeConsumed(false);
         });
         tasks.withType(KotlinCompile.class).configureEach(kotlinCompile -> {
