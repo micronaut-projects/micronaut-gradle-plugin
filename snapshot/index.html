@@ -2640,55 +2640,6 @@ Currently, CRaC support has only been tested on Ubuntu 18.04, 20.04 and 22.04.
 <p>The generated sources will be found by default in your <code>$buildDir/generated/openapi/client</code> directory, and automatically added to your main source set (so the classes are directly available for you to use).</p>
 </div>
 <div class="paragraph">
-<p>You can generate multiple clients by adding multiple <code>client</code> blocks, in which case each client is identified by a name:</p>
-</div>
-<div class="listingblock multi-language-sample">
-<div class="content">
-<pre class="highlightjs highlight"><code class="language-groovy hljs" data-lang="groovy">micronaut {
-    ...
-    openapi {
-        client("first", file("src/openapi/my-definition.yml")) {
-            apiPackageName = "com.mycompany.api"
-            modelPackageName = "com.mycompany.model"
-            useOptional = true
-            clientId = "some-client-id"
-        }
-        client("second", file("src/openapi/other-definition.yml")) {
-            apiPackageName = "com.mycompany.other.api"
-            modelPackageName = "com.mycompany.other.model"
-            useOptional = true
-            clientId = "some-other-client-id"
-        }
-    }
-}</code></pre>
-</div>
-</div>
-<div class="listingblock multi-language-sample">
-<div class="content">
-<pre class="highlightjs highlight"><code class="language-kotlin hljs" data-lang="kotlin">micronaut {
-    ...
-    openapi {
-        client("first", file("src/openapi/my-definition.yml")) {
-            apiPackageName.set("com.mycompany.api")
-            modelPackageName.set("com.mycompany.model")
-            useOptional.set(true)
-            clientId.set("some-client-id")
-            // Supports Kotlin codegen too
-            lang.set("kotlin")
-        }
-        client("second", file("src/openapi/other-definition.yml")) {
-            apiPackageName.set("com.mycompany.other.api")
-            modelPackageName.set("com.mycompany.other.model")
-            useOptional.set(true)
-            clientId.set("other-client-id")
-            // Supports Kotlin codegen too
-            lang.set("kotlin")
-        }
-    }
-}</code></pre>
-</div>
-</div>
-<div class="paragraph">
 <p>Please refer to <a href="api/io/micronaut/gradle/openapi/OpenApiClientSpec.html">OpenApiClientSpec</a> for the whole list of client configuration options.</p>
 </div>
 </div>
@@ -2729,51 +2680,6 @@ Currently, CRaC support has only been tested on Ubuntu 18.04, 20.04 and 22.04.
 </div>
 <div class="paragraph">
 <p>The generated sources will be found by default in your <code>$buildDir/generated/openapi/server</code> directory, and automatically added to your main source set (so the classes are directly available for you to use).</p>
-</div>
-<div class="paragraph">
-<p>You can generate multiple servers by providing a name to the <code>server</code> block:</p>
-</div>
-<div class="listingblock multi-language-sample">
-<div class="content">
-<pre class="highlightjs highlight"><code class="language-groovy hljs" data-lang="groovy">micronaut {
-    ...
-    openapi {
-        server("first", file("src/openapi/my-definition.yml")) {
-            apiPackageName = "com.mycompany.api"
-            modelPackageName = "com.mycompany.model"
-            controllerPackage = "com.mycompany.controller"
-        }
-        server("second", file("src/openapi/other-definition.yml")) {
-            apiPackageName = "com.mycompany.other.api"
-            modelPackageName = "com.mycompany.other.model"
-            controllerPackage = "com.mycompany.other.controller"
-        }
-    }
-}</code></pre>
-</div>
-</div>
-<div class="listingblock multi-language-sample">
-<div class="content">
-<pre class="highlightjs highlight"><code class="language-kotlin hljs" data-lang="kotlin">micronaut {
-    ...
-    openapi {
-        server("first", file("src/openapi/my-definition.yml")) {
-            apiPackageName.set("com.mycompany.api")
-            modelPackageName.set("com.mycompany.model")
-            controllerPackage.set("com.mycompany.controller")
-            // Supports Kotlin codegen too
-            lang.set("kotlin")
-        }
-        server("second", file("src/openapi/other-definition.yml")) {
-            apiPackageName.set("com.mycompany.other.api")
-            modelPackageName.set("com.mycompany.other.model")
-            controllerPackage.set("com.mycompany.other.controller")
-            // Supports Kotlin codegen too
-            lang.set("kotlin")
-        }
-    }
-}</code></pre>
-</div>
 </div>
 <div class="admonitionblock note">
 <table>
