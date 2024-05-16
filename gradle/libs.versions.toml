@@ -1,6 +1,6 @@
 [versions]
-kotlin = "1.9.23"
-ksp = "1.9.23-1.0.20"
+kotlin = "1.9.24"
+ksp = "1.9.24-1.0.20"
 docker = "9.4.0"
 diffplug = "3.44.0"
 shadow = "8.1.1"
@@ -9,14 +9,14 @@ spock = "2.3-groovy-3.0"
 oraclelinux = "9"
 graalvmPlugin = "0.10.1"
 mockserver = "5.15.0"
-log4j2 = "2.22.1"
+log4j2 = "2.23.1"
 jetbrains-annotations = "24.1.0"
 tomlj = "1.1.1"
 
-micronaut-platform = "4.3.3" # This is the platform version, used in our tests
-micronaut-aot = "2.3.0"
-micronaut-testresources = "2.5.1"
-micronaut-openapi = "6.7.0"
+micronaut-platform = "4.4.2" # This is the platform version, used in our tests
+micronaut-aot = "2.4.0"
+micronaut-testresources = "2.5.2"
+micronaut-openapi = "6.9.1"
 
 [libraries]
 # Core
