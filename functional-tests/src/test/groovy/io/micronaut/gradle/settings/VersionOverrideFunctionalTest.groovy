@@ -48,6 +48,76 @@ micronaut-core = "2048"
 
     }
 
+    def "can override the any version from user-defined catalogs"() {
+        given:
+        file("gradle").mkdirs()
+        file("gradle/my.versions.toml") << """
+[versions]
+foo = "1.0"
+
+[libraries]
+foo = { module = "com.group:foo", version.ref = "foo" }
+        """
+        settingsFile << """
+            plugins {
+                id 'io.micronaut.platform.catalog'
+            }
+
+            rootProject.name = 'hello-world'     
+            
+            dependencyResolutionManagement {
+                versionCatalogs {
+                    create("my") {
+                        from(files("gradle/my.versions.toml"))
+                    }
+                }
+            }       
+            """
+        buildFile << """
+            plugins {
+                id "io.micronaut.minimal.application"
+            }
+            
+            micronaut {                
+                runtime "netty"
+                testRuntime "junit5"
+            }
+            
+            $repositoriesBlock
+            mainClassName="example.Application"
+
+            configurations {
+                dummy
+            }
+
+            dependencies {
+                dummy my.foo
+            }
+
+            tasks.register("checkOverride") {
+                doLast {
+                    println configurations.dummy.files()
+                }
+            }
+        """
+        file("gradle.properties") << """
+            micronautVersion=$micronautVersion
+        """
+
+        file('gradle').mkdir()
+        file('gradle/my-override.versions.toml') << """
+[versions]
+foo = "2048"
+"""
+
+        when:
+        def result = fails('checkOverride')
+
+        then:
+        result.output.contains('Could not find com.group:foo:2048')
+
+    }
+
 
     private File writeExampleClass() {
         def javaFile = testProjectDir.newFile("src/test/java/example/ExampleTest.java")
