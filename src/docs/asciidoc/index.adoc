@@ -1637,7 +1637,7 @@ plugins {
 }
 
 dependencies {
-    testresources(project(":shared-testresources"))           // <2>
+    testResourcesService(project(":shared-testresources"))           // <2>
 }
 ----
 <1> Use the test resources consumer plugin instead
