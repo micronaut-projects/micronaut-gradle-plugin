@@ -21,7 +21,7 @@ import org.gradle.api.provider.Property;
 
 public abstract class OpenApiServerWorkAction extends AbstractOpenApiWorkAction<OpenApiServerWorkAction.ServerParameters> {
 
-    interface ServerParameters extends OpenApiParameters {
+    protected interface ServerParameters extends OpenApiParameters {
 
         Property<String> getControllerPackage();
 
