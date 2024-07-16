@@ -18,7 +18,7 @@ package io.micronaut.gradle.openapi;
 import java.io.Serializable;
 
 /**
- * A model that can be used to specify parameter mappings during the OpenAPI gneration
+ * A model that can be used to specify parameter mappings during the OpenAPI generation
  *
  * <p>An equivalent to Micronaut OpenAPI's ParameterMapping but
  * without using classes from that dependency so that we can isolate
@@ -57,7 +57,7 @@ public final class ParameterMappingModel implements Serializable {
     private final boolean isValidated;
 
     /**
-     * Create a prameter mapping
+     * Create a parameter mapping
      *
      * @param name The name of the parameter as described by the name field in specification.
      * @param location The location of parameter. Path parameters cannot be mapped, as this

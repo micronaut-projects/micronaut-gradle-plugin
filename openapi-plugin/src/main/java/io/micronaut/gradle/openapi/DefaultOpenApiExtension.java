@@ -208,7 +208,7 @@ public abstract class DefaultOpenApiExtension implements OpenApiExtension {
                 configureCommonProperties(name, task, clientSpec, definition);
                 task.setDescription("Generates OpenAPI client from an OpenAPI definition");
                 configureClientTask(clientSpec, task);
-                task.getOutputKinds().add(CodegenConstants.APIS);
+                task.getOutputKinds().addAll(CodegenConstants.APIS, CodegenConstants.SUPPORTING_FILES);
             });
             var models = project.getTasks().register(generateModelsTaskName(name), OpenApiClientGenerator.class, task -> {
                 configureCommonProperties(name, task, clientSpec, definition);
