@@ -24,7 +24,7 @@ import org.gradle.api.provider.Property;
 
 public abstract class OpenApiClientWorkAction extends AbstractOpenApiWorkAction<OpenApiClientWorkAction.ClientParameters> {
 
-    interface ClientParameters extends AbstractOpenApiWorkAction.OpenApiParameters {
+    protected interface ClientParameters extends AbstractOpenApiWorkAction.OpenApiParameters {
 
         Property<String> getClientId();
 
