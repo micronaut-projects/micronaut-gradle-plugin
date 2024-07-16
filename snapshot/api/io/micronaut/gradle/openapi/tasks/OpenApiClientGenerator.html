@@ -74,7 +74,7 @@ loadScripts(document, 'script');</script>
 <div class="inheritance" title="Inheritance Tree"><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">java.lang.Object</a>
 <div class="inheritance">org.gradle.api.internal.AbstractTask
 <div class="inheritance">org.gradle.api.DefaultTask
-<div class="inheritance"><a href="AbstractOpenApiGenerator.html" title="class in io.micronaut.gradle.openapi.tasks">io.micronaut.gradle.openapi.tasks.AbstractOpenApiGenerator</a>&lt;<a href="OpenApiClientWorkAction.html" title="class in io.micronaut.gradle.openapi.tasks">OpenApiClientWorkAction</a>,<wbr>io.micronaut.gradle.openapi.tasks.OpenApiClientWorkAction.ClientParameters&gt;
+<div class="inheritance"><a href="AbstractOpenApiGenerator.html" title="class in io.micronaut.gradle.openapi.tasks">io.micronaut.gradle.openapi.tasks.AbstractOpenApiGenerator</a>&lt;<a href="OpenApiClientWorkAction.html" title="class in io.micronaut.gradle.openapi.tasks">OpenApiClientWorkAction</a>,<wbr><a href="OpenApiClientWorkAction.ClientParameters.html" title="interface in io.micronaut.gradle.openapi.tasks">OpenApiClientWorkAction.ClientParameters</a>&gt;
 <div class="inheritance">io.micronaut.gradle.openapi.tasks.OpenApiClientGenerator</div>
 </div>
 </div>
@@ -88,7 +88,7 @@ loadScripts(document, 'script');</script>
 <hr>
 <div class="type-signature"><span class="annotations">@CacheableTask
 </span><span class="modifiers">public abstract class </span><span class="element-name type-name-label">OpenApiClientGenerator</span>
-<span class="extends-implements">extends <a href="AbstractOpenApiGenerator.html" title="class in io.micronaut.gradle.openapi.tasks">AbstractOpenApiGenerator</a>&lt;<a href="OpenApiClientWorkAction.html" title="class in io.micronaut.gradle.openapi.tasks">OpenApiClientWorkAction</a>,<wbr>io.micronaut.gradle.openapi.tasks.OpenApiClientWorkAction.ClientParameters&gt;</span></div>
+<span class="extends-implements">extends <a href="AbstractOpenApiGenerator.html" title="class in io.micronaut.gradle.openapi.tasks">AbstractOpenApiGenerator</a>&lt;<a href="OpenApiClientWorkAction.html" title="class in io.micronaut.gradle.openapi.tasks">OpenApiClientWorkAction</a>,<wbr><a href="OpenApiClientWorkAction.ClientParameters.html" title="interface in io.micronaut.gradle.openapi.tasks">OpenApiClientWorkAction.ClientParameters</a>&gt;</span></div>
 </section>
 <section class="summary">
 <ul class="summary-list">
@@ -135,7 +135,7 @@ loadScripts(document, 'script');</script>
 <div class="table-header col-second">Method</div>
 <div class="table-header col-last">Description</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>protected void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#configureWorkerParameters(io.micronaut.gradle.openapi.tasks.OpenApiClientWorkAction.ClientParameters)" class="member-name-link">configureWorkerParameters</a><wbr>(io.micronaut.gradle.openapi.tasks.OpenApiClientWorkAction.ClientParameters&nbsp;params)</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#configureWorkerParameters(io.micronaut.gradle.openapi.tasks.OpenApiClientWorkAction.ClientParameters)" class="member-name-link">configureWorkerParameters</a><wbr>(<a href="OpenApiClientWorkAction.ClientParameters.html" title="interface in io.micronaut.gradle.openapi.tasks">OpenApiClientWorkAction.ClientParameters</a>&nbsp;params)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>abstract org.gradle.api.provider.ListProperty&lt;<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&gt;</code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#getAdditionalClientTypeAnnotations()" class="member-name-link">getAdditionalClientTypeAnnotations</a>()</code></div>
@@ -253,17 +253,17 @@ loadScripts(document, 'script');</script>
 <div class="member-signature"><span class="modifiers">protected</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Class.html" title="class or interface in java.lang" class="external-link">Class</a>&lt;<a href="OpenApiClientWorkAction.html" title="class in io.micronaut.gradle.openapi.tasks">OpenApiClientWorkAction</a>&gt;</span>&nbsp;<span class="element-name">getWorkerAction</span>()</div>
 <dl class="notes">
 <dt>Specified by:</dt>
-<dd><code><a href="AbstractOpenApiGenerator.html#getWorkerAction()">getWorkerAction</a></code>&nbsp;in class&nbsp;<code><a href="AbstractOpenApiGenerator.html" title="class in io.micronaut.gradle.openapi.tasks">AbstractOpenApiGenerator</a>&lt;<a href="OpenApiClientWorkAction.html" title="class in io.micronaut.gradle.openapi.tasks">OpenApiClientWorkAction</a>,<wbr>io.micronaut.gradle.openapi.tasks.OpenApiClientWorkAction.ClientParameters&gt;</code></dd>
+<dd><code><a href="AbstractOpenApiGenerator.html#getWorkerAction()">getWorkerAction</a></code>&nbsp;in class&nbsp;<code><a href="AbstractOpenApiGenerator.html" title="class in io.micronaut.gradle.openapi.tasks">AbstractOpenApiGenerator</a>&lt;<a href="OpenApiClientWorkAction.html" title="class in io.micronaut.gradle.openapi.tasks">OpenApiClientWorkAction</a>,<wbr><a href="OpenApiClientWorkAction.ClientParameters.html" title="interface in io.micronaut.gradle.openapi.tasks">OpenApiClientWorkAction.ClientParameters</a>&gt;</code></dd>
 </dl>
 </section>
 </li>
 <li>
 <section class="detail" id="configureWorkerParameters(io.micronaut.gradle.openapi.tasks.OpenApiClientWorkAction.ClientParameters)">
 <h3>configureWorkerParameters</h3>
-<div class="member-signature"><span class="modifiers">protected</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">configureWorkerParameters</span><wbr><span class="parameters">(io.micronaut.gradle.openapi.tasks.OpenApiClientWorkAction.ClientParameters&nbsp;params)</span></div>
+<div class="member-signature"><span class="modifiers">protected</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">configureWorkerParameters</span><wbr><span class="parameters">(<a href="OpenApiClientWorkAction.ClientParameters.html" title="interface in io.micronaut.gradle.openapi.tasks">OpenApiClientWorkAction.ClientParameters</a>&nbsp;params)</span></div>
 <dl class="notes">
 <dt>Specified by:</dt>
-<dd><code><a href="AbstractOpenApiGenerator.html#configureWorkerParameters(P)">configureWorkerParameters</a></code>&nbsp;in class&nbsp;<code><a href="AbstractOpenApiGenerator.html" title="class in io.micronaut.gradle.openapi.tasks">AbstractOpenApiGenerator</a>&lt;<a href="OpenApiClientWorkAction.html" title="class in io.micronaut.gradle.openapi.tasks">OpenApiClientWorkAction</a>,<wbr>io.micronaut.gradle.openapi.tasks.OpenApiClientWorkAction.ClientParameters&gt;</code></dd>
+<dd><code><a href="AbstractOpenApiGenerator.html#configureWorkerParameters(P)">configureWorkerParameters</a></code>&nbsp;in class&nbsp;<code><a href="AbstractOpenApiGenerator.html" title="class in io.micronaut.gradle.openapi.tasks">AbstractOpenApiGenerator</a>&lt;<a href="OpenApiClientWorkAction.html" title="class in io.micronaut.gradle.openapi.tasks">OpenApiClientWorkAction</a>,<wbr><a href="OpenApiClientWorkAction.ClientParameters.html" title="interface in io.micronaut.gradle.openapi.tasks">OpenApiClientWorkAction.ClientParameters</a>&gt;</code></dd>
 </dl>
 </section>
 </li>
