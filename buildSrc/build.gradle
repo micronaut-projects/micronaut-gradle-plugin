@@ -8,7 +8,6 @@ repositories {
 }
 
 dependencies {
-    implementation 'io.micronaut.docs:micronaut-docs-asciidoc-extensions:1.0.25'
     implementation 'org.asciidoctor:asciidoctor-gradle-jvm:4.0.2'
     implementation 'com.gradle.publish:plugin-publish-plugin:1.2.1'
     implementation 'pl.droidsonroids.gradle.jacoco:pl.droidsonroids.gradle.jacoco:1.0.12'
