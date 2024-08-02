@@ -31,6 +31,8 @@ public interface OpenApiSpec {
 
     Property<Boolean> getUseBeanValidation();
 
+    Property<Boolean> getUseOneOfInterfaces();
+
     Property<Boolean> getUseOptional();
 
     Property<Boolean> getUseReactive();

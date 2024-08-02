@@ -111,9 +111,10 @@ public abstract class DefaultOpenApiExtension implements OpenApiExtension {
 
     private void configureCommonExtensionDefaults(OpenApiSpec spec) {
         spec.getApiPackageName().convention("io.micronaut.openapi.api");
-        spec.getInvokerPackageName().convention("io.micronaut.openapi.invoker");
+        spec.getInvokerPackageName().convention("io.micronaut.openapi");
         spec.getModelPackageName().convention("io.micronaut.openapi.model");
         spec.getUseBeanValidation().convention(true);
+        spec.getUseOneOfInterfaces().convention(true);
         spec.getUseOptional().convention(false);
         spec.getUseReactive().convention(true);
         spec.getLombok().convention(false);
@@ -126,25 +127,25 @@ public abstract class DefaultOpenApiExtension implements OpenApiExtension {
         spec.getDateTimeFormat().convention("ZONED_DATETIME");
         spec.getLang().convention("java");
         withJava(() -> {
-                    var compileOnlyDeps = project.getConfigurations().getByName("compileOnly").getDependencies();
-                    if ("java".equalsIgnoreCase(spec.getLang().get())) {
-                        compileOnlyDeps.addAllLater(spec.getLombok().map(lombok -> {
-                            if (Boolean.TRUE.equals(lombok)) {
-                                return List.of(project.getDependencies().create("org.projectlombok:lombok"));
-                            }
-                            return List.of();
-                        }));
-                    }
-                    compileOnlyDeps.add(project.getDependencies().create("io.micronaut.openapi:micronaut-openapi"));
-
-                    var implDeps = project.getConfigurations().getByName("implementation").getDependencies();
-                    implDeps.addAllLater(spec.getUseReactive().map(reactive -> {
-                        if (Boolean.TRUE.equals(reactive)) {
-                            return List.of(project.getDependencies().create("io.projectreactor:reactor-core"));
+                var compileOnlyDeps = project.getConfigurations().getByName("compileOnly").getDependencies();
+                if ("java".equalsIgnoreCase(spec.getLang().get())) {
+                    compileOnlyDeps.addAllLater(spec.getLombok().map(lombok -> {
+                        if (Boolean.TRUE.equals(lombok)) {
+                            return List.of(project.getDependencies().create("org.projectlombok:lombok"));
                         }
                         return List.of();
                     }));
                 }
+                compileOnlyDeps.add(project.getDependencies().create("io.micronaut.openapi:micronaut-openapi"));
+
+                var implDeps = project.getConfigurations().getByName("implementation").getDependencies();
+                implDeps.addAllLater(spec.getUseReactive().map(reactive -> {
+                    if (Boolean.TRUE.equals(reactive)) {
+                        return List.of(project.getDependencies().create("io.projectreactor:reactor-core"));
+                    }
+                    return List.of();
+                }));
+            }
         );
     }
 
@@ -155,9 +156,10 @@ public abstract class DefaultOpenApiExtension implements OpenApiExtension {
         task.getInvokerPackageName().convention(openApiSpec.getInvokerPackageName());
         task.getModelPackageName().convention(openApiSpec.getModelPackageName());
         task.getOutputDirectory().convention(
-                project.getLayout().getBuildDirectory().dir("generated/openapi/" + task.getName())
+            project.getLayout().getBuildDirectory().dir("generated/openapi/" + task.getName())
         );
         task.getUseBeanValidation().convention(openApiSpec.getUseBeanValidation());
+        task.getUseOneOfInterfaces().convention(openApiSpec.getUseOneOfInterfaces());
         task.getUseOptional().convention(openApiSpec.getUseOptional());
         task.getUseReactive().convention(openApiSpec.getUseReactive());
         task.getDefinitionFile().convention(definitionFile);
@@ -229,12 +231,12 @@ public abstract class DefaultOpenApiExtension implements OpenApiExtension {
                 });
             });
             withJava(() -> {
-                        var implDeps = project.getConfigurations().getByName("implementation").getDependencies();
-                        implDeps.add(project.getDependencies().create("io.micronaut:micronaut-http-client-core"));
-                        implDeps.add(project.getDependencies().create("io.micronaut.validation:micronaut-validation"));
-                        var annProcessor = project.getConfigurations().getByName("annotationProcessor").getDependencies();
-                        annProcessor.add(project.getDependencies().create("io.micronaut.validation:micronaut-validation-processor"));
-                    }
+                    var implDeps = project.getConfigurations().getByName("implementation").getDependencies();
+                    implDeps.add(project.getDependencies().create("io.micronaut:micronaut-http-client-core"));
+                    implDeps.add(project.getDependencies().create("io.micronaut.validation:micronaut-validation"));
+                    var annProcessor = project.getConfigurations().getByName("annotationProcessor").getDependencies();
+                    annProcessor.add(project.getDependencies().create("io.micronaut.validation:micronaut-validation-processor"));
+                }
             );
         } else {
             throwDuplicateEntryFor(name);

@@ -62,6 +62,9 @@ public abstract class AbstractOpenApiGenerator<W extends AbstractOpenApiWorkActi
     public abstract Property<Boolean> getUseBeanValidation();
 
     @Input
+    public abstract Property<Boolean> getUseOneOfInterfaces();
+
+    @Input
     public abstract Property<Boolean> getUseOptional();
 
     @Input
@@ -157,43 +160,44 @@ public abstract class AbstractOpenApiGenerator<W extends AbstractOpenApiWorkActi
     @TaskAction
     public final void execute() {
         getWorkerExecutor().classLoaderIsolation(spec -> spec.getClasspath().from(getClasspath()))
-                .submit(getWorkerAction(), params -> {
-                    params.getLang().set(getLang());
-                    params.getApiPackageName().set(getApiPackageName());
-                    params.getInvokerPackageName().set(getInvokerPackageName());
-                    params.getSerializationFramework().set(getSerializationFramework());
-                    params.getModelPackageName().set(getModelPackageName());
-                    params.getUseBeanValidation().set(getUseBeanValidation());
-                    params.getUseOptional().set(getUseOptional());
-                    params.getUseReactive().set(getUseReactive());
-                    params.getDefinitionFile().set(getDefinitionFile());
-                    params.getOutputDirectory().set(getOutputDirectory());
-                    params.getOutputKinds().set(getOutputKinds());
-                    params.getAlwaysUseGenerateHttpResponse().set(getAlwaysUseGenerateHttpResponse());
-                    params.getGenerateHttpResponseWhereRequired().set(getGenerateHttpResponseWhereRequired());
-                    params.getDateTimeFormat().set(getDateTimeFormat());
-                    params.getParameterMappings().set(getParameterMappings());
-                    params.getResponseBodyMappings().set(getResponseBodyMappings());
-                    params.getFluxForArrays().set(getFluxForArrays());
-                    params.getGeneratedAnnotation().set(getGeneratedAnnotation());
-                    params.getLombok().set(getLombok());
-                    params.getKsp().set(getKsp());
+            .submit(getWorkerAction(), params -> {
+                params.getLang().set(getLang());
+                params.getApiPackageName().set(getApiPackageName());
+                params.getInvokerPackageName().set(getInvokerPackageName());
+                params.getSerializationFramework().set(getSerializationFramework());
+                params.getModelPackageName().set(getModelPackageName());
+                params.getUseBeanValidation().set(getUseBeanValidation());
+                params.getUseOneOfInterfaces().set(getUseOneOfInterfaces());
+                params.getUseOptional().set(getUseOptional());
+                params.getUseReactive().set(getUseReactive());
+                params.getDefinitionFile().set(getDefinitionFile());
+                params.getOutputDirectory().set(getOutputDirectory());
+                params.getOutputKinds().set(getOutputKinds());
+                params.getAlwaysUseGenerateHttpResponse().set(getAlwaysUseGenerateHttpResponse());
+                params.getGenerateHttpResponseWhereRequired().set(getGenerateHttpResponseWhereRequired());
+                params.getDateTimeFormat().set(getDateTimeFormat());
+                params.getParameterMappings().set(getParameterMappings());
+                params.getResponseBodyMappings().set(getResponseBodyMappings());
+                params.getFluxForArrays().set(getFluxForArrays());
+                params.getGeneratedAnnotation().set(getGeneratedAnnotation());
+                params.getLombok().set(getLombok());
+                params.getKsp().set(getKsp());
 
-                    params.getSchemaMapping().set(getSchemaMapping());
-                    params.getImportMapping().set(getImportMapping());
-                    params.getNameMapping().set(getNameMapping());
-                    params.getTypeMapping().set(getTypeMapping());
-                    params.getEnumNameMapping().set(getEnumNameMapping());
-                    params.getModelNameMapping().set(getModelNameMapping());
-                    params.getInlineSchemaNameMapping().set(getInlineSchemaNameMapping());
-                    params.getInlineSchemaOption().set(getInlineSchemaOption());
-                    params.getOpenapiNormalizer().set(getOpenapiNormalizer());
-                    params.getApiNamePrefix().set(getApiNamePrefix().orElse(""));
-                    params.getApiNameSuffix().set(getApiNameSuffix().orElse(""));
-                    params.getModelNamePrefix().set(getModelNamePrefix().orElse(""));
-                    params.getModelNameSuffix().set(getModelNameSuffix().orElse(""));
+                params.getSchemaMapping().set(getSchemaMapping());
+                params.getImportMapping().set(getImportMapping());
+                params.getNameMapping().set(getNameMapping());
+                params.getTypeMapping().set(getTypeMapping());
+                params.getEnumNameMapping().set(getEnumNameMapping());
+                params.getModelNameMapping().set(getModelNameMapping());
+                params.getInlineSchemaNameMapping().set(getInlineSchemaNameMapping());
+                params.getInlineSchemaOption().set(getInlineSchemaOption());
+                params.getOpenapiNormalizer().set(getOpenapiNormalizer());
+                params.getApiNamePrefix().set(getApiNamePrefix().orElse(""));
+                params.getApiNameSuffix().set(getApiNameSuffix().orElse(""));
+                params.getModelNamePrefix().set(getModelNamePrefix().orElse(""));
+                params.getModelNameSuffix().set(getModelNameSuffix().orElse(""));
 
-                    configureWorkerParameters(params);
-                });
+                configureWorkerParameters(params);
+            });
     }
 }

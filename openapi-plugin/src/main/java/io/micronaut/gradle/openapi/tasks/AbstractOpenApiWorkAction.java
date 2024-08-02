@@ -15,8 +15,6 @@
  */
 package io.micronaut.gradle.openapi.tasks;
 
-import java.util.Locale;
-
 import io.micronaut.gradle.openapi.ParameterMappingModel;
 import io.micronaut.gradle.openapi.ResponseBodyMappingModel;
 import io.micronaut.openapi.generator.MicronautCodeGeneratorBuilder;
@@ -26,7 +24,6 @@ import io.micronaut.openapi.generator.MicronautCodeGeneratorOptionsBuilder.Gener
 import io.micronaut.openapi.generator.ParameterMapping;
 import io.micronaut.openapi.generator.ResponseBodyMapping;
 import io.micronaut.openapi.generator.SerializationLibraryKind;
-
 import org.gradle.api.file.DirectoryProperty;
 import org.gradle.api.file.RegularFileProperty;
 import org.gradle.api.provider.ListProperty;
@@ -34,6 +31,8 @@ import org.gradle.api.provider.MapProperty;
 import org.gradle.api.provider.Property;
 import org.gradle.workers.WorkAction;
 import org.gradle.workers.WorkParameters;
+
+import java.util.Locale;
 
 public abstract class AbstractOpenApiWorkAction<T extends AbstractOpenApiWorkAction.OpenApiParameters> implements WorkAction<T> {
 
@@ -50,6 +49,8 @@ public abstract class AbstractOpenApiWorkAction<T extends AbstractOpenApiWorkAct
         Property<String> getModelPackageName();
 
         Property<Boolean> getUseBeanValidation();
+
+        Property<Boolean> getUseOneOfInterfaces();
 
         Property<Boolean> getUseOptional();
 
@@ -113,61 +114,62 @@ public abstract class AbstractOpenApiWorkAction<T extends AbstractOpenApiWorkAct
         var parameters = getParameters();
         var lang = parameters.getLang().get();
         var builder = MicronautCodeGeneratorEntryPoint.builder()
-                .withDefinitionFile(parameters.getDefinitionFile().get().getAsFile().toURI())
-                .withOutputDirectory(parameters.getOutputDirectory().getAsFile().get())
-                .withOutputs(
-                        parameters.getOutputKinds().get()
-                                .stream()
-                                .map(MicronautCodeGeneratorEntryPoint.OutputKind::of)
-                                .toArray(MicronautCodeGeneratorEntryPoint.OutputKind[]::new)
+            .withDefinitionFile(parameters.getDefinitionFile().get().getAsFile().toURI())
+            .withOutputDirectory(parameters.getOutputDirectory().getAsFile().get())
+            .withOutputs(
+                parameters.getOutputKinds().get()
+                    .stream()
+                    .map(MicronautCodeGeneratorEntryPoint.OutputKind::of)
+                    .toArray(MicronautCodeGeneratorEntryPoint.OutputKind[]::new)
+            )
+            .withOptions(options -> options.withInvokerPackage(parameters.getInvokerPackageName().get())
+                .withLang("kotlin".equalsIgnoreCase(lang) ? GeneratorLanguage.KOTLIN : GeneratorLanguage.JAVA)
+                .withApiPackage(parameters.getApiPackageName().get())
+                .withModelPackage(parameters.getModelPackageName().get())
+                .withBeanValidation(parameters.getUseBeanValidation().get())
+                .withUseOneOfInterfaces(parameters.getUseOneOfInterfaces().get())
+                .withOptional(parameters.getUseOptional().get())
+                .withReactive(parameters.getUseReactive().get())
+                .withSerializationLibrary(SerializationLibraryKind.valueOf(parameters.getSerializationFramework().get().toUpperCase(Locale.US)))
+                .withGenerateHttpResponseAlways(parameters.getAlwaysUseGenerateHttpResponse().get())
+                .withGenerateHttpResponseWhereRequired(parameters.getGenerateHttpResponseWhereRequired().get())
+                .withDateTimeFormat(MicronautCodeGeneratorOptionsBuilder.DateTimeFormat.valueOf(parameters.getDateTimeFormat().get().toUpperCase(Locale.US)))
+                .withParameterMappings(parameters.getParameterMappings()
+                    .get()
+                    .stream()
+                    .map(mapping -> new ParameterMapping(
+                        mapping.getName(),
+                        ParameterMapping.ParameterLocation.valueOf(mapping.getLocation().name()),
+                        mapping.getMappedType(),
+                        mapping.getMappedName(),
+                        mapping.isValidated())
+                    )
+                    .toList()
                 )
-                .withOptions(options -> options.withInvokerPackage(parameters.getInvokerPackageName().get())
-                        .withLang("kotlin".equalsIgnoreCase(lang) ? GeneratorLanguage.KOTLIN : GeneratorLanguage.JAVA)
-                        .withApiPackage(parameters.getApiPackageName().get())
-                        .withModelPackage(parameters.getModelPackageName().get())
-                        .withBeanValidation(parameters.getUseBeanValidation().get())
-                        .withOptional(parameters.getUseOptional().get())
-                        .withReactive(parameters.getUseReactive().get())
-                        .withSerializationLibrary(SerializationLibraryKind.valueOf(parameters.getSerializationFramework().get().toUpperCase(Locale.US)))
-                        .withGenerateHttpResponseAlways(parameters.getAlwaysUseGenerateHttpResponse().get())
-                        .withGenerateHttpResponseWhereRequired(parameters.getGenerateHttpResponseWhereRequired().get())
-                        .withDateTimeFormat(MicronautCodeGeneratorOptionsBuilder.DateTimeFormat.valueOf(parameters.getDateTimeFormat().get().toUpperCase(Locale.US)))
-                        .withParameterMappings(parameters.getParameterMappings()
-                                .get()
-                                .stream()
-                                .map(mapping -> new ParameterMapping(
-                                        mapping.getName(),
-                                        ParameterMapping.ParameterLocation.valueOf(mapping.getLocation().name()),
-                                        mapping.getMappedType(),
-                                        mapping.getMappedName(),
-                                        mapping.isValidated())
-                                )
-                                .toList()
-                        )
-                        .withResponseBodyMappings(parameters.getResponseBodyMappings()
-                                .get()
-                                .stream()
-                                .map(mapping -> new ResponseBodyMapping(
-                                        mapping.getHeaderName(),
-                                        mapping.getMappedBodyType(),
-                                        mapping.isListWrapper(),
-                                        mapping.isValidated()))
-                                .toList()
-                        )
-                        .withSchemaMapping(parameters.getSchemaMapping().get())
-                        .withImportMapping(parameters.getImportMapping().get())
-                        .withNameMapping(parameters.getNameMapping().get())
-                        .withTypeMapping(parameters.getTypeMapping().get())
-                        .withEnumNameMapping(parameters.getEnumNameMapping().get())
-                        .withModelNameMapping(parameters.getModelNameMapping().get())
-                        .withInlineSchemaNameMapping(parameters.getInlineSchemaNameMapping().get())
-                        .withInlineSchemaOption(parameters.getInlineSchemaOption().get())
-                        .withOpenapiNormalizer(parameters.getOpenapiNormalizer().get())
-                        .withApiNamePrefix(parameters.getApiNamePrefix().orElse("").get())
-                        .withApiNameSuffix(parameters.getApiNameSuffix().orElse("").get())
-                        .withModelNamePrefix(parameters.getModelNamePrefix().orElse("").get())
-                        .withModelNameSuffix(parameters.getModelNameSuffix().orElse("").get())
-                );
+                .withResponseBodyMappings(parameters.getResponseBodyMappings()
+                    .get()
+                    .stream()
+                    .map(mapping -> new ResponseBodyMapping(
+                        mapping.getHeaderName(),
+                        mapping.getMappedBodyType(),
+                        mapping.isListWrapper(),
+                        mapping.isValidated()))
+                    .toList()
+                )
+                .withSchemaMapping(parameters.getSchemaMapping().get())
+                .withImportMapping(parameters.getImportMapping().get())
+                .withNameMapping(parameters.getNameMapping().get())
+                .withTypeMapping(parameters.getTypeMapping().get())
+                .withEnumNameMapping(parameters.getEnumNameMapping().get())
+                .withModelNameMapping(parameters.getModelNameMapping().get())
+                .withInlineSchemaNameMapping(parameters.getInlineSchemaNameMapping().get())
+                .withInlineSchemaOption(parameters.getInlineSchemaOption().get())
+                .withOpenapiNormalizer(parameters.getOpenapiNormalizer().get())
+                .withApiNamePrefix(parameters.getApiNamePrefix().orElse("").get())
+                .withApiNameSuffix(parameters.getApiNameSuffix().orElse("").get())
+                .withModelNamePrefix(parameters.getModelNamePrefix().orElse("").get())
+                .withModelNameSuffix(parameters.getModelNameSuffix().orElse("").get())
+            );
 
         configureBuilder(builder);
         builder.build().generate();
