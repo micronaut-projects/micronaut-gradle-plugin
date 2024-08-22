@@ -24,6 +24,7 @@ import java.util.List;
 import static io.micronaut.gradle.MicronautRuntime.JETTY;
 import static io.micronaut.gradle.MicronautRuntime.NETTY;
 import static io.micronaut.gradle.MicronautRuntime.NONE;
+import static io.micronaut.gradle.MicronautRuntime.HTTP_POJA;
 import static io.micronaut.gradle.MicronautRuntime.TOMCAT;
 import static io.micronaut.gradle.MicronautRuntime.UNDERTOW;
 
@@ -61,6 +62,8 @@ public final class MicronautRuntimeDependencies {
     private static final String ARTIFACT_ID_MICRONAUT_SERVLET_JETTY = "micronaut-http-server-jetty";
     private static final String ARTIFACT_ID_MICRONAUT_SERVLET_TOMCAT = "micronaut-http-server-tomcat";
     private static final String ARTIFACT_ID_MICRONAUT_SERVLET_UNDERTOW = "micronaut-http-server-undertow";
+    private static final String ARTIFACT_ID_MICRONAUT_SERVLET_POJA_APACHE = "micronaut-http-poja-apache";
+    private static final String ARTIFACT_ID_MICRONAUT_SERVLET_POJA_TEST = "micronaut-http-poja-test";
 
     private static final ConfigurableVersionProperty AWS_VERSION_PROPERTY = ConfigurableVersionProperty.of("aws");
     private static final ConfigurableVersionProperty AZURE_VERSION_PROPERTY = ConfigurableVersionProperty.of("azure");
@@ -133,6 +136,10 @@ public final class MicronautRuntimeDependencies {
 
         } else if (runtime == UNDERTOW) {
             return Dependencies.builder().implementation(micronautServletDependency(ARTIFACT_ID_MICRONAUT_SERVLET_UNDERTOW), SERVLET_VERSION_PROPERTY).build();
+        } else if (runtime == HTTP_POJA) {
+            return Dependencies.builder().implementation(micronautServletDependency(ARTIFACT_ID_MICRONAUT_SERVLET_POJA_APACHE), SERVLET_VERSION_PROPERTY)
+                    .testImplementation(micronautServletDependency(ARTIFACT_ID_MICRONAUT_SERVLET_POJA_TEST), SERVLET_VERSION_PROPERTY)
+                    .build();
         } else if (runtime != NONE) {
             throw new GradleException("Application plugin dependencies not specified for runtime " + runtime.name());
         }
