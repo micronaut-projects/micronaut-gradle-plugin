@@ -58,6 +58,8 @@ class RuntimeDependenciesSpec extends AbstractEagerConfiguringFunctionalTest {
         'lambda_provided'      | 'compileClasspath'     || ["io.micronaut.aws:micronaut-function-aws-api-proxy", "io.micronaut.aws:micronaut-function-aws-custom-runtime"]
         'lambda_provided'      | 'developmentOnly'      || ["io.micronaut.aws:micronaut-function-aws-api-proxy-test"]
         'lambda_provided'      | 'testRuntimeClasspath' || ["io.micronaut.aws:micronaut-function-aws-api-proxy-test"]
+        'http_poja'            | 'compileClasspath'     || ['io.micronaut.servlet:micronaut-http-poja-apache']
+        'http_poja'            | 'testRuntimeClasspath' || ['io.micronaut.servlet:micronaut-http-poja-apache', 'io.micronaut.servlet:micronaut-http-poja-test']
 
         description =  String.join(",", coordinates)
     }
