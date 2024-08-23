@@ -15,12 +15,11 @@
  */
 package io.micronaut.gradle.openapi.tasks;
 
-import java.util.List;
-
 import io.micronaut.openapi.generator.MicronautCodeGeneratorBuilder;
-
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Property;
+
+import java.util.List;
 
 public abstract class OpenApiClientWorkAction extends AbstractOpenApiWorkAction<OpenApiClientWorkAction.ClientParameters> {
 
@@ -45,9 +44,9 @@ public abstract class OpenApiClientWorkAction extends AbstractOpenApiWorkAction<
         if ("kotlin".equalsIgnoreCase(parameters.getLang().get())) {
             builder.forKotlinClient(spec -> {
                 spec.withAuthorization(parameters.getUseAuth().get())
-                        .withAdditionalClientTypeAnnotations(parameters.getAdditionalClientTypeAnnotations().getOrElse(List.of()))
-                        .withGeneratedAnnotation(parameters.getGeneratedAnnotation().get())
-                        .withKsp(parameters.getKsp().get());
+                    .withAdditionalClientTypeAnnotations(parameters.getAdditionalClientTypeAnnotations().getOrElse(List.of()))
+                    .withGeneratedAnnotation(parameters.getGeneratedAnnotation().get())
+                    .withKsp(parameters.getKsp().get());
 
                 if (parameters.getClientId().isPresent()) {
                     spec.withClientId(parameters.getClientId().get());
@@ -65,10 +64,10 @@ public abstract class OpenApiClientWorkAction extends AbstractOpenApiWorkAction<
         } else {
             builder.forJavaClient(spec -> {
                 spec.withAuthorization(parameters.getUseAuth().get())
-                        .withAdditionalClientTypeAnnotations(parameters.getAdditionalClientTypeAnnotations().getOrElse(List.of()))
-                        .withLombok(parameters.getLombok().get())
-                        .withGeneratedAnnotation(parameters.getGeneratedAnnotation().get())
-                        .withFluxForArrays(parameters.getFluxForArrays().get());
+                    .withAdditionalClientTypeAnnotations(parameters.getAdditionalClientTypeAnnotations().getOrElse(List.of()))
+                    .withLombok(parameters.getLombok().get())
+                    .withGeneratedAnnotation(parameters.getGeneratedAnnotation().get())
+                    .withFluxForArrays(parameters.getFluxForArrays().get());
 
                 if (parameters.getClientId().isPresent()) {
                     spec.withClientId(parameters.getClientId().get());
