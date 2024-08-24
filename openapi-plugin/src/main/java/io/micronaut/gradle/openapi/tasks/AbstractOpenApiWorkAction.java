@@ -122,10 +122,11 @@ public abstract class AbstractOpenApiWorkAction<T extends AbstractOpenApiWorkAct
                     .map(MicronautCodeGeneratorEntryPoint.OutputKind::of)
                     .toArray(MicronautCodeGeneratorEntryPoint.OutputKind[]::new)
             )
-            .withOptions(options -> options.withInvokerPackage(parameters.getInvokerPackageName().get())
+            .withOptions(options -> options
                 .withLang("kotlin".equalsIgnoreCase(lang) ? GeneratorLanguage.KOTLIN : GeneratorLanguage.JAVA)
                 .withApiPackage(parameters.getApiPackageName().get())
                 .withModelPackage(parameters.getModelPackageName().get())
+                .withInvokerPackage(parameters.getInvokerPackageName().get())
                 .withBeanValidation(parameters.getUseBeanValidation().get())
                 .withUseOneOfInterfaces(parameters.getUseOneOfInterfaces().get())
                 .withOptional(parameters.getUseOptional().get())
