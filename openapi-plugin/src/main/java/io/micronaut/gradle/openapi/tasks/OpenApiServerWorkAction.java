@@ -34,17 +34,20 @@ public abstract class OpenApiServerWorkAction extends AbstractOpenApiWorkAction<
         var parameters = getParameters();
 
         if ("kotlin".equalsIgnoreCase(parameters.getLang().get())) {
-            builder.forKotlinServer(spec -> spec.withControllerPackage(parameters.getControllerPackage().get())
+            builder.forKotlinServer(spec -> spec
+                .withControllerPackage(parameters.getControllerPackage().get())
                 .withAuthentication(parameters.getUseAuth().get())
                 .withAot(parameters.getAot().get())
                 .withGenerateImplementationFiles(false)
                 .withGenerateControllerFromExamples(false)
                 .withGenerateOperationsToReturnNotImplemented(false)
                 .withGeneratedAnnotation(parameters.getGeneratedAnnotation().get())
+                .withFluxForArrays(parameters.getFluxForArrays().get())
                 .withKsp(parameters.getKsp().get())
             );
         } else {
-            builder.forJavaServer(spec -> spec.withControllerPackage(parameters.getControllerPackage().get())
+            builder.forJavaServer(spec -> spec
+                .withControllerPackage(parameters.getControllerPackage().get())
                 .withAuthentication(parameters.getUseAuth().get())
                 .withAot(parameters.getAot().get())
                 .withGenerateImplementationFiles(false)
