@@ -46,6 +46,7 @@ public abstract class OpenApiClientWorkAction extends AbstractOpenApiWorkAction<
                 spec.withAuthorization(parameters.getUseAuth().get())
                     .withAdditionalClientTypeAnnotations(parameters.getAdditionalClientTypeAnnotations().getOrElse(List.of()))
                     .withGeneratedAnnotation(parameters.getGeneratedAnnotation().get())
+                    .withFluxForArrays(parameters.getFluxForArrays().get())
                     .withKsp(parameters.getKsp().get());
 
                 if (parameters.getClientId().isPresent()) {
