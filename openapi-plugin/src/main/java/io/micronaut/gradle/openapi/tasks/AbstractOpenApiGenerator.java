@@ -146,6 +146,18 @@ public abstract class AbstractOpenApiGenerator<W extends AbstractOpenApiWorkActi
     @Input
     public abstract Property<String> getModelNameSuffix();
 
+    @Optional
+    @Input
+    public abstract Property<Boolean> getGenerateSwaggerAnnotations();
+
+    @Optional
+    @Input
+    public abstract Property<Boolean> getImplicitHeaders();
+
+    @Optional
+    @Input
+    public abstract Property<String> getImplicitHeadersRegex();
+
     @OutputDirectory
     public abstract DirectoryProperty getOutputDirectory();
 
@@ -196,6 +208,10 @@ public abstract class AbstractOpenApiGenerator<W extends AbstractOpenApiWorkActi
                 params.getApiNameSuffix().set(getApiNameSuffix().orElse(""));
                 params.getModelNamePrefix().set(getModelNamePrefix().orElse(""));
                 params.getModelNameSuffix().set(getModelNameSuffix().orElse(""));
+
+                params.getGenerateSwaggerAnnotations().set(getGenerateSwaggerAnnotations());
+                params.getImplicitHeaders().set(getImplicitHeaders());
+                params.getImplicitHeadersRegex().set(getImplicitHeadersRegex().orElse(""));
 
                 configureWorkerParameters(params);
             });
