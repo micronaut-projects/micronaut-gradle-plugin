@@ -82,4 +82,10 @@ public interface OpenApiSpec {
     Property<String> getModelNamePrefix();
 
     Property<String> getModelNameSuffix();
+
+    Property<Boolean> getGenerateSwaggerAnnotations();
+
+    Property<Boolean> getImplicitHeaders();
+
+    Property<String> getImplicitHeadersRegex();
 }

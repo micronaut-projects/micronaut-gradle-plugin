@@ -105,6 +105,12 @@ public abstract class AbstractOpenApiWorkAction<T extends AbstractOpenApiWorkAct
         Property<String> getModelNamePrefix();
 
         Property<String> getModelNameSuffix();
+
+        Property<Boolean> getGenerateSwaggerAnnotations();
+
+        Property<Boolean> getImplicitHeaders();
+
+        Property<String> getImplicitHeadersRegex();
     }
 
     protected abstract void configureBuilder(MicronautCodeGeneratorBuilder builder);
@@ -170,6 +176,9 @@ public abstract class AbstractOpenApiWorkAction<T extends AbstractOpenApiWorkAct
                 .withApiNameSuffix(parameters.getApiNameSuffix().orElse("").get())
                 .withModelNamePrefix(parameters.getModelNamePrefix().orElse("").get())
                 .withModelNameSuffix(parameters.getModelNameSuffix().orElse("").get())
+                .withGenerateSwaggerAnnotations(parameters.getGenerateSwaggerAnnotations().get())
+                .withImplicitHeaders(parameters.getImplicitHeaders().get())
+                .withImplicitHeadersRegex(parameters.getImplicitHeadersRegex().orElse("").get())
             );
 
         configureBuilder(builder);
