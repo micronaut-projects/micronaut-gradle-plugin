@@ -34,8 +34,9 @@ class MicronautMinimalApplicationPluginSpec extends AbstractGradleBuildSpec {
         println result.output
 
         then:
-        result.output.contains('Creating bean classes for 1 type elements')
         task.outcome == TaskOutcome.SUCCESS
+        testProjectDir.root.toPath()
+                .resolve('build/classes/java/test/example/$ExampleTest$Definition.class').toFile().exists()
 
     }
 
