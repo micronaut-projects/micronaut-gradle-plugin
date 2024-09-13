@@ -58,8 +58,9 @@ public class ExampleTest {
         println result.output
 
         then:
-        result.output.contains('Creating bean classes for 1 type elements')
         task.outcome == TaskOutcome.SUCCESS
+        testProjectDir.root.toPath()
+                .resolve('build/classes/java/test/example/$ExampleTest$Definition.class').toFile().exists()
 
         where:
         plugins << [
@@ -126,7 +127,6 @@ public class ExampleTest {
 //
 //        def task = result.task(":test")
 //        then:
-//        result.output.contains('Creating bean classes for 1 type elements')
 //        task.outcome == TaskOutcome.SUCCESS
 //    }
 
