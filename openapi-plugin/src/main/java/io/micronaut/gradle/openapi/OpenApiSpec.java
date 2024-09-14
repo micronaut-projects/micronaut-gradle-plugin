@@ -83,9 +83,19 @@ public interface OpenApiSpec {
 
     Property<String> getModelNameSuffix();
 
+    Property<Boolean> getUseEnumCaseInsensitive();
+
     Property<Boolean> getGenerateSwaggerAnnotations();
 
     Property<Boolean> getImplicitHeaders();
 
     Property<String> getImplicitHeadersRegex();
+
+    ListProperty<String> getAdditionalEnumTypeAnnotations();
+
+    ListProperty<String> getAdditionalModelTypeAnnotations();
+
+    ListProperty<String> getAdditionalOneOfTypeAnnotations();
+
+    MapProperty<String, Object> getAdditionalProperties();
 }

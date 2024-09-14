@@ -106,11 +106,21 @@ public abstract class AbstractOpenApiWorkAction<T extends AbstractOpenApiWorkAct
 
         Property<String> getModelNameSuffix();
 
+        Property<Boolean> getUseEnumCaseInsensitive();
+
         Property<Boolean> getGenerateSwaggerAnnotations();
 
         Property<Boolean> getImplicitHeaders();
 
         Property<String> getImplicitHeadersRegex();
+
+        ListProperty<String> getAdditionalEnumTypeAnnotations();
+
+        ListProperty<String> getAdditionalModelTypeAnnotations();
+
+        ListProperty<String> getAdditionalOneOfTypeAnnotations();
+
+        MapProperty<String, Object> getAdditionalProperties();
     }
 
     protected abstract void configureBuilder(MicronautCodeGeneratorBuilder builder);
@@ -179,6 +189,11 @@ public abstract class AbstractOpenApiWorkAction<T extends AbstractOpenApiWorkAct
                 .withGenerateSwaggerAnnotations(parameters.getGenerateSwaggerAnnotations().get())
                 .withImplicitHeaders(parameters.getImplicitHeaders().get())
                 .withImplicitHeadersRegex(parameters.getImplicitHeadersRegex().orElse("").get())
+                .withUseEnumCaseInsensitive(parameters.getUseEnumCaseInsensitive().get())
+                .withAdditionalEnumTypeAnnotations(parameters.getAdditionalEnumTypeAnnotations().get())
+                .withAdditionalModelTypeAnnotations(parameters.getAdditionalModelTypeAnnotations().get())
+                .withAdditionalOneOfTypeAnnotations(parameters.getAdditionalOneOfTypeAnnotations().get())
+                .withAdditionalProperties(parameters.getAdditionalProperties().get())
             );
 
         configureBuilder(builder);

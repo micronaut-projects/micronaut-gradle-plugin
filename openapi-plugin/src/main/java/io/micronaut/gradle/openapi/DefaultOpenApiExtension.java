@@ -190,9 +190,15 @@ public abstract class DefaultOpenApiExtension implements OpenApiExtension {
         task.getModelNamePrefix().convention(openApiSpec.getModelNamePrefix());
         task.getModelNameSuffix().convention(openApiSpec.getModelNameSuffix());
 
+        task.getUseEnumCaseInsensitive().convention(openApiSpec.getUseEnumCaseInsensitive());
         task.getGenerateSwaggerAnnotations().convention(openApiSpec.getGenerateSwaggerAnnotations());
         task.getImplicitHeaders().convention(openApiSpec.getImplicitHeaders());
         task.getImplicitHeadersRegex().convention(openApiSpec.getImplicitHeadersRegex());
+
+        task.getAdditionalEnumTypeAnnotations().convention(openApiSpec.getAdditionalEnumTypeAnnotations());
+        task.getAdditionalModelTypeAnnotations().convention(openApiSpec.getAdditionalModelTypeAnnotations());
+        task.getAdditionalOneOfTypeAnnotations().convention(openApiSpec.getAdditionalOneOfTypeAnnotations());
+        task.getAdditionalProperties().convention(openApiSpec.getAdditionalProperties());
     }
 
     private void withJavaSourceSets(Consumer<? super SourceSetContainer> consumer) {

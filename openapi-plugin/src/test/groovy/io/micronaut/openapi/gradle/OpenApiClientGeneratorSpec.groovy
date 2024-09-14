@@ -70,6 +70,7 @@ class OpenApiClientGeneratorSpec extends AbstractOpenApiGeneratorSpec {
                         clientId = "my-client"
                         generateSwaggerAnnotations = true
                         implicitHeadersRegex = ".*"
+                        useEnumCaseInsensitive = ".*"
                     }
                 }
             }
