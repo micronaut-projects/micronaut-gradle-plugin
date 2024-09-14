@@ -68,8 +68,8 @@ class OpenApiClientGeneratorSpec extends AbstractOpenApiGeneratorSpec {
                         fluxForArrays = true
                         nameMapping = [test: "changedTest"]
                         clientId = "my-client"
-                        generateSwaggerAnnotations = true
                         implicitHeadersRegex = ".*"
+                        useEnumCaseInsensitive = true
                     }
                 }
             }

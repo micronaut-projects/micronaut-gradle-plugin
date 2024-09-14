@@ -18,6 +18,8 @@ package io.micronaut.gradle.openapi;
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.MapProperty;
 import org.gradle.api.provider.Property;
+import org.gradle.api.tasks.Input;
+import org.gradle.api.tasks.Optional;
 
 public interface OpenApiSpec {
 
@@ -83,9 +85,39 @@ public interface OpenApiSpec {
 
     Property<String> getModelNameSuffix();
 
+    Property<Boolean> getUseEnumCaseInsensitive();
+
     Property<Boolean> getGenerateSwaggerAnnotations();
 
     Property<Boolean> getImplicitHeaders();
 
     Property<String> getImplicitHeadersRegex();
+
+    ListProperty<String> getAdditionalEnumTypeAnnotations();
+
+    ListProperty<String> getAdditionalModelTypeAnnotations();
+
+    ListProperty<String> getAdditionalOneOfTypeAnnotations();
+
+    MapProperty<String, Object> getAdditionalProperties();
+
+    Property<Boolean> getUseJakartaEe();
+
+    Property<Boolean> getSortParamsByRequiredFlag();
+
+    Property<Boolean> getSkipOperationExample();
+
+    Property<Boolean> getSkipSortingOperations();
+
+    Property<String> getRemoveOperationIdPrefixDelimiter();
+
+    Property<Integer> getRemoveOperationIdPrefixCount();
+
+    Property<Boolean> getSortModelPropertiesByRequiredFlag();
+
+    Property<Boolean> getEnsureUniqueParams();
+
+    Property<Boolean> getAllowUnicodeIdentifiers();
+
+    Property<Boolean> getPrependFormOrBodyParameters();
 }
