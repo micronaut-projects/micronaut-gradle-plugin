@@ -1055,6 +1055,7 @@ The available runtimes are:
 * `oracle_function` - A Project.fn runtime for deploying Oracle Functions
 * `google_function` - A runtime for deploying Google Functions.
 * `azure_function` - A runtime for deploying Azure Functions
+* `http_poja` - A plain old java application runtime based on Apache libraries
 
 The advantage of allowing your dependencies to be dictated by the runtime is that you can potentially take the same application and deploy it to any of the above runtimes without changes.
 
