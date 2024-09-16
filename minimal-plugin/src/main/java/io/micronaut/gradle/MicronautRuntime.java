@@ -51,7 +51,11 @@ public enum MicronautRuntime {
     /**
      * Azure Cloud Function.
      */
-    AZURE_FUNCTION;
+    AZURE_FUNCTION,
+    /**
+     * Plain old Java application based on Apache libraries.
+     */
+    HTTP_POJA;
 
     private final DockerBuildStrategy buildStrategy;
 
