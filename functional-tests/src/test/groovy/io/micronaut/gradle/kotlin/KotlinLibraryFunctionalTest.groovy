@@ -96,7 +96,8 @@ class Foo {}
         println result.output
         then:
         result.task(":assemble").outcome == TaskOutcome.SUCCESS
-        result.output.contains("Creating bean classes for 1 type elements")
+        testProjectDir.root.toPath()
+                .resolve('build/tmp/kapt3/classes/main/example/$Foo$Definition.class').toFile().exists()
 
         where:
         plugin << ['library', 'minimal.library']
@@ -149,7 +150,8 @@ class Foo {}
         println result.output
         then:
         result.task(":compileCustomKotlin").outcome == TaskOutcome.SUCCESS
-        result.output.contains("Creating bean classes for 1 type elements")
+        testProjectDir.root.toPath()
+                .resolve('build/tmp/kapt3/classes/custom/example/$Foo$Definition.class').toFile().exists()
 
         where:
         plugin << ['library', 'minimal.library']
