@@ -122,7 +122,8 @@ class FooTest {
 
         then:
         result.task(":test").outcome == TaskOutcome.SUCCESS
-        result.output.contains("Creating bean classes for 1 type elements")
+        testProjectDir.root.toPath()
+                .resolve('build/classes/java/test/example/$FooTest$Definition.class').toFile().exists()
     }
 
     def "test add jaxrs processing"() {
@@ -169,7 +170,6 @@ public class Foo {
 
         then:
         result.task(":assemble").outcome == TaskOutcome.SUCCESS
-        result.output.contains("Creating bean classes for 1 type elements")
         new File(
                 testProjectDir.getRoot(),
                 'build/classes/java/main/example/$Foo$Definition.class'
@@ -224,7 +224,6 @@ class Foo {}
 
         then:
         result.task(":assemble").outcome == TaskOutcome.SUCCESS
-        result.output.contains("Creating bean classes for 1 type elements")
         result.output.contains("Generating OpenAPI Documentation")
         new File(
                 testProjectDir.getRoot(),
@@ -266,7 +265,6 @@ class Foo {}
 
         then:
         result.task(":assemble").outcome == TaskOutcome.SUCCESS
-        result.output.contains("Creating bean classes for 1 type elements")
         new File(
                 testProjectDir.getRoot(),
                 'build/classes/java/main/example/$Foo$Definition.class'
@@ -317,7 +315,6 @@ class Foo {}
 
         then:
         result.task(":compileCustomJava").outcome == TaskOutcome.SUCCESS
-        result.output.contains("Creating bean classes for 1 type elements")
         new File(
                 testProjectDir.getRoot(),
                 'build/classes/java/custom/example/$Foo$Definition.class'
@@ -374,7 +371,8 @@ class Foo {
 
         then:
         result.task(":test").outcome == TaskOutcome.SUCCESS
-        result.output.contains("Creating bean classes for 1 type elements")
+        testProjectDir.root.toPath()
+                .resolve('build/classes/java/test/example/$Foo$Definition.class').toFile().exists()
     }
 
     def "test custom sourceSets for micronaut-library and groovy"() {
