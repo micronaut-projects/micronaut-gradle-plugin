@@ -9,6 +9,7 @@ import io.micronaut.gradle.PluginsHelper;
 import io.micronaut.gradle.testresources.internal.TestResourcesAOT;
 import io.micronaut.gradle.testresources.internal.TestResourcesGraalVM;
 import io.micronaut.testresources.buildtools.MavenDependency;
+import io.micronaut.testresources.buildtools.ModuleIdentifier;
 import io.micronaut.testresources.buildtools.ServerUtils;
 import io.micronaut.testresources.buildtools.TestResourcesClasspath;
 import io.micronaut.testresources.buildtools.VersionInfo;
@@ -21,6 +22,7 @@ import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.ConfigurationContainer;
 import org.gradle.api.artifacts.Dependency;
 import org.gradle.api.artifacts.ModuleDependency;
+import org.gradle.api.artifacts.component.ModuleComponentIdentifier;
 import org.gradle.api.artifacts.dsl.DependencyHandler;
 import org.gradle.api.attributes.Usage;
 import org.gradle.api.file.Directory;
@@ -246,7 +248,17 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
             task.getExplicitPort().convention(config.getExplicitPort());
             task.getClientTimeout().convention(config.getClientTimeout());
             task.getServerIdleTimeoutMinutes().convention(config.getServerIdleTimeoutMinutes());
-            task.getClasspath().from(server);
+            task.getClasspath().from(server.getIncoming().artifactView(view -> {
+                view.componentFilter(id -> {
+                    if (id instanceof ModuleComponentIdentifier mci) {
+                        return TestResourcesClasspath.isDependencyAllowedOnServerClasspath(new ModuleIdentifier(
+                            mci.getGroup(),
+                            mci.getModule()
+                        ));
+                    }
+                    return true;
+                });
+            }).getFiles());
             task.getForeground().convention(false);
             task.getStopFile().set(stopFile.toFile());
             task.getStandalone().set(isStandalone);
