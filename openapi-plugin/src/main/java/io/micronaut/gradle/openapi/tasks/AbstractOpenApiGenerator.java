@@ -146,6 +146,38 @@ public abstract class AbstractOpenApiGenerator<W extends AbstractOpenApiWorkActi
     @Input
     public abstract Property<String> getModelNameSuffix();
 
+    @Optional
+    @Input
+    public abstract Property<Boolean> getUseEnumCaseInsensitive();
+
+    @Optional
+    @Input
+    public abstract Property<Boolean> getGenerateSwaggerAnnotations();
+
+    @Optional
+    @Input
+    public abstract Property<Boolean> getImplicitHeaders();
+
+    @Optional
+    @Input
+    public abstract Property<String> getImplicitHeadersRegex();
+
+    @Optional
+    @Input
+    public abstract ListProperty<String> getAdditionalEnumTypeAnnotations();
+
+    @Optional
+    @Input
+    public abstract ListProperty<String> getAdditionalModelTypeAnnotations();
+
+    @Optional
+    @Input
+    public abstract ListProperty<String> getAdditionalOneOfTypeAnnotations();
+
+    @Optional
+    @Input
+    public abstract MapProperty<String, Object> getAdditionalProperties();
+
     @OutputDirectory
     public abstract DirectoryProperty getOutputDirectory();
 
@@ -196,6 +228,16 @@ public abstract class AbstractOpenApiGenerator<W extends AbstractOpenApiWorkActi
                 params.getApiNameSuffix().set(getApiNameSuffix().orElse(""));
                 params.getModelNamePrefix().set(getModelNamePrefix().orElse(""));
                 params.getModelNameSuffix().set(getModelNameSuffix().orElse(""));
+
+                params.getUseEnumCaseInsensitive().set(getUseEnumCaseInsensitive());
+                params.getGenerateSwaggerAnnotations().set(getGenerateSwaggerAnnotations());
+                params.getImplicitHeaders().set(getImplicitHeaders());
+                params.getImplicitHeadersRegex().set(getImplicitHeadersRegex().orElse(""));
+
+                params.getAdditionalEnumTypeAnnotations().set(getAdditionalEnumTypeAnnotations());
+                params.getAdditionalModelTypeAnnotations().set(getAdditionalModelTypeAnnotations());
+                params.getAdditionalOneOfTypeAnnotations().set(getAdditionalOneOfTypeAnnotations());
+                params.getAdditionalProperties().set(getAdditionalProperties());
 
                 configureWorkerParameters(params);
             });
