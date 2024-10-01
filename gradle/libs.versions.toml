@@ -9,7 +9,7 @@ spock = "2.3-groovy-3.0"
 oraclelinux = "9"
 graalvmPlugin = "0.10.3"
 mockserver = "5.15.0"
-log4j2 = "2.23.1"
+log4j2 = "2.24.1"
 jetbrains-annotations = "24.1.0"
 tomlj = "1.1.1"
 
