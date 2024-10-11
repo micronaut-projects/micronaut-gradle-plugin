@@ -146,6 +146,78 @@ public abstract class AbstractOpenApiGenerator<W extends AbstractOpenApiWorkActi
     @Input
     public abstract Property<String> getModelNameSuffix();
 
+    @Optional
+    @Input
+    public abstract Property<Boolean> getUseEnumCaseInsensitive();
+
+    @Optional
+    @Input
+    public abstract Property<Boolean> getGenerateSwaggerAnnotations();
+
+    @Optional
+    @Input
+    public abstract Property<Boolean> getImplicitHeaders();
+
+    @Optional
+    @Input
+    public abstract Property<String> getImplicitHeadersRegex();
+
+    @Optional
+    @Input
+    public abstract ListProperty<String> getAdditionalEnumTypeAnnotations();
+
+    @Optional
+    @Input
+    public abstract ListProperty<String> getAdditionalModelTypeAnnotations();
+
+    @Optional
+    @Input
+    public abstract ListProperty<String> getAdditionalOneOfTypeAnnotations();
+
+    @Optional
+    @Input
+    public abstract MapProperty<String, Object> getAdditionalProperties();
+
+    @Optional
+    @Input
+    public abstract Property<Boolean> getUseJakartaEe();
+
+    @Optional
+    @Input
+    public abstract Property<Boolean> getSortParamsByRequiredFlag();
+
+    @Optional
+    @Input
+    public abstract Property<Boolean> getSkipOperationExample();
+
+    @Optional
+    @Input
+    public abstract Property<Boolean> getSkipSortingOperations();
+
+    @Optional
+    @Input
+    public abstract Property<String> getRemoveOperationIdPrefixDelimiter();
+
+    @Optional
+    @Input
+    public abstract Property<Integer> getRemoveOperationIdPrefixCount();
+
+    @Optional
+    @Input
+    public abstract Property<Boolean> getSortModelPropertiesByRequiredFlag();
+
+    @Optional
+    @Input
+    public abstract Property<Boolean> getEnsureUniqueParams();
+
+    @Optional
+    @Input
+    public abstract Property<Boolean> getAllowUnicodeIdentifiers();
+
+    @Optional
+    @Input
+    public abstract Property<Boolean> getPrependFormOrBodyParameters();
+
     @OutputDirectory
     public abstract DirectoryProperty getOutputDirectory();
 
@@ -196,6 +268,27 @@ public abstract class AbstractOpenApiGenerator<W extends AbstractOpenApiWorkActi
                 params.getApiNameSuffix().set(getApiNameSuffix().orElse(""));
                 params.getModelNamePrefix().set(getModelNamePrefix().orElse(""));
                 params.getModelNameSuffix().set(getModelNameSuffix().orElse(""));
+
+                params.getUseEnumCaseInsensitive().set(getUseEnumCaseInsensitive());
+                params.getGenerateSwaggerAnnotations().set(getGenerateSwaggerAnnotations());
+                params.getImplicitHeaders().set(getImplicitHeaders());
+                params.getImplicitHeadersRegex().set(getImplicitHeadersRegex().orElse(""));
+
+                params.getAdditionalEnumTypeAnnotations().set(getAdditionalEnumTypeAnnotations());
+                params.getAdditionalModelTypeAnnotations().set(getAdditionalModelTypeAnnotations());
+                params.getAdditionalOneOfTypeAnnotations().set(getAdditionalOneOfTypeAnnotations());
+                params.getAdditionalProperties().set(getAdditionalProperties());
+
+                params.getUseJakartaEe().set(getUseJakartaEe().get());
+                params.getSortParamsByRequiredFlag().set(getSortParamsByRequiredFlag().get());
+                params.getSkipOperationExample().set(getSkipOperationExample().get());
+                params.getSkipSortingOperations().set(getSkipSortingOperations().get());
+                params.getRemoveOperationIdPrefixDelimiter().set(getRemoveOperationIdPrefixDelimiter().get());
+                params.getRemoveOperationIdPrefixCount().set(getRemoveOperationIdPrefixCount().get());
+                params.getSortModelPropertiesByRequiredFlag().set(getSortModelPropertiesByRequiredFlag().get());
+                params.getEnsureUniqueParams().set(getEnsureUniqueParams().get());
+                params.getAllowUnicodeIdentifiers().set(getAllowUnicodeIdentifiers().get());
+                params.getPrependFormOrBodyParameters().set(getPrependFormOrBodyParameters().get());
 
                 configureWorkerParameters(params);
             });
