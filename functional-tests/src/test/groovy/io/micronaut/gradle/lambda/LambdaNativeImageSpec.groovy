@@ -410,4 +410,122 @@ class LambdaNativeImageSpec extends AbstractFunctionalTest {
         'API_GATEWAY_V2' | 'io.micronaut.function.aws.runtime.APIGatewayV2HTTPEventMicronautLambdaRuntime'
         'ALB'            | 'io.micronaut.function.aws.runtime.ApplicationLoadBalancerMicronautLambdaRuntime'
     }
+
+    void 'it is possible to use community edition of graalvm or oracle graalvm for a dockerfile native'() {
+        given:
+        settingsFile << "rootProject.name = 'hello-world'"
+        buildFile << """
+            plugins {
+                id "io.micronaut.minimal.application"
+                id "io.micronaut.graalvm"
+                id "io.micronaut.docker"
+            }
+            
+            micronaut {
+                version "$micronautVersion"
+                runtime "lambda_provided"
+            }
+            
+            $repositoriesBlock
+            
+            application {
+                mainClass.set("com.example.Application")
+            }
+            
+            java {
+                sourceCompatibility = JavaVersion.toVersion('17')
+                targetCompatibility = JavaVersion.toVersion('17')
+            }
+            
+            graalvmNative {
+                binaries {
+                    main {
+                        mainClass.set("my.own.main.class")
+                    }
+                }
+            }
+
+            tasks.named("dockerfileNative") {
+                useGraalCommunityEdition.set($useGraalCommunityEdition)
+            }
+        """
+
+        when:
+        def result = build('dockerfileNative')
+
+        def dockerfileNativeTask = result.task(':dockerfileNative')
+        def dockerFileNative = new File(testProjectDir.root, 'build/docker/native-main/DockerfileNative').readLines('UTF-8')
+
+        then:
+        dockerfileNativeTask.outcome == TaskOutcome.SUCCESS
+
+        and:
+        String oracleGraalUrl = 'https://download.oracle.com/graalvm/17/latest/graalvm-jdk-17_linux-x64_bin.tar.gz'
+        String communityGraalUrl = 'https://github.com/graalvm/graalvm-ce-builds/releases/download/jdk-17.0.0/graalvm-community-jdk-17.0.0_linux-x64_bin.tar.gz'
+
+        if (useGraalCommunityEdition) {
+            assert !dockerFileNative.find() { it.contains(oracleGraalUrl) }
+            assert dockerFileNative.find() { it.contains(communityGraalUrl) }
+        } else {
+            assert !dockerFileNative.find() { it.contains(communityGraalUrl) }
+            assert dockerFileNative.find() { it.contains(oracleGraalUrl) }
+        }
+
+        where:
+        useGraalCommunityEdition << [true, false]
+    }
+
+    void 'it is possible to set specific jdk for the community edition of graalvm for a dockerfile native'() {
+        given:
+        settingsFile << "rootProject.name = 'hello-world'"
+        buildFile << """
+            plugins {
+                id "io.micronaut.minimal.application"
+                id "io.micronaut.graalvm"
+                id "io.micronaut.docker"
+            }
+            
+            micronaut {
+                version "$micronautVersion"
+                runtime "lambda_provided"
+            }
+            
+            $repositoriesBlock
+            
+            application {
+                mainClass.set("com.example.Application")
+            }
+            
+            java {
+                sourceCompatibility = JavaVersion.toVersion('21')
+                targetCompatibility = JavaVersion.toVersion('21')
+            }
+            
+            graalvmNative {
+                binaries {
+                    main {
+                        mainClass.set("my.own.main.class")
+                    }
+                }
+            }
+
+            tasks.named("dockerfileNative") {
+                useGraalCommunityEdition = true
+                jdkVersion = "21.0.2"
+            }
+        """
+
+        when:
+        def result = build('dockerfileNative')
+
+        def dockerfileNativeTask = result.task(':dockerfileNative')
+        def dockerFileNative = new File(testProjectDir.root, 'build/docker/native-main/DockerfileNative').readLines('UTF-8')
+
+        then:
+        dockerfileNativeTask.outcome == TaskOutcome.SUCCESS
+
+        and:
+        dockerFileNative.find() { it.contains('https://github.com/graalvm/graalvm-ce-builds/releases/download/jdk-21.0.2/graalvm-community-jdk-21.0.2_linux-x64_bin.tar.gz') }
+        !dockerFileNative.find() { it.contains('https://download.oracle.com') }
+    }
 }
