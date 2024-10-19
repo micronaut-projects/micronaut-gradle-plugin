@@ -10,9 +10,10 @@ micronautPlugins {
 }
 
 dependencies {
-    api project(":micronaut-minimal-plugin")
-    api project(":micronaut-docker-plugin")
-    api project(":micronaut-graalvm-plugin")
+    api projects.micronautMinimalPlugin
+    api projects.micronautDockerPlugin
+    api projects.micronautGraalvmPlugin
+
     implementation libs.micronaut.aot.api
     implementation libs.micronaut.aot.core
     implementation libs.micronaut.aot.std
@@ -21,5 +22,5 @@ dependencies {
     compileOnly libs.bundles.optionalPlugins
     compileOnly libs.shadowPlugin
 
-    testImplementation testFixtures(project(":micronaut-minimal-plugin"))
+    testImplementation testFixtures(projects.micronautMinimalPlugin)
 }
