@@ -16,7 +16,7 @@ dependencies {
     runtimeOnly("ch.qos.logback:logback-classic")
     runtimeOnly("io.micronaut:micronaut-jackson-databind")
     runtimeOnly("org.yaml:snakeyaml")
-    testResourcesImplementation("org.apache.commons:commons-lang3:3.14.0")
+    testResourcesImplementation("org.apache.commons:commons-lang3:3.17.0")
 }
 
 application {
