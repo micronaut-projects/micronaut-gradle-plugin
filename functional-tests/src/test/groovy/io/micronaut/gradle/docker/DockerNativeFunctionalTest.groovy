@@ -651,6 +651,7 @@ micronaut:
         build "dockerfileNative"
         def dockerFile = normalizeLineEndings(file("build/docker/native-main/DockerfileNative").text)
         dockerFile = dockerFile.replaceAll("[0-9]\\.[0-9]+\\.[0-9]+", "4.0.0")
+                .replaceAll("RUN native-image .*", "RUN native-image")
                 .trim()
 
         then:
@@ -665,7 +666,7 @@ micronaut:
             RUN mkdir -p /home/alternate/config-dirs/io.netty/netty-common/4.0.0.Final
             COPY --link config-dirs/generateResourcesConfigFile /home/alternate/config-dirs/generateResourcesConfigFile
             COPY --link config-dirs/io.netty/netty-common/4.0.0.Final /home/alternate/config-dirs/io.netty/netty-common/4.0.0.Final
-            RUN native-image --exclude-config .*/libs/netty-codec-http-4.0.0.Final.jar ^/META-INF/native-image/.* --exclude-config .*/libs/netty-handler-4.0.0.Final.jar ^/META-INF/native-image/.* --exclude-config .*/libs/netty-codec-http2-4.0.0.Final.jar ^/META-INF/native-image/.* --exclude-config .*/libs/netty-common-4.0.0.Final.jar ^/META-INF/native-image/.* --exclude-config .*/libs/netty-transport-4.0.0.Final.jar ^/META-INF/native-image/.* --exclude-config .*/libs/netty-buffer-4.0.0.Final.jar ^/META-INF/native-image/.* -cp /home/alternate/libs/*.jar:/home/alternate/resources:/home/alternate/application.jar --no-fallback -o application -H:ConfigurationFileDirectories=/home/alternate/config-dirs/generateResourcesConfigFile,/home/alternate/config-dirs/io.netty/netty-buffer/4.0.0.Final,/home/alternate/config-dirs/io.netty/netty-common/4.0.0.Final,/home/alternate/config-dirs/io.netty/netty-codec-http/4.0.0.Final,/home/alternate/config-dirs/io.netty/netty-transport/4.0.0.Final,/home/alternate/config-dirs/io.netty/netty-handler/4.0.0.Final,/home/alternate/config-dirs/io.netty/netty-codec-http2/4.0.0.Final example.Application
+            RUN native-image
             FROM cgr.dev/chainguard/wolfi-base:latest
             EXPOSE 8080
             HEALTHCHECK CMD curl -s localhost:8090/health | grep '"status":"UP"'
