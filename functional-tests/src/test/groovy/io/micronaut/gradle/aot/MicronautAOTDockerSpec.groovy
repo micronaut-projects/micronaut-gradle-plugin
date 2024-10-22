@@ -62,6 +62,7 @@ ENTRYPOINT ["java", "-jar", "/home/app/application.jar"]
         build "optimizedDockerfileNative"
         def dockerFile = normalizeLineEndings(file("build/docker/native-optimized/DockerfileNative").text)
         dockerFile = dockerFile.replaceAll("[0-9]\\.[0-9]+\\.[0-9]+", "4.0.0")
+            .replaceAll("RUN native-image .*", "RUN native-image")
                 .trim()
 
         then:
@@ -77,7 +78,7 @@ ENTRYPOINT ["java", "-jar", "/home/app/application.jar"]
             COPY --link config-dirs/generateResourcesConfigFile /home/app/config-dirs/generateResourcesConfigFile
             COPY --link config-dirs/io.netty/netty-common/4.0.0.Final /home/app/config-dirs/io.netty/netty-common/4.0.0.Final
             COPY --link config-dirs/ch.qos.logback/logback-classic/4.0.0 /home/app/config-dirs/ch.qos.logback/logback-classic/4.0.0
-            RUN native-image --exclude-config .*/libs/netty-codec-http-4.0.0.Final.jar ^/META-INF/native-image/.* --exclude-config .*/libs/netty-handler-4.0.0.Final.jar ^/META-INF/native-image/.* --exclude-config .*/libs/netty-codec-http2-4.0.0.Final.jar ^/META-INF/native-image/.* --exclude-config .*/libs/netty-common-4.0.0.Final.jar ^/META-INF/native-image/.* --exclude-config .*/libs/netty-transport-4.0.0.Final.jar ^/META-INF/native-image/.* --exclude-config .*/libs/netty-buffer-4.0.0.Final.jar ^/META-INF/native-image/.* -cp /home/app/libs/*.jar:/home/app/resources:/home/app/application.jar --no-fallback -o application -H:ConfigurationFileDirectories=/home/app/config-dirs/generateResourcesConfigFile,/home/app/config-dirs/io.netty/netty-buffer/4.0.0.Final,/home/app/config-dirs/io.netty/netty-common/4.0.0.Final,/home/app/config-dirs/io.netty/netty-codec-http/4.0.0.Final,/home/app/config-dirs/io.netty/netty-transport/4.0.0.Final,/home/app/config-dirs/io.netty/netty-handler/4.0.0.Final,/home/app/config-dirs/io.netty/netty-codec-http2/4.0.0.Final,/home/app/config-dirs/ch.qos.logback/logback-classic/4.0.0 demo.app.Application
+            RUN native-image
             FROM cgr.dev/chainguard/wolfi-base:latest
             EXPOSE 8080
             COPY --link --from=graalvm /home/app/application /app/application
