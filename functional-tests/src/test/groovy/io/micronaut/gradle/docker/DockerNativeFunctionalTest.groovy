@@ -17,7 +17,7 @@ class DockerNativeFunctionalTest extends AbstractEagerConfiguringFunctionalTest 
     @Lazy
     String defaultDockerFrom = "FROM $defaultBaseImage"
 
-    def "test build docker native image for runtime #runtime"() {
+    def "test build docker native image for runtime #runtime (JDK #jdk)"() {
         given:
         settingsFile << "rootProject.name = 'hello-world'"
         println settingsFile.text
@@ -45,6 +45,7 @@ class DockerNativeFunctionalTest extends AbstractEagerConfiguringFunctionalTest 
             dockerfileNative {
                 args('-Xmx64m')
                 instruction \"\"\"HEALTHCHECK CMD curl -s localhost:8090/health | grep '"status":"UP"'\"\"\"
+                jdkVersion = "$jdk"
             }
             
             graalvmNative.binaries.all {
@@ -101,10 +102,11 @@ micronaut:
         task.outcome == TaskOutcome.SUCCESS
 
         where:
-        runtime           | nativeImage
-        "netty"           | "FROM ghcr.io/graalvm/native-image-community:17-ol${DefaultVersions.ORACLELINUX}"
-        "lambda_provided" | 'FROM amazonlinux:2023 AS graalvm'
-        "jetty"           | "FROM ghcr.io/graalvm/native-image-community:17-ol${DefaultVersions.ORACLELINUX}"
+        runtime           | jdk | nativeImage
+        "netty"           | 17  | "FROM ghcr.io/graalvm/native-image-community:17-ol${DefaultVersions.ORACLELINUX}"
+        "lambda_provided" | 17  | "FROM public.ecr.aws/amazonlinux/amazonlinux:${DefaultVersions.AMAZONLINUX} AS graalvm"
+        "lambda_provided" | 21  | "FROM public.ecr.aws/amazonlinux/amazonlinux:${DefaultVersions.AMAZONLINUX} AS graalvm"
+        "jetty"           | 17  | "FROM ghcr.io/graalvm/native-image-community:17-ol${DefaultVersions.ORACLELINUX}"
     }
 
     void 'build mostly static native images when using distroless docker image for runtime=#runtime'() {
@@ -649,7 +651,7 @@ micronaut:
         build "dockerfileNative"
         def dockerFile = normalizeLineEndings(file("build/docker/native-main/DockerfileNative").text)
         dockerFile = dockerFile.replaceAll("[0-9]\\.[0-9]+\\.[0-9]+", "4.0.0")
-            .trim()
+                .trim()
 
         then:
         dockerFile == """
