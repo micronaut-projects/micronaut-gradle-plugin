@@ -10,9 +10,11 @@ micronautPlugins {
 }
 
 dependencies {
-    implementation libs.micronaut.testresources
-    implementation project(":micronaut-minimal-plugin")
     compileOnly libs.graalvmPlugin
-    compileOnly project(":micronaut-aot-plugin")
-    testImplementation testFixtures(project(":micronaut-minimal-plugin"))
+    compileOnly projects.micronautAotPlugin
+
+    implementation libs.micronaut.testresources
+    implementation projects.micronautMinimalPlugin
+
+    testImplementation testFixtures(projects.micronautMinimalPlugin)
 }

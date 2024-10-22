@@ -14,5 +14,5 @@ micronautPlugins {
 
 dependencies {
     implementation(libs.tomlj)
-    testImplementation testFixtures(project(":micronaut-minimal-plugin"))
+    testImplementation testFixtures(projects.micronautMinimalPlugin)
 }

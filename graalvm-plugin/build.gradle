@@ -9,7 +9,7 @@ micronautPlugins {
 }
 
 dependencies {
-    api project(":micronaut-minimal-plugin")
+    api projects.micronautMinimalPlugin
     api libs.graalvmPlugin
-    testImplementation testFixtures(project(":micronaut-minimal-plugin"))
+    testImplementation testFixtures(projects.micronautMinimalPlugin)
 }
