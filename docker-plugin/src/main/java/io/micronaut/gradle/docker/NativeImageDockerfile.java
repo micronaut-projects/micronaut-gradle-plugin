@@ -57,6 +57,8 @@ import static io.micronaut.gradle.docker.MicronautDockerfile.applyStandardTransf
  */
 public abstract class NativeImageDockerfile extends Dockerfile implements DockerBuildOptions {
 
+    public static final String AMAZON_LINUX_BASE_IMAGE = "public.ecr.aws/amazonlinux/amazonlinux:" + DefaultVersions.AMAZONLINUX;
+
     private static final List<Integer> SUPPORTED_JAVA_VERSIONS = List.of(
             // keep those in descending order
             21,
@@ -458,7 +460,7 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
         if (buildStrategy == DockerBuildStrategy.LAMBDA) {
             from(new From(imageResolver.resolve()).withStage("graalvm"));
             environmentVariable("LANG", "en_US.UTF-8");
-            runCommand("yum install -y gcc gcc-c++ glibc-devel glibc-langpack-en curl-minimal bash zlib zlib-devel zlib-static zip tar gzip");
+            runCommand("dnf update -y && dnf install -y gcc glibc-devel zlib-devel libstdc++-static tar && dnf clean all && rm -rf /var/cache/dnf");
             String jdkVersion = getJdkVersion().get();
             String graalArch = getGraalArch().get();
             // https://download.oracle.com/graalvm/17/latest/graalvm-jdk-17_linux-aarch64_bin.tar.gz
@@ -475,6 +477,7 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
             defaultCommand("/usr/lib/graalvm/bin/native-image");
             environmentVariable("PATH", "/usr/lib/graalvm/bin:${PATH}");
             from(new From("graalvm").withStage("builder"));
+            runCommand("dnf update -y && dnf install -y zip && dnf clean all");
         } else {
             from(new From(getGraalImage().get()).withStage("graalvm"));
         }
@@ -531,7 +534,7 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
             case LAMBDA:
                 from(baseImageProvider);
                 workingDir("/function");
-                runCommand("yum install -y zip");
+                runCommand("dnf install -y zip");
                 copyFile(new CopyFile(workDir + "/application", "/function/func").withStage("builder"));
                 String funcCmd = String.join(" ", getArgs().map(strings -> {
                     List<String> newList = new ArrayList<>(strings.size() + 1);
@@ -771,7 +774,7 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
             String baseImage = getBaseImage().getOrNull();
 
             if (strategy == DockerBuildStrategy.LAMBDA && baseImage == null) {
-                baseImage = "amazonlinux:2023";
+                baseImage = AMAZON_LINUX_BASE_IMAGE;
             } else if (baseImage == null) {
                 baseImage = "cgr.dev/chainguard/wolfi-base:latest";
             }

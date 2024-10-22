@@ -104,8 +104,8 @@ micronaut:
         where:
         runtime           | jdk | nativeImage
         "netty"           | 17  | "FROM ghcr.io/graalvm/native-image-community:17-ol${DefaultVersions.ORACLELINUX}"
-        "lambda_provided" | 17  | 'FROM amazonlinux:2023 AS graalvm'
-        "lambda_provided" | 21  | 'FROM amazonlinux:2023 AS graalvm'
+        "lambda_provided" | 17  | "FROM public.ecr.aws/amazonlinux/amazonlinux:${DefaultVersions.AMAZONLINUX} AS graalvm"
+        "lambda_provided" | 21  | "FROM public.ecr.aws/amazonlinux/amazonlinux:${DefaultVersions.AMAZONLINUX} AS graalvm"
         "jetty"           | 17  | "FROM ghcr.io/graalvm/native-image-community:17-ol${DefaultVersions.ORACLELINUX}"
     }
 
