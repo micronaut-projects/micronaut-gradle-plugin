@@ -1,5 +1,5 @@
 [versions]
-kotlin = "1.9.24"
+kotlin = "1.9.25"
 ksp = "1.9.25-1.0.20"
 docker = "9.4.0"
 diffplug = "4.1.0"
