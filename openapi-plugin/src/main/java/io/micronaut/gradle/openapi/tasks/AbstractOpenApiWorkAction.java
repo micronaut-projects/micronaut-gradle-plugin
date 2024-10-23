@@ -105,6 +105,42 @@ public abstract class AbstractOpenApiWorkAction<T extends AbstractOpenApiWorkAct
         Property<String> getModelNamePrefix();
 
         Property<String> getModelNameSuffix();
+
+        Property<Boolean> getUseEnumCaseInsensitive();
+
+        Property<Boolean> getGenerateSwaggerAnnotations();
+
+        Property<Boolean> getImplicitHeaders();
+
+        Property<String> getImplicitHeadersRegex();
+
+        ListProperty<String> getAdditionalEnumTypeAnnotations();
+
+        ListProperty<String> getAdditionalModelTypeAnnotations();
+
+        ListProperty<String> getAdditionalOneOfTypeAnnotations();
+
+        MapProperty<String, Object> getAdditionalProperties();
+
+        Property<Boolean> getUseJakartaEe();
+
+        Property<Boolean> getSortParamsByRequiredFlag();
+
+        Property<Boolean> getSkipOperationExample();
+
+        Property<Boolean> getSkipSortingOperations();
+
+        Property<String> getRemoveOperationIdPrefixDelimiter();
+
+        Property<Integer> getRemoveOperationIdPrefixCount();
+
+        Property<Boolean> getSortModelPropertiesByRequiredFlag();
+
+        Property<Boolean> getEnsureUniqueParams();
+
+        Property<Boolean> getAllowUnicodeIdentifiers();
+
+        Property<Boolean> getPrependFormOrBodyParameters();
     }
 
     protected abstract void configureBuilder(MicronautCodeGeneratorBuilder builder);
@@ -125,8 +161,8 @@ public abstract class AbstractOpenApiWorkAction<T extends AbstractOpenApiWorkAct
             .withOptions(options -> options
                 .withLang("kotlin".equalsIgnoreCase(lang) ? GeneratorLanguage.KOTLIN : GeneratorLanguage.JAVA)
                 .withApiPackage(parameters.getApiPackageName().get())
-                .withModelPackage(parameters.getModelPackageName().get())
                 .withInvokerPackage(parameters.getInvokerPackageName().get())
+                .withModelPackage(parameters.getModelPackageName().get())
                 .withBeanValidation(parameters.getUseBeanValidation().get())
                 .withUseOneOfInterfaces(parameters.getUseOneOfInterfaces().get())
                 .withOptional(parameters.getUseOptional().get())
@@ -166,10 +202,29 @@ public abstract class AbstractOpenApiWorkAction<T extends AbstractOpenApiWorkAct
                 .withInlineSchemaNameMapping(parameters.getInlineSchemaNameMapping().get())
                 .withInlineSchemaOption(parameters.getInlineSchemaOption().get())
                 .withOpenapiNormalizer(parameters.getOpenapiNormalizer().get())
-                .withApiNamePrefix(parameters.getApiNamePrefix().orElse("").get())
-                .withApiNameSuffix(parameters.getApiNameSuffix().orElse("").get())
-                .withModelNamePrefix(parameters.getModelNamePrefix().orElse("").get())
-                .withModelNameSuffix(parameters.getModelNameSuffix().orElse("").get())
+                .withApiNamePrefix(parameters.getApiNamePrefix().get())
+                .withApiNameSuffix(parameters.getApiNameSuffix().get())
+                .withModelNamePrefix(parameters.getModelNamePrefix().get())
+                .withModelNameSuffix(parameters.getModelNameSuffix().get())
+                .withGenerateSwaggerAnnotations(parameters.getGenerateSwaggerAnnotations().get())
+                .withImplicitHeaders(parameters.getImplicitHeaders().get())
+                .withImplicitHeadersRegex(parameters.getImplicitHeadersRegex().get())
+                .withUseEnumCaseInsensitive(parameters.getUseEnumCaseInsensitive().get())
+                .withAdditionalEnumTypeAnnotations(parameters.getAdditionalEnumTypeAnnotations().get())
+                .withAdditionalModelTypeAnnotations(parameters.getAdditionalModelTypeAnnotations().get())
+                .withAdditionalOneOfTypeAnnotations(parameters.getAdditionalOneOfTypeAnnotations().get())
+                .withAdditionalProperties(parameters.getAdditionalProperties().get())
+
+                .withUseJakartaEe(parameters.getUseJakartaEe().get())
+                .withSortParamsByRequiredFlag(parameters.getSortParamsByRequiredFlag().get())
+                .withSkipOperationExample(parameters.getSkipOperationExample().get())
+                .withSkipSortingOperations(parameters.getSkipSortingOperations().get())
+                .withRemoveOperationIdPrefixDelimiter(parameters.getRemoveOperationIdPrefixDelimiter().get())
+                .withRemoveOperationIdPrefixCount(parameters.getRemoveOperationIdPrefixCount().get())
+                .withSortModelPropertiesByRequiredFlag(parameters.getSortModelPropertiesByRequiredFlag().get())
+                .withEnsureUniqueParams(parameters.getEnsureUniqueParams().get())
+                .withAllowUnicodeIdentifiers(parameters.getAllowUnicodeIdentifiers().get())
+                .withPrependFormOrBodyParameters(parameters.getPrependFormOrBodyParameters().get())
             );
 
         configureBuilder(builder);

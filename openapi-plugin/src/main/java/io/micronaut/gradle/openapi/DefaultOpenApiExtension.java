@@ -126,6 +126,26 @@ public abstract class DefaultOpenApiExtension implements OpenApiExtension {
         spec.getGenerateHttpResponseWhereRequired().convention(false);
         spec.getDateTimeFormat().convention("ZONED_DATETIME");
         spec.getLang().convention("java");
+        spec.getGenerateSwaggerAnnotations().convention(false);
+        spec.getApiNamePrefix().convention("");
+        spec.getApiNameSuffix().convention("");
+        spec.getModelNamePrefix().convention("");
+        spec.getModelNameSuffix().convention("");
+        spec.getImplicitHeaders().convention(false);
+        spec.getImplicitHeadersRegex().convention("");
+        spec.getUseEnumCaseInsensitive().convention(false);
+
+        spec.getUseJakartaEe().convention(true);
+        spec.getSortParamsByRequiredFlag().convention(true);
+        spec.getSkipOperationExample().convention(false);
+        spec.getSkipSortingOperations().convention(false);
+        spec.getRemoveOperationIdPrefixDelimiter().convention("_");
+        spec.getRemoveOperationIdPrefixCount().convention(1);
+        spec.getSortModelPropertiesByRequiredFlag().convention(true);
+        spec.getEnsureUniqueParams().convention(true);
+        spec.getAllowUnicodeIdentifiers().convention(false);
+        spec.getPrependFormOrBodyParameters().convention(false);
+
         withJava(() -> {
                 var compileOnlyDeps = project.getConfigurations().getByName("compileOnly").getDependencies();
                 if ("java".equalsIgnoreCase(spec.getLang().get())) {
@@ -189,6 +209,27 @@ public abstract class DefaultOpenApiExtension implements OpenApiExtension {
         task.getApiNameSuffix().convention(openApiSpec.getApiNameSuffix());
         task.getModelNamePrefix().convention(openApiSpec.getModelNamePrefix());
         task.getModelNameSuffix().convention(openApiSpec.getModelNameSuffix());
+
+        task.getUseEnumCaseInsensitive().convention(openApiSpec.getUseEnumCaseInsensitive());
+        task.getGenerateSwaggerAnnotations().convention(openApiSpec.getGenerateSwaggerAnnotations());
+        task.getImplicitHeaders().convention(openApiSpec.getImplicitHeaders());
+        task.getImplicitHeadersRegex().convention(openApiSpec.getImplicitHeadersRegex());
+
+        task.getAdditionalEnumTypeAnnotations().convention(openApiSpec.getAdditionalEnumTypeAnnotations());
+        task.getAdditionalModelTypeAnnotations().convention(openApiSpec.getAdditionalModelTypeAnnotations());
+        task.getAdditionalOneOfTypeAnnotations().convention(openApiSpec.getAdditionalOneOfTypeAnnotations());
+        task.getAdditionalProperties().convention(openApiSpec.getAdditionalProperties());
+
+        task.getUseJakartaEe().convention(openApiSpec.getUseJakartaEe());
+        task.getSortParamsByRequiredFlag().convention(openApiSpec.getSortParamsByRequiredFlag());
+        task.getSkipOperationExample().convention(openApiSpec.getSkipOperationExample());
+        task.getSkipSortingOperations().convention(openApiSpec.getSkipSortingOperations());
+        task.getRemoveOperationIdPrefixDelimiter().convention(openApiSpec.getRemoveOperationIdPrefixDelimiter());
+        task.getRemoveOperationIdPrefixCount().convention(openApiSpec.getRemoveOperationIdPrefixCount());
+        task.getSortModelPropertiesByRequiredFlag().convention(openApiSpec.getSortModelPropertiesByRequiredFlag());
+        task.getEnsureUniqueParams().convention(openApiSpec.getEnsureUniqueParams());
+        task.getAllowUnicodeIdentifiers().convention(openApiSpec.getAllowUnicodeIdentifiers());
+        task.getPrependFormOrBodyParameters().convention(openApiSpec.getPrependFormOrBodyParameters());
     }
 
     private void withJavaSourceSets(Consumer<? super SourceSetContainer> consumer) {
