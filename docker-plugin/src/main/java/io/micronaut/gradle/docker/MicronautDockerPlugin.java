@@ -45,14 +45,13 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
 
 import static io.micronaut.gradle.Strings.capitalize;
 import static org.gradle.api.plugins.JavaPlugin.RUNTIME_CLASSPATH_CONFIGURATION_NAME;
 
+@SuppressWarnings("Convert2Lambda")
 public class MicronautDockerPlugin implements Plugin<Project> {
     @Override
     public void apply(Project project) {
@@ -201,11 +200,11 @@ public class MicronautDockerPlugin implements Plugin<Project> {
 
             jar.from(dirs);
             jar.manifest(manifest -> {
-                Map<String, Object> attrs = new HashMap<>(2);
+                var attrs = new HashMap<String, Object>(2);
                 JavaApplication javaApplication = project.getExtensions().getByType(JavaApplication.class);
                 attrs.put("Main-Class", javaApplication.getMainClass());
                 attrs.put("Class-Path", project.getProviders().provider(() -> {
-                    List<String> classpath = new ArrayList<>();
+                    var classpath = new ArrayList<String>();
                     Configuration runtimeClasspath = project.getConfigurations()
                         .getByName(RUNTIME_CLASSPATH_CONFIGURATION_NAME);
 

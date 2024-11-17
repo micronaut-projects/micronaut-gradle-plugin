@@ -56,7 +56,7 @@ public record AutomaticDependency(
                         return List.of();
                     }
                     if (versionProperty.isPresent()) {
-                        Property<String> provider = (Property<String>) micronautExtension.getExtensions().findByName(versionProperty.get().dslName());
+                        var provider = (Property<String>) micronautExtension.getExtensions().findByName(versionProperty.get().dslName());
                         if (provider != null && provider.isPresent()) {
                             return List.of(dependencyHandler.create(coordinates + ":" + provider.get()));
                         }

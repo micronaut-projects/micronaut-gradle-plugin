@@ -57,15 +57,15 @@ public abstract class CheckpointScriptTask extends DefaultTask {
         Provider<RegularFile> checkpointFile = getOutputDir().file("checkpoint.sh");
         Path checkpointScriptPath = checkpointFile.get().getAsFile().toPath();
 
-        FilterSet filterSet = new FilterSet();
+        var filterSet = new FilterSet();
         filterSet.addFilter("READINESS", getPreCheckpointReadinessCommand().get());
 
-        try (InputStream stream = getCheckpointFile().isPresent() ?
+        try (var stream = getCheckpointFile().isPresent() ?
                 Files.newInputStream(getCheckpointFile().get().getAsFile().toPath()) :
                 CheckpointScriptTask.class.getResourceAsStream("/checkpoint.sh");
-             Reader reader = new InputStreamReader(stream);
-             BufferedReader bufferedReader = new BufferedReader(reader);
-             BufferedWriter writer = Files.newBufferedWriter(checkpointScriptPath, StandardCharsets.UTF_8)) {
+             var bufferedReader = new BufferedReader(new InputStreamReader(stream));
+             BufferedWriter writer = Files.newBufferedWriter(checkpointScriptPath, StandardCharsets.UTF_8)
+        ) {
             String line;
             while ((line = bufferedReader.readLine()) != null) {
                 writer.write(filterSet.replaceTokens(line));

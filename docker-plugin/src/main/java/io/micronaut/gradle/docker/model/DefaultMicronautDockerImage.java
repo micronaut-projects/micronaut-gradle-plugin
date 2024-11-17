@@ -18,6 +18,7 @@ package io.micronaut.gradle.docker.model;
 import org.gradle.api.Action;
 import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.tasks.Internal;
+import org.jetbrains.annotations.NotNull;
 
 import javax.inject.Inject;
 
@@ -30,6 +31,7 @@ public abstract class DefaultMicronautDockerImage implements MicronautDockerImag
         this.name = name;
     }
 
+    @NotNull
     @Override
     @Internal
     public String getName() {
