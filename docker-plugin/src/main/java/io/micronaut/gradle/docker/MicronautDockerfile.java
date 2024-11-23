@@ -160,7 +160,7 @@ public abstract class MicronautDockerfile extends Dockerfile implements DockerBu
                 getInstructions().addAll(additionalInstructions);
                 if (getInstructions().get().stream().noneMatch(instruction -> instruction.getKeyword().equals(EntryPointInstruction.KEYWORD))) {
                     entryPoint(getArgs().map(strings -> {
-                        List<String> newList = new ArrayList<>(strings.size() + 3);
+                        var newList = new ArrayList<String>(strings.size() + 3);
                         newList.add("java");
                         newList.addAll(strings);
                         newList.add("-jar");
@@ -185,7 +185,7 @@ public abstract class MicronautDockerfile extends Dockerfile implements DockerBu
      */
     public void setupTaskPostEvaluate() {
         // Get any custom instructions the user may or may not have entered, but ignoring our 'from' placeholder
-        List<Instruction> additionalInstructions = new ArrayList<>(getInstructions().get().subList(1, getInstructions().get().size()));
+        var additionalInstructions = new ArrayList<>(getInstructions().get().subList(1, getInstructions().get().size()));
         // Reset the instructions to empty
         getInstructions().set(new ArrayList<>());
         setupInstructions(additionalInstructions);

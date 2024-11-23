@@ -9,11 +9,11 @@ import spock.lang.Issue
 import static org.mockserver.model.HttpRequest.request
 import static org.mockserver.model.HttpResponse.response
 
-@IgnoreIf({ os.windows })
 class DockerBuildTaskSpec extends AbstractGradleBuildSpec {
     private final String today = new Date().format("yyyyMMdd")
     private final String now = new Date().format("HHmmss")
 
+    @IgnoreIf({ os.windows })
     def "test build docker image"() {
         given:
         settingsFile << "rootProject.name = 'hello-world'"
@@ -55,6 +55,7 @@ class Application {
 
     }
 
+    @IgnoreIf({ os.windows })
     def "test build docker image using custom Dockerfile"() {
         given:
         settingsFile << "rootProject.name = 'hello-world'"
@@ -148,6 +149,7 @@ class Application {
         def dockerfile = new File(testProjectDir.root, 'build/docker/main/Dockerfile').readLines('UTF-8')
     }
 
+    @IgnoreIf({ os.windows })
     @Issue("https://github.com/micronaut-projects/micronaut-gradle-plugin/issues/402")
     def "can override default working dir"() {
         given:
@@ -204,6 +206,7 @@ ENTRYPOINT ["java", "-jar", "/home/alternate/application.jar"]
 """
     }
 
+    @IgnoreIf({ os.windows })
     def "can disable the use of the COPY --link option"() {
         given:
         settingsFile << "rootProject.name = 'hello-world'"

@@ -181,7 +181,7 @@ public abstract class MicronautExtension implements ExtensionAware {
             throw new IllegalArgumentException("Number of arguments should be an even number representing the keys and values");
         }
 
-        Map<String, List<String>> answer = new LinkedHashMap<>(len / 2);
+        var answer = new LinkedHashMap<String, List<String>>(len / 2);
         int i = 0;
         while (i < values.length - 1) {
             answer.put(values[i++].toString(), (List<String>) values[i++]);

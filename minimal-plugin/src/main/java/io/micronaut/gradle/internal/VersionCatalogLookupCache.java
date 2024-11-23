@@ -27,8 +27,8 @@ import java.util.concurrent.atomic.AtomicReference;
 /**
  * This class is used as a workaround for very poor performance
  * of version catalog scanning in Gradle.
- * See https://github.com/micronaut-projects/micronaut-gradle-plugin/issues/932
- * and https://github.com/gradle/gradle/pull/27444/files
+ * See <a href="https://github.com/micronaut-projects/micronaut-gradle-plugin/issues/932">Issue</a>
+ * and <a href="https://github.com/gradle/gradle/pull/27444/files">PR</a>
  */
 class VersionCatalogLookupCache implements AutoCloseable {
     private final AtomicReference<VersionCatalog> oldCatalog = new AtomicReference<>();

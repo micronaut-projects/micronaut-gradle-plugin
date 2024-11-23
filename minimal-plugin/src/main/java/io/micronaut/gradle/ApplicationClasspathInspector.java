@@ -53,7 +53,7 @@ public abstract class ApplicationClasspathInspector extends DefaultTask {
 
     @TaskAction
     void inspect() throws IOException {
-        try (PrintWriter writer = new PrintWriter(new FileWriter(getReportFile().get().getAsFile()))) {
+        try (var writer = new PrintWriter(new FileWriter(getReportFile().get().getAsFile()))) {
             Set<File> resources = getResources().getFiles();
             if (resources.stream().anyMatch(ApplicationClasspathInspector::isYamlConfigurationFile)) {
                 writer.println("YAML configuration file detected");

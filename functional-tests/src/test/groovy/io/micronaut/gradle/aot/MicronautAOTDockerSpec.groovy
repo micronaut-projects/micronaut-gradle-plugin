@@ -5,7 +5,6 @@ import org.gradle.testkit.runner.TaskOutcome
 import spock.lang.IgnoreIf
 import spock.lang.Requires
 
-@IgnoreIf({ os.windows })
 class MicronautAOTDockerSpec extends AbstractAOTPluginSpec {
 
     def "generates an optimized docker file"() {
@@ -29,6 +28,7 @@ ENTRYPOINT ["java", "-jar", "/home/app/application.jar"]
 
     }
 
+    @IgnoreIf({ os.windows })
     def "generates an optimized docker image"() {
         withSample("aot/basic-app")
 

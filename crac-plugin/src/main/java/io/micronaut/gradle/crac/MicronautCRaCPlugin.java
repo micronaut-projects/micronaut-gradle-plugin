@@ -41,7 +41,7 @@ import java.util.function.Consumer;
 
 import static io.micronaut.gradle.Strings.capitalize;
 
-@SuppressWarnings("java:S5738") // Using deprecated getPlatform method still, until it's removal in 4.0.0
+@SuppressWarnings({"java:S5738", "Convert2Lambda"}) // Using deprecated getPlatform method still, until it's removal in 4.0.0
 public class MicronautCRaCPlugin implements Plugin<Project> {
 
     public static final String CRAC_DEFAULT_BASE_IMAGE = "ubuntu:22.04";
@@ -64,7 +64,7 @@ public class MicronautCRaCPlugin implements Plugin<Project> {
         ExtensionContainer extensions = project.getExtensions();
         MicronautExtension micronautExtension = extensions.getByType(MicronautExtension.class);
         CRaCConfiguration configuration = createCRaCConfiguration(project);
-        NamedDomainObjectContainer<MicronautDockerImage> dockerImages = (NamedDomainObjectContainer<MicronautDockerImage>) micronautExtension.getExtensions().findByName("dockerImages");
+        var dockerImages = (NamedDomainObjectContainer<MicronautDockerImage>) micronautExtension.getExtensions().findByName("dockerImages");
         createCheckpointDockerImage(project, dockerImages.findByName("main"), configuration);
     }
 
@@ -233,22 +233,15 @@ public class MicronautCRaCPlugin implements Plugin<Project> {
         return (project.getRootProject().getName() + project.getPath() + "-checkpoint").replace(":", "-");
     }
 
-    private static class CheckpointTasksOfNote {
-
-        private final TaskProvider<CRaCCheckpointDockerfile> checkpointDockerBuild;
-        private final TaskProvider<DockerStartContainer> start;
-
-        private CheckpointTasksOfNote(
-                @Nullable TaskProvider<CRaCCheckpointDockerfile> checkpointDockerBuild,
-                TaskProvider<DockerStartContainer> start
-        ) {
-            this.checkpointDockerBuild = checkpointDockerBuild;
-            this.start = start;
-        }
+    private record CheckpointTasksOfNote(
+        @Nullable
+        TaskProvider<CRaCCheckpointDockerfile> checkpointDockerBuild,
+        TaskProvider<DockerStartContainer> start
+    ) {
 
         Optional<TaskProvider<CRaCCheckpointDockerfile>> getCheckpointDockerBuild() {
-            return Optional.ofNullable(checkpointDockerBuild);
-        }
+                return Optional.ofNullable(checkpointDockerBuild);
+            }
     }
 
     private Optional<TaskProvider<CRaCFinalDockerfile>> configureFinalDockerBuild(Project project,

@@ -88,15 +88,15 @@ abstract class AbstractMicronautAotCliTask extends DefaultTask implements Optimi
                 FileCollection classpath = getOptimizerClasspath().plus(getClasspath());
                 spec.setClasspath(aotClasspath);
                 spec.getMainClass().set("io.micronaut.aot.cli.Main");
-                List<String> args = new ArrayList<>(Arrays.asList(
-                        "--classpath", classpath.getAsPath(),
-                        "--runtime", getTargetRuntime().get().name().toUpperCase(),
-                        "--package", getTargetPackage().get()
+                var args = new ArrayList<>(Arrays.asList(
+                    "--classpath", classpath.getAsPath(),
+                    "--runtime", getTargetRuntime().get().name().toUpperCase(),
+                    "--package", getTargetPackage().get()
                 ));
                 maybeAddOptimizerClasspath(args, getClasspath());
                 configureExtraArguments(args);
                 boolean useArgFile = true;
-                try (PrintWriter wrt = new PrintWriter(new FileWriter(argFile))) {
+                try (var wrt = new PrintWriter(new FileWriter(argFile))) {
                     args.forEach(arg -> wrt.println(escapeArg(arg)));
                 } catch (IOException e) {
                     useArgFile = false;
@@ -107,7 +107,7 @@ abstract class AbstractMicronautAotCliTask extends DefaultTask implements Optimi
                     spec.args(args);
                 }
                 getLogger().info("Running AOT optimizer {} with parameters: {}", useArgFile ? "using arg file" : "directly", args);
-                List<String> jvmArgs = new ArrayList<>();
+                var jvmArgs = new ArrayList<String>();
                 if (Boolean.TRUE.equals(getDebug().get())) {
                     getLogger().info("Running with debug enabled");
                     jvmArgs.add("-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5005");

@@ -1,6 +1,5 @@
 package io.micronaut.gradle
 
-
 import org.gradle.testkit.runner.TaskOutcome
 
 class BuildLayersSpec extends AbstractGradleBuildSpec {

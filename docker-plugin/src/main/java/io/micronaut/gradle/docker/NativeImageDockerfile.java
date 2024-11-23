@@ -37,6 +37,7 @@ import org.gradle.internal.jvm.Jvm;
 import org.gradle.jvm.toolchain.JavaLanguageVersion;
 import org.gradle.jvm.toolchain.JavaLauncher;
 import org.gradle.jvm.toolchain.JavaToolchainService;
+import org.jetbrains.annotations.NotNull;
 
 import javax.inject.Inject;
 import java.io.IOException;
@@ -223,6 +224,7 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
                 .map(bniT -> {
                     NativeImageOptions delegate = bniT.getOptions().get();
                     return new NativeImageOptions() {
+                        @NotNull
                         @Override
                         public String getName() {
                             return delegate.getName();
@@ -455,7 +457,7 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
     // Everything done in this method MUST be lazy, so use providers as much as possible
     private void setupInstructions(List<Instruction> additionalInstructions) {
         DockerBuildStrategy buildStrategy = getBuildStrategy().get();
-        BaseImageForBuildStrategyResolver imageResolver = new BaseImageForBuildStrategyResolver(buildStrategy);
+        var imageResolver = new BaseImageForBuildStrategyResolver(buildStrategy);
         Provider<From> baseImageProvider = getProviders().provider(() -> new From(imageResolver.get()));
         if (buildStrategy == DockerBuildStrategy.LAMBDA) {
             from(new From(imageResolver.resolve()).withStage("graalvm"));
@@ -488,7 +490,7 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
         String workDir = getTargetWorkingDirectory().get();
         runCommand("mkdir " + workDir + "/config-dirs");
         getInstructions().addAll(getNativeImageOptions().map(options -> {
-                    DockerResourceConfigDirectoryNamer namer = new DockerResourceConfigDirectoryNamer();
+                    var namer = new DockerResourceConfigDirectoryNamer();
                     return options.getConfigurationFileDirectories()
                             .getFiles()
                             .stream()
@@ -501,7 +503,7 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
                 }
         ));
         getInstructions().addAll(getNativeImageOptions().map(options -> {
-                    DockerResourceConfigDirectoryNamer namer = new DockerResourceConfigDirectoryNamer();
+                    var namer = new DockerResourceConfigDirectoryNamer();
                     return options.getConfigurationFileDirectories()
                             .getFiles()
                             .stream()
@@ -519,7 +521,7 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
                 copyFile(new CopyFile(workDir + "/application", "/function/func").withStage("graalvm"));
                 copyFile(new CopyFile("/function/runtime/lib/*", ".").withStage("fnfdk"));
                 entryPoint(getArgs().map(strings -> {
-                    List<String> newList = new ArrayList<>(strings.size() + 1);
+                    var newList = new ArrayList<String>(strings.size() + 1);
                     newList.add("./func");
                     newList.addAll(strings);
                     newList.add("-Djava.library.path=/function");
@@ -537,7 +539,7 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
                 runCommand("dnf install -y zip");
                 copyFile(new CopyFile(workDir + "/application", "/function/func").withStage("builder"));
                 String funcCmd = String.join(" ", getArgs().map(strings -> {
-                    List<String> newList = new ArrayList<>(strings.size() + 1);
+                    var newList = new ArrayList<String>(strings.size() + 1);
                     newList.add("./func");
                     newList.addAll(strings);
                     newList.add("-Djava.library.path=$(pwd)");
@@ -556,7 +558,7 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
                 getInstructions().addAll(additionalInstructions);
                 copyFile(new CopyFile(workDir + "/application", "/app/application").withStage("graalvm"));
                 entryPoint(getArgs().map(strings -> {
-                    List<String> newList = new ArrayList<>(strings.size() + 1);
+                    var newList = new ArrayList<String>(strings.size() + 1);
                     newList.add("/app/application");
                     newList.addAll(strings);
                     return newList;
@@ -591,7 +593,7 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
                 options.getMainClass().set(nativeLambdaExtension.getLambdaRuntimeClassName());
             }
         }
-        List<String> commandLine = new ArrayList<>();
+        var commandLine = new ArrayList<String>();
         commandLine.add("native-image");
         List<String> args = buildNativeImageCommandLineArgs(executable, options);
         commandLine.addAll(args);
@@ -660,7 +662,7 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
         options.getSystemProperties().set(originalOptions.flatMap(NativeImageOptions::getSystemProperties));
         options.getExcludeConfigArgs().set(originalOptions.flatMap(NativeImageOptions::getExcludeConfigArgs).map(this::remapExcludeConfigArgs));
         options.getRichOutput().set(false);
-        DockerResourceConfigDirectoryNamer namer = new DockerResourceConfigDirectoryNamer();
+        var namer = new DockerResourceConfigDirectoryNamer();
         Provider<List<String>> remappedConfigDirectories = originalOptions.map(orig -> orig.getConfigurationFileDirectories()
                 .getFiles()
                 .stream()
@@ -715,7 +717,7 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
      * This is executed post project evaluation
      */
     void setupNativeImageTaskPostEvaluate() {
-        List<Instruction> additionalInstructions = new ArrayList<>(getInstructions().get());
+        var additionalInstructions = new ArrayList<>(getInstructions().get());
         // Reset the instructions to empty
         getInstructions().set(new ArrayList<>());
         setupInstructions(additionalInstructions);
@@ -755,7 +757,7 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
         return "latest";
     }
 
-    private class BaseImageForBuildStrategyResolver {
+    protected class BaseImageForBuildStrategyResolver {
         private final DockerBuildStrategy strategy;
         private String resolved;
 

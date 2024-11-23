@@ -137,7 +137,7 @@ public abstract class CRaCCheckpointDockerfile extends Dockerfile {
                 getInstructions().addAll(additionalInstructions);
                 if (getInstructions().get().stream().noneMatch(instruction -> instruction.getKeyword().equals(EntryPointInstruction.KEYWORD))) {
                     entryPoint(getArgs().map(strings -> {
-                        List<String> newList = new ArrayList<>(strings.size() + 3);
+                        var newList = new ArrayList<String>(strings.size() + 3);
                         newList.add("/home/app/checkpoint.sh");
                         newList.addAll(strings);
                         return newList;
@@ -160,7 +160,7 @@ public abstract class CRaCCheckpointDockerfile extends Dockerfile {
      */
     void setupTaskPostEvaluate() {
         // Get any custom instructions the user may or may not have entered, but ignoring our 'from' placeholder
-        List<Instruction> additionalInstructions = new ArrayList<>(getInstructions().get().subList(1, getInstructions().get().size()));
+        var additionalInstructions = new ArrayList<>(getInstructions().get().subList(1, getInstructions().get().size()));
         // Reset the instructions to empty
         getInstructions().set(new ArrayList<>());
         setupInstructions(additionalInstructions);
@@ -170,11 +170,13 @@ public abstract class CRaCCheckpointDockerfile extends Dockerfile {
         String workDir = DEFAULT_WORKING_DIR;
         task.workingDir(workDir);
         task.instruction("# Add required libraries");
-        task.runCommand("apt-get update && apt-get install -y \\\n" +
-                "        curl \\\n" +
-                "        jq \\\n" +
-                "        libnl-3-200 \\\n" +
-                "    && rm -rf /var/lib/apt/lists/*");
+        task.runCommand("""
+            apt-get update && apt-get install -y \\
+                    curl \\
+                    jq \\
+                    libnl-3-200 \\
+                && rm -rf /var/lib/apt/lists/*
+        """);
         task.instruction("# Install latest CRaC OpenJDK");
 
         // Limit the architecture, Azul doesn't support x86_64 https://api.azul.com/metadata/v1/docs/swagger
