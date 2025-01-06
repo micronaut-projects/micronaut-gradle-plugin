@@ -23,7 +23,7 @@ class RuntimeDependenciesSpec extends AbstractEagerConfiguringFunctionalTest {
             }
             
             micronaut {
-                version "$shadowVersion"
+                version "$micronautVersion"
                 runtime "$runtime"                
             }
             
