@@ -1,7 +1,6 @@
 package io.micronaut.gradle.crac;
 
 import org.gradle.api.logging.Logger;
-import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -19,7 +18,7 @@ public class TeeStringWriter extends Writer {
 
     @Override
     @SuppressWarnings("java:S2629") // This is done by Gradle
-    public void write(char @NotNull [] cbuf, int off, int len) {
+    public void write(char[] cbuf, int off, int len) {
         delegate.write(cbuf, off, len);
         logger.lifecycle(new String(cbuf, off, len).trim());
     }

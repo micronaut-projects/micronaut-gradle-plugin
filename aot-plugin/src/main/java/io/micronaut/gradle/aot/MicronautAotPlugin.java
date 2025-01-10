@@ -56,7 +56,6 @@ import org.gradle.api.tasks.TaskContainer;
 import org.gradle.api.tasks.TaskProvider;
 import org.gradle.api.tasks.application.CreateStartScripts;
 import org.gradle.api.tasks.bundling.Jar;
-import org.jetbrains.annotations.NotNull;
 
 import javax.inject.Inject;
 import java.io.File;
@@ -420,7 +419,7 @@ public abstract class MicronautAotPlugin implements Plugin<Project> {
         }
 
         @Override
-        public void execute(@NotNull FileCopyDetails details) {
+        public void execute(FileCopyDetails details) {
             if (excludes == null) {
                 File resourceFilter = filterFile.get().getAsFile();
                 try {

@@ -23,7 +23,6 @@ import org.gradle.api.logging.Logger;
 import org.gradle.api.logging.Logging;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.provider.ProviderFactory;
-import org.jetbrains.annotations.NotNull;
 import org.tomlj.Toml;
 import org.tomlj.TomlParseResult;
 import org.tomlj.TomlTable;
@@ -32,7 +31,6 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.List;
 
 public abstract class MicronautCatalogSettingsPlugin implements Plugin<Settings> {
@@ -117,7 +115,6 @@ public abstract class MicronautCatalogSettingsPlugin implements Plugin<Settings>
         }
     }
 
-    @NotNull
     private Provider<String> createMicronautVersionProvider(Settings settings, ProviderFactory providers) {
         return providers.gradleProperty("micronautVersion")
                 .orElse(readFromVersionCatalog(settings))

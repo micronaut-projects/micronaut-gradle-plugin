@@ -37,7 +37,6 @@ import org.gradle.internal.jvm.Jvm;
 import org.gradle.jvm.toolchain.JavaLanguageVersion;
 import org.gradle.jvm.toolchain.JavaLauncher;
 import org.gradle.jvm.toolchain.JavaToolchainService;
-import org.jetbrains.annotations.NotNull;
 
 import javax.inject.Inject;
 import java.io.IOException;
@@ -224,7 +223,6 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
                 .map(bniT -> {
                     NativeImageOptions delegate = bniT.getOptions().get();
                     return new NativeImageOptions() {
-                        @NotNull
                         @Override
                         public String getName() {
                             return delegate.getName();

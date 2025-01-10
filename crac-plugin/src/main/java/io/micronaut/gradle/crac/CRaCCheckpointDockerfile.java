@@ -18,7 +18,6 @@ import org.gradle.api.tasks.PathSensitive;
 import org.gradle.api.tasks.PathSensitivity;
 import org.gradle.api.tasks.TaskAction;
 import org.gradle.jvm.toolchain.JavaLanguageVersion;
-import org.jetbrains.annotations.NotNull;
 
 import javax.inject.Inject;
 import java.io.IOException;
@@ -216,7 +215,6 @@ public abstract class CRaCCheckpointDockerfile extends Dockerfile {
         task.copyFile("scripts/warmup.sh", workDir + "/warmup.sh");
     }
 
-    @NotNull
     static String getUrl(String javaVersion, String os, String arch) {
         return """
             https://api.azul.com/metadata/v1/zulu/packages/\
