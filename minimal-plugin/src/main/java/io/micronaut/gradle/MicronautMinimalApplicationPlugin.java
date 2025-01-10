@@ -115,12 +115,13 @@ public class MicronautMinimalApplicationPlugin implements Plugin<Project> {
                     var sysProps = new LinkedHashMap<String, Object>();
                     sysProps.put("micronaut.io.watch.restart", true);
                     sysProps.put("micronaut.io.watch.enabled", true);
+                    FileCollection sourceDirectories = sourceSet.getAllSource().getSourceDirectories();
+                    //noinspection Convert2Lambda
                     javaExec.doFirst(new Action<>() {
                         @Override
                         public void execute(Task workaroundEagerSystemProps) {
-                            String watchPaths = sourceSet
-                                    .getAllSource()
-                                    .getSrcDirs()
+                            String watchPaths = sourceDirectories
+                                    .getFiles()
                                     .stream()
                                     .map(File::getPath)
                                     .collect(Collectors.joining(","));
@@ -205,12 +206,12 @@ public class MicronautMinimalApplicationPlugin implements Plugin<Project> {
                     "--target", "io.micronaut.gcp.function.http.HttpFunction",
                     "--port", 8080
             ));
+            SourceSet sourceSet = PluginsHelper.findSourceSets(p).getByName("main");
+            SourceSetOutput output = sourceSet.getOutput();
+            String runtimeClasspath = project.files(project.getConfigurations().getByName("runtimeClasspath"),
+                    output
+            ).getAsPath();
             run.doFirst(t -> {
-                SourceSet sourceSet = PluginsHelper.findSourceSets(p).getByName("main");
-                SourceSetOutput output = sourceSet.getOutput();
-                String runtimeClasspath = project.files(project.getConfigurations().getByName("runtimeClasspath"),
-                        output
-                ).getAsPath();
                 ((JavaExec) t).args("--classpath",
                         runtimeClasspath
                 );
