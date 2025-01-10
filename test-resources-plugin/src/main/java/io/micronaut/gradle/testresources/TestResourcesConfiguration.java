@@ -17,6 +17,7 @@ package io.micronaut.gradle.testresources;
 
 import io.micronaut.testresources.buildtools.KnownModules;
 import org.gradle.api.provider.ListProperty;
+import org.gradle.api.provider.MapProperty;
 import org.gradle.api.provider.Property;
 
 /**
@@ -110,4 +111,23 @@ public interface TestResourcesConfiguration extends KnownModules {
      * @return the server idle timeout
      */
     Property<Integer> getServerIdleTimeoutMinutes();
+
+    /**
+     * System properties to be set on the test resources service JVM.
+     * @return the system properties
+     */
+    MapProperty<String, String> getServerSystemProperties();
+
+    /**
+     * Environment variables to be set on the test resources service JVM.
+     * @return the environment variables
+     */
+    MapProperty<String, String> getServerEnvironment();
+
+    /**
+     * Set this property to true if you want to start the test resources service
+     * with a debugger attached.
+     * @return the debug property
+     */
+    Property<Boolean> getDebugServer();
 }

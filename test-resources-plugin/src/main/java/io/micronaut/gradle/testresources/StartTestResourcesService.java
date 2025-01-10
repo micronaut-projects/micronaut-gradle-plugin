@@ -23,6 +23,7 @@ import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.file.DirectoryProperty;
 import org.gradle.api.file.RegularFileProperty;
 import org.gradle.api.model.ObjectFactory;
+import org.gradle.api.provider.MapProperty;
 import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.Classpath;
 import org.gradle.api.tasks.Input;
@@ -173,6 +174,12 @@ public abstract class StartTestResourcesService extends DefaultTask {
     @Internal
     public abstract DirectoryProperty getClassDataSharingDir();
 
+    @Input
+    public abstract MapProperty<String, String> getSystemProperties();
+
+    @Input
+    public abstract MapProperty<String, String> getEnvironment();
+
     @Inject
     protected abstract ExecOperations getExecOperations();
 
@@ -219,6 +226,8 @@ public abstract class StartTestResourcesService extends DefaultTask {
                         spec.setClasspath(getObjects().fileCollection().from(classpath));
                         spec.setJvmArgs(processParameters.getJvmArguments());
                         processParameters.getSystemProperties().forEach(spec::systemProperty);
+                        getSystemProperties().get().forEach(spec::systemProperty);
+                        getEnvironment().get().forEach(spec::environment);
                         processParameters.getArguments().forEach(spec::args);
                     });
                 } catch (GradleException e) {
