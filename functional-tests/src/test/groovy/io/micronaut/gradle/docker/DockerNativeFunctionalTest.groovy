@@ -664,8 +664,10 @@ micronaut:
             RUN mkdir /home/alternate/config-dirs
             RUN mkdir -p /home/alternate/config-dirs/generateResourcesConfigFile
             RUN mkdir -p /home/alternate/config-dirs/io.netty/netty-common/4.0.0.Final
+            RUN mkdir -p /home/alternate/config-dirs/io.netty/netty-transport/4.0.0.Final
             COPY --link config-dirs/generateResourcesConfigFile /home/alternate/config-dirs/generateResourcesConfigFile
             COPY --link config-dirs/io.netty/netty-common/4.0.0.Final /home/alternate/config-dirs/io.netty/netty-common/4.0.0.Final
+            COPY --link config-dirs/io.netty/netty-transport/4.0.0.Final /home/alternate/config-dirs/io.netty/netty-transport/4.0.0.Final
             RUN native-image
             FROM cgr.dev/chainguard/wolfi-base:latest
             EXPOSE 8080

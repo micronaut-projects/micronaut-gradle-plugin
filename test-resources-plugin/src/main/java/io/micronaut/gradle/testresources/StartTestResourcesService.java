@@ -23,6 +23,7 @@ import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.file.DirectoryProperty;
 import org.gradle.api.file.RegularFileProperty;
 import org.gradle.api.model.ObjectFactory;
+import org.gradle.api.provider.MapProperty;
 import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.Classpath;
 import org.gradle.api.tasks.Input;
@@ -150,6 +151,7 @@ public abstract class StartTestResourcesService extends DefaultTask {
 
     /**
      * If set to true, the service will be started with debug enabled.
+     *
      * @return the debug flag
      */
     @Internal
@@ -172,6 +174,12 @@ public abstract class StartTestResourcesService extends DefaultTask {
 
     @Internal
     public abstract DirectoryProperty getClassDataSharingDir();
+
+    @Input
+    public abstract MapProperty<String, String> getSystemProperties();
+
+    @Input
+    public abstract MapProperty<String, String> getEnvironment();
 
     @Inject
     protected abstract ExecOperations getExecOperations();
@@ -211,18 +219,19 @@ public abstract class StartTestResourcesService extends DefaultTask {
             }
 
             private void startService(ServerUtils.ProcessParameters processParameters) {
-                try {
-                    getExecOperations().javaexec(spec -> {
-                        spec.getMainClass().set(processParameters.getMainClass());
-                        spec.setDebug(getDebugServer().getOrElse(false));
-                        List<File> classpath = processParameters.getClasspath();
-                        spec.setClasspath(getObjects().fileCollection().from(classpath));
-                        spec.setJvmArgs(processParameters.getJvmArguments());
-                        processParameters.getSystemProperties().forEach(spec::systemProperty);
-                        processParameters.getArguments().forEach(spec::args);
-                    });
-                } catch (GradleException e) {
-                    getLogger().info("Test server stopped");
+                var result = getExecOperations().javaexec(spec -> {
+                    spec.getMainClass().set(processParameters.getMainClass());
+                    spec.setDebug(getDebugServer().getOrElse(false));
+                    List<File> classpath = processParameters.getClasspath();
+                    spec.setClasspath(getObjects().fileCollection().from(classpath));
+                    spec.setJvmArgs(processParameters.getJvmArguments());
+                    processParameters.getSystemProperties().forEach(spec::systemProperty);
+                    getSystemProperties().get().forEach(spec::systemProperty);
+                    getEnvironment().get().forEach(spec::environment);
+                    processParameters.getArguments().forEach(spec::args);
+                });
+                if (result.getExitValue() != 0) {
+                    throw new GradleException("Test server failed to start");
                 }
             }
 
@@ -232,15 +241,15 @@ public abstract class StartTestResourcesService extends DefaultTask {
             }
         };
         ServerUtils.startOrConnectToExistingServer(
-                getExplicitPort().getOrNull(),
-                getPortFile().map(f -> f.getAsFile().toPath()).getOrNull(),
-                getSettingsDirectory().get().getAsFile().toPath(),
-                getAccessToken().getOrNull(),
-                cdsDir,
-                getClasspath().getFiles(),
-                getClientTimeout().getOrNull(),
-                getServerIdleTimeoutMinutes().getOrNull(),
-                serverFactory);
+            getExplicitPort().getOrNull(),
+            getPortFile().map(f -> f.getAsFile().toPath()).getOrNull(),
+            getSettingsDirectory().get().getAsFile().toPath(),
+            getAccessToken().getOrNull(),
+            cdsDir,
+            getClasspath().getFiles(),
+            getClientTimeout().getOrNull(),
+            getServerIdleTimeoutMinutes().getOrNull(),
+            serverFactory);
     }
 
 }
