@@ -17,11 +17,9 @@ package io.micronaut.gradle.jsonschema.tasks;
 
 import org.gradle.api.DefaultTask;
 import org.gradle.api.file.ConfigurableFileCollection;
-import org.gradle.api.file.Directory;
 import org.gradle.api.file.DirectoryProperty;
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Property;
-import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.Classpath;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.Internal;
@@ -56,19 +54,6 @@ public abstract class AbstractJsonSchemaGenerator<W extends AbstractJsonSchemaWo
     @Optional
     public abstract ListProperty<String> getAcceptedUrlPatterns();
 
-
-    @Internal
-    public Provider<Directory> getGeneratedSourcesDirectory() {
-        String lang = getLanguage().get().toUpperCase();
-        var langPath = switch (lang) {
-            case "JAVA" -> "java/main";
-            case "KOTLIN" -> "kotlin/main";
-            case "GROOVY" -> "groovy/main";
-            default -> "main";
-        };
-        return getOutputDirectory().dir(langPath);
-    }
-
     @Inject
     protected abstract WorkerExecutor getWorkerExecutor();
 
@@ -82,7 +67,11 @@ public abstract class AbstractJsonSchemaGenerator<W extends AbstractJsonSchemaWo
         getWorkerExecutor().classLoaderIsolation(spec -> spec.getClasspath().from(getClasspath()))
                 .submit(getWorkerAction(), params -> {
                     params.getLang().set(getLanguage());
-                    // TODO
+                    params.getAcceptedUrlPatterns().set(getAcceptedUrlPatterns());
+                    params.getPackageName().set(getPackageName());
+                    params.getOutputFileName().set(getOutputFileName());
+                    params.getOutputDirectory().set(getOutputDirectory());
+                    configureWorkerParameters(params);
                 });
     }
 }
