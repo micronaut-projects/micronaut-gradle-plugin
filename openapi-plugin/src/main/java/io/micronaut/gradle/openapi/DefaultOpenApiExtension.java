@@ -123,7 +123,7 @@ public abstract class DefaultOpenApiExtension implements OpenApiExtension {
         spec.getFluxForArrays().convention(false);
         spec.getSerializationFramework().convention(DEFAULT_SERIALIZATION_FRAMEWORK);
         spec.getAlwaysUseGenerateHttpResponse().convention(false);
-        spec.getGenerateHttpResponseWhereRequired().convention(false);
+        spec.getGenerateHttpResponseWhereRequired().convention(true);
         spec.getDateTimeFormat().convention("ZONED_DATETIME");
         spec.getLang().convention("java");
         spec.getGenerateSwaggerAnnotations().convention(false);
