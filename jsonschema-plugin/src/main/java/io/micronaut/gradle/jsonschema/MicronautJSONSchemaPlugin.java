@@ -46,10 +46,10 @@ public class MicronautJSONSchemaPlugin implements Plugin<Project> {
             conf.setDescription("The JSON Schema Generator classpath");
             conf.extendsFrom(generatorDependencies);
         });
-//        var jsonSchemaExtension = micronautExtension.getExtensions().create(OpenApiExtension.class, "openapi", DefaultOpenApiExtension.class, project, generatorClasspath);
-//        jsonSchemaExtension.getVersion().convention(DefaultVersions.OPENAPI);
-//        generatorDependencies.getDependencies().addAllLater(jsonSchemaExtension.getVersion().map(version ->
-//            List.of(project.getDependencies().create("io.micronaut.json-schema:micronaut-json-schema-generator:" + version))
-//        ));
+        var jsonSchemaExtension = micronautExtension.getExtensions().create(JSONSchemaExtension.class, "jsonschema", DefaultJSONSchemaExtension.class, project, generatorClasspath);
+        jsonSchemaExtension.getVersion().convention("1.4.0"); //TODO: update after released version of json schema
+        generatorDependencies.getDependencies().addAllLater(jsonSchemaExtension.getVersion().map(version ->
+            List.of(project.getDependencies().create("io.micronaut.json-schema:micronaut-json-schema-generator:" + version))
+        ));
     }
 }

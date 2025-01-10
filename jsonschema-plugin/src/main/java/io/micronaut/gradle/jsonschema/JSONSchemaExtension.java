@@ -15,7 +15,10 @@
  */
 package io.micronaut.gradle.jsonschema;
 
+import org.gradle.api.Action;
 import org.gradle.api.provider.Property;
+
+import java.io.File;
 
 /**
  * Configures the JSON Schema code generator.
@@ -27,4 +30,24 @@ public interface JSONSchemaExtension {
      */
     Property<String> getVersion();
 
+    /**
+     * Configures generation, given a schema URL.
+     * @param url the url string of a json schema
+     * @param spec configuration for the server generation
+     */
+    void url(String url, Action<JsonSchemaSpec> spec);
+
+    /**
+     * Configures generation, given a schema file.
+     * @param file the json file
+     * @param spec configuration for the server generation
+     */
+    void file(File file, Action<JsonSchemaSpec> spec);
+
+    /**
+     * Configures generation, given a schema folder.
+     * @param folder the folder that includes json schemas
+     * @param spec configuration for the server generation
+     */
+    void folder(File folder, Action<JsonSchemaSpec> spec);
 }
