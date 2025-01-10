@@ -1,23 +1,22 @@
 package io.micronaut.gradle.crac
 
 import io.micronaut.gradle.AbstractGradleBuildSpec
-import org.intellij.lang.annotations.Language
 
 abstract class BaseCracGradleBuildSpec extends AbstractGradleBuildSpec {
 
-    File writeGroovyFile(String fileName, @Language("java") String content) {
+    File writeGroovyFile(String fileName,String content) {
         writeFile(fileName, content)
     }
 
-    File writeJavaFile(String fileName, @Language("java") String content) {
+    File writeJavaFile(String fileName, String content) {
         writeFile(fileName, content)
     }
 
-    File writeXmlFile(String fileName, @Language("xml") String content) {
+    File writeXmlFile(String fileName, String content) {
         writeFile(fileName, content)
     }
 
-    File writeYamlFile(String fileName, @Language("yaml") String content) {
+    File writeYamlFile(String fileName, String content) {
         writeFile(fileName, content)
     }
 
