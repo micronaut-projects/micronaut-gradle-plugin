@@ -119,7 +119,7 @@ public abstract class MicronautCatalogSettingsPlugin implements Plugin<Settings>
         return providers.gradleProperty("micronautVersion")
                 .orElse(readFromVersionCatalog(settings))
                 .orElse(providers.provider(() -> {
-                    throw new IllegalStateException("Micronaut version must either be declared in `gradle.properties`, in `gradle/libs.version.toml`");
+                    throw new IllegalStateException("Micronaut version must either be declared in `gradle.properties`, in `gradle/libs.versions.toml`");
                 }));
     }
 
