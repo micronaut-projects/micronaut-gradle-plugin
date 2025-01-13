@@ -214,7 +214,7 @@ public abstract class MicronautAotPlugin implements Plugin<Project> {
                 Attributes attrs = manifest.getAttributes();
                 attrs.put("Main-Class", javaApplication.getMainClass());
                 attrs.put("Class-Path", project.getProviders().provider(() -> {
-                    List<String> classpath = new ArrayList<>();
+                    var classpath = new ArrayList<String>();
                     Configuration runtimeClasspath = project.getConfigurations()
                             .getByName(RUNTIME_CLASSPATH_CONFIGURATION_NAME);
 
@@ -444,15 +444,10 @@ public abstract class MicronautAotPlugin implements Plugin<Project> {
         }
     }
 
-    private static final class Configurations {
-        private final Configuration aotOptimizerRuntimeClasspath;
-        private final Configuration aotApplication;
-        private final Configuration aotApplicationClasspath;
-
-        private Configurations(Configuration aotOptimizerRuntimeClasspath, Configuration aotApplication, Configuration aotApplicationClasspath) {
-            this.aotOptimizerRuntimeClasspath = aotOptimizerRuntimeClasspath;
-            this.aotApplication = aotApplication;
-            this.aotApplicationClasspath = aotApplicationClasspath;
-        }
+    private record Configurations(
+        Configuration aotOptimizerRuntimeClasspath,
+        Configuration aotApplication,
+        Configuration aotApplicationClasspath
+    ) {
     }
 }

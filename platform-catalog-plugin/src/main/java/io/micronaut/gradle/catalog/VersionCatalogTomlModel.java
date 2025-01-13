@@ -41,7 +41,7 @@ public class VersionCatalogTomlModel {
     public void addLibrary(Library library) {
         libraries.add(library);
         gaToLibrary.put(library.getModule(), library);
-        String versionRef = library.getVersion().getReference();
+        String versionRef = library.version().reference();
         if (versionRef != null) {
             Set<Library> librariesByVersionRef = versionAliasToModules.computeIfAbsent(versionRef, e -> new HashSet<>());
             librariesByVersionRef.add(library);
@@ -49,11 +49,11 @@ public class VersionCatalogTomlModel {
     }
 
     public void addVersion(VersionModel version) {
-        if (version.getReference() == null || version.getVersion() == null) {
+        if (version.reference() == null || version.version() == null) {
             throw new IllegalArgumentException("version.getReference() is null or version.getVersion() is null");
         }
         versions.add(version);
-        versionAliasToVersion.put(version.getReference(), version);
+        versionAliasToVersion.put(version.reference(), version);
     }
 
     public Optional<Library> findLibrary(String group, String name) {

@@ -11,7 +11,6 @@ amazonlinux = "2023-minimal"
 graalvmPlugin = "0.10.4"
 mockserver = "5.15.0"
 log4j2 = "2.24.3"
-jetbrains-annotations = "26.0.1"
 tomlj = "1.1.1"
 
 micronaut-platform = "4.7.4" # This is the platform version, used in our tests
@@ -49,7 +48,6 @@ micronaut-testresources = { module = "io.micronaut.testresources:micronaut-test-
 mockserver-netty = { module = "org.mock-server:mockserver-netty", version.ref = "mockserver" }
 mockserver-client = { module = "org.mock-server:mockserver-client-java", version.ref = "mockserver" }
 
-jetbrains-annotations = { module = "org.jetbrains:annotations", version.ref = "jetbrains-annotations" }
 tomlj = { module = "org.tomlj:tomlj", version.ref = "tomlj" }
 
 [bundles]

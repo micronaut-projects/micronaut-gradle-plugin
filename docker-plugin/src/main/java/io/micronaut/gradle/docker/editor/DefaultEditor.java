@@ -128,21 +128,17 @@ public class DefaultEditor implements Editor {
         return Collections.unmodifiableList(lines);
     }
 
-    private static class Boundaries {
-        private final Integer start;
-        private final Integer end;
-
-        private Boundaries(Integer start, Integer end) {
-            this.start = start;
-            this.end = end;
-        }
+    private record Boundaries(
+        Integer start,
+        Integer end
+    ) {
 
         public Optional<Integer> getStart() {
-            return Optional.ofNullable(start);
-        }
+                return Optional.ofNullable(start);
+            }
 
         public Optional<Integer> getEnd() {
-            return Optional.ofNullable(end);
-        }
+                return Optional.ofNullable(end);
+            }
     }
 }

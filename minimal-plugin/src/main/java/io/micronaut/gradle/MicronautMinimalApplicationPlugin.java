@@ -49,6 +49,7 @@ import static io.micronaut.gradle.PluginsHelper.resolveRuntime;
  * A plugin which allows building Micronaut applications, without support
  * for GraalVM or Docker.
  */
+@SuppressWarnings("Convert2Lambda")
 public class MicronautMinimalApplicationPlugin implements Plugin<Project> {
     public static final String CONFIGURATION_DEVELOPMENT_ONLY = "developmentOnly";
     // This flag is used for testing purposes only
@@ -111,7 +112,7 @@ public class MicronautMinimalApplicationPlugin implements Plugin<Project> {
             if (project.getGradle().getStartParameter().isContinuous() || Boolean.getBoolean(INTERNAL_CONTINUOUS_FLAG)) {
                 SourceSet sourceSet = sourceSets.findByName("main");
                 if (sourceSet != null) {
-                    Map<String, Object> sysProps = new LinkedHashMap<>();
+                    var sysProps = new LinkedHashMap<String, Object>();
                     sysProps.put("micronaut.io.watch.restart", true);
                     sysProps.put("micronaut.io.watch.enabled", true);
                     FileCollection sourceDirectories = sourceSet.getAllSource().getSourceDirectories();
@@ -161,7 +162,7 @@ public class MicronautMinimalApplicationPlugin implements Plugin<Project> {
             exit:
             for (File srcDir : srcDirs) {
                 for (Map.Entry<String, String> entry : LOGGER_CONFIG_FILE_TO_DEPENDENCY.entrySet()) {
-                    File loggerConfigFile = new File(srcDir, entry.getKey());
+                    var loggerConfigFile = new File(srcDir, entry.getKey());
                     if (loggerConfigFile.exists()) {
                         dependencyHandler.add(sourceSet.getRuntimeOnlyConfigurationName(), entry.getValue());
                         break exit;

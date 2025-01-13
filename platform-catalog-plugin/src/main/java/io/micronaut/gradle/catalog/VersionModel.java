@@ -15,36 +15,18 @@
  */
 package io.micronaut.gradle.catalog;
 
-import java.util.Objects;
-
 import org.tomlj.TomlPosition;
 
 import javax.annotation.Nullable;
+import java.util.Objects;
 
-public class VersionModel {
-    private final String reference;
-    private final RichVersion version;
-    private final TomlPosition position;
-
-    public VersionModel(@Nullable String reference, @Nullable RichVersion version, TomlPosition position) {
-        this.reference = reference;
-        this.version = version;
-        this.position = position;
-    }
-
+public record VersionModel(
     @Nullable
-    public String getReference() {
-        return reference;
-    }
-
+    String reference,
     @Nullable
-    public RichVersion getVersion() {
-        return version;
-    }
-
-    public TomlPosition getPosition() {
-        return position;
-    }
+    RichVersion version,
+    TomlPosition position
+) {
 
     @Override
     public boolean equals(Object o) {

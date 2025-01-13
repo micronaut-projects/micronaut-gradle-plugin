@@ -23,7 +23,6 @@ import org.gradle.api.logging.Logger;
 import org.gradle.api.logging.Logging;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.provider.ProviderFactory;
-import org.jetbrains.annotations.NotNull;
 import org.tomlj.Toml;
 import org.tomlj.TomlParseResult;
 import org.tomlj.TomlTable;
@@ -32,7 +31,6 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.List;
 
 public abstract class MicronautCatalogSettingsPlugin implements Plugin<Settings> {
@@ -64,10 +62,10 @@ public abstract class MicronautCatalogSettingsPlugin implements Plugin<Settings>
                             drm.versionCatalogs(vcs -> {
                                 vcs.create("mn", catalog -> catalog.from("io.micronaut.platform:micronaut-platform:" + micronautVersion));
                                 vcs.configureEach(catalog -> {
-                                    File catalogOverrideFile = new File(settings.getSettingsDir(), "gradle/" + catalog.getName() + "-" + OVERRIDE_VERSIONS_TOML_FILE);
+                                    var catalogOverrideFile = new File(settings.getSettingsDir(), "gradle/" + catalog.getName() + "-" + OVERRIDE_VERSIONS_TOML_FILE);
                                     if (catalogOverrideFile.exists()) {
-                                        LenientVersionCatalogParser parser = new LenientVersionCatalogParser();
-                                        try (InputStream in = new FileInputStream(catalogOverrideFile)) {
+                                        var parser = new LenientVersionCatalogParser();
+                                        try (var in = new FileInputStream(catalogOverrideFile)) {
                                             parser.parse(in);
                                             VersionCatalogTomlModel model = parser.getModel();
                                             fixupMicronautCatalogWith(catalog, model);
@@ -84,8 +82,8 @@ public abstract class MicronautCatalogSettingsPlugin implements Plugin<Settings>
     private static void fixupMicronautCatalogWith(VersionCatalogBuilder catalog,
                                                   VersionCatalogTomlModel model) {
         model.getVersionsTable().forEach(versionModel -> {
-            RichVersion version = versionModel.getVersion();
-            String reference = versionModel.getReference();
+            RichVersion version = versionModel.version();
+            String reference = versionModel.reference();
             if (reference != null) {
                 catalog.version(reference, vc -> {
                     String strictly = version.getStrictly();
@@ -117,18 +115,17 @@ public abstract class MicronautCatalogSettingsPlugin implements Plugin<Settings>
         }
     }
 
-    @NotNull
     private Provider<String> createMicronautVersionProvider(Settings settings, ProviderFactory providers) {
         return providers.gradleProperty("micronautVersion")
                 .orElse(readFromVersionCatalog(settings))
                 .orElse(providers.provider(() -> {
-                    throw new IllegalStateException("Micronaut version must either be declared in `gradle.properties`, in `gradle/libs.version.toml`");
+                    throw new IllegalStateException("Micronaut version must either be declared in `gradle.properties`, in `gradle/libs.versions.toml`");
                 }));
     }
 
     private Provider<String> readFromVersionCatalog(Settings settings) {
         ProviderFactory providers = settings.getProviders();
-        File catalogFile = new File(settings.getSettingsDir(), "gradle/libs.versions.toml");
+        var catalogFile = new File(settings.getSettingsDir(), "gradle/libs.versions.toml");
         return providers.fileContents(getDefaultGradleVersionCatalogFile().fileValue(catalogFile))
                 .getAsBytes()
                 .map(libsFile -> {

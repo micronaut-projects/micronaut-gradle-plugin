@@ -92,9 +92,11 @@ public abstract class CRaCFinalDockerfile extends MicronautDockerfile {
         String workDir = DEFAULT_WORKING_DIR;
         workingDir(workDir);
         instruction("# Add required libraries");
-        runCommand("apt-get update && apt-get install -y \\\n" +
-                "        libnl-3-200 \\\n" +
-                "    && rm -rf /var/lib/apt/lists/*");
+        runCommand("""
+            apt-get update && apt-get install -y \\
+                    libnl-3-200 \\
+                && rm -rf /var/lib/apt/lists/*
+            """);
         instruction("# Copy CRaC JDK from the checkpoint image (to save a download)");
         copyFile("--from=" + createCheckpointImageName(getProject()) + " /azul-crac-jdk", "/azul-crac-jdk");
         instruction("# Copy layers");

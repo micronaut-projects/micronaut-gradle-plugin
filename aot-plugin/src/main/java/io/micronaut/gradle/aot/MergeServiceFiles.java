@@ -62,8 +62,8 @@ public abstract class MergeServiceFiles extends DefaultTask {
         for (Map.Entry<String, List<File>> entry : perService.entrySet()) {
             String serviceType = entry.getKey();
             List<File> files = entry.getValue();
-            File mergedServiceFile = new File(outputDir, serviceType);
-            try (PrintWriter wrt = new PrintWriter(new OutputStreamWriter(new FileOutputStream(mergedServiceFile), StandardCharsets.UTF_8))) {
+            var mergedServiceFile = new File(outputDir, serviceType);
+            try (var wrt = new PrintWriter(new OutputStreamWriter(new FileOutputStream(mergedServiceFile), StandardCharsets.UTF_8))) {
                 for (File file : files) {
                     Files.readAllLines(file.toPath()).forEach(wrt::println);
                 }
