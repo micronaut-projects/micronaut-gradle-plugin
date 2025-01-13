@@ -33,7 +33,7 @@ public abstract class AbstractJsonSchemaWorkAction<T extends AbstractJsonSchemaW
     public void execute() {
         var parameters = getParameters();
         var lang = parameters.getLang().get();
-        val langGenerator = new SourceGenerator(lang.toUpperCase());
+        var langGenerator = new SourceGenerator(lang.toUpperCase());
 
         List<String> allowedUrlPatterns = parameters.getAcceptedUrlPatterns().get();
         if (!allowedUrlPatterns.isEmpty()) {
