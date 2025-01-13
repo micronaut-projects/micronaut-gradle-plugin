@@ -3,9 +3,9 @@ package io.micronaut.gradle.crac
 import groovy.json.JsonSlurper
 import spock.lang.IgnoreIf
 
-@IgnoreIf({ os.windows })
 class CracCustomizationSpec extends BaseCracGradleBuildSpec {
 
+    @IgnoreIf({ os.windows })
     void "run script is created"() {
         given:
         settingsFile << "rootProject.name = 'hello-world'"
@@ -19,6 +19,7 @@ class CracCustomizationSpec extends BaseCracGradleBuildSpec {
         fileTextContents("build/docker/main/scripts/run.sh") == CracCustomizationSpec.getResourceAsStream("/run.sh").text
     }
 
+    @IgnoreIf({ os.windows })
     void "default warmup script is used by default"() {
         given:
         settingsFile << "rootProject.name = 'hello-world'"
@@ -32,6 +33,7 @@ class CracCustomizationSpec extends BaseCracGradleBuildSpec {
         fileTextContents("build/docker/main/scripts/warmup.sh") == CracCustomizationSpec.getResourceAsStream("/warmup.sh").text
     }
 
+    @IgnoreIf({ os.windows })
     void "warmup script is customizable"() {
         given:
         settingsFile << "rootProject.name = 'hello-world'"
@@ -48,6 +50,7 @@ class CracCustomizationSpec extends BaseCracGradleBuildSpec {
         fileTextContents("build/docker/main/scripts/warmup.sh") == "This is a test"
     }
 
+    @IgnoreIf({ os.windows })
     void "default checkpoint script is used by default"() {
         given:
         settingsFile << "rootProject.name = 'hello-world'"
@@ -62,6 +65,7 @@ class CracCustomizationSpec extends BaseCracGradleBuildSpec {
         fileTextContents("build/docker/main/scripts/checkpoint.sh") == expected
     }
 
+    @IgnoreIf({ os.windows })
     void "checkpoint script is customizable"() {
         given:
         settingsFile << "rootProject.name = 'hello-world'"
@@ -180,7 +184,7 @@ class CracCustomizationSpec extends BaseCracGradleBuildSpec {
         def result = fails('dockerfileCrac', 'checkpointDockerfile', '-s')
 
         then:
-        result.output.contains('Caused by: java.lang.NumberFormatException: For input string: "tim"')
+        result.output.contains("Caused by: java.lang.IllegalArgumentException: JavaLanguageVersion must be a positive integer, not 'tim'")
     }
 
     void "dockerfiles can be customized"() {

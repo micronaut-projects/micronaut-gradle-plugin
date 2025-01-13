@@ -100,9 +100,9 @@ public abstract class MicronautAOTConfigWriterTask extends DefaultTask {
 
     @TaskAction
     void writeConfigFile() {
-        Properties props = new Properties();
+        var props = new Properties();
         if (getUserConfiguration().isPresent()) {
-            try (InputStream in = new FileInputStream(getUserConfiguration().getAsFile().get())) {
+            try (var in = new FileInputStream(getUserConfiguration().getAsFile().get())) {
                 props.load(in);
             } catch (IOException e) {
                 throw new GradleException("Unable to parse configuration file", e);
@@ -152,12 +152,7 @@ public abstract class MicronautAOTConfigWriterTask extends DefaultTask {
             String content = baos.toString();
             try (var writer = new PrintWriter(Files.newBufferedWriter(outputFile.toPath()))) {
                 content.lines()
-                    .filter(line -> {
-                        if (line.startsWith("#") && !line.contains(GENERATED_BY_GRADLE_COMMENT)) {
-                            return false;
-                        }
-                        return true;
-                    })
+                    .filter(line -> !line.startsWith("#") || line.contains(GENERATED_BY_GRADLE_COMMENT))
                     .forEach(writer::println);
             } catch (IOException e) {
                 throw new GradleException("Unable to write output file: " + outputFile, e);
