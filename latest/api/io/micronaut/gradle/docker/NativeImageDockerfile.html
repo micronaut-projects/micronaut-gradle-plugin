@@ -103,6 +103,15 @@ implements <a href="DockerBuildOptions.html" title="interface in io.micronaut.gr
 <li>
 <section class="nested-class-summary" id="nested-class-summary">
 <h2>Nested Class Summary</h2>
+<div class="caption"><span>Nested Classes</span></div>
+<div class="summary-table three-column-summary">
+<div class="table-header col-first">Modifier and Type</div>
+<div class="table-header col-second">Class</div>
+<div class="table-header col-last">Description</div>
+<div class="col-first even-row-color"><code>protected class&nbsp;</code></div>
+<div class="col-second even-row-color"><code><a href="NativeImageDockerfile.BaseImageForBuildStrategyResolver.html" class="type-name-link" title="class in io.micronaut.gradle.docker">NativeImageDockerfile.BaseImageForBuildStrategyResolver</a></code></div>
+<div class="col-last even-row-color">&nbsp;</div>
+</div>
 <div class="inherited-list">
 <h2 id="nested-classes-inherited-from-class-com.bmuschko.gradle.docker.tasks.image.Dockerfile">Nested classes/interfaces inherited from class&nbsp;com.bmuschko.gradle.docker.tasks.image.Dockerfile</h2>
 <code>com.bmuschko.gradle.docker.tasks.image.Dockerfile.AddFileInstruction, com.bmuschko.gradle.docker.tasks.image.Dockerfile.ArgInstruction, com.bmuschko.gradle.docker.tasks.image.Dockerfile.CommentInstruction, com.bmuschko.gradle.docker.tasks.image.Dockerfile.CopyFile, com.bmuschko.gradle.docker.tasks.image.Dockerfile.CopyFileInstruction, com.bmuschko.gradle.docker.tasks.image.Dockerfile.DefaultCommandInstruction, com.bmuschko.gradle.docker.tasks.image.Dockerfile.EntryPointInstruction, com.bmuschko.gradle.docker.tasks.image.Dockerfile.EnvironmentVariableInstruction, com.bmuschko.gradle.docker.tasks.image.Dockerfile.ExposePortInstruction, com.bmuschko.gradle.docker.tasks.image.Dockerfile.File, com.bmuschko.gradle.docker.tasks.image.Dockerfile.FileInstruction&lt;T extends com.bmuschko.gradle.docker.tasks.image.Dockerfile.File&gt;, com.bmuschko.gradle.docker.tasks.image.Dockerfile.From, com.bmuschko.gradle.docker.tasks.image.Dockerfile.FromInstruction, com.bmuschko.gradle.docker.tasks.image.Dockerfile.GenericInstruction, com.bmuschko.gradle.docker.tasks.image.Dockerfile.Healthcheck, com.bmuschko.gradle.docker.tasks.image.Dockerfile.HealthcheckInstruction, com.bmuschko.gradle.docker.tasks.image.Dockerfile.Instruction, com.bmuschko.gradle.docker.tasks.image.Dockerfile.LabelInstruction, com.bmuschko.gradle.docker.tasks.image.Dockerfile.MapInstruction, com.bmuschko.gradle.docker.tasks.image.Dockerfile.OnBuildInstruction, com.bmuschko.gradle.docker.tasks.image.Dockerfile.RunCommandInstruction, com.bmuschko.gradle.docker.tasks.image.Dockerfile.StringArrayInstruction, com.bmuschko.gradle.docker.tasks.image.Dockerfile.StringCommandInstruction, com.bmuschko.gradle.docker.tasks.image.Dockerfile.UserInstruction, com.bmuschko.gradle.docker.tasks.image.Dockerfile.VolumeInstruction, com.bmuschko.gradle.docker.tasks.image.Dockerfile.WorkDirInstruction</code></div>
@@ -166,7 +175,7 @@ implements <a href="DockerBuildOptions.html" title="interface in io.micronaut.gr
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>protected <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&gt;</code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#buildActualCommandLine(org.gradle.api.provider.Provider,io.micronaut.gradle.docker.DockerBuildStrategy,io.micronaut.gradle.docker.NativeImageDockerfile.BaseImageForBuildStrategyResolver)" class="member-name-link">buildActualCommandLine</a><wbr>(org.gradle.api.provider.Provider&lt;<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&gt;&nbsp;executable,
  <a href="DockerBuildStrategy.html" title="enum class in io.micronaut.gradle.docker">DockerBuildStrategy</a>&nbsp;buildStrategy,
- io.micronaut.gradle.docker.NativeImageDockerfile.BaseImageForBuildStrategyResolver&nbsp;imageResolver)</code></div>
+ <a href="NativeImageDockerfile.BaseImageForBuildStrategyResolver.html" title="class in io.micronaut.gradle.docker">NativeImageDockerfile.BaseImageForBuildStrategyResolver</a>&nbsp;imageResolver)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#create()" class="member-name-link">create</a>()</code></div>
@@ -548,7 +557,7 @@ implements <a href="DockerBuildOptions.html" title="interface in io.micronaut.gr
 <h3>buildActualCommandLine</h3>
 <div class="member-signature"><span class="modifiers">protected</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&gt;</span>&nbsp;<span class="element-name">buildActualCommandLine</span><wbr><span class="parameters">(org.gradle.api.provider.Provider&lt;<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&gt;&nbsp;executable,
  <a href="DockerBuildStrategy.html" title="enum class in io.micronaut.gradle.docker">DockerBuildStrategy</a>&nbsp;buildStrategy,
- io.micronaut.gradle.docker.NativeImageDockerfile.BaseImageForBuildStrategyResolver&nbsp;imageResolver)</span></div>
+ <a href="NativeImageDockerfile.BaseImageForBuildStrategyResolver.html" title="class in io.micronaut.gradle.docker">NativeImageDockerfile.BaseImageForBuildStrategyResolver</a>&nbsp;imageResolver)</span></div>
 </section>
 </li>
 <li>
