@@ -41,7 +41,7 @@ public class LenientVersionCatalogParser {
     private final VersionCatalogTomlModel model = new VersionCatalogTomlModel();
 
     public static List<String> splitToList(String coordinates) {
-        List<String> result = new ArrayList<>(3);
+        var result = new ArrayList<String>(3);
         String[] split = coordinates.split(":");
         for (int i = 0, splitLength = split.length; i < splitLength; i++) {
             String part = split[i];
@@ -53,7 +53,7 @@ public class LenientVersionCatalogParser {
     }
 
     public void parse(InputStream in) throws IOException {
-        RichVersionParser strictVersionParser = new RichVersionParser();
+        var strictVersionParser = new RichVersionParser();
         TomlParseResult result = Toml.parse(in);
         TomlTable librariesTable = result.getTable(LIBRARIES_KEY);
         TomlTable versionsTable = result.getTable(VERSIONS_KEY);
@@ -124,7 +124,7 @@ public class LenientVersionCatalogParser {
                 String name = splitted.get(1);
                 String version = splitted.get(2);
                 RichVersion rich = strictVersionParser.parse(version);
-                VersionModel versionModel = new VersionModel(null, rich, position);
+                var versionModel = new VersionModel(null, rich, position);
                 model.addLibrary(new Library(
                         alias,
                         group,
@@ -174,11 +174,11 @@ public class LenientVersionCatalogParser {
     }
 
     private void parseVersion(String alias, TomlTable versionsTable, RichVersionParser strictVersionParser) {
-        String require = null;
-        String strictly = null;
-        String prefer = null;
-        List<String> rejectedVersions = null;
-        Boolean rejectAll = null;
+        String require;
+        String strictly;
+        String prefer;
+        List<String> rejectedVersions;
+        Boolean rejectAll;
         Object version = versionsTable.get(alias);
         TomlPosition position = versionsTable.inputPositionOf(alias);
         if (version instanceof String versionStr) {

@@ -47,7 +47,7 @@ public abstract class PrepareDockerContext extends DefaultTask {
 
     @TaskAction
     void copy() {
-        DockerResourceConfigDirectoryNamer namer = new DockerResourceConfigDirectoryNamer();
+        var namer = new DockerResourceConfigDirectoryNamer();
         for (File directory : getInputDirectories().getFiles()) {
             if (directory.exists()) {
                 getFileOperations().copy(spec -> spec.into(getOutputDirectory().dir(namer.determineNameFor(directory))).from(directory));

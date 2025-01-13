@@ -17,43 +17,16 @@ package io.micronaut.gradle.catalog;
 
 import org.tomlj.TomlPosition;
 
-public class Library {
-    private final String alias;
-    private final String group;
-    private final String name;
-    private final VersionModel version;
-    private final TomlPosition position;
-
-    public Library(String alias, String group, String name, VersionModel version, TomlPosition position) {
-        this.alias = alias;
-        this.group = group;
-        this.name = name;
-        this.version = version;
-        this.position = position;
-    }
-
-    public String getAlias() {
-        return alias;
-    }
-
-    public String getGroup() {
-        return group;
-    }
-
-    public String getName() {
-        return name;
-    }
+public record Library(
+    String alias,
+    String group,
+    String name,
+    VersionModel version,
+    TomlPosition position
+) {
 
     public String getModule() {
         return group + ":" + name;
-    }
-
-    public VersionModel getVersion() {
-        return version;
-    }
-
-    public TomlPosition getPosition() {
-        return position;
     }
 
     @Override
