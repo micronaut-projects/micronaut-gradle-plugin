@@ -26,7 +26,7 @@ public class AnnotationProcessing implements AnnotationProcessingConfigBuilder {
     private final SourceSetConfigurer sourceSetConfigurer;
 
     public static void showAdditionalSourceSetDeprecationWarning(SourceSet sourceSet) {
-        LOGGER.warn("Source set '{}' was declared using the additionalSourcesets property. Please use sourceSet(...) instead.", sourceSet.getName());
+        LOGGER.warn("Source set '{}' was declared using the additionalSourceSets property. Please use sourceSet(...) instead.", sourceSet.getName());
     }
 
     @Inject
