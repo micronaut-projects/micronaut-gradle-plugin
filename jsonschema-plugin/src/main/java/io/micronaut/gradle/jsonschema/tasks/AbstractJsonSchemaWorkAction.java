@@ -10,6 +10,7 @@ import io.micronaut.jsonschema.generator.SourceGenerator;
 import io.micronaut.jsonschema.generator.utils.SourceGeneratorConfigBuilder;
 import io.micronaut.jsonschema.generator.loaders.UrlLoader;
 
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 
@@ -43,11 +44,16 @@ public abstract class AbstractJsonSchemaWorkAction<T extends AbstractJsonSchemaW
         Path outputPath = parameters.getOutputDirectory().get().getAsFile().toPath();
         String outputPackageName = parameters.getPackageName().get();
         String outputFileName = parameters.getOutputFileName().get();
-        var builder = SourceGeneratorConfigBuilder
+        var builder = new SourceGeneratorConfigBuilder()
                 .withOutputFolder(outputPath)
                 .withOutputPackageName(outputPackageName)
                 .withOutputFileName(outputFileName);
         configureBuilder(builder);
-        langGenerator.generate(builder.build());
+
+        try {
+            langGenerator.generate(builder.build());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

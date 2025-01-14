@@ -12,6 +12,6 @@ public abstract class JsonSchemaFolderWorkAction extends AbstractJsonSchemaWorkA
     @Override
     protected void configureBuilder(SourceGeneratorConfigBuilder builder) {
         var parameters = getParameters();
-        builder.withInputFolder(parameters.getInputDirectory().get());
+        builder.withInputFolder(parameters.getInputDirectory().get().getAsFile().toPath());
     }
 }

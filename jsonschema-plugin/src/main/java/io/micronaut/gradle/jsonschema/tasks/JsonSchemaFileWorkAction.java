@@ -12,6 +12,6 @@ public abstract class JsonSchemaFileWorkAction extends AbstractJsonSchemaWorkAct
     @Override
     protected void configureBuilder(SourceGeneratorConfigBuilder builder) {
         var parameters = getParameters();
-        builder.withJsonFile(parameters.getJsonFile().get());
+        builder.withJsonFile(parameters.getJsonFile().get().getAsFile());
     }
 }
