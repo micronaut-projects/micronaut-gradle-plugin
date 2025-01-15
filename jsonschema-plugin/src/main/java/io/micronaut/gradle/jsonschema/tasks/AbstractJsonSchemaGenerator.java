@@ -17,6 +17,7 @@ package io.micronaut.gradle.jsonschema.tasks;
 
 import org.gradle.api.DefaultTask;
 import org.gradle.api.file.ConfigurableFileCollection;
+import org.gradle.api.file.Directory;
 import org.gradle.api.file.DirectoryProperty;
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Property;
@@ -29,6 +30,7 @@ import org.gradle.api.tasks.TaskAction;
 import org.gradle.workers.WorkerExecutor;
 
 import javax.inject.Inject;
+import java.nio.file.Path;
 
 public abstract class AbstractJsonSchemaGenerator<W extends AbstractJsonSchemaWorkAction<P>, P extends AbstractJsonSchemaWorkAction.JsonSchemaParameters> extends DefaultTask {
 
@@ -70,7 +72,7 @@ public abstract class AbstractJsonSchemaGenerator<W extends AbstractJsonSchemaWo
                     params.getAcceptedUrlPatterns().set(getAcceptedUrlPatterns());
                     params.getPackageName().set(getPackageName());
                     params.getOutputFileName().set(getOutputFileName());
-                    params.getOutputDirectory().set(getOutputDirectory());
+                    params.getOutputDirectory().set(getOutputDirectory().getOrElse(getProject().getLayout().getBuildDirectory().dir("generated/jsonSchema").get()));
                     configureWorkerParameters(params);
                 });
     }

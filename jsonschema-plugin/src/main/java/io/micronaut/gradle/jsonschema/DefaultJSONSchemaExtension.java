@@ -37,7 +37,7 @@ public abstract class DefaultJSONSchemaExtension implements JSONSchemaExtension 
         configureCommonExtensionDefaults(urlSpec);
         urlSpec.getInputUrl().convention("");
         spec.execute(urlSpec);
-        var generator = project.getTasks().register(generateTaskName(url), JsonSchemaUrlGenerator.class, task -> {
+        var generator = project.getTasks().register(generateTaskName(url.substring(url.lastIndexOf("/") + 1)), JsonSchemaUrlGenerator.class, task -> {
             task.setDescription("Generates source files from an URL of a JSON Schema file");
             configureCommonProperties(task, urlSpec);
             task.getJsonURL().convention(url);
@@ -143,6 +143,6 @@ public abstract class DefaultJSONSchemaExtension implements JSONSchemaExtension 
     }
 
     private static String generateTaskName(String name) {
-        return "generatingSourcesFor " + capitalize(name);
+        return "generatingSourcesFrom " + capitalize(name.substring(0, name.indexOf(".")));
     }
 }
