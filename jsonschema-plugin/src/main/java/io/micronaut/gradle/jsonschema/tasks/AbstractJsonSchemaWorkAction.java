@@ -41,7 +41,7 @@ public abstract class AbstractJsonSchemaWorkAction<T extends AbstractJsonSchemaW
             UrlLoader.setAllowedUrlPatterns(allowedUrlPatterns);
         }
 
-        Path outputPath = parameters.getOutputDirectory().get().getAsFile().toPath();
+        Path outputPath = parameters.getOutputDirectory().dir("src/main/" + lang.toLowerCase()).get().getAsFile().toPath();
         String outputPackageName = parameters.getPackageName().get();
         String outputFileName = parameters.getOutputFileName().get();
         var builder = new SourceGeneratorConfigBuilder()

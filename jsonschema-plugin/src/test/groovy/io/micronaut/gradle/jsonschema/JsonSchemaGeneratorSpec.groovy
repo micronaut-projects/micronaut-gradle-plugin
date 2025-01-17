@@ -3,9 +3,10 @@ package io.micronaut.gradle.jsonschema
 import io.micronaut.gradle.AbstractGradleBuildSpec
 import org.gradle.testkit.runner.TaskOutcome
 
-abstract class JsonSchemaGeneratorSpec extends AbstractGradleBuildSpec{
+class JsonSchemaGeneratorSpec extends AbstractGradleBuildSpec{
     def "can generate an java source code from URL of schema"() {
         given:
+        allowSnapshots = true
         settingsFile << "rootProject.name = 'jsonschema-url'"
         buildFile << """
             plugins {
@@ -17,7 +18,7 @@ abstract class JsonSchemaGeneratorSpec extends AbstractGradleBuildSpec{
                 version "$micronautVersion"
                 jsonschema {
                     url("https://www.hl7.org/fhir/fhir.schema.json") {
-                        
+                        lang = "java"
                     }
                 }
             }
@@ -26,9 +27,15 @@ abstract class JsonSchemaGeneratorSpec extends AbstractGradleBuildSpec{
 
             dependencies {
 
+                annotationProcessor "io.micronaut.serde:micronaut-serde-processor"
+                annotationProcessor "io.micronaut.validation:micronaut-validation-processor"
+
+                implementation "io.micronaut.serde:micronaut-serde-jackson"
+                implementation "io.micronaut.validation:micronaut-validation"
             }
 
         """
+
 
         when:
         def result = build('test')
@@ -37,8 +44,8 @@ abstract class JsonSchemaGeneratorSpec extends AbstractGradleBuildSpec{
         result.task(":generatingSourcesFromFhir").outcome == TaskOutcome.SUCCESS
         result.task(":compileJava").outcome == TaskOutcome.SUCCESS
 
-        //and:
-        //file("build/generated/openapi/generatingSourcesFromFhir/src/main/java/io/micronaut/openapi/model/Pet.java").exists()
+        and:
+        file("build/generated/jsonschema/generatingSourcesFromFhir/src/main/java/").exists()
 
     }
 

@@ -13,6 +13,7 @@ import org.gradle.api.file.SourceDirectorySet;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.SourceSetContainer;
+import org.gradle.api.tasks.TaskProvider;
 
 import javax.inject.Inject;
 import java.io.File;
@@ -42,16 +43,7 @@ public abstract class DefaultJSONSchemaExtension implements JSONSchemaExtension 
             configureCommonProperties(task, urlSpec);
             task.getJsonURL().convention(url);
         });
-        withJavaSourceSets(sourceSets -> {
-            var javaMain = sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME).getJava();
-            javaMain.srcDir(generator.map(DefaultJSONSchemaExtension::mainSrcDir));
-            project.getPluginManager().withPlugin("org.jetbrains.kotlin.jvm", unused -> {
-                var ext = sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME).getExtensions().getByName("kotlin");
-                if (ext instanceof SourceDirectorySet kotlinMain) {
-                    kotlinMain.srcDir(generator.map(d -> DefaultJSONSchemaExtension.mainSrcDir(d, "kotlin")));
-                }
-            });
-        });
+        addSourceDir(generator);
     }
 
     @Override
@@ -66,16 +58,7 @@ public abstract class DefaultJSONSchemaExtension implements JSONSchemaExtension 
             configureCommonProperties(task, fileSpec);
             task.getJsonFile().convention(regularFileProperty.fileValue(file));
         });
-        withJavaSourceSets(sourceSets -> {
-            var javaMain = sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME).getJava();
-            javaMain.srcDir(generator.map(DefaultJSONSchemaExtension::mainSrcDir));
-            project.getPluginManager().withPlugin("org.jetbrains.kotlin.jvm", unused -> {
-                var ext = sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME).getExtensions().getByName("kotlin");
-                if (ext instanceof SourceDirectorySet kotlinMain) {
-                    kotlinMain.srcDir(generator.map(d -> DefaultJSONSchemaExtension.mainSrcDir(d, "kotlin")));
-                }
-            });
-        });
+        addSourceDir(generator);
     }
 
     @Override
@@ -90,29 +73,14 @@ public abstract class DefaultJSONSchemaExtension implements JSONSchemaExtension 
             configureCommonProperties(task, folderSpec);
             task.getInputDirectory().convention(regularDirProperty.fileValue(folder));
         });
-        withJavaSourceSets(sourceSets -> {
-            var javaMain = sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME).getJava();
-            javaMain.srcDir(generator.map(DefaultJSONSchemaExtension::mainSrcDir));
-            project.getPluginManager().withPlugin("org.jetbrains.kotlin.jvm", unused -> {
-                var ext = sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME).getExtensions().getByName("kotlin");
-                if (ext instanceof SourceDirectorySet kotlinMain) {
-                    kotlinMain.srcDir(generator.map(d -> DefaultJSONSchemaExtension.mainSrcDir(d, "kotlin")));
-                }
-            });
-        });
+        addSourceDir(generator);
     }
 
     private void configureCommonExtensionDefaults(JsonSchemaSpec spec) {
         spec.getAcceptedUrlPatterns().convention(List.of());
         spec.getLang().convention("JAVA");
-        spec.getOutputDirectory().dir("");
-        spec.getOutputPackageName().convention("");
+        spec.getOutputPackageName().convention("io.micronaut.jsonschema.generated");
         spec.getOutputFileName().convention("");
-
-        withJava(() -> {
-            var compileOnlyDeps = project.getConfigurations().getByName("compileOnly").getDependencies();
-            compileOnlyDeps.add(project.getDependencies().create("io.micronaut.json-schema:micronaut-json-schema-generator"));
-        });
     }
 
     private void configureCommonProperties(AbstractJsonSchemaGenerator<?, ?> task, JsonSchemaSpec schemaSpec) {
@@ -124,6 +92,19 @@ public abstract class DefaultJSONSchemaExtension implements JSONSchemaExtension 
         task.getOutputFileName().convention(schemaSpec.getOutputFileName());
         task.getAcceptedUrlPatterns().convention(schemaSpec.getAcceptedUrlPatterns());
         task.getLanguage().convention(schemaSpec.getLang());
+    }
+
+    private void addSourceDir(TaskProvider<? extends AbstractJsonSchemaGenerator<?, ?>> generator) {
+        withJavaSourceSets(sourceSets -> {
+            var javaMain = sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME).getJava();
+            javaMain.srcDir(generator.map(DefaultJSONSchemaExtension::mainSrcDir));
+            project.getPluginManager().withPlugin("org.jetbrains.kotlin.jvm", unused -> {
+                var ext = sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME).getExtensions().getByName("kotlin");
+                if (ext instanceof SourceDirectorySet kotlinMain) {
+                    kotlinMain.srcDir(generator.map(d -> DefaultJSONSchemaExtension.mainSrcDir(d, "kotlin")));
+                }
+            });
+        });
     }
 
     private void withJava(Runnable runnable) {
@@ -143,6 +124,6 @@ public abstract class DefaultJSONSchemaExtension implements JSONSchemaExtension 
     }
 
     private static String generateTaskName(String name) {
-        return "generatingSourcesFrom " + capitalize(name.substring(0, name.indexOf(".")));
+        return "generatingSourcesFrom" + capitalize(name.substring(0, name.indexOf(".")));
     }
 }
