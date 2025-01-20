@@ -81,13 +81,12 @@ public abstract class DefaultJSONSchemaExtension implements JSONSchemaExtension 
         spec.getLang().convention("JAVA");
         spec.getOutputPackageName().convention("io.micronaut.jsonschema.generated");
         spec.getOutputFileName().convention("");
+        spec.getOutputDirectory().convention(project.getLayout().getBuildDirectory().dir("generated/jsonschema/"));
     }
 
     private void configureCommonProperties(AbstractJsonSchemaGenerator<?, ?> task, JsonSchemaSpec schemaSpec) {
         task.getClasspath().from(classpath);
-        task.getOutputDirectory().convention(
-                project.getLayout().getBuildDirectory().dir("generated/jsonschema/" + task.getName())
-        );
+        task.getOutputDirectory().convention(schemaSpec.getOutputDirectory().dir(task.getName()));
         task.getPackageName().convention(schemaSpec.getOutputPackageName());
         task.getOutputFileName().convention(schemaSpec.getOutputFileName());
         task.getAcceptedUrlPatterns().convention(schemaSpec.getAcceptedUrlPatterns());
@@ -124,6 +123,7 @@ public abstract class DefaultJSONSchemaExtension implements JSONSchemaExtension 
     }
 
     private static String generateTaskName(String name) {
-        return "generatingSourcesFrom" + capitalize(name.substring(0, name.indexOf(".")));
+        int endIndex = name.contains(".") ? name.indexOf(".") : name.length();
+        return "generatingSourcesFrom" + capitalize(name.substring(0, endIndex));
     }
 }
