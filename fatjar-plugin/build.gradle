@@ -1,0 +1,15 @@
+plugins {
+    id "io.micronaut.internal.build.gradle-plugin"
+}
+
+description = "Micronaut FatJar plugin"
+
+micronautPlugins {
+    register('fatjar', 'io.micronaut.gradle.fatjar.FatJarPlugin', 'Micronaut FatJar Plugin')
+}
+
+dependencies {
+    api projects.micronautMinimalPlugin
+    implementation(libs.unojarPlugin)
+    testImplementation testFixtures(projects.micronautMinimalPlugin)
+}

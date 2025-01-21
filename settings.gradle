@@ -20,6 +20,7 @@ include("aot-plugin")
 include("gradle-plugin")
 include("openapi-plugin")
 include("test-resources-plugin")
+include("fatjar-plugin")
 include("functional-tests")
 
 enableFeaturePreview 'TYPESAFE_PROJECT_ACCESSORS'
@@ -28,3 +29,5 @@ micronautBuild {
     useStandardizedProjectNames = true
     nonStandardProjectNamePrefixes.add("functional-tests")
 }
+
+includeBuild "/home/cchampeau/DEV/PROJECTS/GITHUB/uno-jar"
