@@ -24,7 +24,7 @@ public abstract class JsonSchemaFileGenerator extends AbstractJsonSchemaGenerato
 
     @InputFile
     @PathSensitive(PathSensitivity.NONE)
-    public abstract RegularFileProperty getJsonFile();
+    public abstract RegularFileProperty getInputFile();
 
     @Override
     protected Class<JsonSchemaFileWorkAction> getWorkerAction() {
@@ -33,7 +33,7 @@ public abstract class JsonSchemaFileGenerator extends AbstractJsonSchemaGenerato
 
     @Override
     protected void configureWorkerParameters(JsonSchemaFileWorkAction.FileParameters params) {
-        params.getJsonFile().set(getJsonFile());
+        params.getInputFile().set(getInputFile());
     }
 }
 

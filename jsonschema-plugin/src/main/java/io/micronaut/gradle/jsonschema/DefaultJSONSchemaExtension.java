@@ -47,33 +47,28 @@ public abstract class DefaultJSONSchemaExtension implements JSONSchemaExtension 
     }
 
     @Override
-    public void file(File file, Action<JsonSchemaSpec> spec) {
-        var regularFileProperty = project.getObjects().fileProperty();
-        var fileSpec = project.getObjects().newInstance(JsonSchemaFileSpec.class);
+    public void fromFile(File file, Action<JsonSchemaSpec> spec) {
+        var specInstance = file.isDirectory() ? JsonSchemaFolderSpec.class : JsonSchemaFileSpec.class;
+        var fileSpec = project.getObjects().newInstance(specInstance);
         configureCommonExtensionDefaults(fileSpec);
-        fileSpec.getInputFile().convention(new File(""));
         spec.execute(fileSpec);
-        var generator = project.getTasks().register(generateTaskName(file.getName()), JsonSchemaFileGenerator.class, task -> {
-            task.setDescription("Generates source files from an URL of a JSON Schema file");
-            configureCommonProperties(task, fileSpec);
-            task.getJsonFile().convention(regularFileProperty.fileValue(file));
-        });
-        addSourceDir(generator);
-    }
-
-    @Override
-    public void folder(File folder, Action<JsonSchemaSpec> spec) {
-        var regularDirProperty = project.getObjects().directoryProperty();
-        var folderSpec = project.getObjects().newInstance(JsonSchemaFolderSpec.class);
-        configureCommonExtensionDefaults(folderSpec);
-        folderSpec.getInputFolder().convention(new File(""));
-        spec.execute(folderSpec);
-        var generator = project.getTasks().register(generateTaskName(folder.getName()), JsonSchemaFolderGenerator.class, task -> {
-            task.setDescription("Generates source files from an URL of a JSON Schema file");
-            configureCommonProperties(task, folderSpec);
-            task.getInputDirectory().convention(regularDirProperty.fileValue(folder));
-        });
-        addSourceDir(generator);
+        if (file.isDirectory()) {
+            var regularDirProperty = project.getObjects().directoryProperty();
+            var generator = project.getTasks().register(generateTaskName(file.getName()), JsonSchemaFolderGenerator.class, task -> {
+                task.setDescription("Generates source files from an URL of a JSON Schema file");
+                configureCommonProperties(task, fileSpec);
+                task.getInputDirectory().convention(regularDirProperty.fileValue(file));
+            });
+            addSourceDir(generator);
+        } else {
+            var regularFileProperty = project.getObjects().fileProperty();
+            var generator = project.getTasks().register(generateTaskName(file.getName()), JsonSchemaFileGenerator.class, task -> {
+                task.setDescription("Generates source files from an URL of a JSON Schema file");
+                configureCommonProperties(task, fileSpec);
+                task.getInputFile().convention(regularFileProperty.fileValue(file));
+            });
+            addSourceDir(generator);
+        }
     }
 
     private void configureCommonExtensionDefaults(JsonSchemaSpec spec) {

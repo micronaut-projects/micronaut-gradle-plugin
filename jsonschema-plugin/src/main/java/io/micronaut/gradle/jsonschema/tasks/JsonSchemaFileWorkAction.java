@@ -6,12 +6,12 @@ import io.micronaut.jsonschema.generator.utils.SourceGeneratorConfigBuilder;
 
 public abstract class JsonSchemaFileWorkAction extends AbstractJsonSchemaWorkAction<JsonSchemaFileWorkAction.FileParameters> {
     protected interface FileParameters extends JsonSchemaParameters {
-        RegularFileProperty getJsonFile();
+        RegularFileProperty getInputFile();
     }
 
     @Override
     protected void configureBuilder(SourceGeneratorConfigBuilder builder) {
         var parameters = getParameters();
-        builder.withJsonFile(parameters.getJsonFile().get().getAsFile());
+        builder.withJsonFile(parameters.getInputFile().get().getAsFile());
     }
 }

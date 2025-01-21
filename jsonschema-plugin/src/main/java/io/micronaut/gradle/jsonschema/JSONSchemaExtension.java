@@ -42,12 +42,5 @@ public interface JSONSchemaExtension {
      * @param file the json file
      * @param spec configuration for the server generation
      */
-    void file(File file, Action<JsonSchemaSpec> spec);
-
-    /**
-     * Configures generation, given a schema folder.
-     * @param folder the folder that includes json schemas
-     * @param spec configuration for the server generation
-     */
-    void folder(File folder, Action<JsonSchemaSpec> spec);
+    void fromFile(File file, Action<JsonSchemaSpec> spec);
 }

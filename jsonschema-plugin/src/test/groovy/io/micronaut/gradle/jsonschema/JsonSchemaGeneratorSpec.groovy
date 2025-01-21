@@ -114,7 +114,7 @@ class JsonSchemaGeneratorSpec extends AbstractGradleBuildSpec{
             micronaut {
                 version "$micronautVersion"
                 jsonschema {
-                    file(file("animal.schema.json")) {
+                    fromFile(file("animal.schema.json")) {
                         outputPackageName = "com.example.animal"
                     }
                 }
@@ -160,7 +160,7 @@ class JsonSchemaGeneratorSpec extends AbstractGradleBuildSpec{
             micronaut {
                 version "$micronautVersion"
                 jsonschema {
-                    folder(file("ref")) {
+                    fromFile(file("ref")) {
                         outputPackageName = "com.example.ref"
                     }
                 }
