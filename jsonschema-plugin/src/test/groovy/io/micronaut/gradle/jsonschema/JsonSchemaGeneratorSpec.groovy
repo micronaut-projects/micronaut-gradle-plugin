@@ -2,14 +2,29 @@ package io.micronaut.gradle.jsonschema
 
 import io.micronaut.gradle.AbstractGradleBuildSpec
 import org.gradle.testkit.runner.TaskOutcome
+import org.mockserver.integration.ClientAndServer
+import org.mockserver.model.MediaType
 
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardCopyOption
 
+import static org.mockserver.model.HttpRequest.request
+import static org.mockserver.model.HttpResponse.response
+
 class JsonSchemaGeneratorSpec extends AbstractGradleBuildSpec{
     def "can generate source code from URL"() {
         given:
+        def mockServer = ClientAndServer.startClientAndServer()
+
+        // Serve the FHIR JSON schema from a local file or byte array
+        def jsonSchema = new File("src/test/resources/animal.schema.json").bytes
+
+        mockServer.when(request().withPath("/animal.schema.json"))
+                .respond(response()
+                        .withStatusCode(200)
+                        .withContentType(MediaType.JSON_UTF_8)
+                        .withBody(jsonSchema))
         allowSnapshots = true
         settingsFile << "rootProject.name = 'jsonschema-url'"
         buildFile << """
@@ -21,7 +36,8 @@ class JsonSchemaGeneratorSpec extends AbstractGradleBuildSpec{
             micronaut {
                 version "$micronautVersion"
                 jsonschema {
-                    url("https://www.hl7.org/fhir/fhir.schema.json") {
+                    url("http://localhost:${mockServer.port}/animal.schema.json") {
+                        acceptedUrlPatterns = ["^http://localhost:.*"]
                     }
                 }
             }
@@ -44,61 +60,13 @@ class JsonSchemaGeneratorSpec extends AbstractGradleBuildSpec{
         def result = build('test')
 
         then:
-        result.task(":generatingSourcesFromFhir").outcome == TaskOutcome.SUCCESS
+        result.task(":generatingSourcesFromAnimal").outcome == TaskOutcome.SUCCESS
         result.task(":compileJava").outcome == TaskOutcome.SUCCESS
 
         and:
-        file("build/generated/jsonschema/generatingSourcesFromFhir/src/main/java/io/micronaut/jsonschema/generated").exists()
-        file("build/generated/jsonschema/generatingSourcesFromFhir/src/main/java/io/micronaut/jsonschema/generated").list().size() == 838
-        file("build/generated/jsonschema/generatingSourcesFromFhir/src/main/java/io/micronaut/jsonschema/generated/Fhir.java").exists()
-    }
-
-    def "can generate source code from URL with output settings"() {
-        given:
-        allowSnapshots = true
-        settingsFile << "rootProject.name = 'jsonschema-url'"
-        buildFile << """
-            plugins {
-                id "io.micronaut.minimal.application"
-                id "io.micronaut.jsonschema"
-            }
-            
-            micronaut {
-                version "$micronautVersion"
-                jsonschema {
-                    url("https://www.hl7.org/fhir/fhir.schema.json") {
-                        lang = "java"
-                        outputPackageName = "com.example.fhir"
-                        outputDirectory = project.getLayout().getBuildDirectory().dir("generated")
-                    }
-                }
-            }
-            
-            $repositoriesBlock
-
-            dependencies {
-
-                annotationProcessor "io.micronaut.serde:micronaut-serde-processor"
-                annotationProcessor "io.micronaut.validation:micronaut-validation-processor"
-
-                implementation "io.micronaut.serde:micronaut-serde-jackson"
-                implementation "io.micronaut.validation:micronaut-validation"
-            }
-
-        """
-
-
-        when:
-        def result = build('test')
-
-        then:
-        result.task(":generatingSourcesFromFhir").outcome == TaskOutcome.SUCCESS
-        result.task(":compileJava").outcome == TaskOutcome.SUCCESS
-
-        and:
-        file("build/generated/generatingSourcesFromFhir/src/main/java/com/example/fhir/").exists()
-        file("build/generated/generatingSourcesFromFhir/src/main/java/com/example/fhir/").list().size() == 838
-        file("build/generated/generatingSourcesFromFhir/src/main/java/com/example/fhir/Fhir.java").exists()
+        file("build/generated/jsonschema/generatingSourcesFromAnimal/src/main/java/com/example/animal/").exists()
+        file("build/generated/jsonschema/generatingSourcesFromAnimal/src/main/java/com/example/animal/").list().size() == 5
+        file("build/generated/jsonschema/generatingSourcesFromAnimal/src/main/java/com/example/animal/Animal.java").exists()
     }
 
     def "can generate sources from a local file "() {
@@ -116,6 +84,8 @@ class JsonSchemaGeneratorSpec extends AbstractGradleBuildSpec{
                 jsonschema {
                     fromFile(file("animal.schema.json")) {
                         outputPackageName = "com.example.animal"
+                        lang = "java"
+                        outputDirectory = project.getLayout().getBuildDirectory().dir("generated")
                     }
                 }
             }
@@ -142,9 +112,9 @@ class JsonSchemaGeneratorSpec extends AbstractGradleBuildSpec{
         result.task(":compileJava").outcome == TaskOutcome.SUCCESS
 
         and:
-        file("build/generated/jsonschema/generatingSourcesFromAnimal/src/main/java/com/example/animal/").exists()
-        file("build/generated/jsonschema/generatingSourcesFromAnimal/src/main/java/com/example/animal/").list().size() == 5
-        file("build/generated/jsonschema/generatingSourcesFromAnimal/src/main/java/com/example/animal/Animal.java").exists()
+        file("build/generated/generatingSourcesFromAnimal/src/main/java/com/example/animal/").exists()
+        file("build/generated/generatingSourcesFromAnimal/src/main/java/com/example/animal/").list().size() == 5
+        file("build/generated/generatingSourcesFromAnimal/src/main/java/com/example/animal/Animal.java").exists()
     }
 
     def "can generate sources from a local directory "() {

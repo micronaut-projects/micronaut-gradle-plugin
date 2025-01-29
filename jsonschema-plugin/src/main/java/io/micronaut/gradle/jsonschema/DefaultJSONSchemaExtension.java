@@ -48,8 +48,7 @@ public abstract class DefaultJSONSchemaExtension implements JSONSchemaExtension 
 
     @Override
     public void fromFile(File file, Action<JsonSchemaSpec> spec) {
-        var specInstance = file.isDirectory() ? JsonSchemaFolderSpec.class : JsonSchemaFileSpec.class;
-        var fileSpec = project.getObjects().newInstance(specInstance);
+        var fileSpec = project.getObjects().newInstance(JsonSchemaFileSpec.class);
         configureCommonExtensionDefaults(fileSpec);
         spec.execute(fileSpec);
         if (file.isDirectory()) {
@@ -99,10 +98,6 @@ public abstract class DefaultJSONSchemaExtension implements JSONSchemaExtension 
                 }
             });
         });
-    }
-
-    private void withJava(Runnable runnable) {
-        project.getPlugins().withId("java", unused -> runnable.run());
     }
 
     private void withJavaSourceSets(Consumer<? super SourceSetContainer> consumer) {

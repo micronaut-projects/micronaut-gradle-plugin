@@ -17,7 +17,7 @@ micronaut-platform = "4.7.4" # This is the platform version, used in our tests
 micronaut-aot = "2.6.0"
 micronaut-testresources = "2.7.2"
 micronaut-openapi = "6.13.2"
-micronaut-jsonschema = "1.3.1-SNAPSHOT" # TODO: update to include new generation plugin
+micronaut-jsonschema = "1.4.0-SNAPSHOT" # TODO: update to include new generation plugin
 
 [libraries]
 # Core
