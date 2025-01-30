@@ -36,7 +36,7 @@ class JsonSchemaGeneratorSpec extends AbstractGradleBuildSpec{
             micronaut {
                 version "$micronautVersion"
                 jsonschema {
-                    url("http://localhost:${mockServer.port}/animal.schema.json") {
+                    fromUrl("http://localhost:${mockServer.port}/animal.schema.json") {
                         acceptedUrlPatterns = ["^http://localhost:.*"]
                     }
                 }

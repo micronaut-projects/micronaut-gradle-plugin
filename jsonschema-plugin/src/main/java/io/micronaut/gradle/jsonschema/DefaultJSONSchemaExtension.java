@@ -33,7 +33,7 @@ public abstract class DefaultJSONSchemaExtension implements JSONSchemaExtension 
     }
 
     @Override
-    public void url(String url, Action<JsonSchemaSpec> spec) {
+    public void fromUrl(String url, Action<JsonSchemaSpec> spec) {
         var urlSpec = project.getObjects().newInstance(JsonSchemaURLSpec.class);
         configureCommonExtensionDefaults(urlSpec);
         urlSpec.getInputUrl().convention("");
