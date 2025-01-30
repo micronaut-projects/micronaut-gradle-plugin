@@ -64,9 +64,9 @@ class JsonSchemaGeneratorSpec extends AbstractGradleBuildSpec{
         result.task(":compileJava").outcome == TaskOutcome.SUCCESS
 
         and:
-        file("build/generated/jsonschema/generatingSourcesFromAnimal/src/main/java/com/example/animal/").exists()
-        file("build/generated/jsonschema/generatingSourcesFromAnimal/src/main/java/com/example/animal/").list().size() == 5
-        file("build/generated/jsonschema/generatingSourcesFromAnimal/src/main/java/com/example/animal/Animal.java").exists()
+        file("build/generated-sources/generatingSourcesFromAnimal/src/main/java/io/micronaut/jsonschema/").exists()
+        file("build/generated-sources/generatingSourcesFromAnimal/src/main/java/io/micronaut/jsonschema/").list().size() == 5
+        file("build/generated-sources/generatingSourcesFromAnimal/src/main/java/io/micronaut/jsonschema/Animal.java").exists()
     }
 
     def "can generate sources from a local file "() {
@@ -158,9 +158,9 @@ class JsonSchemaGeneratorSpec extends AbstractGradleBuildSpec{
         result.task(":compileJava").outcome == TaskOutcome.SUCCESS
 
         and:
-        file("build/generated/jsonschema/generatingSourcesFromRef/src/main/java/com/example/ref/").exists()
-        file("build/generated/jsonschema/generatingSourcesFromRef/src/main/java/com/example/ref/").list().size() == 32
-        file("build/generated/jsonschema/generatingSourcesFromRef/src/main/java/com/example/ref/Cheatsheet.java").exists()
+        file("build/generated-sources/generatingSourcesFromRef/src/main/java/com/example/ref/").exists()
+        file("build/generated-sources/generatingSourcesFromRef/src/main/java/com/example/ref/").list().size() == 32
+        file("build/generated-sources/generatingSourcesFromRef/src/main/java/com/example/ref/Cheatsheet.java").exists()
     }
 
 
