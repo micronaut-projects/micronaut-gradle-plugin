@@ -75,7 +75,7 @@ public abstract class DefaultJSONSchemaExtension implements JSONSchemaExtension 
         spec.getLang().convention("JAVA");
         spec.getOutputPackageName().convention("io.micronaut.jsonschema");
         spec.getOutputFileName().convention("");
-        spec.getOutputDirectory().convention(project.getLayout().getBuildDirectory().dir("generated-sources"));
+        spec.getOutputDirectory().convention(project.getLayout().getBuildDirectory().dir("generated-sources/jsonschema"));
     }
 
     private void configureCommonProperties(AbstractJsonSchemaGenerator<?, ?> task, JsonSchemaSpec schemaSpec) {
