@@ -15,6 +15,7 @@
  */
 package io.micronaut.gradle.jsonschema;
 
+import io.micronaut.gradle.DefaultVersions;
 import io.micronaut.gradle.MicronautBasePlugin;
 import io.micronaut.gradle.PluginsHelper;
 import org.gradle.api.Plugin;
@@ -47,7 +48,7 @@ public class MicronautJSONSchemaPlugin implements Plugin<Project> {
             conf.extendsFrom(generatorDependencies);
         });
         var jsonSchemaExtension = micronautExtension.getExtensions().create(JSONSchemaExtension.class, "jsonschema", DefaultJSONSchemaExtension.class, project, generatorClasspath);
-        jsonSchemaExtension.getVersion().convention("1.4.0-SNAPSHOT"); //TODO: update after released version of json schema
+        jsonSchemaExtension.getVersion().convention(DefaultVersions.JSONSCHEMA);
         generatorDependencies.getDependencies().addAllLater(jsonSchemaExtension.getVersion().map(version ->
             List.of(project.getDependencies().create("io.micronaut.jsonschema:micronaut-json-schema-generator:" + version))
         ));
