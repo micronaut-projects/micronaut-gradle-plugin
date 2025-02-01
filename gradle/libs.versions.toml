@@ -15,7 +15,7 @@ tomlj = "1.1.1"
 
 micronaut-platform = "4.7.4" # This is the platform version, used in our tests
 micronaut-aot = "2.6.0"
-micronaut-testresources = "2.7.2"
+micronaut-testresources = "2.7.3"
 micronaut-openapi = "6.13.2"
 
 [libraries]
