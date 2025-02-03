@@ -25,7 +25,6 @@ class JsonSchemaGeneratorSpec extends AbstractGradleBuildSpec{
                         .withStatusCode(200)
                         .withContentType(MediaType.JSON_UTF_8)
                         .withBody(jsonSchema))
-        allowSnapshots = true
         settingsFile << "rootProject.name = 'jsonschema-url'"
         buildFile << """
             plugins {
@@ -71,7 +70,6 @@ class JsonSchemaGeneratorSpec extends AbstractGradleBuildSpec{
 
     def "can generate sources from a local file "() {
         given:
-        allowSnapshots = true
         settingsFile << "rootProject.name = 'jsonschema-url'"
         buildFile << """
             plugins {
@@ -119,7 +117,6 @@ class JsonSchemaGeneratorSpec extends AbstractGradleBuildSpec{
 
     def "can generate sources from a local directory "() {
         given:
-        allowSnapshots = true
         settingsFile << "rootProject.name = 'jsonschema-url'"
         buildFile << """
             plugins {
