@@ -83,7 +83,7 @@ class JsonSchemaGeneratorSpec extends AbstractGradleBuildSpec{
                     fromFile(file("animal.schema.json")) {
                         outputPackageName = "com.example.animal"
                         lang = "java"
-                        outputDirectory = project.getLayout().getBuildDirectory().dir("generated")
+                        outputDirectory = layout.buildDirectory.dir("generated/json-schema")
                     }
                 }
             }

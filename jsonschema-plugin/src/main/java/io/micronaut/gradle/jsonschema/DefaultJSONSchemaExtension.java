@@ -33,7 +33,7 @@ public abstract class DefaultJSONSchemaExtension implements JSONSchemaExtension 
     }
 
     @Override
-    public void fromUrl(String url, Action<JsonSchemaSpec> spec) {
+    public void fromUrl(String url, Action<? super JsonSchemaSpec> spec) {
         var urlSpec = project.getObjects().newInstance(JsonSchemaURLSpec.class);
         configureCommonExtensionDefaults(urlSpec);
         urlSpec.getInputUrl().convention("");
@@ -47,7 +47,7 @@ public abstract class DefaultJSONSchemaExtension implements JSONSchemaExtension 
     }
 
     @Override
-    public void fromFile(File file, Action<JsonSchemaSpec> spec) {
+    public void fromFile(File file, Action<? super JsonSchemaSpec> spec) {
         var fileSpec = project.getObjects().newInstance(JsonSchemaFileSpec.class);
         configureCommonExtensionDefaults(fileSpec);
         spec.execute(fileSpec);

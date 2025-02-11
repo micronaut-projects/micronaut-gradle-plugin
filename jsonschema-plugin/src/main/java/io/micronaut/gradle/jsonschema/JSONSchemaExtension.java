@@ -35,12 +35,12 @@ public interface JSONSchemaExtension {
      * @param url the url string of a json schema
      * @param spec configuration for the server generation
      */
-    void fromUrl(String url, Action<JsonSchemaSpec> spec);
+    void fromUrl(String url, Action<? super JsonSchemaSpec> spec);
 
     /**
      * Configures generation, given a schema file.
      * @param file the json file
      * @param spec configuration for the server generation
      */
-    void fromFile(File file, Action<JsonSchemaSpec> spec);
+    void fromFile(File file, Action<? super JsonSchemaSpec> spec);
 }
