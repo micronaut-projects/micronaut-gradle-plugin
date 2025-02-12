@@ -29,6 +29,7 @@ var writeVersions = tasks.register("writeDefaultVersions", WriteVersions) {
     versions.put('openapi', libs.versions.micronaut.openapi)
     versions.put('oraclelinux', libs.versions.oraclelinux)
     versions.put('amazonlinux', libs.versions.amazonlinux)
+    versions.put('jsonschema', libs.versions.micronaut.jsonschema)
     packageName = 'io.micronaut.gradle'
 }
 

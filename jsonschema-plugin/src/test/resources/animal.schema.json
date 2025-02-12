@@ -1,0 +1,131 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "$id":"https://example.com/schemas/llama.schema.json",
+  "title":"Animal",
+  "description":"An animal.",
+  "type":["object"],
+  "properties":{
+    "id": {
+      "description": "Unique id for the animal.",
+      "$ref": "#/definitions/id"
+    },
+    "birthdate":{
+      "description":"The birthdate",
+      "$ref": "#/definitions/date"
+    },
+    "name":{
+      "description":"The name",
+      "type":"string",
+      "minLength":1
+    }
+  },
+  "discriminator": {
+    "propertyName": "resourceType",
+    "mapping": {
+      "Cat": "#/definitions/Cat",
+      "Dog": "#/definitions/Dog",
+      "Fish": "#/definitions/Fish",
+      "Human": "#/oneOf/Human"
+    }
+  },
+  "oneOf": [{
+    "$ref": "#/definitions/Cat"
+  },{
+    "$ref": "#/definitions/Dog"
+  },{
+    "$ref": "#/definitions/Fish"
+  }, {
+    "title": "Human",
+    "type": "object",
+    "properties": {
+      "resourceType": {
+        "const": "Human"
+      },
+      "firstName": {
+        "type": "string"
+      },
+      "lastName": {
+        "type": "string"
+      },
+      "sport": {
+        "type": "string"
+      }
+    }
+  }],
+  "$defs": {
+    "id": {
+      "pattern": "^[A-Za-z0-9\\-\\.]{1,64}$",
+      "type": "string",
+      "description": "Any combination of letters, numerals, \"-\" and \".\", with a length limit of 64 characters.  (This might be an integer, an unprefixed OID, UUID or any other identifier pattern that meets these constraints.)  Ids are case-insensitive."
+    },
+    "date": {
+      "pattern": "^([0-9]([0-9]([0-9][1-9]|[1-9]0)|[1-9]00)|[1-9]000)(-(0[1-9]|1[0-2])(-(0[1-9]|[1-2][0-9]|3[0-1]))?)?$",
+      "type": "string",
+      "description": "A date or partial date (e.g. just year or year + month). There is no UTC offset. The format is a union of the schema types gYear, gYearMonth and date.  Dates SHALL be valid dates."
+    },
+    "boolean": {
+      "pattern": "^true|false$",
+      "type": "boolean",
+      "description": "Value of \"true\" or \"false\""
+    },
+    "Cat": {
+      "description": "The definition of a cat.",
+      "properties": {
+        "resourceType": {
+          "description": "This is a Cat resource.",
+          "const": "Cat"
+        },
+        "hasMate": {
+          "description": "True when the cat has found their mate.",
+          "$ref": "#/definitions/boolean"
+        }
+      },
+      "type": ["object"],
+      "additionalProperties": false
+    },
+    "Dog": {
+      "description": "The definition of a dog.",
+      "properties": {
+        "resourceType": {
+          "description": "This is a Dog resource.",
+          "const": "Dog"
+        },
+        "hasMate": {
+          "description": "True when the dog has found their mate.",
+          "const": true
+        },
+        "nickname" : {
+          "description": "A nickname of a good doggo.",
+          "type": "string"
+        },
+        "enemies" : {
+          "description": "A list of the dog's cat enemies.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Cat"
+          }
+        }
+      },
+      "type": "object",
+      "additionalProperties": {"type": "string"}
+    },
+    "Fish": {
+      "description": "The definition of a fish.",
+      "properties": {
+        "resourceType": {
+          "description": "This is a Fish resource.",
+          "const": "Fish"
+        },
+        "friends" : {
+          "description": "A list of the fish's aquarium friends.",
+          "type": "array",
+          "items": {
+            "$ref": "#"
+          }
+        }
+      },
+      "type": "object",
+      "additionalProperties": true
+    }
+  }
+}
