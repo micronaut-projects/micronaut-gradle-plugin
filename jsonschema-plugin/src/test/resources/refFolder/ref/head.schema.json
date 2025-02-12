@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/schemas/head.schema.json",
+  "title": "Head",
+  "description": "A top level schema.",
+  "type": [
+    "object"
+  ],
+  "properties": {
+    "cheatsheet": {
+      "description": "Unique id for the animal.",
+      "$ref": "types/cheatsheet.schema.json#/Cheatsheet"
+    },
+    "CV": {
+      "description": "The birthdate",
+      "$ref": "https://raw.githubusercontent.com/hexagonkt/codecv/master/cv.schema.json#/$defs/Cv"
+    },
+    "name": {
+      "description": "The name",
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

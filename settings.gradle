@@ -2,6 +2,7 @@ pluginManagement {
     repositories {
         mavenCentral()
         gradlePluginPortal()
+//        maven { url = uri("https://s01.oss.sonatype.org/content/repositories/snapshots/") }
     }
 }
 
@@ -21,6 +22,7 @@ include("gradle-plugin")
 include("openapi-plugin")
 include("test-resources-plugin")
 include("functional-tests")
+include("jsonschema-plugin")
 
 enableFeaturePreview 'TYPESAFE_PROJECT_ACCESSORS'
 
