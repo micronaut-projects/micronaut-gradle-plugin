@@ -110,9 +110,9 @@ class JsonSchemaGeneratorSpec extends AbstractGradleBuildSpec{
         result.task(":compileJava").outcome == TaskOutcome.SUCCESS
 
         and:
-        file("build/generated/generatingSourcesFromAnimal/src/main/java/com/example/animal/").exists()
-        file("build/generated/generatingSourcesFromAnimal/src/main/java/com/example/animal/").list().size() == 5
-        file("build/generated/generatingSourcesFromAnimal/src/main/java/com/example/animal/Animal.java").exists()
+        file("build/generated/json-schema/generatingSourcesFromAnimal/src/main/java/com/example/animal/").exists()
+        file("build/generated/json-schema/generatingSourcesFromAnimal/src/main/java/com/example/animal/").list().size() == 5
+        file("build/generated/json-schema/generatingSourcesFromAnimal/src/main/java/com/example/animal/Animal.java").exists()
     }
 
     def "can generate sources from a local directory "() {
