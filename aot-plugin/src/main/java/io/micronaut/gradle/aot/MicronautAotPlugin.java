@@ -377,7 +377,6 @@ public abstract class MicronautAotPlugin implements Plugin<Project> {
             c.setCanBeResolved(false);
             c.setCanBeConsumed(false);
         });
-        aotOptimizerRuntimeClasspath.extendsFrom(aotPlugins);
         Configuration aotApplication = configurations.create("aotApplication", c -> {
             c.setCanBeResolved(false);
             c.setCanBeConsumed(false);
@@ -389,6 +388,7 @@ public abstract class MicronautAotPlugin implements Plugin<Project> {
             c.extendsFrom(aotApplication);
             c.getDependencies().add(project.getDependencies().create(project));
         });
+        aotApplicationClasspath.extendsFrom(aotPlugins);
         return new Configurations(
                 aotOptimizerRuntimeClasspath,
                 aotApplication,

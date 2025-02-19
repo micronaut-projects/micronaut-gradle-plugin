@@ -19,12 +19,14 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar;
 import org.gradle.api.Project;
 
 public class ShadowPluginSupport {
+    public static final String OLD_SHADOW_PLUGIN = "com.github.johnrengelman.shadow";
     public static final String SHADOW_PLUGIN = "com.gradleup.shadow";
 
     private ShadowPluginSupport() {
     }
 
     public static void withShadowPlugin(Project p, Runnable action) {
+        p.getPluginManager().withPlugin(OLD_SHADOW_PLUGIN, unused -> action.run());
         p.getPluginManager().withPlugin(SHADOW_PLUGIN, unused -> action.run());
     }
 
