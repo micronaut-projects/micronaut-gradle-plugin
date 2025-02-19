@@ -3,7 +3,7 @@ kotlin = "1.9.25"
 ksp = "1.9.25-1.0.20"
 docker = "9.4.0"
 diffplug = "4.2.0"
-shadow = "8.1.1"
+shadow = "8.3.6"
 groovy = "3.0.23"
 spock = "2.3-groovy-3.0"
 oraclelinux = "9"
@@ -25,7 +25,7 @@ micronaut-platform = { module = 'io.micronaut.platform:micronaut-platform', vers
 
 dockerPlug = { module = "com.bmuschko:gradle-docker-plugin", version.ref = "docker" }
 diffplugPlugin = { module = "com.diffplug.gradle:goomph", version.ref = "diffplug" }
-shadowPlugin = { module = "com.github.johnrengelman:shadow", version.ref = "shadow" }
+shadowPlugin = { module = "com.gradleup.shadow:shadow-gradle-plugin", version.ref = "shadow" }
 graalvmPlugin = { module = "org.graalvm.buildtools:native-gradle-plugin", version.ref = "graalvmPlugin" }
 
 kotlin-allopen = { module = "org.jetbrains.kotlin:kotlin-allopen", version.ref = "kotlin" }

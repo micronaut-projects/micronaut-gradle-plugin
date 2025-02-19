@@ -19,7 +19,7 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar;
 import org.gradle.api.Project;
 
 public class ShadowPluginSupport {
-    public static final String SHADOW_PLUGIN = "com.github.johnrengelman.shadow";
+    public static final String SHADOW_PLUGIN = "com.gradleup.shadow";
 
     private ShadowPluginSupport() {
     }
