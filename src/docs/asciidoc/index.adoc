@@ -1114,7 +1114,7 @@ You can add Gradle Shadow plugin so when running `./gradlew assemble` a runnable
 ----
 plugins {
     ...
-    id "com.github.johnrengelman.shadow" version "{shadow-version}"
+    id "com.gradleup.shadow" version "{shadow-version}"
     ...
 }
 ----
@@ -1123,7 +1123,7 @@ plugins {
 ----
 plugins {
     ...
-    id("com.github.johnrengelman.shadow") version "{shadow-version}"
+    id("com.gradleup.shadow") version "{shadow-version}"
     ...
 }
 ----
@@ -1360,7 +1360,7 @@ The plugin supports building an optimized fat jar. You will need to apply the `s
 ----
 plugins {
     ...
-    id "com.github.johnrengelman.shadow" version "{shadow-version}"
+    id "com.gradleup.shadow" version "{shadow-version}"
     ...
 }
 ----
@@ -1369,7 +1369,7 @@ plugins {
 ----
 plugins {
     ...
-    id("com.github.johnrengelman.shadow") version "{shadow-version}"
+    id("com.gradleup.shadow") version "{shadow-version}"
     ...
 }
 ----
