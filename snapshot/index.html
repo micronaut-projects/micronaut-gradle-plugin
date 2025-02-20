@@ -159,7 +159,7 @@
 <h2 id="_compatibility_notes"><a class="anchor" href="#_compatibility_notes"></a>1. Compatibility notes</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>This Gradle plugin collection is designed for Micronaut 4.x and requires Gradle 8+. This version defaults to Micronaut 4.7.4 and is tested with Gradle 8.12.1.</p>
+<p>This Gradle plugin collection is designed for Micronaut 4.x and requires Gradle 8+. This version defaults to Micronaut 4.7.6 and is tested with Gradle 8.12.1.</p>
 </div>
 <div class="paragraph">
 <p>Micronaut 3.x users should use the 3.x branch which documentation can be found <a href="https://github.com/micronaut-projects/micronaut-gradle-plugin/tree/3.7.x#readme">here</a>.</p>
@@ -444,14 +444,14 @@ Alternatively, you can set the version in your <code>build.gradle(.kts)</code>:<
 <div class="title">Selecting the Micronaut version</div>
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-groovy hljs" data-lang="groovy">micronaut {
-    version "4.7.4"
+    version "4.7.6"
 }</code></pre>
 </div>
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-kotlin hljs" data-lang="kotlin">micronaut {
-    version.set("4.7.4")
+    version.set("4.7.6")
 }</code></pre>
 </div>
 </div>
@@ -587,7 +587,7 @@ ehcache = "3.8.2" # override version of ehcache</code></pre>
 <div class="title">Micronaut configuration options</div>
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-groovy hljs" data-lang="groovy">micronaut {
-    version "4.7.4"
+    version "4.7.6"
     // If set to false, then the `io.micronaut.platform:micronaut-platform` BOM
     // will not be automatically applied, and you will have to add it yourself
     // to your dependencies, or specify versions of Micronaut modules explicitly
@@ -619,7 +619,7 @@ ehcache = "3.8.2" # override version of ehcache</code></pre>
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-kotlin hljs" data-lang="kotlin">micronaut {
-    version.set("4.7.4")
+    version.set("4.7.6")
     // If set to false, then the `io.micronaut.platform:micronaut-platform` BOM
     // will not be automatically applied, and you will have to add it yourself
     // to your dependencies, or specify versions of Micronaut modules explicitly
@@ -705,7 +705,7 @@ repositories {
 }
 
 micronaut {
-    version = "4.7.4"
+    version = "4.7.6"
 }
 
 dependencies {
@@ -728,7 +728,7 @@ repositories {
 }
 
 micronaut {
-    version.set("4.7.4")
+    version.set("4.7.6")
 }
 
 dependencies {
@@ -841,7 +841,7 @@ repositories {
 }
 
 micronaut {
-    version = "4.7.4"
+    version = "4.7.6"
 }
 
 dependencies {
@@ -870,7 +870,7 @@ repositories {
 }
 
 micronaut {
-    version.set("4.7.4")
+    version.set("4.7.6")
 }
 
 dependencies {
@@ -908,7 +908,7 @@ repositories {
 }
 
 micronaut {
-    version = "4.7.4"
+    version = "4.7.6"
 }
 
 dependencies {
@@ -942,7 +942,7 @@ repositories {
 }
 
 micronaut {
-    version.set("4.7.4")
+    version.set("4.7.6")
 }
 
 dependencies {
@@ -1406,7 +1406,7 @@ repositories {
 }
 
 micronaut {
-    version = "4.7.4"
+    version = "4.7.6"
     runtime "netty"
 }
 
@@ -1432,7 +1432,7 @@ repositories {
 }
 
 micronaut {
-    version.set("4.7.4")
+    version.set("4.7.6")
     runtime.set("netty")
 }
 
@@ -2032,8 +2032,8 @@ Should this happen to you, you can disable class data sharing explicitly using t
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-groovy hljs" data-lang="groovy">plugins {
-    id "io.micronaut.application" version "4.7.4"
-    id "io.micronaut.test-resources" version "4.7.4"
+    id "io.micronaut.application" version "4.7.6"
+    id "io.micronaut.test-resources" version "4.7.6"
     ...
 }</code></pre>
 </div>
@@ -2041,8 +2041,8 @@ Should this happen to you, you can disable class data sharing explicitly using t
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-kotlin hljs" data-lang="kotlin">plugins {
-    id("io.micronaut.application") version "4.7.4"
-    id("io.micronaut.test-resources") version "4.7.4"
+    id("io.micronaut.application") version "4.7.6"
+    id("io.micronaut.test-resources") version "4.7.6"
     ...
 }</code></pre>
 </div>
@@ -2233,7 +2233,7 @@ Here, we&#8217;re going to add a project called <code>shared-testresources</code
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-groovy hljs" data-lang="groovy">// shared-testresources/build.gradle
 plugins {
-    id "io.micronaut.test-resources" version "4.7.4" // <b class="conum">(1)</b>
+    id "io.micronaut.test-resources" version "4.7.6" // <b class="conum">(1)</b>
 }
 
 micronaut {
@@ -2247,7 +2247,7 @@ micronaut {
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-kotlin hljs" data-lang="kotlin">// shared-testresources/build.gradle.kts
 plugins {
-    id("io.micronaut.test-resources") version "4.7.4" // <b class="conum">(1)</b>
+    id("io.micronaut.test-resources") version "4.7.6" // <b class="conum">(1)</b>
 }
 
 micronaut {
@@ -2273,8 +2273,8 @@ micronaut {
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-groovy hljs" data-lang="groovy">plugins {
-    id "io.micronaut.application" version "4.7.4"
-    id "io.micronaut.test-resources-consumer" version "4.7.4" // <b class="conum">(1)</b>
+    id "io.micronaut.application" version "4.7.6"
+    id "io.micronaut.test-resources-consumer" version "4.7.6" // <b class="conum">(1)</b>
 }
 
 dependencies {
@@ -2285,8 +2285,8 @@ dependencies {
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-kotlin hljs" data-lang="kotlin">plugins {
-    id("io.micronaut.application") version "4.7.4"
-    id("io.micronaut.test-resources-consumer") version "4.7.4" // <b class="conum">(1)</b>
+    id("io.micronaut.application") version "4.7.6"
+    id("io.micronaut.test-resources-consumer") version "4.7.6" // <b class="conum">(1)</b>
 }
 
 dependencies {
