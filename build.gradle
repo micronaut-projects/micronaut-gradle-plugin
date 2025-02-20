@@ -38,9 +38,11 @@ dependencies {
     javadoc project(":micronaut-gradle-plugin")
     javadoc project(":micronaut-openapi-plugin")
     javadoc project(":micronaut-platform-catalog-plugin")
+    javadoc project(":micronaut-jsonschema-plugin")
     javadoc libs.micronaut.openapi.generator
     javadoc libs.bundles.optionalPlugins
     javadoc libs.shadowPlugin
+    javadoc libs.micronaut.jsonschema.generator
 }
 
 asciidoctorj {
