@@ -24,7 +24,7 @@ tasks.withType(Test).configureEach {
     inputs.property("GRAALVM_HOME", graalvmHome)
     environment "GRAALVM_HOME", graalvmHome
     systemProperty "micronautVersion", libs.versions.micronaut.platform.get()
-    develocity.predictiveTestSelection.enabled {
+    develocity.predictiveTestSelection {
         enabled = micronautBuild.environment.isTestSelectionEnabled()
     }
     maxParallelForks = Math.max(1, (int) (Runtime.runtime.availableProcessors()/2))
