@@ -1379,6 +1379,26 @@ The task will generate a fat jar in the `build/libs` directory, that you can run
 
 `java -jar build/libs/myapp-0.1-all-optimized.jar`
 
+[NOTE]
+====
+Should you have configured your shadow jar specifically, for example to enable `zip64`, then you must also configure the `optimizedJitJarAll` task similarly.
+It is therefore recommended to use the `withType` method instead of specifically configuring the main shadow task:
+
+[source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
+----
+tasks.withType(ShadowJar).configureEach {
+    zip64 = true
+}
+----
+
+[source, kotlin, subs="verbatim,attributes", role="multi-language-sample"]
+----
+tasks.withType<ShadowJar>().configureEach {
+    zip64.set(true)
+}
+----
+====
+
 [[aot:running-optimized-native-binary]]
 === Building and running an optimized native application
 
@@ -1408,7 +1428,6 @@ The 2 tasks which are available for this are:
 
 - `optimizedDockerBuildNative` to build the optimized native Docker image
 - `optimizedDockerPushNative` to push the optimized native Docker image
-
 
 [[test-resources]]
 == Automatic test resources provisioning
