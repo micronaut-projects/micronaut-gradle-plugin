@@ -42,7 +42,8 @@ class AotShadowSupport {
                                   TaskProvider<Jar> optimizedJar) {
         project.afterEvaluate(unused -> {
             JavaApplication javaApplication = project.getExtensions().findByType(JavaApplication.class);
-            TaskProvider<ShadowJar> shadowProvider = tasks.register(optimizedJar.getName() + "All", ShadowJar.class, shadow -> {
+            var taskName = optimizedJar.getName() + "All";
+            TaskProvider<ShadowJar> shadowProvider = tasks.register(taskName, ShadowJar.class, shadow -> {
                 shadow.setGroup(SHADOW_GROUP);
                 shadow.setDescription("Creates a fat jar including the Micronaut AOT optimizations");
                 shadow.getArchiveClassifier().convention("all-optimized");
