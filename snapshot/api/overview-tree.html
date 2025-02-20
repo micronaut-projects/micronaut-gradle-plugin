@@ -62,6 +62,8 @@ loadScripts(document, 'script');</script>
 <li><a href="io/micronaut/gradle/docker/tasks/package-tree.html">io.micronaut.gradle.docker.tasks</a>, </li>
 <li><a href="io/micronaut/gradle/graalvm/package-tree.html">io.micronaut.gradle.graalvm</a>, </li>
 <li><a href="io/micronaut/gradle/internal/package-tree.html">io.micronaut.gradle.internal</a>, </li>
+<li><a href="io/micronaut/gradle/jsonschema/package-tree.html">io.micronaut.gradle.jsonschema</a>, </li>
+<li><a href="io/micronaut/gradle/jsonschema/tasks/package-tree.html">io.micronaut.gradle.jsonschema.tasks</a>, </li>
 <li><a href="io/micronaut/gradle/openapi/package-tree.html">io.micronaut.gradle.openapi</a>, </li>
 <li><a href="io/micronaut/gradle/openapi/tasks/package-tree.html">io.micronaut.gradle.openapi.tasks</a>, </li>
 <li><a href="io/micronaut/gradle/testresources/package-tree.html">io.micronaut.gradle.testresources</a>, </li>
@@ -73,6 +75,13 @@ loadScripts(document, 'script');</script>
 <ul>
 <li class="circle">java.lang.<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html" class="type-name-link external-link" title="class or interface in java.lang">Object</a>
 <ul>
+<li class="circle">io.micronaut.gradle.jsonschema.tasks.<a href="io/micronaut/gradle/jsonschema/tasks/AbstractJsonSchemaWorkAction.html" class="type-name-link" title="class in io.micronaut.gradle.jsonschema.tasks">AbstractJsonSchemaWorkAction</a>&lt;T&gt; (implements org.gradle.workers.WorkAction&lt;T&gt;)
+<ul>
+<li class="circle">io.micronaut.gradle.jsonschema.tasks.<a href="io/micronaut/gradle/jsonschema/tasks/JsonSchemaFileWorkAction.html" class="type-name-link" title="class in io.micronaut.gradle.jsonschema.tasks">JsonSchemaFileWorkAction</a></li>
+<li class="circle">io.micronaut.gradle.jsonschema.tasks.<a href="io/micronaut/gradle/jsonschema/tasks/JsonSchemaFolderWorkAction.html" class="type-name-link" title="class in io.micronaut.gradle.jsonschema.tasks">JsonSchemaFolderWorkAction</a></li>
+<li class="circle">io.micronaut.gradle.jsonschema.tasks.<a href="io/micronaut/gradle/jsonschema/tasks/JsonSchemaUrlWorkAction.html" class="type-name-link" title="class in io.micronaut.gradle.jsonschema.tasks">JsonSchemaUrlWorkAction</a></li>
+</ul>
+</li>
 <li class="circle">io.micronaut.gradle.openapi.tasks.<a href="io/micronaut/gradle/openapi/tasks/AbstractOpenApiWorkAction.html" class="type-name-link" title="class in io.micronaut.gradle.openapi.tasks">AbstractOpenApiWorkAction</a>&lt;T&gt; (implements org.gradle.workers.WorkAction&lt;T&gt;)
 <ul>
 <li class="circle">io.micronaut.gradle.openapi.tasks.<a href="io/micronaut/gradle/openapi/tasks/OpenApiClientWorkAction.html" class="type-name-link" title="class in io.micronaut.gradle.openapi.tasks">OpenApiClientWorkAction</a></li>
@@ -83,6 +92,13 @@ loadScripts(document, 'script');</script>
 <ul>
 <li class="circle">org.gradle.api.DefaultTask (implements org.gradle.api.Task)
 <ul>
+<li class="circle">io.micronaut.gradle.jsonschema.tasks.<a href="io/micronaut/gradle/jsonschema/tasks/AbstractJsonSchemaGenerator.html" class="type-name-link" title="class in io.micronaut.gradle.jsonschema.tasks">AbstractJsonSchemaGenerator</a>&lt;W,<wbr>P&gt;
+<ul>
+<li class="circle">io.micronaut.gradle.jsonschema.tasks.<a href="io/micronaut/gradle/jsonschema/tasks/JsonSchemaFileGenerator.html" class="type-name-link" title="class in io.micronaut.gradle.jsonschema.tasks">JsonSchemaFileGenerator</a></li>
+<li class="circle">io.micronaut.gradle.jsonschema.tasks.<a href="io/micronaut/gradle/jsonschema/tasks/JsonSchemaFolderGenerator.html" class="type-name-link" title="class in io.micronaut.gradle.jsonschema.tasks">JsonSchemaFolderGenerator</a></li>
+<li class="circle">io.micronaut.gradle.jsonschema.tasks.<a href="io/micronaut/gradle/jsonschema/tasks/JsonSchemaUrlGenerator.html" class="type-name-link" title="class in io.micronaut.gradle.jsonschema.tasks">JsonSchemaUrlGenerator</a></li>
+</ul>
+</li>
 <li class="circle">io.micronaut.gradle.openapi.tasks.<a href="io/micronaut/gradle/openapi/tasks/AbstractOpenApiGenerator.html" class="type-name-link" title="class in io.micronaut.gradle.openapi.tasks">AbstractOpenApiGenerator</a>&lt;W,<wbr>P&gt;
 <ul>
 <li class="circle">io.micronaut.gradle.openapi.tasks.<a href="io/micronaut/gradle/openapi/tasks/OpenApiClientGenerator.html" class="type-name-link" title="class in io.micronaut.gradle.openapi.tasks">OpenApiClientGenerator</a></li>
@@ -118,6 +134,7 @@ loadScripts(document, 'script');</script>
 <li class="circle">io.micronaut.gradle.<a href="io/micronaut/gradle/AnnotationProcessing.html" class="type-name-link" title="class in io.micronaut.gradle">AnnotationProcessing</a> (implements io.micronaut.gradle.<a href="io/micronaut/gradle/AnnotationProcessingConfigBuilder.html" title="interface in io.micronaut.gradle">AnnotationProcessingConfigBuilder</a>)</li>
 <li class="circle">io.micronaut.gradle.<a href="io/micronaut/gradle/AttributeUtils.html" class="type-name-link" title="class in io.micronaut.gradle">AttributeUtils</a></li>
 <li class="circle">io.micronaut.gradle.docker.editor.<a href="io/micronaut/gradle/docker/editor/DefaultEditor.html" class="type-name-link" title="class in io.micronaut.gradle.docker.editor">DefaultEditor</a> (implements io.micronaut.gradle.docker.editor.<a href="io/micronaut/gradle/docker/editor/Editor.html" title="interface in io.micronaut.gradle.docker.editor">Editor</a>)</li>
+<li class="circle">io.micronaut.gradle.jsonschema.<a href="io/micronaut/gradle/jsonschema/DefaultJSONSchemaExtension.html" class="type-name-link" title="class in io.micronaut.gradle.jsonschema">DefaultJSONSchemaExtension</a> (implements io.micronaut.gradle.jsonschema.<a href="io/micronaut/gradle/jsonschema/JSONSchemaExtension.html" title="interface in io.micronaut.gradle.jsonschema">JSONSchemaExtension</a>)</li>
 <li class="circle">io.micronaut.gradle.docker.model.<a href="io/micronaut/gradle/docker/model/DefaultMicronautDockerImage.html" class="type-name-link" title="class in io.micronaut.gradle.docker.model">DefaultMicronautDockerImage</a> (implements io.micronaut.gradle.docker.model.<a href="io/micronaut/gradle/docker/model/MicronautDockerImage.html" title="interface in io.micronaut.gradle.docker.model">MicronautDockerImage</a>)</li>
 <li class="circle">io.micronaut.gradle.openapi.<a href="io/micronaut/gradle/openapi/DefaultOpenApiExtension.html" class="type-name-link" title="class in io.micronaut.gradle.openapi">DefaultOpenApiExtension</a> (implements io.micronaut.gradle.openapi.<a href="io/micronaut/gradle/openapi/OpenApiExtension.html" title="interface in io.micronaut.gradle.openapi">OpenApiExtension</a>)</li>
 <li class="circle">io.micronaut.gradle.<a href="io/micronaut/gradle/DefaultVersions.html" class="type-name-link" title="class in io.micronaut.gradle">DefaultVersions</a></li>
@@ -137,6 +154,7 @@ loadScripts(document, 'script');</script>
 <li class="circle">io.micronaut.gradle.docker.<a href="io/micronaut/gradle/docker/MicronautDockerPlugin.html" class="type-name-link" title="class in io.micronaut.gradle.docker">MicronautDockerPlugin</a> (implements org.gradle.api.Plugin&lt;T&gt;)</li>
 <li class="circle">io.micronaut.gradle.<a href="io/micronaut/gradle/MicronautExtension.html" class="type-name-link" title="class in io.micronaut.gradle">MicronautExtension</a> (implements org.gradle.api.plugins.ExtensionAware)</li>
 <li class="circle">io.micronaut.gradle.graalvm.<a href="io/micronaut/gradle/graalvm/MicronautGraalPlugin.html" class="type-name-link" title="class in io.micronaut.gradle.graalvm">MicronautGraalPlugin</a> (implements org.gradle.api.Plugin&lt;T&gt;)</li>
+<li class="circle">io.micronaut.gradle.jsonschema.<a href="io/micronaut/gradle/jsonschema/MicronautJSONSchemaPlugin.html" class="type-name-link" title="class in io.micronaut.gradle.jsonschema">MicronautJSONSchemaPlugin</a> (implements org.gradle.api.Plugin&lt;T&gt;)</li>
 <li class="circle">io.micronaut.gradle.<a href="io/micronaut/gradle/MicronautKotlinSupport.html" class="type-name-link" title="class in io.micronaut.gradle">MicronautKotlinSupport</a></li>
 <li class="circle">io.micronaut.gradle.<a href="io/micronaut/gradle/MicronautLibraryPlugin.html" class="type-name-link" title="class in io.micronaut.gradle">MicronautLibraryPlugin</a> (implements org.gradle.api.Plugin&lt;T&gt;)
 <ul>
@@ -191,6 +209,13 @@ loadScripts(document, 'script');</script>
 <li class="circle">io.micronaut.gradle.crac.<a href="io/micronaut/gradle/crac/CRaCConfiguration.html" class="type-name-link" title="interface in io.micronaut.gradle.crac">CRaCConfiguration</a></li>
 <li class="circle">io.micronaut.gradle.docker.<a href="io/micronaut/gradle/docker/DockerBuildOptions.html" class="type-name-link" title="interface in io.micronaut.gradle.docker">DockerBuildOptions</a></li>
 <li class="circle">io.micronaut.gradle.docker.editor.<a href="io/micronaut/gradle/docker/editor/Editor.html" class="type-name-link" title="interface in io.micronaut.gradle.docker.editor">Editor</a></li>
+<li class="circle">io.micronaut.gradle.jsonschema.<a href="io/micronaut/gradle/jsonschema/JSONSchemaExtension.html" class="type-name-link" title="interface in io.micronaut.gradle.jsonschema">JSONSchemaExtension</a></li>
+<li class="circle">io.micronaut.gradle.jsonschema.<a href="io/micronaut/gradle/jsonschema/JsonSchemaSpec.html" class="type-name-link" title="interface in io.micronaut.gradle.jsonschema">JsonSchemaSpec</a>
+<ul>
+<li class="circle">io.micronaut.gradle.jsonschema.<a href="io/micronaut/gradle/jsonschema/JsonSchemaFileSpec.html" class="type-name-link" title="interface in io.micronaut.gradle.jsonschema">JsonSchemaFileSpec</a></li>
+<li class="circle">io.micronaut.gradle.jsonschema.<a href="io/micronaut/gradle/jsonschema/JsonSchemaURLSpec.html" class="type-name-link" title="interface in io.micronaut.gradle.jsonschema">JsonSchemaURLSpec</a></li>
+</ul>
+</li>
 <li class="circle">io.micronaut.testresources.buildtools.KnownModules
 <ul>
 <li class="circle">io.micronaut.gradle.testresources.<a href="io/micronaut/gradle/testresources/TestResourcesConfiguration.html" class="type-name-link" title="interface in io.micronaut.gradle.testresources">TestResourcesConfiguration</a></li>
@@ -215,6 +240,13 @@ loadScripts(document, 'script');</script>
 <li class="circle">io.micronaut.gradle.<a href="io/micronaut/gradle/SourceSetConfigurer.html" class="type-name-link" title="interface in io.micronaut.gradle">SourceSetConfigurer</a></li>
 <li class="circle">org.gradle.workers.WorkParameters
 <ul>
+<li class="circle">io.micronaut.gradle.jsonschema.tasks.AbstractJsonSchemaWorkAction.JsonSchemaParameters
+<ul>
+<li class="circle">io.micronaut.gradle.jsonschema.tasks.<a href="io/micronaut/gradle/jsonschema/tasks/JsonSchemaFileWorkAction.FileParameters.html" class="type-name-link" title="interface in io.micronaut.gradle.jsonschema.tasks">JsonSchemaFileWorkAction.FileParameters</a></li>
+<li class="circle">io.micronaut.gradle.jsonschema.tasks.<a href="io/micronaut/gradle/jsonschema/tasks/JsonSchemaFolderWorkAction.FolderParameters.html" class="type-name-link" title="interface in io.micronaut.gradle.jsonschema.tasks">JsonSchemaFolderWorkAction.FolderParameters</a></li>
+<li class="circle">io.micronaut.gradle.jsonschema.tasks.<a href="io/micronaut/gradle/jsonschema/tasks/JsonSchemaUrlWorkAction.UrlParameters.html" class="type-name-link" title="interface in io.micronaut.gradle.jsonschema.tasks">JsonSchemaUrlWorkAction.UrlParameters</a></li>
+</ul>
+</li>
 <li class="circle">io.micronaut.gradle.openapi.tasks.AbstractOpenApiWorkAction.OpenApiParameters
 <ul>
 <li class="circle">io.micronaut.gradle.openapi.tasks.<a href="io/micronaut/gradle/openapi/tasks/OpenApiClientWorkAction.ClientParameters.html" class="type-name-link" title="interface in io.micronaut.gradle.openapi.tasks">OpenApiClientWorkAction.ClientParameters</a></li>

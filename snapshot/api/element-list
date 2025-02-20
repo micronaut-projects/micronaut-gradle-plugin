@@ -9,6 +9,8 @@ io.micronaut.gradle.docker.model
 io.micronaut.gradle.docker.tasks
 io.micronaut.gradle.graalvm
 io.micronaut.gradle.internal
+io.micronaut.gradle.jsonschema
+io.micronaut.gradle.jsonschema.tasks
 io.micronaut.gradle.openapi
 io.micronaut.gradle.openapi.tasks
 io.micronaut.gradle.testresources

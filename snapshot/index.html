@@ -122,15 +122,21 @@
 <li><a href="#_advanced_configuration">11.3. Advanced configuration</a></li>
 </ul>
 </li>
-<li><a href="#additional-notes">12. Additional Notes</a>
+<li><a href="#_source_generator_from_micronaut_json_schema">12. Source Generator from Micronaut JSON Schema</a>
 <ul class="sectlevel2">
-<li><a href="#sec:automatic-annotation-processors">12.1. Automatic annotationProcessor dependencies</a></li>
-<li><a href="#sec:suppress-automatic-dependencies">12.2. Suppressing automatic dependencies</a></li>
+<li><a href="#_generating_from_url">12.1. Generating From URL</a></li>
+<li><a href="#_generating_from_local_files">12.2. Generating From Local Files</a></li>
 </ul>
 </li>
-<li><a href="#_upgrade_notes">13. Upgrade notes</a>
+<li><a href="#additional-notes">13. Additional Notes</a>
 <ul class="sectlevel2">
-<li><a href="#_upgrading_from_2_x">13.1. Upgrading from 2.x</a></li>
+<li><a href="#sec:automatic-annotation-processors">13.1. Automatic annotationProcessor dependencies</a></li>
+<li><a href="#sec:suppress-automatic-dependencies">13.2. Suppressing automatic dependencies</a></li>
+</ul>
+</li>
+<li><a href="#_upgrade_notes">14. Upgrade notes</a>
+<ul class="sectlevel2">
+<li><a href="#_upgrading_from_2_x">14.1. Upgrading from 2.x</a></li>
 </ul>
 </li>
 </ul>
@@ -145,7 +151,7 @@
 <div class="sectionbody">
 
 <div class="paragraph">
-<p>Version 4.4.6-SNAPSHOT</p>
+<p>Version 4.5.0-SNAPSHOT</p>
 </div>
 </div>
 </div>
@@ -153,7 +159,7 @@
 <h2 id="_compatibility_notes"><a class="anchor" href="#_compatibility_notes"></a>1. Compatibility notes</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>This Gradle plugin collection is designed for Micronaut 4.x and requires Gradle 8+. This version defaults to Micronaut 4.7.4 and is tested with Gradle 8.12.</p>
+<p>This Gradle plugin collection is designed for Micronaut 4.x and requires Gradle 8+. This version defaults to Micronaut 4.7.4 and is tested with Gradle 8.12.1.</p>
 </div>
 <div class="paragraph">
 <p>Micronaut 3.x users should use the 3.x branch which documentation can be found <a href="https://github.com/micronaut-projects/micronaut-gradle-plugin/tree/3.7.x#readme">here</a>.</p>
@@ -181,7 +187,7 @@
 <p>the <a href="https://plugins.gradle.org/plugin/io.micronaut.library"><code>io.micronaut.library</code></a> plugin is aimed at building Micronaut libraries.</p>
 </li>
 <li>
-<p>the <a href="https://plugins.gradle.org/plugin/io.micronaut.graalvm"><code>io.micronaut.graalvm</code></a> plugin integrates with the official <a href="https://graalvm.github.io/native-build-tools/0.10.4/gradle-plugin.html">GraalVM Native Build Tools plugin</a> and configures it for Micronaut applications.</p>
+<p>the <a href="https://plugins.gradle.org/plugin/io.micronaut.graalvm"><code>io.micronaut.graalvm</code></a> plugin integrates with the official <a href="https://graalvm.github.io/native-build-tools/0.10.5/gradle-plugin.html">GraalVM Native Build Tools plugin</a> and configures it for Micronaut applications.</p>
 </li>
 <li>
 <p>the <a href="https://plugins.gradle.org/plugin/io.micronaut.aot"><code>io.micronaut.aot</code></a> plugin integrates with Micronaut AOT to produce optimized binaries.</p>
@@ -269,14 +275,14 @@ For example, the <code>minimal</code> plugins can be used to reduce the number o
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-groovy hljs" data-lang="groovy">plugins {
-  id 'io.micronaut.application' version '4.4.6-SNAPSHOT'
+  id 'io.micronaut.application' version '4.5.0-SNAPSHOT'
 }</code></pre>
 </div>
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-kotlin hljs" data-lang="kotlin">plugins {
-  id("io.micronaut.application") version "4.4.6-SNAPSHOT"
+  id("io.micronaut.application") version "4.5.0-SNAPSHOT"
 }</code></pre>
 </div>
 </div>
@@ -286,9 +292,9 @@ For example, the <code>minimal</code> plugins can be used to reduce the number o
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-groovy hljs" data-lang="groovy">plugins {
-  id 'io.micronaut.minimal.application' version '4.4.6-SNAPSHOT'
-  id 'io.micronaut.docker' version '4.4.6-SNAPSHOT'
-  id 'io.micronaut.graalvm' version '4.4.6-SNAPSHOT'
+  id 'io.micronaut.minimal.application' version '4.5.0-SNAPSHOT'
+  id 'io.micronaut.docker' version '4.5.0-SNAPSHOT'
+  id 'io.micronaut.graalvm' version '4.5.0-SNAPSHOT'
 }
 apply plugin: com.diffplug.gradle.eclipse.apt.AptEclipsePlugin</code></pre>
 </div>
@@ -296,9 +302,9 @@ apply plugin: com.diffplug.gradle.eclipse.apt.AptEclipsePlugin</code></pre>
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-kotlin hljs" data-lang="kotlin">plugins {
-  id("io.micronaut.application") version "4.4.6-SNAPSHOT"
-  id("io.micronaut.docker") version "4.4.6-SNAPSHOT"
-  id("io.micronaut.graalvm") version "4.4.6-SNAPSHOT"
+  id("io.micronaut.application") version "4.5.0-SNAPSHOT"
+  id("io.micronaut.docker") version "4.5.0-SNAPSHOT"
+  id("io.micronaut.graalvm") version "4.5.0-SNAPSHOT"
 }
 apply(plugin=com.diffplug.gradle.eclipse.apt.AptEclipsePlugin::class.java)</code></pre>
 </div>
@@ -383,14 +389,14 @@ This is a <strong>settings</strong> plugin, which means that it <strong>must</st
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-groovy hljs" data-lang="groovy">plugins {
-  id 'io.micronaut.platform.catalog' version '4.4.6-SNAPSHOT'
+  id 'io.micronaut.platform.catalog' version '4.5.0-SNAPSHOT'
 }</code></pre>
 </div>
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-kotlin hljs" data-lang="kotlin">plugins {
-  id("io.micronaut.platform.catalog") version "4.4.6-SNAPSHOT"
+  id("io.micronaut.platform.catalog") version "4.5.0-SNAPSHOT"
 }</code></pre>
 </div>
 </div>
@@ -541,14 +547,14 @@ ehcache = "3.8.2" # override version of ehcache</code></pre>
 <div class="title">Applying the plugin</div>
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-groovy hljs" data-lang="groovy">plugins {
-  id 'io.micronaut.library' version '4.4.6-SNAPSHOT'
+  id 'io.micronaut.library' version '4.5.0-SNAPSHOT'
 }</code></pre>
 </div>
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-kotlin hljs" data-lang="kotlin">plugins {
-  id("io.micronaut.library") version "4.4.6-SNAPSHOT"
+  id("io.micronaut.library") version "4.5.0-SNAPSHOT"
 }</code></pre>
 </div>
 </div>
@@ -665,7 +671,7 @@ The Micronaut Library plugin also supports Groovy and Kotlin sources.
 <pre class="highlightjs highlight"><code class="language-groovy hljs" data-lang="groovy">plugins {
     id "org.jetbrains.kotlin.jvm" version "1.9.25"
     id "org.jetbrains.kotlin.kapt" version "1.9.25"
-    id "io.micronaut.library" version "4.4.6-SNAPSHOT"
+    id "io.micronaut.library" version "4.5.0-SNAPSHOT"
 }</code></pre>
 </div>
 </div>
@@ -674,7 +680,7 @@ The Micronaut Library plugin also supports Groovy and Kotlin sources.
 <pre class="highlightjs highlight"><code class="language-kotlin hljs" data-lang="kotlin">plugins {
     id("org.jetbrains.kotlin.jvm") version "1.9.25"
     id("org.jetbrains.kotlin.kapt") version "1.9.25"
-    id("io.micronaut.library") version "4.4.6-SNAPSHOT"
+    id("io.micronaut.library") version "4.5.0-SNAPSHOT"
 }</code></pre>
 </div>
 </div>
@@ -688,7 +694,7 @@ The Micronaut Library plugin also supports Groovy and Kotlin sources.
 <div class="title">A minimal build file</div>
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-groovy hljs" data-lang="groovy">plugins {
-    id 'io.micronaut.library' version '4.4.6-SNAPSHOT'
+    id 'io.micronaut.library' version '4.5.0-SNAPSHOT'
 }
 
 version "0.1"
@@ -711,7 +717,7 @@ dependencies {
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-kotlin hljs" data-lang="kotlin">plugins {
-    id("io.micronaut.library") version "4.4.6-SNAPSHOT"
+    id("io.micronaut.library") version "4.5.0-SNAPSHOT"
 }
 
 version = "0.1"
@@ -741,14 +747,14 @@ dependencies {
 <div class="title">Applying the Micronaut Application plugin</div>
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-groovy hljs" data-lang="groovy">plugins {
-  id "io.micronaut.application" version "4.4.6-SNAPSHOT"
+  id "io.micronaut.application" version "4.5.0-SNAPSHOT"
 }</code></pre>
 </div>
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-kotlin hljs" data-lang="kotlin">plugins {
-  id("io.micronaut.application") version "4.4.6-SNAPSHOT"
+  id("io.micronaut.application") version "4.5.0-SNAPSHOT"
 }</code></pre>
 </div>
 </div>
@@ -824,7 +830,7 @@ dependencies {
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-groovy hljs" data-lang="groovy">plugins {
-    id 'io.micronaut.application' version '4.4.6-SNAPSHOT'
+    id 'io.micronaut.application' version '4.5.0-SNAPSHOT'
 }
 
 version "0.1"
@@ -853,7 +859,7 @@ application {
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-kotlin hljs" data-lang="kotlin">plugins {
-    id("io.micronaut.application") version "4.4.6-SNAPSHOT"
+    id("io.micronaut.application") version "4.5.0-SNAPSHOT"
 }
 
 version = "0.1"
@@ -891,7 +897,7 @@ application {
     id "org.jetbrains.kotlin.jvm" version "1.9.25"
     id "org.jetbrains.kotlin.kapt" version "1.9.25"
     id "org.jetbrains.kotlin.plugin.allopen" version "1.9.25"
-    id "io.micronaut.application" version "4.4.6-SNAPSHOT"
+    id "io.micronaut.application" version "4.5.0-SNAPSHOT"
 }
 
 version "0.1"
@@ -925,7 +931,7 @@ application {
     id("org.jetbrains.kotlin.jvm") version "1.9.25"
     id("org.jetbrains.kotlin.kapt") version "1.9.25"
     id("org.jetbrains.kotlin.plugin.allopen") version "1.9.25"
-    id("io.micronaut.application") version "4.4.6-SNAPSHOT"
+    id("io.micronaut.application") version "4.5.0-SNAPSHOT"
 }
 
 version = "0.1"
@@ -957,10 +963,10 @@ application {
 <div class="sect2">
 <h3 id="native-image"><a class="anchor" href="#native-image"></a>6.3. GraalVM Native Image</h3>
 <div class="paragraph">
-<p>Since version 3.0.0, the Micronaut plugins rely on the <a href="https://graalvm.github.io/native-build-tools/0.10.4/gradle-plugin.html">official GraalVM plugin</a> to build native executables.</p>
+<p>Since version 3.0.0, the Micronaut plugins rely on the <a href="https://graalvm.github.io/native-build-tools/0.10.5/gradle-plugin.html">official GraalVM plugin</a> to build native executables.</p>
 </div>
 <div class="paragraph">
-<p>Those plugins make use of <a href="https://docs.gradle.org/8.12/userguide/toolchains.html">Gradle toolchains</a> support, which means that the SDK which is used to build the native is decorrelated from the JVM which is used to launch Gradle itself.
+<p>Those plugins make use of <a href="https://docs.gradle.org/8.12.1/userguide/toolchains.html">Gradle toolchains</a> support, which means that the SDK which is used to build the native is decorrelated from the JVM which is used to launch Gradle itself.
 Said differently, you can run Gradle with OpenJDK, while still building native executables using the GraalVM SDK.</p>
 </div>
 <div class="paragraph">
@@ -972,7 +978,7 @@ Said differently, you can run Gradle with OpenJDK, while still building native e
 <p>running Gradle with a GraalVM SDK doesn&#8217;t necessarily imply that Gradle will use the same SDK to build native executables</p>
 </li>
 <li>
-<p>Gradle will try to locate a <em>compatible GraalVM toolchain</em> to build executables. You can tweak what GraalVM version to use by following the <a href="https://graalvm.github.io/native-build-tools/0.10.4/gradle-plugin.html#_selecting_the_graalvm_toolchain">official documentation</a>.</p>
+<p>Gradle will try to locate a <em>compatible GraalVM toolchain</em> to build executables. You can tweak what GraalVM version to use by following the <a href="https://graalvm.github.io/native-build-tools/0.10.5/gradle-plugin.html#_selecting_the_graalvm_toolchain">official documentation</a>.</p>
 </li>
 </ul>
 </div>
@@ -1040,7 +1046,7 @@ org.gradle.java.installations.fromEnv=JAVA_HOME</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>You can tweak the native executable options by configuring the <code>graalvmNative</code> extension as explained in the <a href="https://graalvm.github.io/native-build-tools/0.10.4/gradle-plugin.html">plugin documentation</a>.</p>
+<p>You can tweak the native executable options by configuring the <code>graalvmNative</code> extension as explained in the <a href="https://graalvm.github.io/native-build-tools/0.10.5/gradle-plugin.html">plugin documentation</a>.</p>
 </div>
 <div class="paragraph">
 <p>For example, you can add options to the main executable by doing:</p>
@@ -1390,7 +1396,7 @@ You can work around this issue by configuring the duplicates strategy on the tas
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-groovy hljs" data-lang="groovy">plugins {
-     id 'io.micronaut.application' version '4.4.6-SNAPSHOT'
+     id 'io.micronaut.application' version '4.5.0-SNAPSHOT'
 }
 version "0.1"
 group "com.example"
@@ -1416,7 +1422,7 @@ application {
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-kotlin hljs" data-lang="kotlin">plugins {
-     id("io.micronaut.application") version "4.4.6-SNAPSHOT"
+     id("io.micronaut.application") version "4.5.0-SNAPSHOT"
 }
 version = "0.1"
 group = "com.example"
@@ -1557,7 +1563,7 @@ Keep in mind that copying the only <code>.jar</code> file to another directory w
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-groovy hljs" data-lang="groovy">plugins {
     ...
-    id "com.github.johnrengelman.shadow" version "8.1.1"
+    id "com.gradleup.shadow" version "8.3.6"
     ...
 }</code></pre>
 </div>
@@ -1566,7 +1572,7 @@ Keep in mind that copying the only <code>.jar</code> file to another directory w
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-kotlin hljs" data-lang="kotlin">plugins {
     ...
-    id("com.github.johnrengelman.shadow") version "8.1.1"
+    id("com.gradleup.shadow") version "8.3.6"
     ...
 }</code></pre>
 </div>
@@ -1651,8 +1657,8 @@ Micronaut AOT is a <em>deployment</em> optimization: it adds to build time, in o
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-groovy hljs" data-lang="groovy">plugins {
     ...
-    id "io.micronaut.application" version "4.4.6-SNAPSHOT"
-    id "io.micronaut.aot" version "4.4.6-SNAPSHOT"
+    id "io.micronaut.application" version "4.5.0-SNAPSHOT"
+    id "io.micronaut.aot" version "4.5.0-SNAPSHOT"
     ...
 }</code></pre>
 </div>
@@ -1661,8 +1667,8 @@ Micronaut AOT is a <em>deployment</em> optimization: it adds to build time, in o
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-kotlin hljs" data-lang="kotlin">plugins {
     ...
-    id("io.micronaut.application") version "4.4.6-SNAPSHOT"
-    id("io.micronaut.aot") version "4.4.6-SNAPSHOT"
+    id("io.micronaut.application") version "4.5.0-SNAPSHOT"
+    id("io.micronaut.aot") version "4.5.0-SNAPSHOT"
     ...
 }</code></pre>
 </div>
@@ -1872,7 +1878,7 @@ If you want to run the application with the resulting jar, you will need to call
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-groovy hljs" data-lang="groovy">plugins {
     ...
-    id "com.github.johnrengelman.shadow" version "8.1.1"
+    id "com.gradleup.shadow" version "8.3.6"
     ...
 }</code></pre>
 </div>
@@ -1881,7 +1887,7 @@ If you want to run the application with the resulting jar, you will need to call
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-kotlin hljs" data-lang="kotlin">plugins {
     ...
-    id("com.github.johnrengelman.shadow") version "8.1.1"
+    id("com.gradleup.shadow") version "8.3.6"
     ...
 }</code></pre>
 </div>
@@ -1892,6 +1898,35 @@ The task will generate a fat jar in the <code>build/libs</code> directory, that 
 </div>
 <div class="paragraph">
 <p><code>java -jar build/libs/myapp-0.1-all-optimized.jar</code></p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Note</div>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>Should you have configured your shadow jar specifically, for example to enable <code>zip64</code>, then you must also configure the <code>optimizedJitJarAll</code> task similarly.
+It is therefore recommended to use the <code>withType</code> method instead of specifically configuring the main shadow task:</p>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-groovy hljs" data-lang="groovy">tasks.withType(ShadowJar).configureEach {
+    zip64 = true
+}</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-kotlin hljs" data-lang="kotlin">tasks.withType&lt;ShadowJar&gt;().configureEach {
+    zip64.set(true)
+}</code></pre>
+</div>
+</div>
+</td>
+</tr>
+</table>
 </div>
 </div>
 <div class="sect2">
@@ -2493,9 +2528,9 @@ Currently, CRaC support has only been tested on Ubuntu 18.04, 20.04 and 22.04.
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-groovy hljs" data-lang="groovy">plugins {
     ...
-    id "io.micronaut.minimal.application" version "4.4.6-SNAPSHOT"
-    id "io.micronaut.docker" version "4.4.6-SNAPSHOT"
-    id "io.micronaut.crac" version "4.4.6-SNAPSHOT"
+    id "io.micronaut.minimal.application" version "4.5.0-SNAPSHOT"
+    id "io.micronaut.docker" version "4.5.0-SNAPSHOT"
+    id "io.micronaut.crac" version "4.5.0-SNAPSHOT"
     ...
 }</code></pre>
 </div>
@@ -2504,9 +2539,9 @@ Currently, CRaC support has only been tested on Ubuntu 18.04, 20.04 and 22.04.
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-kotlin hljs" data-lang="kotlin">plugins {
     ...
-    id("io.micronaut.minimal.application") version "4.4.6-SNAPSHOT"
-    id("io.micronaut.docker") version "4.4.6-SNAPSHOT"
-    id("io.micronaut.crac") version "4.4.6-SNAPSHOT"
+    id("io.micronaut.minimal.application") version "4.5.0-SNAPSHOT"
+    id("io.micronaut.docker") version "4.5.0-SNAPSHOT"
+    id("io.micronaut.crac") version "4.5.0-SNAPSHOT"
     ...
 }</code></pre>
 </div>
@@ -2828,10 +2863,113 @@ This can be useful in case you want to implement your own generators, in which c
 </div>
 </div>
 <div class="sect1">
-<h2 id="additional-notes"><a class="anchor" href="#additional-notes"></a>12. Additional Notes</h2>
+<h2 id="_source_generator_from_micronaut_json_schema"><a class="anchor" href="#_source_generator_from_micronaut_json_schema"></a>12. Source Generator from Micronaut JSON Schema</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>This plugins integrates with <a href="https://micronaut-projects.github.io/micronaut-json-schema/latest/guide/">Micronaut JSON Schema</a> in order to provide support for generating beans from <a href="https://json-schema.org">JSON Schema</a>.</p>
+</div>
+<div class="paragraph">
+<p>The plugin adds a <a href="api/io/micronaut/gradle/jsonschema/JSONSchemaExtension.html">jsonschema</a> extension to the <code>micronaut</code> configuration block.</p>
+</div>
+<div class="paragraph">
+<p>Some important notes on configuration settings:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Default generation language is JAVA which can be modified. However, only the languages supported by  <a href="https://micronaut-projects.github.io/micronaut-sourcegen/latest/guide/">Micronaut SourceGen</a> are accepted.</p>
+</li>
+<li>
+<p>The generator supports all remote references that obey at least one of the pattern rules given in <code>acceptedUrlPatterns</code> parameter. This parameter is configurable, and it&#8217;s default value is <code>["^https://.<strong>/.</strong>.json"]</code>.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The full list of configuration properties can be found <a href="api/io/micronaut/gradle/jsonschema/JsonSchemaSpec.html">in the documentation</a>.</p>
+</div>
+<div class="sect2">
+<h3 id="_generating_from_url"><a class="anchor" href="#_generating_from_url"></a>12.1. Generating From URL</h3>
+<div class="paragraph">
+<p>You can generate sources by configuring the extension via the <code>fromUrl { &#8230;&#8203; }</code> block:</p>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-groovy hljs" data-lang="groovy">micronaut {
+    ...
+    jsonschema {
+        fromUrl("http://localhost:8080/animal.schema.json") {
+            acceptedUrlPatterns = ["^http://localhost:.*"]
+        }
+    }
+}</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-kotlin hljs" data-lang="kotlin">micronaut {
+    ...
+    jsonschema {
+        fromUrl("http://localhost:8080/animal.schema.json") {
+            acceptedUrlPatterns.set(arrayOf("^http://localhost:.*"))
+        }
+    }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_generating_from_local_files"><a class="anchor" href="#_generating_from_local_files"></a>12.2. Generating From Local Files</h3>
+<div class="paragraph">
+<p>You can generate sources by configuring the extension via the <code>fromFile { &#8230;&#8203; }</code> block:</p>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-groovy hljs" data-lang="groovy">micronaut {
+    ...
+    jsonschema {
+        fromFile(file("animal.schema.json")) {
+            lang = "java"
+            outputDirectory = layout.getBuildDirectory.dir("generated/json-schema")
+            outputPackageName = "com.example.animal"
+        }
+    }
+}</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-kotlin hljs" data-lang="kotlin">micronaut {
+    ...
+    jsonschema {
+        fromFile(file("animal.schema.json")) {
+            lang.set("java")
+            outputDirectory = layout.getBuildDirectory.dir("generated/json-schema")
+            outputPackageName.set("com.example.animal")
+        }
+    }
+}</code></pre>
+</div>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Note</div>
+</td>
+<td class="content">
+While using the <code>fromFile</code> extension, the file input can also be a directory. In the case that a directory is given, all schemas including and under the specified directory are processed.
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="additional-notes"><a class="anchor" href="#additional-notes"></a>13. Additional Notes</h2>
 <div class="sectionbody">
 <div class="sect2">
-<h3 id="sec:automatic-annotation-processors"><a class="anchor" href="#sec:automatic-annotation-processors"></a>12.1. Automatic annotationProcessor dependencies</h3>
+<h3 id="sec:automatic-annotation-processors"><a class="anchor" href="#sec:automatic-annotation-processors"></a>13.1. Automatic annotationProcessor dependencies</h3>
 <div class="paragraph">
 <p>When the plugin detects you have a dependency with a group id corresponding to a known annotation processor for it, it adds the annotation processor automatically. The following annotation processors are currently supported by this feature.</p>
 </div>
@@ -2871,7 +3009,7 @@ This can be useful in case you want to implement your own generators, in which c
 </div>
 </div>
 <div class="sect2">
-<h3 id="sec:suppress-automatic-dependencies"><a class="anchor" href="#sec:suppress-automatic-dependencies"></a>12.2. Suppressing automatic dependencies</h3>
+<h3 id="sec:suppress-automatic-dependencies"><a class="anchor" href="#sec:suppress-automatic-dependencies"></a>13.2. Suppressing automatic dependencies</h3>
 <div class="paragraph">
 <p>In some circumstances, automatic dependencies – e.g. annotation processors listed above – can get in the way. This should be rare, but it is possible to suppress them, as follows. It has no default and using suppression shifts responsibility of adding the dependencies to the user.</p>
 </div>
@@ -2900,10 +3038,10 @@ This can be useful in case you want to implement your own generators, in which c
 </div>
 </div>
 <div class="sect1">
-<h2 id="_upgrade_notes"><a class="anchor" href="#_upgrade_notes"></a>13. Upgrade notes</h2>
+<h2 id="_upgrade_notes"><a class="anchor" href="#_upgrade_notes"></a>14. Upgrade notes</h2>
 <div class="sectionbody">
 <div class="sect2">
-<h3 id="_upgrading_from_2_x"><a class="anchor" href="#_upgrading_from_2_x"></a>13.1. Upgrading from 2.x</h3>
+<h3 id="_upgrading_from_2_x"><a class="anchor" href="#_upgrading_from_2_x"></a>14.1. Upgrading from 2.x</h3>
 <div class="paragraph">
 <p>When upgrading from the 2.x version of the plugins, you will need to change the configuration of the GraalVM native executable builds if you use them.</p>
 </div>
