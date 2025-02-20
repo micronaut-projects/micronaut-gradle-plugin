@@ -17,15 +17,33 @@ package io.micronaut.gradle;
 
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar;
 import org.gradle.api.Project;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ShadowPluginSupport {
+    private static final Logger LOGGER = LoggerFactory.getLogger(ShadowPluginSupport.class);
+
+    public static final String OLD_SHADOW_PLUGIN = "com.github.johnrengelman.shadow";
     public static final String SHADOW_PLUGIN = "com.gradleup.shadow";
 
     private ShadowPluginSupport() {
     }
 
     public static void withShadowPlugin(Project p, Runnable action) {
-        p.getPluginManager().withPlugin(SHADOW_PLUGIN, unused -> action.run());
+        var applied = new AtomicBoolean(false);
+        p.getPluginManager().withPlugin(OLD_SHADOW_PLUGIN, unused -> {
+            LOGGER.warn("The legacy Shadow plugin (id '{}') is deprecated. Please use the Gradle Shadow plugin instead (id = '{}')", OLD_SHADOW_PLUGIN, SHADOW_PLUGIN);
+            applied.set(true);
+            action.run();
+        });
+        p.getPluginManager().withPlugin(SHADOW_PLUGIN, unused -> {
+            if (applied.get()) {
+                return;
+            }
+            action.run();
+        });
     }
 
     /**
