@@ -418,6 +418,42 @@ class Application {
 
     }
 
+    @Issue("https://github.com/micronaut-projects/micronaut-gradle-plugin/issues/971")
+    def "can disable COPY --link"() {
+        given:
+        settingsFile << "rootProject.name = 'hello-world'"
+        buildFile << """
+            plugins {
+                id "io.micronaut.minimal.application"
+                id "io.micronaut.docker"
+            }
+            
+            micronaut {
+                version "$micronautVersion"
+                docker.useCopyLink = $useCopyLink
+            }
+            
+            $repositoriesBlock
+
+            mainClassName="example.Application"
+            
+        """
+
+        when:
+        def result = build('dockerfile', '-s')
+
+        def task = result.task(":dockerfile")
+        def dockerFile = file("build/docker/main/Dockerfile").text
+
+        then:
+        task.outcome == TaskOutcome.SUCCESS
+        dockerFile.contains("COPY --link layers/libs /home/app/libs") == useCopyLink
+        dockerFile.contains("COPY layers/libs /home/app/libs") == !useCopyLink
+
+        where:
+        useCopyLink << [false, true]
+    }
+
     private static String getSnapshotMetadata() {
         DockerBuildTaskSpec.getResourceAsStream("/dummy-metadata.xml").text
     }
