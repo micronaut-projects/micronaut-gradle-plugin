@@ -118,4 +118,8 @@ public interface OpenApiSpec {
     Property<Boolean> getAllowUnicodeIdentifiers();
 
     Property<Boolean> getPrependFormOrBodyParameters();
+
+    Property<Boolean> getGenerateApis();
+
+    Property<Boolean> getGenerateModels();
 }

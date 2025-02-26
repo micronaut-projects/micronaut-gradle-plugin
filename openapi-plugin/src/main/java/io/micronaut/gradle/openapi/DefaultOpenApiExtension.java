@@ -83,6 +83,7 @@ public abstract class DefaultOpenApiExtension implements OpenApiExtension {
                 task.setDescription("Generates OpenAPI controllers from an OpenAPI definition");
                 configureServerTask(serverSpec, task);
                 task.getOutputKinds().addAll(CodegenConstants.APIS, CodegenConstants.SUPPORTING_FILES);
+                task.setEnabled(serverSpec.getGenerateApis().get());
             });
             var models = project.getTasks().register(generateModelsTaskName(name), OpenApiServerGenerator.class, task -> {
                 configureCommonProperties(name, task, serverSpec, definition);
@@ -90,16 +91,17 @@ public abstract class DefaultOpenApiExtension implements OpenApiExtension {
                 task.setDescription("Generates OpenAPI models from an OpenAPI definition");
                 configureServerTask(serverSpec, task);
                 task.getOutputKinds().add(CodegenConstants.MODELS);
+                task.setEnabled(serverSpec.getGenerateModels().get());
             });
             withJavaSourceSets(sourceSets -> {
                 var javaMain = sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME).getJava();
-                javaMain.srcDir(controllers.map(DefaultOpenApiExtension::mainSrcDir));
-                javaMain.srcDir(models.map(DefaultOpenApiExtension::mainSrcDir));
+                javaMain.srcDir(serverSpec.getGenerateApis().zip(controllers.flatMap(DefaultOpenApiExtension::mainSrcDir), this::ifEnabled));
+                javaMain.srcDir(serverSpec.getGenerateModels().zip(models.flatMap(DefaultOpenApiExtension::mainSrcDir), this::ifEnabled));
                 project.getPluginManager().withPlugin("org.jetbrains.kotlin.jvm", unused -> {
                     var ext = sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME).getExtensions().getByName("kotlin");
                     if (ext instanceof SourceDirectorySet kotlinMain) {
-                        kotlinMain.srcDir(controllers.map(d -> DefaultOpenApiExtension.mainSrcDir(d, "kotlin")));
-                        kotlinMain.srcDir(models.map(d -> DefaultOpenApiExtension.mainSrcDir(d, "kotlin")));
+                        kotlinMain.srcDir(serverSpec.getGenerateApis().zip(controllers.flatMap(d -> DefaultOpenApiExtension.mainSrcDir(d, "kotlin")), this::ifEnabled));
+                        kotlinMain.srcDir(serverSpec.getGenerateModels().zip(models.flatMap(d -> DefaultOpenApiExtension.mainSrcDir(d, "kotlin")), this::ifEnabled));
                     }
                 });
             });
@@ -107,6 +109,12 @@ public abstract class DefaultOpenApiExtension implements OpenApiExtension {
             throwDuplicateEntryFor(name);
         }
 
+    }
+
+    private Directory ifEnabled(boolean enabled, Directory dir) {
+        // the ignore part is because of a Gradle limitation, it would throw if the provider for `srcDir`
+        // returns null
+        return enabled ? dir : project.getLayout().getProjectDirectory().dir("__ignore__");
     }
 
     private void configureCommonExtensionDefaults(OpenApiSpec spec) {
@@ -145,6 +153,9 @@ public abstract class DefaultOpenApiExtension implements OpenApiExtension {
         spec.getEnsureUniqueParams().convention(true);
         spec.getAllowUnicodeIdentifiers().convention(false);
         spec.getPrependFormOrBodyParameters().convention(false);
+
+        spec.getGenerateApis().convention(true);
+        spec.getGenerateModels().convention(true);
 
         withJava(() -> {
                 var compileOnlyDeps = project.getConfigurations().getByName("compileOnly").getDependencies();
@@ -252,22 +263,24 @@ public abstract class DefaultOpenApiExtension implements OpenApiExtension {
                 task.setDescription("Generates OpenAPI client from an OpenAPI definition");
                 configureClientTask(clientSpec, task);
                 task.getOutputKinds().addAll(CodegenConstants.APIS, CodegenConstants.SUPPORTING_FILES);
+                task.setEnabled(clientSpec.getGenerateApis().get());
             });
             var models = project.getTasks().register(generateModelsTaskName(name), OpenApiClientGenerator.class, task -> {
                 configureCommonProperties(name, task, clientSpec, definition);
                 task.setDescription("Generates OpenAPI client models from an OpenAPI definition");
                 configureClientTask(clientSpec, task);
                 task.getOutputKinds().add(CodegenConstants.MODELS);
+                task.setEnabled(clientSpec.getGenerateModels().get());
             });
             withJavaSourceSets(sourceSets -> {
                 var javaMain = sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME).getJava();
-                javaMain.srcDir(client.map(DefaultOpenApiExtension::mainSrcDir));
-                javaMain.srcDir(models.map(DefaultOpenApiExtension::mainSrcDir));
+                javaMain.srcDir(clientSpec.getGenerateApis().zip(client.flatMap(DefaultOpenApiExtension::mainSrcDir), this::ifEnabled));
+                javaMain.srcDir(clientSpec.getGenerateModels().zip(models.flatMap(DefaultOpenApiExtension::mainSrcDir), this::ifEnabled));
                 project.getPluginManager().withPlugin("org.jetbrains.kotlin.jvm", unused -> {
                     var ext = sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME).getExtensions().getByName("kotlin");
                     if (ext instanceof SourceDirectorySet kotlinMain) {
-                        kotlinMain.srcDir(client.map(d -> DefaultOpenApiExtension.mainSrcDir(d, "kotlin")));
-                        kotlinMain.srcDir(models.map(d -> DefaultOpenApiExtension.mainSrcDir(d, "kotlin")));
+                        kotlinMain.srcDir(clientSpec.getGenerateApis().zip(client.flatMap(d -> DefaultOpenApiExtension.mainSrcDir(d, "kotlin")), this::ifEnabled));
+                        kotlinMain.srcDir(clientSpec.getGenerateModels().zip(models.flatMap(d -> DefaultOpenApiExtension.mainSrcDir(d, "kotlin")), this::ifEnabled));
                     }
                 });
             });
