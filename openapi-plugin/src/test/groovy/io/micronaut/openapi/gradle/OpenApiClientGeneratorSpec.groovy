@@ -48,6 +48,94 @@ class OpenApiClientGeneratorSpec extends AbstractOpenApiGeneratorSpec {
 
     }
 
+    def "can generate an java OpenAPI client implementation (APIs only)"() {
+        given:
+        settingsFile << "rootProject.name = 'openapi-client'"
+        buildFile << """
+            plugins {
+                id "io.micronaut.minimal.application"
+                id "io.micronaut.openapi"
+            }
+            
+            micronaut {
+                version "$micronautVersion"
+                openapi {
+                    client(file("petstore.json")) {
+                        generateModels = false
+                    }
+                }
+            }
+            
+            $repositoriesBlock
+
+            dependencies {
+
+                annotationProcessor "io.micronaut.serde:micronaut-serde-processor"
+
+                implementation "io.micronaut.serde:micronaut-serde-jackson"
+            }
+
+        """
+
+        withPetstore()
+
+        when:
+        def result = build('test')
+
+        then:
+        result.task(":generateClientOpenApiApis").outcome == TaskOutcome.SUCCESS
+        result.task(":generateClientOpenApiModels").outcome == TaskOutcome.SKIPPED
+        result.task(":compileJava").outcome == TaskOutcome.FAILED
+
+        and:
+        !file("build/generated/openapi/generateClientOpenApiModels/src/main/java/io/micronaut/openapi/model/Pet.java").exists()
+
+    }
+
+    def "can generate an java OpenAPI client implementation (models only)"() {
+        given:
+        settingsFile << "rootProject.name = 'openapi-client'"
+        buildFile << """
+            plugins {
+                id "io.micronaut.minimal.application"
+                id "io.micronaut.openapi"
+            }
+            
+            micronaut {
+                version "$micronautVersion"
+                openapi {
+                    client(file("petstore.json")) {
+                        generateApis = false
+                    }
+                }
+            }
+            
+            $repositoriesBlock
+
+            dependencies {
+
+                annotationProcessor "io.micronaut.serde:micronaut-serde-processor"
+
+                implementation "io.micronaut.serde:micronaut-serde-jackson"
+            }
+
+        """
+
+        withPetstore()
+
+        when:
+        def result = build('test')
+
+        then:
+        result.task(":generateClientOpenApiApis").outcome == TaskOutcome.SKIPPED
+        result.task(":generateClientOpenApiModels").outcome == TaskOutcome.SUCCESS
+        result.task(":compileJava").outcome == TaskOutcome.SUCCESS
+
+        and:
+        file("build/generated/openapi/generateClientOpenApiModels/src/main/java/io/micronaut/openapi/model/Pet.java").exists()
+
+    }
+
     def "can generate an java OpenAPI client implementation with clientId"() {
         given:
         settingsFile << "rootProject.name = 'openapi-client'"
