@@ -60,6 +60,8 @@ public class MicronautDockerPlugin implements Plugin<Project> {
         TaskContainer tasks = project.getTasks();
         ExtensionContainer extensions = project.getExtensions();
         MicronautExtension micronautExtension = extensions.getByType(MicronautExtension.class);
+        var dockerExtension = micronautExtension.getExtensions().create("docker", DockerExtension.class);
+        configureCopyLink(dockerExtension, project);
         NamedDomainObjectContainer<MicronautDockerImage> dockerImages = project.getObjects().domainObjectContainer(MicronautDockerImage.class, s -> project.getObjects().newInstance(DefaultMicronautDockerImage.class, s));
         micronautExtension.getExtensions().add("dockerImages", dockerImages);
         dockerImages.all(image -> createDockerImage(project, image));
@@ -76,6 +78,13 @@ public class MicronautDockerPlugin implements Plugin<Project> {
                     .getByName(SourceSet.MAIN_SOURCE_SET_NAME).getOutput().getResourcesDir());
             });
         });
+    }
+
+    private void configureCopyLink(DockerExtension dockerExtension, Project project) {
+        var useCopyLink = dockerExtension.getUseCopyLink();
+        useCopyLink.convention(true);
+        project.getTasks().withType(MicronautDockerfile.class).configureEach(t -> t.getUseCopyLink().convention(useCopyLink));
+        project.getTasks().withType(NativeImageDockerfile.class).configureEach(t -> t.getUseCopyLink().convention(useCopyLink));
     }
 
     public static void createDependencyLayers(MicronautDockerImage image, Configuration configuration) {
