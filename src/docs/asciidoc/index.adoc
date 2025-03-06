@@ -80,6 +80,9 @@ For example, the `minimal` plugins can be used to reduce the number of tasks, fo
 |Adds support for generating OpenAPI clients or servers from an OpenAPI definition.
 |
 
+|https://plugins.gradle.org/plugin/io.micronaut.jsonschema[`io.micronaut.jsonschema`]
+|Adds support for generating source code from JSON Schema.
+|
 |===
 
 Using the `io.micronaut.application` plugin:
@@ -2079,7 +2082,7 @@ This can be useful in case you want to implement your own generators, in which c
 
 == Source Generator from Micronaut JSON Schema
 
-This plugins integrates with https://micronaut-projects.github.io/micronaut-json-schema/latest/guide/[Micronaut JSON Schema] in order to provide support for generating beans from https://json-schema.org[JSON Schema].
+The `io.micronaut.jsonschema` plugin integrates with https://micronaut-projects.github.io/micronaut-json-schema/latest/guide/[Micronaut JSON Schema] in order to provide support for generating beans from https://json-schema.org[JSON Schema].
 
 The plugin adds a link:api/io/micronaut/gradle/jsonschema/JSONSchemaExtension.html[jsonschema] extension to the `micronaut` configuration block.
 
