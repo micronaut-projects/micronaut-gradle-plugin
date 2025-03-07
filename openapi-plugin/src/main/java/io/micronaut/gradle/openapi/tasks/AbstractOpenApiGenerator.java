@@ -218,6 +218,26 @@ public abstract class AbstractOpenApiGenerator<W extends AbstractOpenApiWorkActi
     @Input
     public abstract Property<Boolean> getPrependFormOrBodyParameters();
 
+    @Optional
+    @Input
+    public abstract Property<Boolean> getCoroutines();
+
+    @Optional
+    @Input
+    public abstract Property<Boolean> getUseSealed();
+
+    @Optional
+    @Input
+    public abstract Property<Boolean> getJsonIncludeAlwaysForRequiredFields();
+
+    @Optional
+    @Input
+    public abstract Property<Boolean> getRequiredPropertiesInConstructor();
+
+    @Optional
+    @Input
+    public abstract Property<Boolean> getGenerateControllerAsAbstract();
+
     @OutputDirectory
     public abstract DirectoryProperty getOutputDirectory();
 
@@ -289,6 +309,12 @@ public abstract class AbstractOpenApiGenerator<W extends AbstractOpenApiWorkActi
                 params.getEnsureUniqueParams().set(getEnsureUniqueParams().get());
                 params.getAllowUnicodeIdentifiers().set(getAllowUnicodeIdentifiers().get());
                 params.getPrependFormOrBodyParameters().set(getPrependFormOrBodyParameters().get());
+
+                params.getCoroutines().set(getCoroutines().get());
+                params.getUseSealed().set(getUseSealed().get());
+                params.getJsonIncludeAlwaysForRequiredFields().set(getJsonIncludeAlwaysForRequiredFields().get());
+                params.getRequiredPropertiesInConstructor().set(getRequiredPropertiesInConstructor().get());
+                params.getGenerateControllerAsAbstract().set(getGenerateControllerAsAbstract().get());
 
                 configureWorkerParameters(params);
             });
