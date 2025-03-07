@@ -157,6 +157,12 @@ public abstract class DefaultOpenApiExtension implements OpenApiExtension {
         spec.getGenerateApis().convention(true);
         spec.getGenerateModels().convention(true);
 
+        spec.getCoroutines().convention(false);
+        spec.getUseSealed().convention(false);
+        spec.getJsonIncludeAlwaysForRequiredFields().convention(false);
+        spec.getRequiredPropertiesInConstructor().convention(true);
+        spec.getGenerateControllerAsAbstract().convention(false);
+
         withJava(() -> {
                 var compileOnlyDeps = project.getConfigurations().getByName("compileOnly").getDependencies();
                 if ("java".equalsIgnoreCase(spec.getLang().get())) {
@@ -241,6 +247,12 @@ public abstract class DefaultOpenApiExtension implements OpenApiExtension {
         task.getEnsureUniqueParams().convention(openApiSpec.getEnsureUniqueParams());
         task.getAllowUnicodeIdentifiers().convention(openApiSpec.getAllowUnicodeIdentifiers());
         task.getPrependFormOrBodyParameters().convention(openApiSpec.getPrependFormOrBodyParameters());
+
+        task.getCoroutines().convention(openApiSpec.getCoroutines());
+        task.getUseSealed().convention(openApiSpec.getUseSealed());
+        task.getJsonIncludeAlwaysForRequiredFields().convention(openApiSpec.getJsonIncludeAlwaysForRequiredFields());
+        task.getRequiredPropertiesInConstructor().convention(openApiSpec.getRequiredPropertiesInConstructor());
+        task.getGenerateControllerAsAbstract().convention(openApiSpec.getGenerateControllerAsAbstract());
     }
 
     private void withJavaSourceSets(Consumer<? super SourceSetContainer> consumer) {
