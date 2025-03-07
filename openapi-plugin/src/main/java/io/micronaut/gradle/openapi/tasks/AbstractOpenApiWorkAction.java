@@ -141,6 +141,16 @@ public abstract class AbstractOpenApiWorkAction<T extends AbstractOpenApiWorkAct
         Property<Boolean> getAllowUnicodeIdentifiers();
 
         Property<Boolean> getPrependFormOrBodyParameters();
+
+        Property<Boolean> getCoroutines();
+
+        Property<Boolean> getUseSealed();
+
+        Property<Boolean> getJsonIncludeAlwaysForRequiredFields();
+
+        Property<Boolean> getRequiredPropertiesInConstructor();
+
+        Property<Boolean> getGenerateControllerAsAbstract();
     }
 
     protected abstract void configureBuilder(MicronautCodeGeneratorBuilder builder);
@@ -225,6 +235,11 @@ public abstract class AbstractOpenApiWorkAction<T extends AbstractOpenApiWorkAct
                 .withEnsureUniqueParams(parameters.getEnsureUniqueParams().get())
                 .withAllowUnicodeIdentifiers(parameters.getAllowUnicodeIdentifiers().get())
                 .withPrependFormOrBodyParameters(parameters.getPrependFormOrBodyParameters().get())
+
+                .withUseSealed(parameters.getUseSealed().get())
+                .withJsonIncludeAlwaysForRequiredFields(parameters.getJsonIncludeAlwaysForRequiredFields().get())
+                .withRequiredPropertiesInConstructor(parameters.getRequiredPropertiesInConstructor().get())
+                .withGenerateControllerAsAbstract(parameters.getGenerateControllerAsAbstract().get())
             );
 
         configureBuilder(builder);

@@ -122,4 +122,14 @@ public interface OpenApiSpec {
     Property<Boolean> getGenerateApis();
 
     Property<Boolean> getGenerateModels();
+
+    Property<Boolean> getCoroutines();
+
+    Property<Boolean> getUseSealed();
+
+    Property<Boolean> getJsonIncludeAlwaysForRequiredFields();
+
+    Property<Boolean> getRequiredPropertiesInConstructor();
+
+    Property<Boolean> getGenerateControllerAsAbstract();
 }

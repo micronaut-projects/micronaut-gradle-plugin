@@ -44,6 +44,7 @@ public abstract class OpenApiServerWorkAction extends AbstractOpenApiWorkAction<
                 .withGeneratedAnnotation(parameters.getGeneratedAnnotation().get())
                 .withFluxForArrays(parameters.getFluxForArrays().get())
                 .withKsp(parameters.getKsp().get())
+                .withCoroutines(parameters.getCoroutines().get())
             );
         } else {
             builder.forJavaServer(spec -> spec

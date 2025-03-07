@@ -61,6 +61,9 @@ public abstract class OpenApiClientWorkAction extends AbstractOpenApiWorkAction<
                 if (parameters.getAuthorizationFilterPattern().isPresent()) {
                     spec.withAuthorizationFilterPattern(parameters.getAuthorizationFilterPattern().get());
                 }
+                if (parameters.getCoroutines().isPresent()) {
+                    spec.withCoroutines(parameters.getCoroutines().get());
+                }
             });
         } else {
             builder.forJavaClient(spec -> {
