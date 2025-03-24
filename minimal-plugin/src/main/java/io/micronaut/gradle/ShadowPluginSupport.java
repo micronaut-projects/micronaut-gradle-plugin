@@ -33,12 +33,18 @@ public class ShadowPluginSupport {
 
     public static void withShadowPlugin(Project p, Runnable action) {
         var applied = new AtomicBoolean(false);
+        var hasNew = new AtomicBoolean(false);
         p.getPluginManager().withPlugin(OLD_SHADOW_PLUGIN, unused -> {
-            LOGGER.warn("The legacy Shadow plugin (id '{}') is deprecated. Please use the Gradle Shadow plugin instead (id = '{}')", OLD_SHADOW_PLUGIN, SHADOW_PLUGIN);
+            p.afterEvaluate(project -> {
+                if (!hasNew.get()) {
+                    LOGGER.warn("The legacy Shadow plugin (id '{}') is deprecated. Please use the Gradle Shadow plugin instead (id = '{}')", OLD_SHADOW_PLUGIN, SHADOW_PLUGIN);
+                }
+            });
             applied.set(true);
             action.run();
         });
         p.getPluginManager().withPlugin(SHADOW_PLUGIN, unused -> {
+            hasNew.set(true);
             if (applied.get()) {
                 return;
             }

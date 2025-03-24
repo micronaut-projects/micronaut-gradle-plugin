@@ -82,6 +82,7 @@ public class Application implements Runnable {
         result.task(":shadowRun").outcome == TaskOutcome.SUCCESS
         shadowJar.exists()
         result.output.contains("Hello, all!")
+        result.output.contains("Please use the Gradle Shadow plugin instead")
 
         where:
         runtime           | micronautGradlePlugin
@@ -160,6 +161,7 @@ public class Application implements Runnable {
         result.task(":shadowRun").outcome == TaskOutcome.SUCCESS
         shadowJar.exists()
         result.output.contains("Hello, all!")
+        !result.output.contains("Please use the Gradle Shadow plugin instead")
 
         where:
         runtime           | micronautGradlePlugin
