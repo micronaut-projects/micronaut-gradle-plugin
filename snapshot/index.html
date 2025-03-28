@@ -187,7 +187,7 @@
 <p>the <a href="https://plugins.gradle.org/plugin/io.micronaut.library"><code>io.micronaut.library</code></a> plugin is aimed at building Micronaut libraries.</p>
 </li>
 <li>
-<p>the <a href="https://plugins.gradle.org/plugin/io.micronaut.graalvm"><code>io.micronaut.graalvm</code></a> plugin integrates with the official <a href="https://graalvm.github.io/native-build-tools/0.10.5/gradle-plugin.html">GraalVM Native Build Tools plugin</a> and configures it for Micronaut applications.</p>
+<p>the <a href="https://plugins.gradle.org/plugin/io.micronaut.graalvm"><code>io.micronaut.graalvm</code></a> plugin integrates with the official <a href="https://graalvm.github.io/native-build-tools/0.10.6/gradle-plugin.html">GraalVM Native Build Tools plugin</a> and configures it for Micronaut applications.</p>
 </li>
 <li>
 <p>the <a href="https://plugins.gradle.org/plugin/io.micronaut.aot"><code>io.micronaut.aot</code></a> plugin integrates with Micronaut AOT to produce optimized binaries.</p>
@@ -968,7 +968,7 @@ application {
 <div class="sect2">
 <h3 id="native-image"><a class="anchor" href="#native-image"></a>6.3. GraalVM Native Image</h3>
 <div class="paragraph">
-<p>Since version 3.0.0, the Micronaut plugins rely on the <a href="https://graalvm.github.io/native-build-tools/0.10.5/gradle-plugin.html">official GraalVM plugin</a> to build native executables.</p>
+<p>Since version 3.0.0, the Micronaut plugins rely on the <a href="https://graalvm.github.io/native-build-tools/0.10.6/gradle-plugin.html">official GraalVM plugin</a> to build native executables.</p>
 </div>
 <div class="paragraph">
 <p>Those plugins make use of <a href="https://docs.gradle.org/8.13/userguide/toolchains.html">Gradle toolchains</a> support, which means that the SDK which is used to build the native is decorrelated from the JVM which is used to launch Gradle itself.
@@ -983,7 +983,7 @@ Said differently, you can run Gradle with OpenJDK, while still building native e
 <p>running Gradle with a GraalVM SDK doesn&#8217;t necessarily imply that Gradle will use the same SDK to build native executables</p>
 </li>
 <li>
-<p>Gradle will try to locate a <em>compatible GraalVM toolchain</em> to build executables. You can tweak what GraalVM version to use by following the <a href="https://graalvm.github.io/native-build-tools/0.10.5/gradle-plugin.html#_selecting_the_graalvm_toolchain">official documentation</a>.</p>
+<p>Gradle will try to locate a <em>compatible GraalVM toolchain</em> to build executables. You can tweak what GraalVM version to use by following the <a href="https://graalvm.github.io/native-build-tools/0.10.6/gradle-plugin.html#_selecting_the_graalvm_toolchain">official documentation</a>.</p>
 </li>
 </ul>
 </div>
@@ -1051,7 +1051,7 @@ org.gradle.java.installations.fromEnv=JAVA_HOME</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>You can tweak the native executable options by configuring the <code>graalvmNative</code> extension as explained in the <a href="https://graalvm.github.io/native-build-tools/0.10.5/gradle-plugin.html">plugin documentation</a>.</p>
+<p>You can tweak the native executable options by configuring the <code>graalvmNative</code> extension as explained in the <a href="https://graalvm.github.io/native-build-tools/0.10.6/gradle-plugin.html">plugin documentation</a>.</p>
 </div>
 <div class="paragraph">
 <p>For example, you can add options to the main executable by doing:</p>
