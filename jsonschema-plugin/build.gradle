@@ -2,6 +2,14 @@ plugins {
     id "io.micronaut.internal.build.gradle-plugin"
 }
 
+repositories {
+    mavenCentral()
+    mavenLocal()
+//    maven {
+//        url("https://s01.oss.sonatype.org/content/repositories/snapshots")
+//    }
+}
+
 description = "Micronaut JSON Schema Gradle plugin"
 
 micronautPlugins {
@@ -9,8 +17,11 @@ micronautPlugins {
 }
 
 dependencies {
+    compileOnly libs.micronaut.build.plugin.sourcegen.annotations
     compileOnly libs.micronaut.jsonschema.generator
     implementation projects.micronautMinimalPlugin
     testImplementation testFixtures(projects.micronautMinimalPlugin)
     testImplementation libs.mockserver.netty
+    annotationProcessor libs.micronaut.build.plugin.sourcegen.generator
+    annotationProcessor libs.micronaut.jsonschema.generator
 }
