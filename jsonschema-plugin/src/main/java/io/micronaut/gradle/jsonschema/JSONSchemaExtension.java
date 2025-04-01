@@ -23,7 +23,7 @@ import java.io.File;
 /**
  * Configures the JSON Schema code generator.
  */
-public interface JSONSchemaExtension {
+public interface JSONSchemaExtension extends AbstractJSONSchemaExtension {
     /**
      * The version of the Micronaut JSON Schema generator.
      * @return the version
@@ -35,12 +35,12 @@ public interface JSONSchemaExtension {
      * @param url the url string of a json schema
      * @param spec configuration for the server generation
      */
-    void fromUrl(String url, Action<? super JsonSchemaSpec> spec);
+    void fromUrl(String url, Action<? super GenerateJSONSchemaSpec> spec);
 
     /**
      * Configures generation, given a schema file.
      * @param file the json file
      * @param spec configuration for the server generation
      */
-    void fromFile(File file, Action<? super JsonSchemaSpec> spec);
+    void fromFile(File file, Action<? super GenerateJSONSchemaSpec> spec);
 }
