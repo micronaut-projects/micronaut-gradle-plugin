@@ -13,6 +13,9 @@ import static org.mockserver.model.HttpRequest.request
 import static org.mockserver.model.HttpResponse.response
 
 class JsonSchemaGeneratorSpec extends AbstractGradleBuildSpec{
+
+    var repo = new File("tmp-repo").absolutePath
+
     def "can generate source code from URL"() {
         given:
         def mockServer = ClientAndServer.startClientAndServer()
@@ -33,7 +36,7 @@ class JsonSchemaGeneratorSpec extends AbstractGradleBuildSpec{
             }
             
             repositories {
-                mavenLocal()
+                maven { url("$repo") }
             }
 
             micronaut {
@@ -83,7 +86,7 @@ class JsonSchemaGeneratorSpec extends AbstractGradleBuildSpec{
             }
 
             repositories {
-                mavenLocal()
+                maven { url("$repo") }
             }
             
             micronaut {
@@ -134,7 +137,7 @@ class JsonSchemaGeneratorSpec extends AbstractGradleBuildSpec{
             }
 
             repositories {
-                mavenLocal()
+                maven { url("$repo") }
             }
             
             micronaut {

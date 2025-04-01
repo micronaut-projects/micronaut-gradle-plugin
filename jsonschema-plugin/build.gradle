@@ -4,10 +4,12 @@ plugins {
 
 repositories {
     mavenCentral()
-    mavenLocal()
-//    maven {
-//        url("https://s01.oss.sonatype.org/content/repositories/snapshots")
-//    }
+    maven {
+        url("file://${layout.projectDirectory.dir("tmp-repo")}")
+    }
+    maven {
+        url("https://s01.oss.sonatype.org/content/repositories/snapshots")
+    }
 }
 
 description = "Micronaut JSON Schema Gradle plugin"
