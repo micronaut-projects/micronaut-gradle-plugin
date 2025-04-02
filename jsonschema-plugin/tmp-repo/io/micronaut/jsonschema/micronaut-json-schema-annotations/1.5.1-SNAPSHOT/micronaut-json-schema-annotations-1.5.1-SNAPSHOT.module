@@ -1,0 +1,129 @@
+{
+  "formatVersion": "1.1",
+  "component": {
+    "group": "io.micronaut.jsonschema",
+    "module": "micronaut-json-schema-annotations",
+    "version": "1.5.1-SNAPSHOT",
+    "attributes": {
+      "org.gradle.status": "integration"
+    }
+  },
+  "createdBy": {
+    "gradle": {
+      "version": "8.4"
+    }
+  },
+  "variants": [
+    {
+      "name": "apiElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": 17,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-api"
+      },
+      "dependencies": [
+        {
+          "group": "io.micronaut",
+          "module": "micronaut-inject",
+          "version": {
+            "requires": "4.8.9"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "micronaut-json-schema-annotations-1.5.1-SNAPSHOT.jar",
+          "url": "micronaut-json-schema-annotations-1.5.1-SNAPSHOT.jar",
+          "size": 2638,
+          "sha512": "3916f129e8877892e927e040765d2838140f14202799b6a23eef900100a100ac4cca828569af5ddfceeffbc5b59e7924a6b4334527357267c251dc9b551ef36f",
+          "sha256": "97a4bbbb2c8f6616036f6986db6ce172826a319166949d99e2b25bcde18dc3e9",
+          "sha1": "c7fae684eb79f9b13b9d40af45edadb8e343963c",
+          "md5": "4f300c26ae1d35c1a5771d5ad02fc838"
+        }
+      ]
+    },
+    {
+      "name": "runtimeElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": 17,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-runtime"
+      },
+      "dependencies": [
+        {
+          "group": "io.micronaut",
+          "module": "micronaut-inject",
+          "version": {
+            "requires": "4.8.9"
+          }
+        },
+        {
+          "group": "io.micronaut",
+          "module": "micronaut-core-bom",
+          "version": {
+            "requires": "4.8.9"
+          },
+          "attributes": {
+            "org.gradle.category": "platform"
+          },
+          "endorseStrictVersions": true
+        }
+      ],
+      "files": [
+        {
+          "name": "micronaut-json-schema-annotations-1.5.1-SNAPSHOT.jar",
+          "url": "micronaut-json-schema-annotations-1.5.1-SNAPSHOT.jar",
+          "size": 2638,
+          "sha512": "3916f129e8877892e927e040765d2838140f14202799b6a23eef900100a100ac4cca828569af5ddfceeffbc5b59e7924a6b4334527357267c251dc9b551ef36f",
+          "sha256": "97a4bbbb2c8f6616036f6986db6ce172826a319166949d99e2b25bcde18dc3e9",
+          "sha1": "c7fae684eb79f9b13b9d40af45edadb8e343963c",
+          "md5": "4f300c26ae1d35c1a5771d5ad02fc838"
+        }
+      ]
+    },
+    {
+      "name": "sourcesElements",
+      "attributes": {
+        "org.gradle.category": "documentation",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.docstype": "sources",
+        "org.gradle.usage": "java-runtime"
+      },
+      "files": [
+        {
+          "name": "micronaut-json-schema-annotations-1.5.1-SNAPSHOT-sources.jar",
+          "url": "micronaut-json-schema-annotations-1.5.1-SNAPSHOT-sources.jar",
+          "size": 1597,
+          "sha512": "54c44a71b091d6cf9415843524c40f00154b79a1e2b87a2f42a7ac1690bb796c2983956dfa18ec945bdc8d36de202553f2b3e7f22ee2042c3f9472d6ce63619e",
+          "sha256": "5ba454ce18a6cc38283f4ae1883e7f40edac989a099e23acbf83062269ade4e6",
+          "sha1": "23a3ac7c48c79d68f1f70e29d1c00c5bbb1aba7c",
+          "md5": "75f3836e839d601c739a970887a46fca"
+        }
+      ]
+    },
+    {
+      "name": "javadocElements",
+      "attributes": {
+        "org.gradle.category": "documentation",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.docstype": "javadoc",
+        "org.gradle.usage": "java-runtime"
+      },
+      "files": [
+        {
+          "name": "micronaut-json-schema-annotations-1.5.1-SNAPSHOT-javadoc.jar",
+          "url": "micronaut-json-schema-annotations-1.5.1-SNAPSHOT-javadoc.jar",
+          "size": 81239,
+          "sha512": "2d7ab0bccf1456ffe350cd8849de66009deb7742257cb297f84f0bb586b46f0ff96ba51aac1d54de6f377e376213849166e30b61e235a7860eef7d6e0db2bd5e",
+          "sha256": "e008f944846c2005f7fbc0060aca9349047ac044b41190ff736c128a3401e212",
+          "sha1": "602310f24b00086b5905aeda13fe9b560b45cc61",
+          "md5": "b154c76d814b7eb77935c1fdacdfe87c"
+        }
+      ]
+    }
+  ]
+}
