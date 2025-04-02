@@ -116,7 +116,7 @@ apply plugin: com.diffplug.gradle.eclipse.apt.AptEclipsePlugin
 [source, kotlin, subs="verbatim,attributes", role="multi-language-sample"]
 ----
 plugins {
-  id("io.micronaut.application") version "{gradle-project-version}"
+  id("io.micronaut.minimal.application") version "{gradle-project-version}"
   id("io.micronaut.docker") version "{gradle-project-version}"
   id("io.micronaut.graalvm") version "{gradle-project-version}"
 }
