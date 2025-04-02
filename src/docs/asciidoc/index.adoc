@@ -1111,7 +1111,7 @@ Keep in mind that copying the only `.jar` file to another directory won't work.
 
 ==== Add Shadow plugin
 
-You can add Gradle Shadow plugin so when running `./gradlew assemble` a runnable fatjar is created in `build/libs` directory.
+You can add https://gradleup.com/shadow/[Gradle Shadow plugin] so when running `./gradlew assemble` a runnable fatjar is created in `build/libs` directory.
 
 [source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
 ----
