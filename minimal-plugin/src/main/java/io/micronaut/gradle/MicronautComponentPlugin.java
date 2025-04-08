@@ -18,6 +18,8 @@ package io.micronaut.gradle;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
+import org.gradle.api.artifacts.Dependency;
+import org.gradle.api.artifacts.ExternalModuleDependency;
 import org.gradle.api.artifacts.dsl.DependencyHandler;
 import org.gradle.api.plugins.BasePlugin;
 import org.gradle.api.plugins.JavaPlugin;
@@ -31,6 +33,7 @@ import org.gradle.api.tasks.compile.JavaCompile;
 import org.gradle.api.tasks.testing.Test;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -52,6 +55,9 @@ import static org.gradle.api.plugins.JavaPlugin.TEST_COMPILE_ONLY_CONFIGURATION_
  * library, or a Micronaut application.
  */
 public class MicronautComponentPlugin implements Plugin<Project> {
+    private static final String LOMBOK_GROUP_ID = "org.projectlombok";
+    private static final String LOMBOK_ARTIFACT_ID = "lombok";
+
     private static final List<String> SOURCESETS = List.of(
             SourceSet.MAIN_SOURCE_SET_NAME,
             SourceSet.TEST_SOURCE_SET_NAME
@@ -89,6 +95,40 @@ public class MicronautComponentPlugin implements Plugin<Project> {
             ShadowPluginSupport.mergeServiceFiles(project);
         });
         PluginsHelper.registerVersionExtensions(PluginsHelper.KNOWN_VERSION_PROPERTIES, project);
+
+        detectAndFixLombokUse(project);
+    }
+
+    private void detectAndFixLombokUse(Project project) {
+        project.afterEvaluate(unused -> {
+            var annotationProcessor = project.getConfigurations().findByName("annotationProcessor");
+            if (annotationProcessor != null) {
+                var currentDependencies = annotationProcessor.getDependencies().stream().toList();
+                var lombokDependency = currentDependencies.stream()
+                    .filter(this::isLombok)
+                    .findAny();
+                if (lombokDependency.isPresent() && !currentDependencies.get(0).equals(lombokDependency.get())) {
+                    var newDependencies = new ArrayList<Dependency>(currentDependencies.size());
+                    var lombok = lombokDependency.get();
+                    newDependencies.add(lombok);
+                    for (var dependency : currentDependencies) {
+                        if (!lombok.equals(dependency)) {
+                            newDependencies.add(dependency);
+                        }
+                    }
+                    annotationProcessor.getDependencies().clear();
+                    annotationProcessor.getDependencies().addAll(newDependencies);
+                    project.getLogger().warn("Detected use of Lombok, which is strongly discouraged. Annotation processors have been reordered to avoid issues.\n" +
+                                             "Consider using Micronaut Sourcegen instead: https://micronaut-projects.github.io/micronaut-sourcegen/latest/guide/");
+                }
+            }
+        });
+    }
+
+    private boolean isLombok(Dependency dependency) {
+        return dependency instanceof ExternalModuleDependency emd
+            && LOMBOK_GROUP_ID.equals(emd.getGroup())
+            && LOMBOK_ARTIFACT_ID.equals(emd.getName());
     }
 
     private void configureTesting(Project project, MicronautExtension micronautExtension, TaskProvider<ApplicationClasspathInspector> inspectRuntimeClasspath) {
