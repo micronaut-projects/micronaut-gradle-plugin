@@ -39,6 +39,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static io.micronaut.gradle.PluginsHelper.applyAdditionalProcessors;
 import static io.micronaut.gradle.PluginsHelper.configureAnnotationProcessors;
@@ -100,26 +101,31 @@ public class MicronautComponentPlugin implements Plugin<Project> {
     }
 
     private void detectAndFixLombokUse(Project project) {
+        var logged = new AtomicBoolean(false);
         project.afterEvaluate(unused -> {
-            var annotationProcessor = project.getConfigurations().findByName("annotationProcessor");
-            if (annotationProcessor != null) {
-                var currentDependencies = annotationProcessor.getDependencies().stream().toList();
-                var lombokDependency = currentDependencies.stream()
-                    .filter(this::isLombok)
-                    .findAny();
-                if (lombokDependency.isPresent() && !currentDependencies.get(0).equals(lombokDependency.get())) {
-                    var newDependencies = new ArrayList<Dependency>(currentDependencies.size());
-                    var lombok = lombokDependency.get();
-                    newDependencies.add(lombok);
-                    for (var dependency : currentDependencies) {
-                        if (!lombok.equals(dependency)) {
-                            newDependencies.add(dependency);
+            for (var conf : List.of("annotationProcessor", "testAnnotationProcessor")) {
+                var annotationProcessor = project.getConfigurations().findByName(conf);
+                if (annotationProcessor != null) {
+                    var currentDependencies = annotationProcessor.getDependencies().stream().toList();
+                    var lombokDependency = currentDependencies.stream()
+                        .filter(this::isLombok)
+                        .findAny();
+                    if (lombokDependency.isPresent() && !currentDependencies.get(0).equals(lombokDependency.get())) {
+                        var newDependencies = new ArrayList<Dependency>(currentDependencies.size());
+                        var lombok = lombokDependency.get();
+                        newDependencies.add(lombok);
+                        for (var dependency : currentDependencies) {
+                            if (!lombok.equals(dependency)) {
+                                newDependencies.add(dependency);
+                            }
+                        }
+                        annotationProcessor.getDependencies().clear();
+                        annotationProcessor.getDependencies().addAll(newDependencies);
+                        if (!logged.compareAndSet(false, true)) {
+                            project.getLogger().warn("Detected use of Lombok, which is strongly discouraged. Annotation processors have been reordered to avoid issues.\n" +
+                                                     "Consider using Micronaut Sourcegen instead: https://micronaut-projects.github.io/micronaut-sourcegen/latest/guide/");
                         }
                     }
-                    annotationProcessor.getDependencies().clear();
-                    annotationProcessor.getDependencies().addAll(newDependencies);
-                    project.getLogger().warn("Detected use of Lombok, which is strongly discouraged. Annotation processors have been reordered to avoid issues.\n" +
-                                             "Consider using Micronaut Sourcegen instead: https://micronaut-projects.github.io/micronaut-sourcegen/latest/guide/");
                 }
             }
         });
