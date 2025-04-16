@@ -106,7 +106,7 @@ public class MicronautComponentPlugin implements Plugin<Project> {
             for (var conf : List.of("annotationProcessor", "testAnnotationProcessor")) {
                 var annotationProcessor = project.getConfigurations().findByName(conf);
                 if (annotationProcessor != null) {
-                    var currentDependencies = annotationProcessor.getDependencies().stream().toList();
+                    var currentDependencies = new ArrayList<>(annotationProcessor.getDependencies());
                     var lombokDependency = currentDependencies.stream()
                         .filter(this::isLombok)
                         .findAny();
