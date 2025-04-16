@@ -2200,6 +2200,45 @@ micronaut {
 }
 ----
 
+== Use of Lombok
+
+In general, the use of Lombok annotation processing is strongly discouraged, as its behavior is dependent on the order of annotation processors, that it uses internal types of the JDK and is not compatible with incremental compilation.
+You should prefer using [Micronaut Sourcegen](https://micronaut-projects.github.io/micronaut-sourcegen/latest/guide/) whenever possible.
+
+However, should you really want to use it, you may face situations where the Gradle plugin, despite reordering annotation processors, doesn't place the lombok jar in front of the annotation processor classpath, which would cause compilation errors.
+In such a case, you can add this workaround to your build scripts:
+
+.Suppressing automatic dependencies
+[source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
+----
+tasks.withType(JavaCompile).configureEach {
+    doFirst {
+        options.annotationProcessorPath = files(options.annotationProcessorPath.files.sort { f ->
+            if (f.name.contains("lombok")) {
+                return -1
+            } else {
+                return 0
+            }
+        })
+    }
+}
+----
+
+[source, kotlin, subs="verbatim,attributes", role="multi-language-sample"]
+----
+tasks.withType<JavaCompile>().configureEach {
+    doFirst {
+        options.annotationProcessorPath = files(options.annotationProcessorPath?.files?.sortedBy { f ->
+            if (f.name.contains("lombok")) {
+            -1
+            } else {
+            0
+            }
+        })
+    }
+}
+----
+
 
 == Upgrade notes
 
