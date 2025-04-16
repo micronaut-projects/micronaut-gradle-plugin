@@ -134,9 +134,10 @@
 <li><a href="#sec:suppress-automatic-dependencies">13.2. Suppressing automatic dependencies</a></li>
 </ul>
 </li>
-<li><a href="#_upgrade_notes">14. Upgrade notes</a>
+<li><a href="#_use_of_lombok">14. Use of Lombok</a></li>
+<li><a href="#_upgrade_notes">15. Upgrade notes</a>
 <ul class="sectlevel2">
-<li><a href="#_upgrading_from_2_x">14.1. Upgrading from 2.x</a></li>
+<li><a href="#_upgrading_from_2_x">15.1. Upgrading from 2.x</a></li>
 </ul>
 </li>
 </ul>
@@ -3043,10 +3044,54 @@ While using the <code>fromFile</code> extension, the file input can also be a di
 </div>
 </div>
 <div class="sect1">
-<h2 id="_upgrade_notes"><a class="anchor" href="#_upgrade_notes"></a>14. Upgrade notes</h2>
+<h2 id="_use_of_lombok"><a class="anchor" href="#_use_of_lombok"></a>14. Use of Lombok</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>In general, the use of Lombok annotation processing is strongly discouraged, as its behavior is dependent on the order of annotation processors, that it uses internal types of the JDK and is not compatible with incremental compilation.
+You should prefer using [Micronaut Sourcegen](<a href="https://micronaut-projects.github.io/micronaut-sourcegen/latest/guide/" class="bare">https://micronaut-projects.github.io/micronaut-sourcegen/latest/guide/</a>) whenever possible.</p>
+</div>
+<div class="paragraph">
+<p>However, should you really want to use it, you may face situations where the Gradle plugin, despite reordering annotation processors, doesn&#8217;t place the lombok jar in front of the annotation processor classpath, which would cause compilation errors.
+In such a case, you can add this workaround to your build scripts:</p>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="title">Suppressing automatic dependencies</div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-groovy hljs" data-lang="groovy">tasks.withType(JavaCompile).configureEach {
+    doFirst {
+        options.annotationProcessorPath = files(options.annotationProcessorPath.files.sort { f -&gt;
+            if (f.name.contains("lombok")) {
+                return -1
+            } else {
+                return 0
+            }
+        })
+    }
+}</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-kotlin hljs" data-lang="kotlin">tasks.withType&lt;JavaCompile&gt;().configureEach {
+    doFirst {
+        options.annotationProcessorPath = files(options.annotationProcessorPath?.files?.sortedBy { f -&gt;
+            if (f.name.contains("lombok")) {
+            -1
+            } else {
+            0
+            }
+        })
+    }
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_upgrade_notes"><a class="anchor" href="#_upgrade_notes"></a>15. Upgrade notes</h2>
 <div class="sectionbody">
 <div class="sect2">
-<h3 id="_upgrading_from_2_x"><a class="anchor" href="#_upgrading_from_2_x"></a>14.1. Upgrading from 2.x</h3>
+<h3 id="_upgrading_from_2_x"><a class="anchor" href="#_upgrading_from_2_x"></a>15.1. Upgrading from 2.x</h3>
 <div class="paragraph">
 <p>When upgrading from the 2.x version of the plugins, you will need to change the configuration of the GraalVM native executable builds if you use them.</p>
 </div>
