@@ -37,6 +37,25 @@ class DefaultEditorTest extends Specification {
         """
 
         when:
+        editor.before("!") {
+            it.insert("WORLD")
+        }
+
+        then:
+        hasUpdatedText """
+            HELLO
+            WORLD
+            !
+        """
+    }
+
+    void "can insert after a specific line and before another specific line"() {
+        withText """
+            HELLO
+            !
+        """
+
+        when:
         editor.after("HELLO") {
             it.before("!") {
                 it.insert("WORLD")
