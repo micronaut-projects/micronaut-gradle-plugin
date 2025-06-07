@@ -23,7 +23,7 @@ import org.gradle.api.Project;
 
 import java.util.List;
 
-public class MicronautOpenAPIPlugin implements Plugin<Project> {
+public class MicronautOpenApiPlugin implements Plugin<Project> {
 
     public static final String OPEN_API_GENERATOR_CONFIGURATION = "openApiGenerator";
     public static final String OPEN_API_GENERATOR_CLASSPATH_CONFIGURATION = "openApiGeneratorClasspath";
