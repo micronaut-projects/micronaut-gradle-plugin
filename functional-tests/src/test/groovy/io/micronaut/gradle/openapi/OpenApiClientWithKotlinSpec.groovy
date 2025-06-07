@@ -320,6 +320,24 @@ class OpenApiClientWithKotlinSpec extends AbstractOpenApiWithKotlinSpec {
                         fluxForArrays = true
                         ksp = true
                         nameMapping = [test: "changedTest"]
+                        jvmOverloads = true
+                        jvmRecord = false
+                        javaCompatibility = false
+                        useUrlConnectionCache = true
+                        useTags = false
+                        generateOperationOnlyForFirstTag = false
+                        useAuth = true
+                        useOauth = false
+                        useBasicAuth = true
+                        useApiKeyAuth = true
+                        generateAuthClasses = true
+                        authFilter = true
+                        authConfigName = "testAuth"
+                        generateEnumConverters = false
+                        authFilterClientIds = ["client1"]
+                        authFilterExcludedClientIds = ["client2"]
+                        authorizationFilterPattern = "/path1;/path2"
+                        authorizationFilterPatternStyle = "REGEX"
                     }
                 }
             }
@@ -329,10 +347,14 @@ class OpenApiClientWithKotlinSpec extends AbstractOpenApiWithKotlinSpec {
             dependencies {
 
                 ksp "io.micronaut.serde:micronaut-serde-processor"
+                ksp "io.micronaut.openapi:micronaut-openapi"
+                ksp "io.micronaut.security:micronaut-security-annotations"
 
                 implementation "io.micronaut.serde:micronaut-serde-jackson"
                 implementation "io.micronaut.reactor:micronaut-reactor"
                 implementation "io.micronaut:micronaut-inject-kotlin"
+                implementation "io.micronaut.security:micronaut-security-jwt"
+                implementation "io.micronaut.security:micronaut-security-oauth2"
             }
 
         """
