@@ -330,10 +330,26 @@ class OpenApiClientGeneratorSpec extends AbstractOpenApiGeneratorSpec {
                         useReactive = true
                         generatedAnnotation = false
                         fluxForArrays = true
+                        useUrlConnectionCache = true
+                        noArgsConstructor = true
+                        useTags = false
+                        generateOperationOnlyForFirstTag = false
+                        useAuth = true
+                        useOauth = false
+                        useBasicAuth = true
+                        useApiKeyAuth = true
+                        generateAuthClasses = true
+                        authFilter = true
+                        authConfigName = "testAuth"
+                        generateEnumConverters = false
+                        authFilterClientIds = ["client1"]
+                        authFilterExcludedClientIds = ["client2"]
+                        authorizationFilterPattern = "/path1;/path2"
+                        authorizationFilterPatternStyle = "REGEX"
                     }
                 }
             }
-            
+
             $repositoriesBlock
 
             dependencies {
