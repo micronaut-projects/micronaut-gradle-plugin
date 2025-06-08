@@ -24,27 +24,65 @@ import org.gradle.api.tasks.Optional;
 @CacheableTask
 public abstract class OpenApiClientGenerator extends AbstractOpenApiGenerator<OpenApiClientWorkAction, OpenApiClientWorkAction.ClientParameters> {
 
-    @Input
     @Optional
+    @Input
     public abstract Property<String> getClientId();
 
-    @Input
     @Optional
+    @Input
     public abstract Property<Boolean> getClientPath();
 
+    @Optional
+    @Input
+    public abstract Property<String> getBasePathSeparator();
+
+    @Optional
+    @Input
+    public abstract ListProperty<String> getAdditionalClientTypeAnnotations();
+
+    @Optional
     @Input
     public abstract Property<Boolean> getUseAuth();
 
-    @Input
     @Optional
+    @Input
     public abstract Property<String> getAuthorizationFilterPattern();
 
-    @Input
     @Optional
-    public abstract Property<String> getBasePathSeparator();
-
     @Input
-    public abstract ListProperty<String> getAdditionalClientTypeAnnotations();
+    public abstract Property<Boolean> getGenerateAuthClasses();
+
+    @Optional
+    @Input
+    public abstract Property<Boolean> getAuthFilter();
+
+    @Optional
+    @Input
+    public abstract Property<Boolean> getUseOauth();
+
+    @Optional
+    @Input
+    public abstract Property<Boolean> getUseBasicAuth();
+
+    @Optional
+    @Input
+    public abstract Property<Boolean> getUseApiKeyAuth();
+
+    @Optional
+    @Input
+    public abstract Property<String> getAuthorizationFilterPatternStyle();
+
+    @Optional
+    @Input
+    public abstract ListProperty<String> getAuthFilterClientIds();
+
+    @Optional
+    @Input
+    public abstract ListProperty<String> getAuthFilterExcludedClientIds();
+
+    @Optional
+    @Input
+    public abstract Property<String> getAuthConfigName();
 
     @Override
     protected Class<OpenApiClientWorkAction> getWorkerAction() {
@@ -55,9 +93,19 @@ public abstract class OpenApiClientGenerator extends AbstractOpenApiGenerator<Op
     protected void configureWorkerParameters(OpenApiClientWorkAction.ClientParameters params) {
         params.getClientId().set(getClientId());
         params.getClientPath().set(getClientPath());
-        params.getUseAuth().set(getUseAuth());
-        params.getAuthorizationFilterPattern().set(getAuthorizationFilterPattern());
         params.getBasePathSeparator().set(getBasePathSeparator());
         params.getAdditionalClientTypeAnnotations().set(getAdditionalClientTypeAnnotations());
+
+        params.getUseAuth().set(getUseAuth());
+        params.getAuthorizationFilterPattern().set(getAuthorizationFilterPattern());
+        params.getGenerateAuthClasses().set(getGenerateAuthClasses());
+        params.getAuthFilter().set(getAuthFilter());
+        params.getUseOauth().set(getUseOauth());
+        params.getUseBasicAuth().set(getUseBasicAuth());
+        params.getUseApiKeyAuth().set(getUseApiKeyAuth());
+        params.getAuthorizationFilterPatternStyle().set(getAuthorizationFilterPatternStyle());
+        params.getAuthFilterClientIds().set(getAuthFilterClientIds());
+        params.getAuthFilterExcludedClientIds().set(getAuthFilterExcludedClientIds());
+        params.getAuthConfigName().set(getAuthConfigName());
     }
 }

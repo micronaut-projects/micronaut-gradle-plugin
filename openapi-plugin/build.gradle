@@ -5,7 +5,7 @@ plugins {
 description = "Micronaut OpenAPI Gradle plugin"
 
 micronautPlugins {
-    register('openapi', 'io.micronaut.gradle.openapi.MicronautOpenAPIPlugin', 'Micronaut OpenAPI Plugin')
+    register('openapi', 'io.micronaut.gradle.openapi.MicronautOpenApiPlugin', 'Micronaut OpenAPI Plugin')
 }
 
 dependencies {
