@@ -6,6 +6,7 @@ import io.micronaut.gradle.graalvm.MicronautGraalPlugin;
 import org.gradle.api.Project;
 import org.gradle.api.plugins.PluginManager;
 
+
 /**
  * A plugin for a Micronaut application. Applies the "application" plugin.
  *
@@ -21,6 +22,7 @@ public class MicronautApplicationPlugin extends MicronautLibraryPlugin {
         pluginManager.apply(AptEclipsePlugin.class);
         pluginManager.apply(MicronautDockerPlugin.class);
         pluginManager.apply(MicronautGraalPlugin.class);
+        pluginManager.apply("org.openrewrite.rewrite");
     }
 
 }

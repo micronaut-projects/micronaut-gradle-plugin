@@ -22,6 +22,7 @@ dependencies {
     api projects.micronautTestResourcesPlugin
 
     implementation libs.diffplugPlugin
+    implementation libs.openrewritePlugin
 
     compileOnly libs.bundles.optionalPlugins
 
