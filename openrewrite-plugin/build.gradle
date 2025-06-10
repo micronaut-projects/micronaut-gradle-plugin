@@ -1,0 +1,13 @@
+plugins {
+    id "io.micronaut.internal.build.gradle-plugin"
+}
+
+description = "Micronaut OpenRewrite Plugin"
+
+micronautPlugins {
+    register('openrewrite', 'io.micronaut.gradle.openrewrite.MicronautOpenRewritePlugin', 'Micronaut OpenRewrite Plugin')
+}
+
+dependencies {
+    implementation libs.openrewritePlugin
+    implementation(projects.micronautMinimalPlugin)}
