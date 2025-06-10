@@ -55,7 +55,12 @@ public enum MicronautRuntime {
     /**
      * Plain old Java application based on Apache libraries.
      */
-    HTTP_POJA;
+    HTTP_POJA,
+
+    /**
+     * @see <a href="https://micronaut-projects.github.io/micronaut-servlet/latest/guide/#httpServer">Built-In Java HTTP Server Runtime</a>
+     */
+    HTTP_SERVER_JDK;
 
     private final DockerBuildStrategy buildStrategy;
 
