@@ -39,6 +39,7 @@ class RuntimeDependenciesSpec extends AbstractEagerConfiguringFunctionalTest {
         runtime                | configuration          || coordinates
         'netty'                | 'compileClasspath'     || ['io.micronaut:micronaut-http-server-netty']
         'jetty'                | 'compileClasspath'     || ['io.micronaut.servlet:micronaut-http-server-jetty']
+        'http_server_jdk'      | 'compileClasspath'     || ['io.micronaut.servlet:micronaut-http-server-jdk']
         'tomcat'               | 'compileClasspath'     || ['io.micronaut.servlet:micronaut-http-server-tomcat']
         'undertow'             | 'compileClasspath'     || ['io.micronaut.servlet:micronaut-http-server-undertow']
         'google_function'      | 'compileClasspath'     || ['io.micronaut.gcp:micronaut-gcp-function-http']

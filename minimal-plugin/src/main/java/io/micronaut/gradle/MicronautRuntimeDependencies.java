@@ -21,6 +21,7 @@ import org.gradle.api.GradleException;
 
 import java.util.List;
 
+import static io.micronaut.gradle.MicronautRuntime.HTTP_SERVER_JDK;
 import static io.micronaut.gradle.MicronautRuntime.JETTY;
 import static io.micronaut.gradle.MicronautRuntime.NETTY;
 import static io.micronaut.gradle.MicronautRuntime.NONE;
@@ -64,6 +65,7 @@ public final class MicronautRuntimeDependencies {
     private static final String ARTIFACT_ID_MICRONAUT_SERVLET_UNDERTOW = "micronaut-http-server-undertow";
     private static final String ARTIFACT_ID_MICRONAUT_SERVLET_POJA_APACHE = "micronaut-http-poja-apache";
     private static final String ARTIFACT_ID_MICRONAUT_SERVLET_POJA_TEST = "micronaut-http-poja-test";
+    private static final String ARTIFACT_ID_MICRONAUT_HTTP_SERVER_JDK = "micronaut-http-server-jdk";
 
     private static final ConfigurableVersionProperty AWS_VERSION_PROPERTY = ConfigurableVersionProperty.of("aws");
     private static final ConfigurableVersionProperty AZURE_VERSION_PROPERTY = ConfigurableVersionProperty.of("azure");
@@ -82,6 +84,7 @@ public final class MicronautRuntimeDependencies {
             ORACLECLOUD_VERSION_PROPERTY,
             SERVLET_VERSION_PROPERTY
     );
+
 
     private MicronautRuntimeDependencies() {
     }
@@ -140,6 +143,11 @@ public final class MicronautRuntimeDependencies {
             return Dependencies.builder().implementation(micronautServletDependency(ARTIFACT_ID_MICRONAUT_SERVLET_POJA_APACHE), SERVLET_VERSION_PROPERTY)
                     .testImplementation(micronautServletDependency(ARTIFACT_ID_MICRONAUT_SERVLET_POJA_TEST), SERVLET_VERSION_PROPERTY)
                     .build();
+        } else if (runtime == HTTP_SERVER_JDK) {
+            return Dependencies.builder()
+                    .implementation(micronautServletDependency(ARTIFACT_ID_MICRONAUT_HTTP_SERVER_JDK), SERVLET_VERSION_PROPERTY)
+                    .build();
+
         } else if (runtime != NONE) {
             throw new GradleException("Application plugin dependencies not specified for runtime " + runtime.name());
         }
