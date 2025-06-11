@@ -10,4 +10,7 @@ micronautPlugins {
 
 dependencies {
     implementation libs.openrewritePlugin
-    implementation(projects.micronautMinimalPlugin)}
+    implementation(projects.micronautMinimalPlugin)
+    testImplementation testFixtures(projects.micronautMinimalPlugin)
+
+}
