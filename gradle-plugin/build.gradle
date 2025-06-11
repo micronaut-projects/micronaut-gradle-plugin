@@ -20,9 +20,9 @@ dependencies {
     api projects.micronautGraalvmPlugin
     api projects.micronautAotPlugin
     api projects.micronautTestResourcesPlugin
+    api projects.micronautOpenrewritePlugin
 
     implementation libs.diffplugPlugin
-    implementation libs.openrewritePlugin
 
     compileOnly libs.bundles.optionalPlugins
 
