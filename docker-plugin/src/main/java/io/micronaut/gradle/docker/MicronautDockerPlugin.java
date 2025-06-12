@@ -29,6 +29,7 @@ import org.gradle.api.artifacts.component.ModuleComponentIdentifier;
 import org.gradle.api.artifacts.component.ProjectComponentIdentifier;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.file.RegularFile;
+import org.gradle.api.plugins.AppliedPlugin;
 import org.gradle.api.plugins.BasePlugin;
 import org.gradle.api.plugins.ExtensionContainer;
 import org.gradle.api.plugins.JavaApplication;
@@ -57,6 +58,7 @@ public class MicronautDockerPlugin implements Plugin<Project> {
     public void apply(Project project) {
         project.getPluginManager().apply(DockerRemoteApiPlugin.class);
         project.getPluginManager().apply(MicronautBasePlugin.class);
+        project.getPluginManager().withPlugin("java", java -> {
         TaskContainer tasks = project.getTasks();
         ExtensionContainer extensions = project.getExtensions();
         MicronautExtension micronautExtension = extensions.getByType(MicronautExtension.class);
@@ -77,6 +79,7 @@ public class MicronautDockerPlugin implements Plugin<Project> {
                 layer.getFiles().from(project.getExtensions().getByType(SourceSetContainer.class)
                     .getByName(SourceSet.MAIN_SOURCE_SET_NAME).getOutput().getResourcesDir());
             });
+        });
         });
     }
 

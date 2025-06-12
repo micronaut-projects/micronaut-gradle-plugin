@@ -14,6 +14,49 @@ class DockerBuildTaskSpec extends AbstractGradleBuildSpec {
     private final String now = new Date().format("HHmmss")
 
     @IgnoreIf({ os.windows })
+    def "can apply the docker plugin first"() {
+        given:
+        settingsFile << "rootProject.name = 'hello-world'"
+        buildFile << """
+            plugins {
+                id "io.micronaut.docker
+                id "io.micronaut.minimal.application"
+            }
+            
+            micronaut {
+                version "$micronautVersion"
+            }
+            
+            $repositoriesBlock
+
+            mainClassName="example.Application"
+            
+        """
+        testProjectDir.newFolder("src", "main", "java", "example")
+        def javaFile = testProjectDir.newFile("src/main/java/example/Application.java")
+        javaFile.parentFile.mkdirs()
+        javaFile << """
+package example;
+
+class Application {
+    public static void main(String... args) {
+    
+    }
+}
+"""
+
+        when:
+        def result = build('dockerBuild', '-s')
+
+        def task = result.task(":dockerBuild")
+        then:
+        result.output.contains("Successfully tagged hello-world:latest")
+        task.outcome == TaskOutcome.SUCCESS
+
+    }
+
+
+    @IgnoreIf({ os.windows })
     def "test build docker image"() {
         given:
         settingsFile << "rootProject.name = 'hello-world'"
