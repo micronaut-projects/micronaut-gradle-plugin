@@ -3,8 +3,10 @@ package io.micronaut.gradle;
 import com.diffplug.gradle.eclipse.apt.AptEclipsePlugin;
 import io.micronaut.gradle.docker.MicronautDockerPlugin;
 import io.micronaut.gradle.graalvm.MicronautGraalPlugin;
+import io.micronaut.gradle.openrewrite.MicronautOpenRewritePlugin;
 import org.gradle.api.Project;
 import org.gradle.api.plugins.PluginManager;
+
 
 /**
  * A plugin for a Micronaut application. Applies the "application" plugin.
@@ -21,6 +23,7 @@ public class MicronautApplicationPlugin extends MicronautLibraryPlugin {
         pluginManager.apply(AptEclipsePlugin.class);
         pluginManager.apply(MicronautDockerPlugin.class);
         pluginManager.apply(MicronautGraalPlugin.class);
+        pluginManager.apply(MicronautOpenRewritePlugin.class);
     }
 
 }
