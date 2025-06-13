@@ -37,7 +37,7 @@ public class MicronautOpenRewritePlugin implements Plugin<Project> {
                     openRewriteExtension.getAddDefaultRecipes().zip(
                             openRewriteExtension.getVersion(),
                             (enabled, version) -> {
-                                if (Boolean.TRUE.equals(enabled) && version != null && !version.trim().isEmpty()) {
+                                if (Boolean.TRUE.equals(enabled)) {
                                     String coordinate = "io.micronaut.sourcegen:openrewrite-recipes:" + version;
                                     return List.of(dependencies.create(coordinate));
                                 }
