@@ -19,7 +19,7 @@ class DockerBuildTaskSpec extends AbstractGradleBuildSpec {
         settingsFile << "rootProject.name = 'hello-world'"
         buildFile << """
             plugins {
-                id "io.micronaut.docker
+                id "io.micronaut.docker"
                 id "io.micronaut.minimal.application"
             }
             

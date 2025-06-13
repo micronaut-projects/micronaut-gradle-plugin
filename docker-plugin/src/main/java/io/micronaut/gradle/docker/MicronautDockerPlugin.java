@@ -58,7 +58,7 @@ public class MicronautDockerPlugin implements Plugin<Project> {
     public void apply(Project project) {
         project.getPluginManager().apply(DockerRemoteApiPlugin.class);
         project.getPluginManager().apply(MicronautBasePlugin.class);
-        project.getPluginManager().withPlugin("java", java -> {
+        project.getPluginManager().withPlugin("java", unused -> {
         TaskContainer tasks = project.getTasks();
         ExtensionContainer extensions = project.getExtensions();
         MicronautExtension micronautExtension = extensions.getByType(MicronautExtension.class);
