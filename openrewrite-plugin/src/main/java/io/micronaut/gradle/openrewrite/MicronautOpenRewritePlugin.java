@@ -11,8 +11,8 @@ import org.openrewrite.gradle.RewritePlugin;
 import java.util.Collections;
 
 public class MicronautOpenRewritePlugin implements Plugin<Project> {
-    private static final String EXTENSION = "openrewrite";
-    private static final String DEFAULT_VERSION = "+";
+    private static final String EXTENSION = "rewrite";
+    private static final String VERSION = "+";
 
     @Override
     public void apply(Project project) {
@@ -26,7 +26,7 @@ public class MicronautOpenRewritePlugin implements Plugin<Project> {
         MicronautOpenRewriteExtension openRewriteExtension = micronautExtension.getExtensions()
                 .create(EXTENSION, MicronautOpenRewriteExtension.class);
 
-        openRewriteExtension.getVersion().convention(DEFAULT_VERSION);
+        openRewriteExtension.getVersion().convention(VERSION);
 
         project.getPlugins().withType(RewritePlugin.class, plugin -> {
             Configuration rewriteConfig = project.getConfigurations().getByName("rewrite");
