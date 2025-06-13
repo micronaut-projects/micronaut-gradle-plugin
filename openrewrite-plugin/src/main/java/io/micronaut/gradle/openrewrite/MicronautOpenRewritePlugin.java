@@ -8,7 +8,7 @@ import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.dsl.DependencyHandler;
 import org.openrewrite.gradle.RewritePlugin;
 
-import java.util.Collections;
+import java.util.List;
 
 public class MicronautOpenRewritePlugin implements Plugin<Project> {
     private static final String EXTENSION = "rewrite";
@@ -26,19 +26,25 @@ public class MicronautOpenRewritePlugin implements Plugin<Project> {
         MicronautOpenRewriteExtension openRewriteExtension = micronautExtension.getExtensions()
                 .create(EXTENSION, MicronautOpenRewriteExtension.class);
 
+        openRewriteExtension.getAddDefaultRecipes().convention(true);
         openRewriteExtension.getVersion().convention(VERSION);
 
         project.getPlugins().withType(RewritePlugin.class, plugin -> {
             Configuration rewriteConfig = project.getConfigurations().getByName("rewrite");
             DependencyHandler dependencies = project.getDependencies();
 
-            rewriteConfig.getDependencies().addAllLater(openRewriteExtension.getVersion().map(version -> {
-                if (version != null && !version.trim().isEmpty()) {
-                    String coordinate = "io.micronaut.micronaut-projectgen:projectgen-recipes:" + version;
-                    return Collections.singleton(dependencies.create(coordinate));
-                }
-                return Collections.emptyList();
-            }));
+            rewriteConfig.getDependencies().addAllLater(
+                    openRewriteExtension.getAddDefaultRecipes().zip(
+                            openRewriteExtension.getVersion(),
+                            (enabled, version) -> {
+                                if (Boolean.TRUE.equals(enabled) && version != null && !version.trim().isEmpty()) {
+                                    String coordinate = "io.micronaut.sourcegen:openrewrite-recipes:" + version;
+                                    return List.of(dependencies.create(coordinate));
+                                }
+                                return List.of();
+                            }
+                    )
+            );
         });
     }
 }
