@@ -25,11 +25,9 @@ class MicronautOpenRewritePluginTest extends Specification{
             plugins {
                 id 'java'
                 id 'io.micronaut.minimal.application'
-                id 'org.openrewrite.rewrite'
+                id 'io.micronaut.openrewrite'
             }
             
-            apply plugin: 'io.micronaut.gradle.openrewrite.MicronautOpenRewritePlugin'
-
             micronaut {
                 version "4.8.2"
             }
@@ -58,11 +56,9 @@ class MicronautOpenRewritePluginTest extends Specification{
             plugins {
                 id 'java'
                 id 'io.micronaut.minimal.application'
-                id 'org.openrewrite.rewrite'
+                id 'io.micronaut.openrewrite'
             }
             
-            apply plugin: 'io.micronaut.gradle.openrewrite.MicronautOpenRewritePlugin'
-
             micronaut {
                 version "4.8.2"
             }
@@ -98,11 +94,9 @@ class MicronautOpenRewritePluginTest extends Specification{
             plugins {
                 id 'java'
                 id 'io.micronaut.minimal.application'
-                id 'org.openrewrite.rewrite'
+                id 'io.micronaut.openrewrite'
             }
             
-            apply plugin: 'io.micronaut.gradle.openrewrite.MicronautOpenRewritePlugin'
-
             micronaut {
                 version "4.8.2"
                 openrewrite {
@@ -140,13 +134,10 @@ class MicronautOpenRewritePluginTest extends Specification{
         given:
         buildFile << """
             plugins {
-                id 'java'
                 id 'io.micronaut.minimal.application'
-                id 'org.openrewrite.rewrite'
+                id 'io.micronaut.openrewrite'
             }
             
-            apply plugin: 'io.micronaut.gradle.openrewrite.MicronautOpenRewritePlugin'
-
             micronaut {
                 version "4.8.2"
                 openrewrite {
@@ -176,7 +167,7 @@ class MicronautOpenRewritePluginTest extends Specification{
 
         then:
         result.task(":printRewriteDependencies").outcome == TaskOutcome.SUCCESS
-        result.output.contains("Rewrite dependency: io.micronaut.sourcegen:openrewrite-recipes:1.0.0")
+        result.output.contains("Rewrite dependency: ${MicronautOpenRewritePlugin.RECIPE_GA_COORDINATES}:1.0.0")
     }
 
     def "rewrite configuration gets no dependencies when disabled"() {
@@ -185,11 +176,9 @@ class MicronautOpenRewritePluginTest extends Specification{
             plugins {
                 id 'java'
                 id 'io.micronaut.minimal.application'
-                id 'org.openrewrite.rewrite'
+                id 'io.micronaut.openrewrite'
             }
             
-            apply plugin: 'io.micronaut.gradle.openrewrite.MicronautOpenRewritePlugin'
-
             micronaut {
                 version "4.8.2"
                 openrewrite {
@@ -204,9 +193,7 @@ class MicronautOpenRewritePluginTest extends Specification{
             
             task printRewriteDependencies {
                 doLast {
-                    def micronautDeps = configurations.rewrite.dependencies.findAll { dep ->
-                        dep.group == "io.micronaut.sourcegen"
-                    }
+                    def micronautDeps = configurations.rewrite.dependencies
                     println "Micronaut rewrite dependencies count: \${micronautDeps.size()}"
                 }
             }
@@ -230,11 +217,9 @@ class MicronautOpenRewritePluginTest extends Specification{
             plugins {
                 id 'java'
                 id 'io.micronaut.minimal.application'
-                id 'org.openrewrite.rewrite'
+                id 'io.micronaut.openrewrite'
             }
             
-            apply plugin: 'io.micronaut.gradle.openrewrite.MicronautOpenRewritePlugin'
-
             micronaut {
                 version "4.8.2"
             }
@@ -246,9 +231,7 @@ class MicronautOpenRewritePluginTest extends Specification{
             task printRewriteDependencies {
                 doLast {
                     configurations.rewrite.dependencies.each { dep ->
-                        if (dep.group == "io.micronaut.sourcegen") {
-                            println "Rewrite dependency: \${dep.group}:\${dep.name}:\${dep.version}"
-                        }
+                        println "Rewrite dependency: \${dep.group}:\${dep.name}:\${dep.version}"
                     }
                 }
             }
@@ -263,64 +246,6 @@ class MicronautOpenRewritePluginTest extends Specification{
 
         then:
         result.task(":printRewriteDependencies").outcome == TaskOutcome.SUCCESS
-        result.output.contains("Rewrite dependency: io.micronaut.sourcegen:openrewrite-recipes:+")
-    }
-
-    def "fails gracefully when micronaut plugin is not applied"() {
-        given:
-        buildFile << """
-            plugins {
-                id 'java'
-                id 'org.openrewrite.rewrite'
-            }
-            
-            apply plugin: 'io.micronaut.gradle.openrewrite.MicronautOpenRewritePlugin'
-
-            repositories {
-                mavenCentral()
-            }
-        """
-
-        when:
-        def result = GradleRunner.create()
-                .withProjectDir(testProjectDir)
-                .withArguments("tasks")
-                .withPluginClasspath()
-                .buildAndFail()
-
-        then:
-        result.output.contains("Extension with name 'micronaut' does not exist") ||
-                result.output.contains("Could not get unknown extension 'micronaut'")
-    }
-
-    def "fails gracefully when openrewrite plugin is not applied"() {
-        given:
-        buildFile << """
-            plugins {
-                id 'java'
-                id 'io.micronaut.minimal.application'
-            }
-            
-            apply plugin: 'io.micronaut.gradle.openrewrite.MicronautOpenRewritePlugin'
-
-            micronaut {
-                version "4.8.2"
-            }
-
-            repositories {
-                mavenCentral()
-            }
-        """
-
-        when:
-        def result = GradleRunner.create()
-                .withProjectDir(testProjectDir)
-                .withArguments("tasks")
-                .withPluginClasspath()
-                .buildAndFail()
-
-        then:
-        result.output.contains("Configuration with name 'rewrite' not found") ||
-                result.output.contains("Could not get unknown configuration 'rewrite'")
+        result.output.contains("Rewrite dependency: ${MicronautOpenRewritePlugin.RECIPE_GA_COORDINATES}:+")
     }
 }

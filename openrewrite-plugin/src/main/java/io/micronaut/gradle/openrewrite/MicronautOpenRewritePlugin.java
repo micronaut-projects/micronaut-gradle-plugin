@@ -11,7 +11,10 @@ import org.openrewrite.gradle.RewritePlugin;
 import java.util.List;
 
 public class MicronautOpenRewritePlugin implements Plugin<Project> {
-    private static final String EXTENSION = "rewrite";
+    // TODO: Use real Micronaut Projectgen Recipes coordinates when release is out
+    public static String RECIPE_GA_COORDINATES =
+        System.getProperty("mn.openrewrite.recipes.coords", "org.openrewrite:rewrite-java");
+    private static final String EXTENSION = "openrewrite";
     private static final String VERSION = "+";
 
     @Override
@@ -38,7 +41,7 @@ public class MicronautOpenRewritePlugin implements Plugin<Project> {
                             openRewriteExtension.getVersion(),
                             (enabled, version) -> {
                                 if (Boolean.TRUE.equals(enabled)) {
-                                    String coordinate = "io.micronaut.projectgen:micronaut-projectgen:" + version;
+                                    String coordinate = RECIPE_GA_COORDINATES + ":" + version;
                                     return List.of(dependencies.create(coordinate));
                                 }
                                 return List.of();
