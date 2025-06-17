@@ -59,27 +59,27 @@ public class MicronautDockerPlugin implements Plugin<Project> {
         project.getPluginManager().apply(DockerRemoteApiPlugin.class);
         project.getPluginManager().apply(MicronautBasePlugin.class);
         project.getPluginManager().withPlugin("java", unused -> {
-        TaskContainer tasks = project.getTasks();
-        ExtensionContainer extensions = project.getExtensions();
-        MicronautExtension micronautExtension = extensions.getByType(MicronautExtension.class);
-        var dockerExtension = micronautExtension.getExtensions().create("docker", DockerExtension.class);
-        configureCopyLink(dockerExtension, project);
-        NamedDomainObjectContainer<MicronautDockerImage> dockerImages = project.getObjects().domainObjectContainer(MicronautDockerImage.class, s -> project.getObjects().newInstance(DefaultMicronautDockerImage.class, s));
-        micronautExtension.getExtensions().add("dockerImages", dockerImages);
-        dockerImages.all(image -> createDockerImage(project, image));
-        TaskProvider<Jar> runnerJar = createMainRunnerJar(project, tasks);
-        dockerImages.create("main", image -> {
-            createDependencyLayers(image, project.getConfigurations().getByName(RUNTIME_CLASSPATH_CONFIGURATION_NAME));
-            image.addLayer(layer -> {
-                layer.getLayerKind().set(LayerKind.APP);
-                layer.getFiles().from(runnerJar);
+            TaskContainer tasks = project.getTasks();
+            ExtensionContainer extensions = project.getExtensions();
+            MicronautExtension micronautExtension = extensions.getByType(MicronautExtension.class);
+            var dockerExtension = micronautExtension.getExtensions().create("docker", DockerExtension.class);
+            configureCopyLink(dockerExtension, project);
+            NamedDomainObjectContainer<MicronautDockerImage> dockerImages = project.getObjects().domainObjectContainer(MicronautDockerImage.class, s -> project.getObjects().newInstance(DefaultMicronautDockerImage.class, s));
+            micronautExtension.getExtensions().add("dockerImages", dockerImages);
+            dockerImages.all(image -> createDockerImage(project, image));
+            TaskProvider<Jar> runnerJar = createMainRunnerJar(project, tasks);
+            dockerImages.create("main", image -> {
+                createDependencyLayers(image, project.getConfigurations().getByName(RUNTIME_CLASSPATH_CONFIGURATION_NAME));
+                image.addLayer(layer -> {
+                    layer.getLayerKind().set(LayerKind.APP);
+                    layer.getFiles().from(runnerJar);
+                });
+                image.addLayer(layer -> {
+                    layer.getLayerKind().set(LayerKind.EXPANDED_RESOURCES);
+                    layer.getFiles().from(project.getExtensions().getByType(SourceSetContainer.class)
+                        .getByName(SourceSet.MAIN_SOURCE_SET_NAME).getOutput().getResourcesDir());
+                });
             });
-            image.addLayer(layer -> {
-                layer.getLayerKind().set(LayerKind.EXPANDED_RESOURCES);
-                layer.getFiles().from(project.getExtensions().getByType(SourceSetContainer.class)
-                    .getByName(SourceSet.MAIN_SOURCE_SET_NAME).getOutput().getResourcesDir());
-            });
-        });
         });
     }
 
