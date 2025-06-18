@@ -1059,6 +1059,7 @@ The available runtimes are:
 * `google_function` - A runtime for deploying Google Functions.
 * `azure_function` - A runtime for deploying Azure Functions
 * `http_poja` - A plain old java application runtime based on Apache libraries
+* `http_server_jdk` - A server runtime based on the https://docs.oracle.com/javase/8/docs/jre/api/net/httpserver/spec/com/sun/net/httpserver/HttpServer.html[Java built-in Http Server].
 
 The advantage of allowing your dependencies to be dictated by the runtime is that you can potentially take the same application and deploy it to any of the above runtimes without changes.
 
