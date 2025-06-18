@@ -44,6 +44,7 @@ import java.util.List;
 abstract class AbstractMicronautAotCliTask extends DefaultTask implements OptimizerIO {
 
     @Input
+    @Optional
     public abstract Property<JavaLauncher> getJavaLauncher();
     @Classpath
     public abstract ConfigurableFileCollection getOptimizerClasspath();
