@@ -43,7 +43,8 @@ import java.util.List;
 
 abstract class AbstractMicronautAotCliTask extends DefaultTask implements OptimizerIO {
 
-    private final Property<JavaLauncher> javaLauncher;
+    @Input
+    public abstract Property<JavaLauncher> getJavaLauncher();
     @Classpath
     public abstract ConfigurableFileCollection getOptimizerClasspath();
 
@@ -69,11 +70,6 @@ abstract class AbstractMicronautAotCliTask extends DefaultTask implements Optimi
 
     protected AbstractMicronautAotCliTask() {
         getDebug().convention(false);
-        this.javaLauncher = getProject().getObjects().property(JavaLauncher.class);
-    }
-
-    public Property<JavaLauncher> getJavaLauncher() {
-        return javaLauncher;
     }
 
     protected void configureExtraArguments(List<String> args) {
