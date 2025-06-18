@@ -27,6 +27,7 @@ import org.gradle.api.tasks.Classpath;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.Optional;
 import org.gradle.api.tasks.TaskAction;
+import org.gradle.jvm.toolchain.JavaLauncher;
 import org.gradle.process.ExecOperations;
 import org.gradle.process.ExecResult;
 
@@ -42,6 +43,9 @@ import java.util.List;
 
 abstract class AbstractMicronautAotCliTask extends DefaultTask implements OptimizerIO {
 
+    @Input
+    @Optional
+    public abstract Property<JavaLauncher> getJavaLauncher();
     @Classpath
     public abstract ConfigurableFileCollection getOptimizerClasspath();
 
@@ -84,6 +88,9 @@ abstract class AbstractMicronautAotCliTask extends DefaultTask implements Optimi
         File argFile = Files.createTempFile("aot", "args").toFile();
         try {
             ExecResult javaexec = getExecOperations().javaexec(spec -> {
+                if (getJavaLauncher().isPresent()) {
+                    spec.executable(getJavaLauncher().get().getExecutablePath().getAsFile().getAbsolutePath());
+                }
                 FileCollection aotClasspath = getOptimizerClasspath();
                 FileCollection classpath = getOptimizerClasspath().plus(getClasspath());
                 spec.setClasspath(aotClasspath);
