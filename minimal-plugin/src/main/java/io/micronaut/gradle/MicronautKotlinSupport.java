@@ -118,7 +118,7 @@ public class MicronautKotlinSupport {
             if (isIncremental) {
 
                 kaptExtension.arguments(options -> {
-                    options.arg("micronaut.processing.incremental", true);
+                    options.arg("micronaut.processing.incremental", "true");
                     final List<String> annotations = processingConfig.getAnnotations().getOrElse(Collections.emptyList());
                     if (!annotations.isEmpty()) {
                         options.arg("micronaut.processing.annotations", String.join(",", annotations));
