@@ -27,7 +27,6 @@ class GenerateImportFactoryTaskSpec extends Specification {
 
         task = project.tasks.register('testGenerate', GenerateImportFactoryTask) { t ->
             t.getRuntimeClasspath().from(project.configurations.runtimeClasspath)
-            t.getTaskEnabled().set(true)
             t.getGeneratedSourcesDir().set(project.layout.buildDirectory.dir("gen-src/import"))
             t.getIncludeDependenciesFilter().set('^.*:.*$')
             t.getExcludeDependenciesFilter().set('^$')
@@ -43,14 +42,6 @@ class GenerateImportFactoryTaskSpec extends Specification {
         }
     }
 
-    def "task is disabled by default"() {
-        given:
-        def freshTask = project.tasks.register('freshTask', GenerateImportFactoryTask).get()
-
-        expect:
-        !freshTask.getTaskEnabled().get()
-    }
-
     def "task has default values configured"() {
         expect:
         task.getIncludeDependenciesFilter().get() == '^.*:.*$'
@@ -62,7 +53,6 @@ class GenerateImportFactoryTaskSpec extends Specification {
 
     def "task generates nothing when no matching dependencies found"() {
         given:
-        task.getTaskEnabled().set(true)
         task.getIncludeDependenciesFilter().set('^nonexistent:nonexistent$')
 
         when:
@@ -75,7 +65,6 @@ class GenerateImportFactoryTaskSpec extends Specification {
 
     def "task generates nothing when no matching packages found"() {
         given:
-        task.getTaskEnabled().set(true)
         task.getIncludePackagesFilter().set('^nonexistent$')
 
         // Create test JAR and add to implementation configuration
@@ -101,7 +90,6 @@ class GenerateImportFactoryTaskSpec extends Specification {
         project.dependencies.add('implementation', project.files(jarFile))
 
         and: "Task configured to include all (override defaults for this test)"
-        task.getTaskEnabled().set(true)
         task.getIncludePackagesFilter().set('.*')  // Match any package
         task.getExcludePackagesFilter().set('^$')  // No packages excluded
         task.getIncludeDependenciesFilter().set('.*')  // Match any dependency
@@ -141,7 +129,6 @@ class GenerateImportFactoryTaskSpec extends Specification {
 
     def "task generates single factory file when target package is specified"() {
         given:
-        task.getTaskEnabled().set(true)
         // Make sure task.getTargetPackage() is defined in GenerateImportFactoryTask as a Property<String>
         // e.g., public abstract Property<String> getTargetPackage();
         task.getTargetPackage().set('io.micronaut.generated')
@@ -183,7 +170,6 @@ class GenerateImportFactoryTaskSpec extends Specification {
 
     def "task respects include/exclude dependency filters"() {
         given:
-        task.getTaskEnabled().set(true)
         // Set filters using names that match the JAR files directly
         task.getIncludeDependenciesFilter().set('^included-.*\\.jar$')
         task.getExcludeDependenciesFilter().set('^included-but-excluded\\.jar$')
@@ -238,7 +224,6 @@ class GenerateImportFactoryTaskSpec extends Specification {
 
     def "task respects include/exclude package filters"() {
         given:
-        task.getTaskEnabled().set(true)
         task.getIncludePackagesFilter().set('^com\\.included\\..*$')  // Match only 'com.included.*'
         task.getExcludePackagesFilter().set('^com\\.included\\.excluded$') // Exclude 'com.included.excluded.*'
         task.getIncludeDependenciesFilter().set('.*') // Include all dependencies for this test

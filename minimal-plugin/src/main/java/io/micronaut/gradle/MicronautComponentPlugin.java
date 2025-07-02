@@ -80,14 +80,6 @@ public class MicronautComponentPlugin implements Plugin<Project> {
         MicronautExtension micronautExtension = project.getExtensions().getByType(MicronautExtension.class);
         TaskContainer tasks = project.getTasks();
         TaskProvider<ApplicationClasspathInspector> inspectRuntimeClasspath = registerInspectRuntimeClasspath(project, tasks);
-        TaskProvider<GenerateImportFactoryTask> generateImportFactories = project.getTasks().register(
-                "generateImportFactories",
-                GenerateImportFactoryTask.class,
-                task -> {
-                    task.getRuntimeClasspath().from(project.getConfigurations().getByName(JavaPlugin.RUNTIME_CLASSPATH_CONFIGURATION_NAME));
-                    task.getTaskEnabled().set(true);
-                }
-        );
         configureJava(project, tasks);
 
         configureGroovy(project, tasks, micronautExtension);
@@ -224,16 +216,25 @@ public class MicronautComponentPlugin implements Plugin<Project> {
 
 
     private void configureJava(Project project, TaskContainer tasks) {
-
+        TaskProvider<GenerateImportFactoryTask> generateImportFactories = project.getTasks().register(
+                "generateImportFactories",
+                GenerateImportFactoryTask.class,
+                task -> {
+                    task.getGeneratedSourcesDir().convention(project.getLayout().getBuildDirectory().dir("generated-sources/importfactory"));
+                    task.getIncludeDependenciesFilter().convention("^.*:.*$");
+                    task.getExcludeDependenciesFilter().convention("^$");
+                    task.getIncludePackagesFilter().convention("^.*$");
+                    task.getExcludePackagesFilter().convention("^$");
+                    task.getRuntimeClasspath().from(project.getConfigurations().getByName(JavaPlugin.RUNTIME_CLASSPATH_CONFIGURATION_NAME));
+                }
+        );
         project.afterEvaluate(p -> {
-            GenerateImportFactoryTask generateTask = (GenerateImportFactoryTask) p.getTasks()
-                    .findByName("generateImportFactories");
             var sourceSets = PluginsHelper.findSourceSets(p);
             for (String sourceSetName : SOURCESETS) {
                 SourceSet sourceSet = sourceSets.findByName(sourceSetName);
                 if (sourceSet != null) {
-                    if (SourceSet.MAIN_SOURCE_SET_NAME.equals(sourceSetName) && generateTask != null) {
-                        sourceSet.getJava().srcDir(generateTask.getGeneratedSourcesDir());
+                    if (SourceSet.MAIN_SOURCE_SET_NAME.equals(sourceSetName)) {
+                        sourceSet.getJava().srcDir(generateImportFactories);
                     }
 
                     String implementationScope;
@@ -257,9 +258,6 @@ public class MicronautComponentPlugin implements Plugin<Project> {
             }
 
             tasks.withType(JavaCompile.class).configureEach(javaCompile -> {
-                if (generateTask != null) {
-                    javaCompile.dependsOn(generateTask);
-                }
                 final List<String> compilerArgs = javaCompile.getOptions().getCompilerArgs();
                 final MicronautExtension micronautExtension = p.getExtensions().getByType(MicronautExtension.class);
                 final AnnotationProcessing processing = micronautExtension.getProcessing();

@@ -44,12 +44,6 @@ import java.util.Set;
  * Gradle task that generates Micronaut @Import factories for beans from dependencies.
  */
 public abstract class GenerateImportFactoryTask extends DefaultTask {
-    @Input
-    @Optional
-    public abstract Property<Configuration> getResolvedConfiguration();
-    @Input
-    @Optional
-    public abstract Property<Boolean> getTaskEnabled();
 
     @OutputDirectory
     public abstract DirectoryProperty getGeneratedSourcesDir();
@@ -78,8 +72,6 @@ public abstract class GenerateImportFactoryTask extends DefaultTask {
     public abstract ConfigurableFileCollection getRuntimeClasspath();
 
     public GenerateImportFactoryTask() {
-        // Set default values
-        getTaskEnabled().convention(false);
         getGeneratedSourcesDir().convention(getProject().getLayout().getBuildDirectory().dir("generated-sources/importfactory"));
         getIncludeDependenciesFilter().convention("^.*:.*$");
         getExcludeDependenciesFilter().convention("^$");
@@ -90,13 +82,8 @@ public abstract class GenerateImportFactoryTask extends DefaultTask {
     /*This is the main action method of the task, annotated with @TaskAction. Gradle executes this method when the task runs.*/
     @TaskAction
     public void generate() throws IOException {
-        if (!getTaskEnabled().get()) {
-            getLogger().debug("Task disabled");
-            return;
-        }
 
         Set<File> classpathFiles = getRuntimeClasspath().getFiles();
-        getLogger().info("Task enabled: {}", getTaskEnabled().get());
         getLogger().info("Runtime classpath files (before filtering):\n- {}",
                 classpathFiles.stream()
                         .map(File::getAbsolutePath)
@@ -107,7 +94,7 @@ public abstract class GenerateImportFactoryTask extends DefaultTask {
                         .map(File::getName)
                         .collect(Collectors.joining(", ")));
 
-        List<File> dependencies = resolveFilteredDependencies(getResolvedConfiguration().isPresent() ? getResolvedConfiguration().get() : null, classpathFiles);
+        List<File> dependencies = resolveFilteredDependencies(classpathFiles);
         getLogger().info("Filtered dependencies resolved by resolveFilteredDependencies():\n- {}",
                 dependencies.stream()
                         .map(File::getAbsolutePath)
@@ -139,7 +126,7 @@ public abstract class GenerateImportFactoryTask extends DefaultTask {
     }
 
     /*This helper method is responsible for filtering the raw classpath files based on the configured dependency regex patterns.*/
-    private List<File> resolveFilteredDependencies(Configuration configurationForMetadata, Set<File> classpathFilesFromTaskInput) {
+    private List<File> resolveFilteredDependencies(Set<File> classpathFilesFromTaskInput) {
         getLogger().info("--- Entering resolveFilteredDependencies ---");
         getLogger().info("IncludeDependenciesFilter: '{}'", getIncludeDependenciesFilter().get());
         getLogger().info("ExcludeDependenciesFilter: '{}'", getExcludeDependenciesFilter().get());
@@ -151,67 +138,21 @@ public abstract class GenerateImportFactoryTask extends DefaultTask {
         boolean artifactFilteringAttempted = false;
 
         // 1. Attempt to filter using ResolvedArtifact metadata if Configuration is provided
-        if (configurationForMetadata != null) {
-            getLogger().debug("Attempting to filter using ResolvedArtifacts from provided Configuration.");
-            artifactFilteringAttempted = true;
-            try {
-                // Access resolved artifacts via the passed-in Configuration
-                for (ResolvedArtifact artifact : configurationForMetadata.getResolvedConfiguration().getResolvedArtifacts()) {
-                    File file = artifact.getFile();
-                    String artifactIdentifier = artifact.getModuleVersion().getId().toString(); // e.g., "group:name:version"
-                    String fileName = file.getName();
-                    getLogger().debug("Processing resolved artifact: ID='{}', File='{}'", artifactIdentifier, fileName);
+        getLogger().debug("Performing classpath file-name-only filtering.");
+        for (File file : classpathFilesFromTaskInput) {
+            String fileName = file.getName();
+            getLogger().debug("Processing direct file: {}", fileName);
 
-                    // Try matching against artifact identifier first, then filename
-                    boolean includedByArtifactId = includePattern.matcher(artifactIdentifier).matches();
-                    boolean excludedByArtifactId = excludePattern.matcher(artifactIdentifier).matches();
+            boolean included = includePattern.matcher(fileName).matches();
+            boolean excluded = excludePattern.matcher(fileName).matches();
+            getLogger().debug("  File '{}': Included={}, Excluded={}", fileName, included, excluded);
 
-                    boolean includedByFileName = includePattern.matcher(fileName).matches();
-                    boolean excludedByFileName = excludePattern.matcher(fileName).matches();
-
-                    getLogger().debug("  Matches by Artifact ID: Included={}, Excluded={}", includedByArtifactId, excludedByArtifactId);
-                    getLogger().debug("  Matches by File Name: Included={}, Excluded={}", includedByFileName, excludedByFileName);
-
-                    boolean included = (includedByArtifactId || includedByFileName);
-                    boolean excluded = (excludedByArtifactId || excludedByFileName);
-
-                    if (included && !excluded) {
-                        filteredFiles.add(file);
-                        getLogger().debug("  -> INCLUDING dependency: {} ({})", artifactIdentifier, fileName);
-                    } else {
-                        getLogger().debug("  -> EXCLUDING dependency: {} ({})", artifactIdentifier, fileName);
-                    }
-                }
-            } catch (Exception e) {
-                getLogger().warn("Could not resolve artifacts from provided Configuration for filtering. Falling back to file-name-only filtering. Error: " + e.getMessage());
-                filteredFiles.clear();
-                artifactFilteringAttempted = false;
+            if (included && !excluded) {
+                filteredFiles.add(file);
+                getLogger().debug("  -> INCLUDING direct file: {}", fileName);
+            } else {
+                getLogger().debug("  -> EXCLUDING direct file: {}", fileName);
             }
-        } else {
-            getLogger().warn("No Configuration object provided for artifact metadata filtering. Proceeding with file-name-only filtering.");
-        }
-
-        if (!artifactFilteringAttempted || filteredFiles.isEmpty()) {
-            getLogger().debug("Performing full classpath file-name-only filtering (or fallback).");
-            for (File file : classpathFilesFromTaskInput) {
-                if (!filteredFiles.contains(file)) {
-                    String fileName = file.getName();
-                    getLogger().debug("Processing direct file: {}", fileName);
-
-                    boolean included = includePattern.matcher(fileName).matches();
-                    boolean excluded = excludePattern.matcher(fileName).matches();
-                    getLogger().debug("  File '{}': Included={}, Excluded={}", fileName, included, excluded);
-
-                    if (included && !excluded) {
-                        filteredFiles.add(file);
-                        getLogger().debug("  -> INCLUDING direct file: {}", fileName);
-                    } else {
-                        getLogger().debug("  -> EXCLUDING direct file: {}", fileName);
-                    }
-                }
-            }
-        } else {
-            getLogger().debug("Skipping full classpath file-name-only filtering as artifact filtering was successful and populated files.");
         }
 
         getLogger().info("--- Exiting resolveFilteredDependencies. Total filtered files: {} ---", filteredFiles.size());
