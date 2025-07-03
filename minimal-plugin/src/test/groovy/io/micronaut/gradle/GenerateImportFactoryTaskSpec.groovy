@@ -1,6 +1,8 @@
 package io.micronaut.gradle
 
 import org.gradle.api.artifacts.Configuration
+import org.gradle.testkit.runner.TaskOutcome
+
 import java.nio.file.Path
 import org.gradle.api.Project
 import org.gradle.testfixtures.ProjectBuilder
