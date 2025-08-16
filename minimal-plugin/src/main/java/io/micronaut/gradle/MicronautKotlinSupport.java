@@ -15,6 +15,8 @@ import org.jetbrains.kotlin.allopen.gradle.AllOpenExtension;
 import org.jetbrains.kotlin.gradle.dsl.KotlinCompile;
 import org.jetbrains.kotlin.gradle.dsl.KotlinJvmOptions;
 import org.jetbrains.kotlin.gradle.plugin.KaptExtension;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -44,6 +46,7 @@ public class MicronautKotlinSupport {
     public static final String KOTLIN_PROCESSORS = "kotlinProcessors";
 
     private static final List<String> KSP_ANNOTATION_PROCESSOR_MODULES = List.of("inject-kotlin");
+    private static final Logger log = LoggerFactory.getLogger(MicronautKotlinSupport.class);
 
     public static void whenKotlinSupportPresent(Project p, Consumer<? super Project> action) {
         p.getPluginManager().withPlugin("org.jetbrains.kotlin.jvm", unused -> action.accept(p));
@@ -107,6 +110,18 @@ public class MicronautKotlinSupport {
     private static void configureKapt(Project project) {
         configureKotlinCompilerPlugin(project, KAPT_CONFIGURATIONS, "kapt", PluginsHelper.ANNOTATION_PROCESSOR_MODULES);
 
+        // Need to identify KAPT version. We can't configure KAPT 2.x for incremental processing
+        // Remove this block after the end of support for KAPT 1.9
+        var isKotlin2 = false;
+        try {
+            KaptExtension.class.getDeclaredField("inheritedAnnotations");
+        } catch (NoSuchFieldException e) {
+            isKotlin2 = true;
+        }
+        if (isKotlin2) {
+            log.info("Can't configure incremental processing for KAPT 2.x");
+            return;
+        }
         final ExtensionContainer extensions = project.getExtensions();
         extensions.configure(KaptExtension.class, kaptExtension -> {
             kaptExtension.setGenerateStubs(false);
@@ -116,9 +131,8 @@ public class MicronautKotlinSupport {
             final String group = processingConfig.getGroup().getOrElse(project.getGroup().toString());
             final String module = processingConfig.getModule().getOrElse(project.getName());
             if (isIncremental) {
-
                 kaptExtension.arguments(options -> {
-                    options.arg("micronaut.processing.incremental", true);
+                    options.arg("micronaut.processing.incremental", "true");
                     final List<String> annotations = processingConfig.getAnnotations().getOrElse(Collections.emptyList());
                     if (!annotations.isEmpty()) {
                         options.arg("micronaut.processing.annotations", String.join(",", annotations));
