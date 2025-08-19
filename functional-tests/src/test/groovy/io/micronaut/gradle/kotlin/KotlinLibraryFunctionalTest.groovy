@@ -8,19 +8,23 @@ class KotlinLibraryFunctionalTest extends AbstractEagerConfiguringFunctionalTest
 
     @Shared
     private final String kotlinVersion = System.getProperty("kotlinVersion")
+    @Shared
+    private final String kotlin2Version = System.getProperty("kotlin2Version")
 
     @Shared
     private final String kspVersion = System.getProperty("kspVersion")
+    @Shared
+    private final String ksp2Version = System.getProperty("ksp2Version")
 
 
-    def "test apply defaults for micronaut-library and KSP with kotlin DSL for #plugin"() {
+    def "test apply defaults for micronaut-library and KSP with kotlin DSL for #plugin (Kotlin #kotlin, KSP #ksp)"() {
         given:
         settingsFile << "rootProject.name = 'hello-world'"
         buildFile.delete()
         kotlinBuildFile << """
             plugins {
-                id("org.jetbrains.kotlin.jvm") version("$kotlinVersion")
-                id("com.google.devtools.ksp") version "$kspVersion"
+                id("org.jetbrains.kotlin.jvm") version("$kotlin")
+                id("com.google.devtools.ksp") version "$ksp"
                 id("io.micronaut.$plugin")
             }
             
@@ -52,21 +56,23 @@ class Foo {}
         result.task(":assemble").outcome == TaskOutcome.SUCCESS
         new File(testProjectDir.root, "build/generated/ksp/main/classes/example")
                 .listFiles()
-                ?.find { it.name.endsWith(".class") && it.name.contains('$Definition')}
+                ?.find { it.name.endsWith(".class") && it.name.contains('$Definition') }
 
         where:
-        plugin << ['library', 'minimal.library']
+        plugin            | kotlin         | ksp
+        'library'         | kotlinVersion  | kspVersion
+        'minimal.library' | kotlin2Version | ksp2Version
     }
 
-    def "test apply defaults for micronaut-library and kotlin with kotlin DSL for #plugin"() {
+    def "test apply defaults for micronaut-library and kotlin with kotlin DSL for #plugin (Kotlin #kotlin)"() {
         given:
         settingsFile << "rootProject.name = 'hello-world'"
         buildFile.delete()
         kotlinBuildFile << """
             plugins {
-                id("org.jetbrains.kotlin.jvm") version("$kotlinVersion")
-                id("org.jetbrains.kotlin.kapt") version("$kotlinVersion")
-                id("org.jetbrains.kotlin.plugin.allopen") version("$kotlinVersion")
+                id("org.jetbrains.kotlin.jvm") version("$kotlin")
+                id("org.jetbrains.kotlin.kapt") version("$kotlin")
+                id("org.jetbrains.kotlin.plugin.allopen") version("$kotlin")
                 id("io.micronaut.$plugin")
             }
             
@@ -100,18 +106,20 @@ class Foo {}
                 .resolve('build/tmp/kapt3/classes/main/example/$Foo$Definition.class').toFile().exists()
 
         where:
-        plugin << ['library', 'minimal.library']
+        plugin            | kotlin
+        'library'         | kotlinVersion
+        'minimal.library' | kotlin2Version
     }
 
-    def "test custom sourceSet for micronaut-library and kotlin with kotlin DSL for #plugin"() {
+    def "test custom sourceSet for micronaut-library and kotlin with kotlin DSL for #plugin (Kotlin #kotlin)"() {
         given:
         settingsFile << "rootProject.name = 'hello-world'"
         buildFile.delete()
         kotlinBuildFile << """
             plugins {
-                id("org.jetbrains.kotlin.jvm") version("$kotlinVersion")
-                id("org.jetbrains.kotlin.kapt") version("$kotlinVersion")
-                id("org.jetbrains.kotlin.plugin.allopen") version("$kotlinVersion")
+                id("org.jetbrains.kotlin.jvm") version("$kotlin")
+                id("org.jetbrains.kotlin.kapt") version("$kotlin")
+                id("org.jetbrains.kotlin.plugin.allopen") version("$kotlin")
                 id("io.micronaut.$plugin")
             }
             
@@ -154,6 +162,8 @@ class Foo {}
                 .resolve('build/tmp/kapt3/classes/custom/example/$Foo$Definition.class').toFile().exists()
 
         where:
-        plugin << ['library', 'minimal.library']
+        plugin            | kotlin
+        'library'         | kotlinVersion
+        'minimal.library' | kotlin2Version
     }
 }

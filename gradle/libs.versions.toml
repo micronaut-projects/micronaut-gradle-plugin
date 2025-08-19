@@ -1,6 +1,8 @@
 [versions]
 kotlin = "1.9.25"
+kotlin2 = "2.2.10"
 ksp = "1.9.25-1.0.20"
+ksp2 = "2.2.10-2.0.2"
 docker = "9.4.0"
 diffplug = "4.3.0"
 shadow = "8.3.6"
@@ -30,7 +32,9 @@ graalvmPlugin = { module = "org.graalvm.buildtools:native-gradle-plugin", versio
 
 kotlin-allopen = { module = "org.jetbrains.kotlin:kotlin-allopen", version.ref = "kotlin" }
 kotlin-gradlePlugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
+kotlin2-gradlePlugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin2" }
 ksp-gradlePlugin = { module = "com.google.devtools.ksp:symbol-processing-gradle-plugin", version.ref = "ksp" }
+ksp2-gradlePlugin = { module = "com.google.devtools.ksp:symbol-processing-gradle-plugin", version.ref = "ksp2" }
 
 groovy-core = { module = "org.codehaus.groovy:groovy", version.ref = "groovy" }
 spock-core = { module = "org.spockframework:spock-core", version.ref = "spock" }

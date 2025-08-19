@@ -12,12 +12,14 @@ import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.TaskContainer;
 import org.jetbrains.kotlin.allopen.gradle.AllOpenExtension;
+import org.jetbrains.kotlin.gradle.dsl.KaptArguments;
 import org.jetbrains.kotlin.gradle.dsl.KotlinCompile;
 import org.jetbrains.kotlin.gradle.dsl.KotlinJvmOptions;
 import org.jetbrains.kotlin.gradle.plugin.KaptExtension;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -46,7 +48,7 @@ public class MicronautKotlinSupport {
     public static final String KOTLIN_PROCESSORS = "kotlinProcessors";
 
     private static final List<String> KSP_ANNOTATION_PROCESSOR_MODULES = List.of("inject-kotlin");
-    private static final Logger log = LoggerFactory.getLogger(MicronautKotlinSupport.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(MicronautKotlinSupport.class);
 
     public static void whenKotlinSupportPresent(Project p, Consumer<? super Project> action) {
         p.getPluginManager().withPlugin("org.jetbrains.kotlin.jvm", unused -> action.accept(p));
@@ -112,6 +114,59 @@ public class MicronautKotlinSupport {
 
         // Need to identify KAPT version. We can't configure KAPT 2.x for incremental processing
         // Remove this block after the end of support for KAPT 1.9
+        var isKotlin2 = isIsKotlin2();
+        var extensions = project.getExtensions();
+        extensions.configure(KaptExtension.class, kaptExtension -> {
+            kaptExtension.setGenerateStubs(false);
+            var micronautExtension = extensions.getByType(MicronautExtension.class);
+            var processingConfig = micronautExtension.getProcessing();
+            project.afterEvaluate(unused -> {
+                // need to use afterEvaluate because lazy APIs are not available on the Kotlin 1.9 plugin
+                var isIncremental = processingConfig.getIncremental().getOrElse(true);
+                var group = processingConfig.getGroup().getOrElse(project.getGroup().toString());
+                var module = processingConfig.getModule().getOrElse(project.getName());
+                if (isIncremental) {
+                    kaptExtension.arguments(options -> {
+                        if (!isKotlin2) {
+                            setArg(options, "micronaut.processing.incremental", "true", isKotlin2);
+                        }
+                        final List<String> annotations = processingConfig.getAnnotations().getOrElse(Collections.emptyList());
+                        if (!annotations.isEmpty()) {
+                            setArg(options, "micronaut.processing.annotations", String.join(",", annotations), isKotlin2);
+                        } else {
+                            if (!group.isEmpty()) {
+                                setArg(options, "micronaut.processing.annotations", group + ".*", isKotlin2);
+                            }
+                        }
+
+                        if (!group.isEmpty()) {
+                            setArg(options, "micronaut.processing.group", group, isKotlin2);
+                        }
+                        setArg(options, "micronaut.processing.module", module, isKotlin2);
+                        return null;
+                    });
+                }
+            });
+
+        });
+    }
+
+    private static void setArg(KaptArguments args, String key, String value, boolean isKotlin2) {
+        if (isKotlin2) {
+            // When support for Kotlin 1.9 is dropped, remove this code
+            try {
+                var method = args.getClass().getDeclaredMethod("arg", String.class, String[].class);
+                method.setAccessible(true);
+                method.invoke(args, key, new String[] { value });
+            } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+                throw new RuntimeException(e);
+            }
+        } else {
+            args.arg(key, value);
+        }
+    }
+
+    private static boolean isIsKotlin2() {
         var isKotlin2 = false;
         try {
             KaptExtension.class.getDeclaredField("inheritedAnnotations");
@@ -119,38 +174,9 @@ public class MicronautKotlinSupport {
             isKotlin2 = true;
         }
         if (isKotlin2) {
-            log.info("Can't configure incremental processing for KAPT 2.x");
-            return;
+            LOGGER.debug("Incremental processing is already active in KAPT2");
         }
-        final ExtensionContainer extensions = project.getExtensions();
-        extensions.configure(KaptExtension.class, kaptExtension -> {
-            kaptExtension.setGenerateStubs(false);
-            final MicronautExtension micronautExtension = extensions.getByType(MicronautExtension.class);
-            AnnotationProcessing processingConfig = micronautExtension.getProcessing();
-            final boolean isIncremental = processingConfig.getIncremental().getOrElse(true);
-            final String group = processingConfig.getGroup().getOrElse(project.getGroup().toString());
-            final String module = processingConfig.getModule().getOrElse(project.getName());
-            if (isIncremental) {
-                kaptExtension.arguments(options -> {
-                    options.arg("micronaut.processing.incremental", "true");
-                    final List<String> annotations = processingConfig.getAnnotations().getOrElse(Collections.emptyList());
-                    if (!annotations.isEmpty()) {
-                        options.arg("micronaut.processing.annotations", String.join(",", annotations));
-                    } else {
-                        if (!group.isEmpty()) {
-                            options.arg("micronaut.processing.annotations", group + ".*");
-                        }
-                    }
-
-                    if (!group.isEmpty()) {
-                        options.arg("micronaut.processing.group", group);
-                    }
-                    options.arg("micronaut.processing.module", module);
-
-                    return null;
-                });
-            }
-        });
+        return isKotlin2;
     }
 
     private static void configureKotlinCompilerPlugin(Project project, String[] compilerConfigurations, String compilerType, List<String> annotationProcessorModules) {
