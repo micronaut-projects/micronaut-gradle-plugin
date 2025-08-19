@@ -120,12 +120,12 @@ public class DefaultEditor implements Editor {
 
     @Override
     public void insert(String... lines) {
-        this.lines.addAll(startIndex(lines), Arrays.asList(lines));
+        this.lines.addAll(startIndex(), Arrays.asList(lines));
     }
 
-    private Integer startIndex(String... lines) {
+    private Integer startIndex() {
         if (before != null) {
-            return lookupFor(before, 0, lines.length + 1);
+            return lookupFor(before, 0, this.lines.size() + 1);
         } else {
             return getBoundaries().getStart().orElse(0);
         }
