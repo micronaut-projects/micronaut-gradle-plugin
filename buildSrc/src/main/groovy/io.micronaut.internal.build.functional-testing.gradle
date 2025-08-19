@@ -41,7 +41,9 @@ tasks.withType(Test).configureEach { Test test ->
     repoProvider.version.set(version)
     test.jvmArgumentProviders.add(repoProvider)
     systemProperties.put("kotlinVersion", libs.versions.kotlin.get())
+    systemProperties.put("kotlin2Version", libs.versions.kotlin2.get())
     systemProperties.put("kspVersion", libs.versions.ksp.get())
+    systemProperties.put("ksp2Version", libs.versions.ksp2.get())
     systemProperties.put("shadowVersion", libs.versions.shadow.get())
 }
 
