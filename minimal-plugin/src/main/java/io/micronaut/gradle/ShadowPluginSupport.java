@@ -20,6 +20,7 @@ import org.gradle.api.Project;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ShadowPluginSupport {
@@ -58,6 +59,20 @@ public class ShadowPluginSupport {
      * @param project Gradle Project
      */
     public static void mergeServiceFiles(Project project) {
-        project.getTasks().withType(ShadowJar.class).configureEach(ShadowJar::mergeServiceFiles);
+        project.getTasks().withType(ShadowJar.class).configureEach(ShadowPluginSupport::mergeServiceFiles);
+    }
+
+    // This method calls `mergeServiceFiles` reflectively, because the Shadow Plugin v9
+    // introduced a binary breaking change (change in return type)
+    // see https://github.com/GradleUp/shadow/issues/1671
+    private static void mergeServiceFiles(ShadowJar jar) {
+        try {
+            var mergeServiceFiles = ShadowJar.class.getDeclaredMethod("mergeServiceFiles");
+            mergeServiceFiles.setAccessible(true);
+            mergeServiceFiles.invoke(jar);
+        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+            // fallback to calling the method directly
+            jar.mergeServiceFiles();
+        }
     }
 }
