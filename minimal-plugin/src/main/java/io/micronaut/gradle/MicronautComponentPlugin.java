@@ -245,14 +245,17 @@ public class MicronautComponentPlugin implements Plugin<Project> {
             }
 
             tasks.withType(JavaCompile.class).configureEach(javaCompile -> {
-                final List<String> compilerArgs = javaCompile.getOptions().getCompilerArgs();
                 final MicronautExtension micronautExtension = p.getExtensions().getByType(MicronautExtension.class);
                 final AnnotationProcessing processing = micronautExtension.getProcessing();
                 final boolean isIncremental = processing.getIncremental().getOrElse(true);
                 final String group = processing.getGroup().getOrElse(p.getGroup().toString());
                 final String module = processing.getModule().getOrElse(p.getName());
 
-                compilerArgs.add("-parameters");
+                var compilerArgs = new ArrayList<>(javaCompile.getOptions().getCompilerArgs());
+
+                if (!compilerArgs.contains("-parameters")) {
+                    compilerArgs.add("-parameters");
+                }
                 if (isIncremental) {
                     final List<String> annotations = processing.getAnnotations().getOrElse(Collections.emptyList());
                     compilerArgs.add("-Amicronaut.processing.incremental=true");
@@ -269,6 +272,7 @@ public class MicronautComponentPlugin implements Plugin<Project> {
                     compilerArgs.add("-Amicronaut.processing.group=" + group);
                     compilerArgs.add("-Amicronaut.processing.module=" + module);
                 }
+                javaCompile.getOptions().setCompilerArgs(compilerArgs);
             });
         });
 
