@@ -14,6 +14,7 @@ graalvmPlugin = "0.10.6"
 mockserver = "5.15.0"
 log4j2 = "2.24.3"
 tomlj = "1.1.1"
+unojarPlugin = "1.1.0"
 
 micronaut-platform = "4.8.3" # This is the platform version, used in our tests
 micronaut-aot = "2.7.0"
@@ -29,6 +30,7 @@ dockerPlug = { module = "com.bmuschko:gradle-docker-plugin", version.ref = "dock
 diffplugPlugin = { module = "com.diffplug.gradle:goomph", version.ref = "diffplug" }
 shadowPlugin = { module = "com.gradleup.shadow:shadow-gradle-plugin", version.ref = "shadow" }
 graalvmPlugin = { module = "org.graalvm.buildtools:native-gradle-plugin", version.ref = "graalvmPlugin" }
+unojarPlugin = { module = "com.needhamsoftware.unojar:com.needhamsoftware.unojar.gradle.plugin", version.ref = "unojarPlugin" }
 
 kotlin-allopen = { module = "org.jetbrains.kotlin:kotlin-allopen", version.ref = "kotlin" }
 kotlin-gradlePlugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
