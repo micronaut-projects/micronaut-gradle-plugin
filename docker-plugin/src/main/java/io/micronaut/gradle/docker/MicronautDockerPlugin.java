@@ -29,7 +29,6 @@ import org.gradle.api.artifacts.component.ModuleComponentIdentifier;
 import org.gradle.api.artifacts.component.ProjectComponentIdentifier;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.file.RegularFile;
-import org.gradle.api.plugins.AppliedPlugin;
 import org.gradle.api.plugins.BasePlugin;
 import org.gradle.api.plugins.ExtensionContainer;
 import org.gradle.api.plugins.JavaApplication;
@@ -46,6 +45,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
 
@@ -212,7 +212,18 @@ public class MicronautDockerPlugin implements Plugin<Project> {
 
             jar.from(dirs);
             jar.manifest(manifest -> {
-                var attrs = new HashMap<String, Object>(2);
+                Map<String, Object> attrs = null;
+                var generalJarTask = (Jar)tasks.getByName("jar");
+                if (generalJarTask != null) {
+                    var generalJarManifest = generalJarTask.getManifest();
+                    if (manifest != null) {
+                        attrs = generalJarManifest.getAttributes();
+                    }
+                }
+                if (attrs == null) {
+                    attrs = new HashMap<String, Object>(2);
+                }
+
                 JavaApplication javaApplication = project.getExtensions().getByType(JavaApplication.class);
                 attrs.put("Main-Class", javaApplication.getMainClass());
                 attrs.put("Class-Path", project.getProviders().provider(() -> {
