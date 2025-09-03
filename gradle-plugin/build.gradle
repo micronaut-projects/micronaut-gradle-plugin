@@ -20,6 +20,7 @@ dependencies {
     api projects.micronautGraalvmPlugin
     api projects.micronautAotPlugin
     api projects.micronautTestResourcesPlugin
+    api projects.micronautOpenrewritePlugin
 
     implementation libs.diffplugPlugin
 
