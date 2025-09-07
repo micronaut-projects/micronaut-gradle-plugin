@@ -26,10 +26,27 @@ public interface OpenApiClientSpec extends OpenApiSpec {
 
     Property<Boolean> getUseAuth();
 
-    Property<String> getAuthorizationFilterPattern();
-
     Property<String> getBasePathSeparator();
 
     ListProperty<String> getAdditionalClientTypeAnnotations();
 
+    Property<Boolean> getGenerateAuthClasses();
+
+    Property<Boolean> getAuthFilter();
+
+    Property<Boolean> getUseOauth();
+
+    Property<Boolean> getUseBasicAuth();
+
+    Property<Boolean> getUseApiKeyAuth();
+
+    Property<String> getAuthorizationFilterPattern();
+
+    Property<String> getAuthorizationFilterPatternStyle();
+
+    ListProperty<String> getAuthFilterClientIds();
+
+    ListProperty<String> getAuthFilterExcludedClientIds();
+
+    Property<String> getAuthConfigName();
 }

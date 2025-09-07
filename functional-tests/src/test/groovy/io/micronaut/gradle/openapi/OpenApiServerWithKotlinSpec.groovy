@@ -26,6 +26,8 @@ class OpenApiServerWithKotlinSpec extends AbstractOpenApiWithKotlinSpec {
                         lang = "kotlin"
                         useReactive = true
                         generatedAnnotation = false
+                        useAuth = true
+                        userParameterMode = "AUTHENTICATION"
                         fluxForArrays = true
                         aot = true
                         nameMapping = [test: "changedTest"]
@@ -83,6 +85,8 @@ class OpenApiServerWithKotlinSpec extends AbstractOpenApiWithKotlinSpec {
                         lang = "kotlin"
                         useReactive = true
                         generatedAnnotation = false
+                        useAuth = true
+                        userParameterMode = "AUTHENTICATION"
                         fluxForArrays = true
                         aot = true
                         ksp = true
