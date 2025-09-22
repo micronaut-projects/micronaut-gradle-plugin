@@ -11,9 +11,8 @@ import org.openrewrite.gradle.RewritePlugin;
 import java.util.List;
 
 public class MicronautOpenRewritePlugin implements Plugin<Project> {
-    // TODO: Use real Micronaut Projectgen Recipes coordinates when release is out
     public static String RECIPE_GA_COORDINATES =
-        System.getProperty("mn.openrewrite.recipes.coords", "org.openrewrite:rewrite-java");
+        System.getProperty("mn.openrewrite.recipes.coords", "io.micronaut.openrewrite:micronaut-openrewrite");
     private static final String EXTENSION = "openrewrite";
     private static final String VERSION = "+";
 
