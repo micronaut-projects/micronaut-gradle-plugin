@@ -9,7 +9,7 @@ micronautPlugins {
 }
 
 dependencies {
-    compileOnly libs.openrewritePlugin
+    implementation libs.openrewritePlugin
     implementation(projects.micronautMinimalPlugin)
     testImplementation testFixtures(projects.micronautMinimalPlugin)
 
