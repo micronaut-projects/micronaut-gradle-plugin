@@ -6,6 +6,7 @@ import io.micronaut.gradle.graalvm.MicronautGraalPlugin;
 import org.gradle.api.Project;
 import org.gradle.api.plugins.PluginManager;
 
+
 /**
  * A plugin for a Micronaut application. Applies the "application" plugin.
  *

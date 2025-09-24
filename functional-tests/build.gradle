@@ -20,6 +20,7 @@ functionalTesting {
     pluginUnderTest('gradle')
     pluginUnderTest('openapi')
     pluginUnderTest('test-resources')
+    pluginUnderTest('openrewrite')
 }
 
 dependencies {

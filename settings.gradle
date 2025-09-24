@@ -24,6 +24,7 @@ include("openapi-plugin")
 include("test-resources-plugin")
 include("functional-tests")
 include("jsonschema-plugin")
+include("openrewrite-plugin")
 
 enableFeaturePreview 'TYPESAFE_PROJECT_ACCESSORS'
 
