@@ -13,7 +13,10 @@ import org.graalvm.buildtools.gradle.dsl.agent.DeprecatedAgentOptions;
 import org.graalvm.buildtools.gradle.internal.BaseNativeImageOptions;
 import org.graalvm.buildtools.gradle.internal.NativeImageCommandLineProvider;
 import org.graalvm.buildtools.gradle.tasks.BuildNativeImageTask;
+import org.graalvm.buildtools.gradle.tasks.CreateLayerOptions;
+import org.graalvm.buildtools.gradle.tasks.LayerOptions;
 import org.gradle.api.Action;
+import org.gradle.api.DomainObjectSet;
 import org.gradle.api.JavaVersion;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
@@ -414,6 +417,26 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
                         @Override
                         public DirectoryProperty getPgoProfilesDirectory() {
                             return delegate.getPgoProfilesDirectory();
+                        }
+
+                        @Override
+                        public DomainObjectSet<LayerOptions> getLayers() {
+                            return delegate.getLayers();
+                        }
+
+                        @Override
+                        public void layers(Action<? super DomainObjectSet<LayerOptions>> action) {
+                            delegate.layers(action);
+                        }
+
+                        @Override
+                        public void useLayer(String name) {
+                            delegate.useLayer(name);
+                        }
+
+                        @Override
+                        public void createLayer(Action<? super CreateLayerOptions> action) {
+                            delegate.createLayer(action);
                         }
                     };
                 })

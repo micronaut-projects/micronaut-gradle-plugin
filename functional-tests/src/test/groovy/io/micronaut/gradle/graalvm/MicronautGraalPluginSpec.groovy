@@ -54,7 +54,7 @@ class MicronautGraalPluginSpec extends AbstractEagerConfiguringFunctionalTest {
     void 'native-image is called with the generated JSON file directory (Micronaut Application)'() {
         given:
         withSwaggerMicronautApplication()
-        withNativeImageDryRun()
+        //withNativeImageDryRun()
 
         when:
         def result = build('nativeCompile', '-i', '--stacktrace')
