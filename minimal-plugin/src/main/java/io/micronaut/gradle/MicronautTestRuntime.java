@@ -19,7 +19,7 @@ public enum MicronautTestRuntime {
      */
     JUNIT_5(MicronautExtension.mapOf(
             JavaPlugin.TEST_IMPLEMENTATION_CONFIGURATION_NAME, List.of("org.junit.jupiter:junit-jupiter-api", "io.micronaut.test:micronaut-test-junit5"),
-            JavaPlugin.TEST_RUNTIME_ONLY_CONFIGURATION_NAME, List.of("org.junit.jupiter:junit-jupiter-engine", "org.junit.jupiter:junit-platform-launcher")
+            JavaPlugin.TEST_RUNTIME_ONLY_CONFIGURATION_NAME, List.of("org.junit.jupiter:junit-jupiter-engine", "org.junit.platform:junit-platform-launcher")
     ), true),
     /**
      * Spock 2.
