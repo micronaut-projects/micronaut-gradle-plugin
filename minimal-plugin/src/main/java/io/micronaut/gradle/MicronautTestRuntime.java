@@ -1,11 +1,11 @@
 package io.micronaut.gradle;
 
+import org.gradle.api.plugins.JavaPlugin;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-
-import org.gradle.api.plugins.JavaPlugin;
 
 /**
  * An enum with the different supported test runtimes.
@@ -18,10 +18,8 @@ public enum MicronautTestRuntime {
      * JUnit 5.
      */
     JUNIT_5(MicronautExtension.mapOf(
-            JavaPlugin.TEST_IMPLEMENTATION_CONFIGURATION_NAME,
-            List.of("org.junit.jupiter:junit-jupiter-api", "io.micronaut.test:micronaut-test-junit5"),
-            JavaPlugin.TEST_RUNTIME_ONLY_CONFIGURATION_NAME,
-            Collections.singletonList("org.junit.jupiter:junit-jupiter-engine")
+            JavaPlugin.TEST_IMPLEMENTATION_CONFIGURATION_NAME, List.of("org.junit.jupiter:junit-jupiter-api", "io.micronaut.test:micronaut-test-junit5"),
+            JavaPlugin.TEST_RUNTIME_ONLY_CONFIGURATION_NAME, List.of("org.junit.jupiter:junit-jupiter-engine", "org.junit.platform:junit-platform-launcher")
     ), true),
     /**
      * Spock 2.
