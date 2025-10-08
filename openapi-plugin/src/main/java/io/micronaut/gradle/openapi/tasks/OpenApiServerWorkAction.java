@@ -27,36 +27,49 @@ public abstract class OpenApiServerWorkAction extends AbstractOpenApiWorkAction<
         Property<Boolean> getUseAuth();
 
         Property<Boolean> getAot();
+
+        Property<Boolean> getGenerateHardNullable();
+
+        Property<Boolean> getGenerateStreamingFileUpload();
     }
 
     @Override
     protected void configureBuilder(MicronautCodeGeneratorBuilder builder) {
-        var parameters = getParameters();
+        var params = getParameters();
 
-        if ("kotlin".equalsIgnoreCase(parameters.getLang().get())) {
+        if ("kotlin".equalsIgnoreCase(params.getLang().get())) {
             builder.forKotlinServer(spec -> spec
-                .withControllerPackage(parameters.getControllerPackage().get())
-                .withAuthentication(parameters.getUseAuth().get())
-                .withAot(parameters.getAot().get())
+                .withControllerPackage(params.getControllerPackage().getOrNull())
+                .withAuthentication(params.getUseAuth().get())
+                .withAot(params.getAot().get())
                 .withGenerateImplementationFiles(false)
                 .withGenerateControllerFromExamples(false)
                 .withGenerateOperationsToReturnNotImplemented(false)
-                .withGeneratedAnnotation(parameters.getGeneratedAnnotation().get())
-                .withFluxForArrays(parameters.getFluxForArrays().get())
-                .withKsp(parameters.getKsp().get())
-                .withCoroutines(parameters.getCoroutines().get())
+                .withGeneratedAnnotation(params.getGeneratedAnnotation().get())
+                .withFluxForArrays(params.getFluxForArrays().get())
+                .withGenerateStreamingFileUpload(params.getGenerateStreamingFileUpload().get())
+                .withKsp(params.getKsp().get())
+                .withCoroutines(params.getCoroutines().get())
+                .withJvmOverloads(params.getJvmOverloads().get())
+                .withJvmRecord(params.getJvmRecord().get())
+                .withJavaCompatibility(params.getJavaCompatibility().get())
+                .withUserParameterMode(params.getUserParameterMode().get())
             );
         } else {
             builder.forJavaServer(spec -> spec
-                .withControllerPackage(parameters.getControllerPackage().get())
-                .withAuthentication(parameters.getUseAuth().get())
-                .withAot(parameters.getAot().get())
+                .withControllerPackage(params.getControllerPackage().getOrNull())
+                .withAuthentication(params.getUseAuth().get())
+                .withAot(params.getAot().get())
                 .withGenerateImplementationFiles(false)
                 .withGenerateControllerFromExamples(false)
                 .withGenerateOperationsToReturnNotImplemented(false)
-                .withGeneratedAnnotation(parameters.getGeneratedAnnotation().get())
-                .withLombok(parameters.getLombok().get())
-                .withFluxForArrays(parameters.getFluxForArrays().get())
+                .withGeneratedAnnotation(params.getGeneratedAnnotation().get())
+                .withLombok(params.getLombok().get())
+                .withNoArgsConstructor(params.getNoArgsConstructor().get())
+                .withFluxForArrays(params.getFluxForArrays().get())
+                .withGenerateStreamingFileUpload(params.getGenerateStreamingFileUpload().get())
+                .withGenerateHardNullable(params.getGenerateHardNullable().get())
+                .withUserParameterMode(params.getUserParameterMode().get())
             );
         }
     }
