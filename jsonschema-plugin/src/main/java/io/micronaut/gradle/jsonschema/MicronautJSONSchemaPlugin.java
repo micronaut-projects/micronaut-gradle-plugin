@@ -18,39 +18,29 @@ package io.micronaut.gradle.jsonschema;
 import io.micronaut.gradle.DefaultVersions;
 import io.micronaut.gradle.MicronautBasePlugin;
 import io.micronaut.gradle.PluginsHelper;
-import org.gradle.api.Plugin;
 import org.gradle.api.Project;
+import org.gradle.api.artifacts.Configuration;
 
 import java.util.List;
 
-public class MicronautJSONSchemaPlugin implements Plugin<Project> {
-
-    public static final String JSON_SCHEMA_GENERATOR_CONFIGURATION = "jsonSchemaGenerator";
-    public static final String JSON_SCHEMA_GENERATOR_CLASSPATH_CONFIGURATION = "jsonSchemaGeneratorClasspath";
+public class MicronautJSONSchemaPlugin extends AbstractJSONSchemaPlugin {
 
     @Override
     public void apply(Project project) {
         project.getPluginManager().apply(MicronautBasePlugin.class);
-        createJSONSchemaExtension(project);
+        super.apply(project);
     }
 
-    private static void createJSONSchemaExtension(Project project) {
-        var micronautExtension = PluginsHelper.findMicronautExtension(project);
-        var generatorDependencies = project.getConfigurations().create(JSON_SCHEMA_GENERATOR_CONFIGURATION, conf -> {
-            conf.setCanBeResolved(false);
-            conf.setCanBeConsumed(false);
-            conf.setDescription("The JSON Schema Generator dependencies");
-        });
-        var generatorClasspath = project.getConfigurations().create(JSON_SCHEMA_GENERATOR_CLASSPATH_CONFIGURATION, conf -> {
-            conf.setCanBeResolved(true);
-            conf.setCanBeConsumed(false);
-            conf.setDescription("The JSON Schema Generator classpath");
-            conf.extendsFrom(generatorDependencies);
-        });
-        var jsonSchemaExtension = micronautExtension.getExtensions().create(JSONSchemaExtension.class, "jsonschema", DefaultJSONSchemaExtension.class, project, generatorClasspath);
+    @Override
+    protected AbstractJSONSchemaExtension createExtension(Project project, Configuration classpath) {
+        var jsonSchemaExtension = PluginsHelper.findMicronautExtension(project)
+            .getExtensions()
+            .create(JSONSchemaExtension.class, "jsonschema", DefaultJSONSchemaExtension.class, project, classpath);
         jsonSchemaExtension.getVersion().convention(DefaultVersions.JSONSCHEMA);
-        generatorDependencies.getDependencies().addAllLater(jsonSchemaExtension.getVersion().map(version ->
+        classpath.getDependencies().addAllLater(jsonSchemaExtension.getVersion().map(version ->
             List.of(project.getDependencies().create("io.micronaut.jsonschema:micronaut-json-schema-generator:" + version))
         ));
+        return jsonSchemaExtension;
     }
+
 }
