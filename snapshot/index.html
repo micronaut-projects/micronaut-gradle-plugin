@@ -140,6 +140,7 @@
 <li><a href="#_upgrading_from_2_x">15.1. Upgrading from 2.x</a></li>
 </ul>
 </li>
+<li><a href="#_micronaut_openrewrite_plugin">16. Micronaut OpenRewrite Plugin</a></li>
 </ul>
 
                     </div>
@@ -271,6 +272,11 @@ For example, the <code>minimal</code> plugins can be used to reduce the number o
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><a href="https://plugins.gradle.org/plugin/io.micronaut.jsonschema"><code>io.micronaut.jsonschema</code></a></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Adds support for generating source code from JSON Schema.</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="https://plugins.gradle.org/plugin/io.micronaut.openrewrite"><code>io.micronaut.openrewrite</code></a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Adds support for applying OpenRewrite recipes for Micronaut applications and libraries.</p></td>
 <td class="tableblock halign-left valign-top"></td>
 </tr>
 </tbody>
@@ -3139,6 +3145,17 @@ In such a case, you can add this workaround to your build scripts:</p>
 <div class="paragraph">
 <p>In any case, make sure to follow the <a href="#native-image">configuration instructions</a>.</p>
 </div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_micronaut_openrewrite_plugin"><a class="anchor" href="#_micronaut_openrewrite_plugin"></a>16. Micronaut OpenRewrite Plugin</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The <code>io.micronaut.openrewrite</code> plugin integrates with the <a href="https://docs.openrewrite.org/">OpenRewrite</a> framework to support automated code migrations and best practice refactoring for Micronaut projects. It automatically applies the <code>org.openrewrite.rewrite</code> Gradle plugin and configures the default set of Micronaut OpenRewrite recipes.</p>
+</div>
+<div class="paragraph">
+<p>By default, the plugin adds the <code>io.micronaut.openrewrite:micronaut-openrewrite</code> recipes dependency to your build.</p>
 </div>
 
             </div>
