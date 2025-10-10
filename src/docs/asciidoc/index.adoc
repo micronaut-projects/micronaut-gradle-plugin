@@ -83,6 +83,10 @@ For example, the `minimal` plugins can be used to reduce the number of tasks, fo
 |https://plugins.gradle.org/plugin/io.micronaut.jsonschema[`io.micronaut.jsonschema`]
 |Adds support for generating source code from JSON Schema.
 |
+
+|https://plugins.gradle.org/plugin/io.micronaut.openrewrite[`io.micronaut.openrewrite`]
+|Adds support for applying OpenRewrite recipes for Micronaut applications and libraries.
+|
 |===
 
 Using the `io.micronaut.application` plugin:
@@ -2280,3 +2284,9 @@ In addition, the official GraalVM plugin makes use of Gradle toolchains support,
 then we recommend tweaking toolchain detection as described in <<#toolchain-behavior, this section of the documentation>>.
 
 In any case, make sure to follow the <<#native-image,configuration instructions>>.
+
+== Micronaut OpenRewrite Plugin
+
+The `io.micronaut.openrewrite` plugin integrates with the https://docs.openrewrite.org/[OpenRewrite] framework to support automated code migrations and best practice refactoring for Micronaut projects. It automatically applies the `org.openrewrite.rewrite` Gradle plugin and configures the default set of Micronaut OpenRewrite recipes.
+
+By default, the plugin adds the `io.micronaut.openrewrite:micronaut-openrewrite` recipes dependency to your build.
