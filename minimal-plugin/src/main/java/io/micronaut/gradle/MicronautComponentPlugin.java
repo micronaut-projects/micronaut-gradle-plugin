@@ -93,7 +93,7 @@ public class MicronautComponentPlugin implements Plugin<Project> {
 
         ShadowPluginSupport.withShadowPlugin(project, () -> {
             configureTesting(project, micronautExtension, inspectRuntimeClasspath);
-            ShadowPluginSupport.mergeServiceFiles(project);
+            ShadowPluginSupport.configureDefaults(project);
         });
         PluginsHelper.registerVersionExtensions(PluginsHelper.KNOWN_VERSION_PROPERTIES, project);
 

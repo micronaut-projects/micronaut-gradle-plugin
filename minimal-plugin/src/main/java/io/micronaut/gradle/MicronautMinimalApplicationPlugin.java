@@ -186,7 +186,7 @@ public class MicronautMinimalApplicationPlugin implements Plugin<Project> {
             if (micronautRuntime == MicronautRuntime.GOOGLE_FUNCTION) {
                 configureGoogleCloudFunctionRuntime(project, p, dependencyHandler);
             }
-            ShadowPluginSupport.withShadowPlugin(project, () -> ShadowPluginSupport.mergeServiceFiles(project));
+            ShadowPluginSupport.withShadowPlugin(project, () -> ShadowPluginSupport.configureDefaults(project));
 
         });
     }
