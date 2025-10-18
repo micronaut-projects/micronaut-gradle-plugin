@@ -19,7 +19,7 @@ openrewrite = "7.8.0"
 micronaut-platform = "4.8.3" # This is the platform version, used in our tests
 micronaut-aot = "2.7.0"
 micronaut-openapi = "6.15.0"
-micronaut-testresources = "2.8.0"
+micronaut-testresources = "2.10.1"
 micronaut-jsonschema = "1.5.0"
 
 [libraries]
