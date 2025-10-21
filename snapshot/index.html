@@ -2101,6 +2101,8 @@ This will let Gradle automatically start containers, for example, when a particu
         serverIdleTimeoutMinutes = 60 // if the server doesn't receive any request for this amount of time, it will be shut down
         sharedServer = true // false by default
         sharedServerNamespace = 'custom' // unset by default
+        javaLauncher = javaToolchainSpec // uses the project's toolchain if available, otherwise uses the same Java executable as Gradle
+        javaExecutable = '/usr/bin/java' // an alternative to javaLauncher, allows specifying the full path to the Java executable
     }
 }</code></pre>
 </div>
@@ -2117,6 +2119,8 @@ This will let Gradle automatically start containers, for example, when a particu
         clientTimeout.set(60) // in seconds, maximum time to wait for resources to be available, 60s by default
         sharedServer.set(true) // false by default
         sharedServerNamespace.set("custom") // unset by default
+        javaLauncher.set(javaToolchainSpec) // uses the project's toolchain if available, otherwise uses the same Java executable as Gradle
+        javaExecutable.set("/usr/bin/java") // an alternative to javaLauncher, allows specifying the full path to the Java executable
     }
 }</code></pre>
 </div>
