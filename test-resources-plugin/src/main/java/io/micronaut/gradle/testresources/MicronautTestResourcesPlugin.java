@@ -42,6 +42,7 @@ import org.gradle.api.tasks.testing.Test;
 import org.gradle.internal.event.ListenerManager;
 import org.gradle.internal.service.ServiceRegistry;
 import org.gradle.internal.session.BuildSessionLifecycleListener;
+import org.gradle.jvm.toolchain.JavaToolchainService;
 import org.gradle.process.JavaForkOptions;
 
 import java.io.File;
@@ -110,8 +111,8 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
         Configuration outgoing = createTestResourcesOutgoingConfiguration(project);
         ProviderFactory providers = project.getProviders();
         Provider<Integer> explicitPort = providers.systemProperty("micronaut.test-resources.server.port").map(Integer::parseInt);
-        TestResourcesConfiguration config = createTestResourcesConfiguration(project, explicitPort);
         JavaPluginExtension javaPluginExtension = PluginsHelper.javaPluginExtensionOf(project);
+        TestResourcesConfiguration config = createTestResourcesConfiguration(project, explicitPort, javaPluginExtension);
         SourceSet testResourcesSourceSet = createTestResourcesSourceSet(javaPluginExtension);
         DependencyHandler dependencies = project.getDependencies();
         Configuration testResourcesCompileOnly = project.getConfigurations().getByName(testResourcesSourceSet.getCompileOnlyConfigurationName());
@@ -267,10 +268,12 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
             task.getSystemProperties().convention(config.getServerSystemProperties());
             task.getEnvironment().convention(config.getServerEnvironment());
             task.getDebugServer().convention(config.getDebugServer());
+            task.getJavaLauncher().convention(config.getJavaLauncher());
+            task.getJavaExecutable().convention(config.getJavaExecutable());
         });
     }
 
-    private TestResourcesConfiguration createTestResourcesConfiguration(Project project, Provider<Integer> explicitPort) {
+    private TestResourcesConfiguration createTestResourcesConfiguration(Project project, Provider<Integer> explicitPort, JavaPluginExtension javaPluginExtension) {
         MicronautExtension micronautExtension = PluginsHelper.findMicronautExtension(project);
         TestResourcesConfiguration testResources = micronautExtension.getExtensions().create("testResources", TestResourcesConfiguration.class);
         ProviderFactory providers = project.getProviders();
@@ -292,6 +295,16 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
                         })
         );
         testResources.getSharedServerNamespace().convention(providers.environmentVariable("SHARED_TEST_RESOURCES_NAMESPACE"));
+        var javaToolchainService = project.getExtensions().findByType(JavaToolchainService.class);
+        if (javaToolchainService != null) {
+            testResources.getJavaLauncher().convention(project.provider(() -> {
+                var toolchain = javaPluginExtension.getToolchain();
+                if (toolchain != null) {
+                    return javaToolchainService.launcherFor(toolchain).get();
+                }
+                return null;
+            }));
+        }
         return testResources;
     }
 
