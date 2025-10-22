@@ -31,7 +31,8 @@ public enum MicronautTestRuntime {
             List.of(
                     "org.spockframework:spock-core",
                     "io.micronaut.test:micronaut-test-spock",
-                    "org.apache.groovy:groovy"
+                    "org.apache.groovy:groovy",
+                    "org.junit.platform:junit-platform-launcher"
             )
     ), true),
     /**
