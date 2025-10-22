@@ -17,6 +17,7 @@ package io.micronaut.gradle;
 
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar;
 import org.gradle.api.Project;
+import org.gradle.api.file.DuplicatesStrategy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,8 +59,15 @@ public class ShadowPluginSupport {
      * <a href="https://imperceptiblethoughts.com/shadow/configuration/merging/#merging-service-descriptor-files">Shadow: Merging Server Descriptor Files</a>
      * @param project Gradle Project
      */
-    public static void mergeServiceFiles(Project project) {
+    private static void mergeServiceFiles(Project project) {
         project.getTasks().withType(ShadowJar.class).configureEach(ShadowPluginSupport::mergeServiceFiles);
+    }
+
+    public static void configureDefaults(Project project) {
+        project.getTasks().withType(ShadowJar.class).configureEach(jar -> {
+            jar.setDuplicatesStrategy(DuplicatesStrategy.WARN);
+            mergeServiceFiles(jar);
+        });
     }
 
     // This method calls `mergeServiceFiles` reflectively, because the Shadow Plugin v9

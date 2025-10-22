@@ -29,10 +29,12 @@ import org.gradle.api.tasks.Classpath;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.InputFiles;
 import org.gradle.api.tasks.Internal;
+import org.gradle.api.tasks.Nested;
 import org.gradle.api.tasks.Optional;
 import org.gradle.api.tasks.OutputDirectory;
 import org.gradle.api.tasks.TaskAction;
 import org.gradle.api.tasks.options.Option;
+import org.gradle.jvm.toolchain.JavaLauncher;
 import org.gradle.process.ExecOperations;
 import org.gradle.work.Incremental;
 
@@ -181,6 +183,14 @@ public abstract class StartTestResourcesService extends DefaultTask {
     @Input
     public abstract MapProperty<String, String> getEnvironment();
 
+    @Nested
+    @Optional
+    public abstract Property<JavaLauncher> getJavaLauncher();
+
+    @Optional
+    @Input
+    public abstract Property<String> getJavaExecutable();
+
     @Inject
     protected abstract ExecOperations getExecOperations();
 
@@ -211,15 +221,26 @@ public abstract class StartTestResourcesService extends DefaultTask {
                     Files.createDirectories(stopFilePath.getParent());
                     Files.write(stopFilePath, Collections.singletonList(stop), StandardOpenOption.CREATE);
                 }
+                var javaLauncher = getJavaLauncher().getOrNull();
                 if (Boolean.TRUE.equals(getForeground().get()) || processParameters.isCDSDumpInvocation()) {
-                    startService(processParameters);
+                    startService(processParameters, javaLauncher);
                 } else {
-                    new Thread(() -> startService(processParameters)).start();
+                    new Thread(() -> startService(processParameters, javaLauncher)).start();
                 }
             }
 
-            private void startService(ServerUtils.ProcessParameters processParameters) {
+            private void startService(ServerUtils.ProcessParameters processParameters, JavaLauncher javaLauncher) {
+                var executable = getJavaExecutable().getOrNull();
+                if (executable == null && javaLauncher != null) {
+                    executable = javaLauncher.getExecutablePath().getAsFile().getAbsolutePath();
+                }
+                String finalExecutable = executable;
+                var logger = getProject().getLogger();
                 var result = getExecOperations().javaexec(spec -> {
+                    if (finalExecutable != null) {
+                        logger.info("Starting test resources service with Java at {}", finalExecutable);
+                        spec.setExecutable(finalExecutable);
+                    }
                     spec.getMainClass().set(processParameters.getMainClass());
                     spec.setDebug(getDebugServer().getOrElse(false));
                     List<File> classpath = processParameters.getClasspath();
