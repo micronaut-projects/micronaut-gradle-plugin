@@ -45,6 +45,8 @@ public interface OpenApiSpec {
 
     Property<Boolean> getLombok();
 
+    Property<Boolean> getNoArgsConstructor();
+
     Property<Boolean> getKsp();
 
     Property<Boolean> getGeneratedAnnotation();
@@ -132,4 +134,20 @@ public interface OpenApiSpec {
     Property<Boolean> getRequiredPropertiesInConstructor();
 
     Property<Boolean> getGenerateControllerAsAbstract();
+
+    Property<Boolean> getUseUrlConnectionCache();
+
+    Property<Boolean> getGenerateEnumConverters();
+
+    Property<Boolean> getUseTags();
+
+    Property<Boolean> getGenerateOperationOnlyForFirstTag();
+
+    Property<Boolean> getJvmOverloads();
+
+    Property<Boolean> getJvmRecord();
+
+    Property<Boolean> getJavaCompatibility();
+
+    Property<String> getUserParameterMode();
 }

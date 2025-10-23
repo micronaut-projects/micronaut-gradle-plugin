@@ -29,63 +29,81 @@ public abstract class OpenApiClientWorkAction extends AbstractOpenApiWorkAction<
 
         Property<Boolean> getClientPath();
 
-        Property<Boolean> getUseAuth();
-
-        Property<String> getAuthorizationFilterPattern();
-
         Property<String> getBasePathSeparator();
 
         ListProperty<String> getAdditionalClientTypeAnnotations();
+
+        Property<Boolean> getUseAuth();
+
+        Property<Boolean> getGenerateAuthClasses();
+
+        Property<Boolean> getAuthFilter();
+
+        Property<Boolean> getUseOauth();
+
+        Property<Boolean> getUseBasicAuth();
+
+        Property<Boolean> getUseApiKeyAuth();
+
+        Property<String> getAuthorizationFilterPattern();
+
+        Property<String> getAuthorizationFilterPatternStyle();
+
+        ListProperty<String> getAuthFilterClientIds();
+
+        ListProperty<String> getAuthFilterExcludedClientIds();
+
+        Property<String> getAuthConfigName();
     }
 
     @Override
     protected void configureBuilder(MicronautCodeGeneratorBuilder builder) {
-        var parameters = getParameters();
-        if ("kotlin".equalsIgnoreCase(parameters.getLang().get())) {
-            builder.forKotlinClient(spec -> {
-                spec.withAuthorization(parameters.getUseAuth().get())
-                    .withAdditionalClientTypeAnnotations(parameters.getAdditionalClientTypeAnnotations().getOrElse(List.of()))
-                    .withGeneratedAnnotation(parameters.getGeneratedAnnotation().get())
-                    .withFluxForArrays(parameters.getFluxForArrays().get())
-                    .withKsp(parameters.getKsp().get());
-
-                if (parameters.getClientId().isPresent()) {
-                    spec.withClientId(parameters.getClientId().get());
-                }
-                if (parameters.getClientPath().isPresent()) {
-                    spec.withClientPath(parameters.getClientPath().get());
-                }
-                if (parameters.getBasePathSeparator().isPresent()) {
-                    spec.withBasePathSeparator(parameters.getBasePathSeparator().get());
-                }
-                if (parameters.getAuthorizationFilterPattern().isPresent()) {
-                    spec.withAuthorizationFilterPattern(parameters.getAuthorizationFilterPattern().get());
-                }
-                if (parameters.getCoroutines().isPresent()) {
-                    spec.withCoroutines(parameters.getCoroutines().get());
-                }
-            });
+        var params = getParameters();
+        if ("kotlin".equalsIgnoreCase(params.getLang().get())) {
+            builder.forKotlinClient(spec -> spec
+                .withAuthorization(params.getUseAuth().get())
+                .withAdditionalClientTypeAnnotations(params.getAdditionalClientTypeAnnotations().getOrElse(List.of()))
+                .withGeneratedAnnotation(params.getGeneratedAnnotation().get())
+                .withFluxForArrays(params.getFluxForArrays().get())
+                .withKsp(params.getKsp().get())
+                .withAuthorizationFilterPattern(params.getAuthorizationFilterPattern().getOrNull())
+                .withAuthorizationFilterPatternStyle(params.getAuthorizationFilterPatternStyle().getOrNull())
+                .withGenerateAuthClasses(params.getGenerateAuthClasses().get())
+                .withAuthFilter(params.getAuthFilter().get())
+                .withUseOauth(params.getUseOauth().get())
+                .withUseBasicAuth(params.getUseBasicAuth().get())
+                .withUseApiKeyAuth(params.getUseApiKeyAuth().get())
+                .withAuthFilterClientIds(params.getAuthFilterClientIds().getOrNull())
+                .withAuthFilterExcludedClientIds(params.getAuthFilterExcludedClientIds().getOrNull())
+                .withAuthConfigName(params.getAuthConfigName().getOrNull())
+                .withClientId(params.getClientId().getOrNull())
+                .withClientPath(params.getClientPath().get())
+                .withBasePathSeparator(params.getBasePathSeparator().getOrNull())
+                .withCoroutines(params.getCoroutines().get())
+                .withJvmOverloads(params.getJvmOverloads().get())
+                .withJvmRecord(params.getJvmRecord().get())
+                .withJavaCompatibility(params.getJavaCompatibility().get()));
         } else {
-            builder.forJavaClient(spec -> {
-                spec.withAuthorization(parameters.getUseAuth().get())
-                    .withAdditionalClientTypeAnnotations(parameters.getAdditionalClientTypeAnnotations().getOrElse(List.of()))
-                    .withLombok(parameters.getLombok().get())
-                    .withGeneratedAnnotation(parameters.getGeneratedAnnotation().get())
-                    .withFluxForArrays(parameters.getFluxForArrays().get());
-
-                if (parameters.getClientId().isPresent()) {
-                    spec.withClientId(parameters.getClientId().get());
-                }
-                if (parameters.getClientPath().isPresent()) {
-                    spec.withClientPath(parameters.getClientPath().get());
-                }
-                if (parameters.getBasePathSeparator().isPresent()) {
-                    spec.withBasePathSeparator(parameters.getBasePathSeparator().get());
-                }
-                if (parameters.getAuthorizationFilterPattern().isPresent()) {
-                    spec.withAuthorizationFilterPattern(parameters.getAuthorizationFilterPattern().get());
-                }
-            });
+            builder.forJavaClient(spec -> spec
+                .withAuthorization(params.getUseAuth().get())
+                .withAdditionalClientTypeAnnotations(params.getAdditionalClientTypeAnnotations().getOrElse(List.of()))
+                .withLombok(params.getLombok().get())
+                .withNoArgsConstructor(params.getNoArgsConstructor().get())
+                .withGeneratedAnnotation(params.getGeneratedAnnotation().get())
+                .withFluxForArrays(params.getFluxForArrays().get())
+                .withAuthorizationFilterPattern(params.getAuthorizationFilterPattern().getOrNull())
+                .withAuthorizationFilterPatternStyle(params.getAuthorizationFilterPatternStyle().getOrNull())
+                .withGenerateAuthClasses(params.getGenerateAuthClasses().get())
+                .withAuthFilter(params.getAuthFilter().get())
+                .withUseOauth(params.getUseOauth().get())
+                .withUseBasicAuth(params.getUseBasicAuth().get())
+                .withUseApiKeyAuth(params.getUseApiKeyAuth().get())
+                .withAuthFilterClientIds(params.getAuthFilterClientIds().getOrNull())
+                .withAuthFilterExcludedClientIds(params.getAuthFilterExcludedClientIds().getOrNull())
+                .withAuthConfigName(params.getAuthConfigName().getOrNull())
+                .withClientId(params.getClientId().getOrNull())
+                .withClientPath(params.getClientPath().get())
+                .withBasePathSeparator(params.getBasePathSeparator().getOrNull()));
         }
     }
 

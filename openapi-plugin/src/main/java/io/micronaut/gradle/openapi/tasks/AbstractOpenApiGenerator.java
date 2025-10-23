@@ -46,87 +46,119 @@ public abstract class AbstractOpenApiGenerator<W extends AbstractOpenApiWorkActi
     @PathSensitive(PathSensitivity.NONE)
     public abstract RegularFileProperty getDefinitionFile();
 
+    @Optional
     @Input
     public abstract Property<String> getLang();
 
+    @Optional
     @Input
     public abstract Property<String> getInvokerPackageName();
 
+    @Optional
     @Input
     public abstract Property<String> getApiPackageName();
 
+    @Optional
     @Input
     public abstract Property<String> getModelPackageName();
 
+    @Optional
     @Input
     public abstract Property<Boolean> getUseBeanValidation();
 
+    @Optional
     @Input
     public abstract Property<Boolean> getUseOneOfInterfaces();
 
+    @Optional
     @Input
     public abstract Property<Boolean> getUseOptional();
 
+    @Optional
     @Input
     public abstract Property<Boolean> getUseReactive();
 
+    @Optional
     @Input
     public abstract ListProperty<String> getOutputKinds();
 
+    @Optional
     @Input
     public abstract Property<String> getSerializationFramework();
 
+    @Optional
     @Input
     public abstract Property<Boolean> getAlwaysUseGenerateHttpResponse();
 
+    @Optional
     @Input
     public abstract Property<Boolean> getGenerateHttpResponseWhereRequired();
 
+    @Optional
     @Input
     public abstract Property<String> getDateTimeFormat();
 
+    @Optional
     @Input
     public abstract ListProperty<ParameterMappingModel> getParameterMappings();
 
+    @Optional
     @Input
     public abstract Property<Boolean> getLombok();
 
+    @Optional
+    @Input
+    public abstract Property<Boolean> getNoArgsConstructor();
+
+    @Optional
     @Input
     public abstract Property<Boolean> getKsp();
 
+    @Optional
     @Input
     public abstract Property<Boolean> getGeneratedAnnotation();
 
+    @Optional
     @Input
     public abstract Property<Boolean> getFluxForArrays();
 
+    @Optional
     @Input
     public abstract ListProperty<ResponseBodyMappingModel> getResponseBodyMappings();
 
+    @Optional
     @Input
     public abstract MapProperty<String, String> getSchemaMapping();
 
+    @Optional
     @Input
     public abstract MapProperty<String, String> getImportMapping();
 
+    @Optional
     @Input
     public abstract MapProperty<String, String> getNameMapping();
 
+    @Optional
     @Input
     public abstract MapProperty<String, String> getTypeMapping();
 
+    @Optional
     @Input
     public abstract MapProperty<String, String> getEnumNameMapping();
 
+    @Optional
     @Input
     public abstract MapProperty<String, String> getModelNameMapping();
 
+    @Optional
     @Input
     public abstract MapProperty<String, String> getInlineSchemaNameMapping();
 
+    @Optional
     @Input
     public abstract MapProperty<String, String> getInlineSchemaOption();
 
+    @Optional
     @Input
     public abstract MapProperty<String, String> getOpenapiNormalizer();
 
@@ -238,6 +270,38 @@ public abstract class AbstractOpenApiGenerator<W extends AbstractOpenApiWorkActi
     @Input
     public abstract Property<Boolean> getGenerateControllerAsAbstract();
 
+    @Optional
+    @Input
+    public abstract Property<Boolean> getUseUrlConnectionCache();
+
+    @Optional
+    @Input
+    public abstract Property<Boolean> getGenerateEnumConverters();
+
+    @Optional
+    @Input
+    public abstract Property<Boolean> getUseTags();
+
+    @Optional
+    @Input
+    public abstract Property<Boolean> getGenerateOperationOnlyForFirstTag();
+
+    @Optional
+    @Input
+    public abstract Property<Boolean> getJvmOverloads();
+
+    @Optional
+    @Input
+    public abstract Property<Boolean> getJvmRecord();
+
+    @Optional
+    @Input
+    public abstract Property<Boolean> getJavaCompatibility();
+
+    @Optional
+    @Input
+    public abstract Property<String> getUserParameterMode();
+
     @OutputDirectory
     public abstract DirectoryProperty getOutputDirectory();
 
@@ -273,6 +337,7 @@ public abstract class AbstractOpenApiGenerator<W extends AbstractOpenApiWorkActi
                 params.getFluxForArrays().set(getFluxForArrays());
                 params.getGeneratedAnnotation().set(getGeneratedAnnotation());
                 params.getLombok().set(getLombok());
+                params.getNoArgsConstructor().set(getNoArgsConstructor());
                 params.getKsp().set(getKsp());
 
                 params.getSchemaMapping().set(getSchemaMapping());
@@ -284,37 +349,47 @@ public abstract class AbstractOpenApiGenerator<W extends AbstractOpenApiWorkActi
                 params.getInlineSchemaNameMapping().set(getInlineSchemaNameMapping());
                 params.getInlineSchemaOption().set(getInlineSchemaOption());
                 params.getOpenapiNormalizer().set(getOpenapiNormalizer());
-                params.getApiNamePrefix().set(getApiNamePrefix().orElse(""));
-                params.getApiNameSuffix().set(getApiNameSuffix().orElse(""));
-                params.getModelNamePrefix().set(getModelNamePrefix().orElse(""));
-                params.getModelNameSuffix().set(getModelNameSuffix().orElse(""));
+                params.getApiNamePrefix().set(getApiNamePrefix());
+                params.getApiNameSuffix().set(getApiNameSuffix());
+                params.getModelNamePrefix().set(getModelNamePrefix());
+                params.getModelNameSuffix().set(getModelNameSuffix());
 
                 params.getUseEnumCaseInsensitive().set(getUseEnumCaseInsensitive());
                 params.getGenerateSwaggerAnnotations().set(getGenerateSwaggerAnnotations());
                 params.getImplicitHeaders().set(getImplicitHeaders());
-                params.getImplicitHeadersRegex().set(getImplicitHeadersRegex().orElse(""));
+                params.getImplicitHeadersRegex().set(getImplicitHeadersRegex());
 
                 params.getAdditionalEnumTypeAnnotations().set(getAdditionalEnumTypeAnnotations());
                 params.getAdditionalModelTypeAnnotations().set(getAdditionalModelTypeAnnotations());
                 params.getAdditionalOneOfTypeAnnotations().set(getAdditionalOneOfTypeAnnotations());
                 params.getAdditionalProperties().set(getAdditionalProperties());
 
-                params.getUseJakartaEe().set(getUseJakartaEe().get());
-                params.getSortParamsByRequiredFlag().set(getSortParamsByRequiredFlag().get());
-                params.getSkipOperationExample().set(getSkipOperationExample().get());
-                params.getSkipSortingOperations().set(getSkipSortingOperations().get());
-                params.getRemoveOperationIdPrefixDelimiter().set(getRemoveOperationIdPrefixDelimiter().get());
-                params.getRemoveOperationIdPrefixCount().set(getRemoveOperationIdPrefixCount().get());
-                params.getSortModelPropertiesByRequiredFlag().set(getSortModelPropertiesByRequiredFlag().get());
-                params.getEnsureUniqueParams().set(getEnsureUniqueParams().get());
-                params.getAllowUnicodeIdentifiers().set(getAllowUnicodeIdentifiers().get());
-                params.getPrependFormOrBodyParameters().set(getPrependFormOrBodyParameters().get());
+                params.getUseJakartaEe().set(getUseJakartaEe());
+                params.getSortParamsByRequiredFlag().set(getSortParamsByRequiredFlag());
+                params.getSkipOperationExample().set(getSkipOperationExample());
+                params.getSkipSortingOperations().set(getSkipSortingOperations());
+                params.getRemoveOperationIdPrefixDelimiter().set(getRemoveOperationIdPrefixDelimiter());
+                params.getRemoveOperationIdPrefixCount().set(getRemoveOperationIdPrefixCount());
+                params.getSortModelPropertiesByRequiredFlag().set(getSortModelPropertiesByRequiredFlag());
+                params.getEnsureUniqueParams().set(getEnsureUniqueParams());
+                params.getAllowUnicodeIdentifiers().set(getAllowUnicodeIdentifiers());
+                params.getPrependFormOrBodyParameters().set(getPrependFormOrBodyParameters());
 
-                params.getCoroutines().set(getCoroutines().get());
-                params.getUseSealed().set(getUseSealed().get());
-                params.getJsonIncludeAlwaysForRequiredFields().set(getJsonIncludeAlwaysForRequiredFields().get());
-                params.getRequiredPropertiesInConstructor().set(getRequiredPropertiesInConstructor().get());
-                params.getGenerateControllerAsAbstract().set(getGenerateControllerAsAbstract().get());
+                params.getCoroutines().set(getCoroutines());
+                params.getUseSealed().set(getUseSealed());
+                params.getJsonIncludeAlwaysForRequiredFields().set(getJsonIncludeAlwaysForRequiredFields());
+                params.getRequiredPropertiesInConstructor().set(getRequiredPropertiesInConstructor());
+                params.getGenerateControllerAsAbstract().set(getGenerateControllerAsAbstract());
+
+                params.getUseUrlConnectionCache().convention(getUseUrlConnectionCache());
+                params.getGenerateEnumConverters().convention(getGenerateEnumConverters());
+                params.getUseTags().convention(getUseTags());
+                params.getGenerateOperationOnlyForFirstTag().convention(getGenerateOperationOnlyForFirstTag());
+
+                params.getJvmOverloads().convention(getJvmOverloads());
+                params.getJvmRecord().convention(getJvmRecord());
+                params.getJavaCompatibility().convention(getJavaCompatibility());
+                params.getUserParameterMode().convention(getUserParameterMode());
 
                 configureWorkerParameters(params);
             });
