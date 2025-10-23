@@ -73,13 +73,16 @@ public abstract class DefaultOpenApiExtension implements OpenApiExtension {
         if (names.add(name)) {
             var serverSpec = project.getObjects().newInstance(OpenApiServerSpec.class);
             configureCommonExtensionDefaults(serverSpec);
+
             serverSpec.getControllerPackage().convention("io.micronaut.openapi.controller");
             serverSpec.getUseAuth().convention(false);
             serverSpec.getAot().convention(false);
+            serverSpec.getGenerateHardNullable().convention(true);
+            serverSpec.getGenerateStreamingFileUpload().convention(false);
+
             spec.execute(serverSpec);
             var controllers = project.getTasks().register(generateApisTaskName(name), OpenApiServerGenerator.class, task -> {
                 configureCommonProperties(name, task, serverSpec, definition);
-                task.getAot().set(serverSpec.getAot());
                 task.setDescription("Generates OpenAPI controllers from an OpenAPI definition");
                 configureServerTask(serverSpec, task);
                 task.getOutputKinds().addAll(CodegenConstants.APIS, CodegenConstants.SUPPORTING_FILES);
@@ -87,7 +90,6 @@ public abstract class DefaultOpenApiExtension implements OpenApiExtension {
             });
             var models = project.getTasks().register(generateModelsTaskName(name), OpenApiServerGenerator.class, task -> {
                 configureCommonProperties(name, task, serverSpec, definition);
-                task.getAot().set(serverSpec.getAot());
                 task.setDescription("Generates OpenAPI models from an OpenAPI definition");
                 configureServerTask(serverSpec, task);
                 task.getOutputKinds().add(CodegenConstants.MODELS);
@@ -126,6 +128,7 @@ public abstract class DefaultOpenApiExtension implements OpenApiExtension {
         spec.getUseOptional().convention(false);
         spec.getUseReactive().convention(true);
         spec.getLombok().convention(false);
+        spec.getNoArgsConstructor().convention(false);
         spec.getKsp().convention(false);
         spec.getGeneratedAnnotation().convention(true);
         spec.getFluxForArrays().convention(false);
@@ -162,6 +165,15 @@ public abstract class DefaultOpenApiExtension implements OpenApiExtension {
         spec.getJsonIncludeAlwaysForRequiredFields().convention(false);
         spec.getRequiredPropertiesInConstructor().convention(true);
         spec.getGenerateControllerAsAbstract().convention(false);
+
+        spec.getUseUrlConnectionCache().convention(false);
+        spec.getGenerateEnumConverters().convention(true);
+        spec.getUseTags().convention(true);
+        spec.getGenerateOperationOnlyForFirstTag().convention(true);
+        spec.getJvmOverloads().convention(false);
+        spec.getJvmRecord().convention(false);
+        spec.getJavaCompatibility().convention(true);
+        spec.getUserParameterMode().convention("NONE");
 
         withJava(() -> {
                 var compileOnlyDeps = project.getConfigurations().getByName("compileOnly").getDependencies();
@@ -207,6 +219,7 @@ public abstract class DefaultOpenApiExtension implements OpenApiExtension {
         task.getParameterMappings().convention(openApiSpec.getParameterMappings());
         task.getLang().convention(openApiSpec.getLang());
         task.getLombok().convention(openApiSpec.getLombok());
+        task.getNoArgsConstructor().convention(openApiSpec.getNoArgsConstructor());
         task.getKsp().convention(openApiSpec.getKsp());
         task.getGeneratedAnnotation().convention(openApiSpec.getGeneratedAnnotation());
         task.getFluxForArrays().convention(openApiSpec.getFluxForArrays());
@@ -253,6 +266,16 @@ public abstract class DefaultOpenApiExtension implements OpenApiExtension {
         task.getJsonIncludeAlwaysForRequiredFields().convention(openApiSpec.getJsonIncludeAlwaysForRequiredFields());
         task.getRequiredPropertiesInConstructor().convention(openApiSpec.getRequiredPropertiesInConstructor());
         task.getGenerateControllerAsAbstract().convention(openApiSpec.getGenerateControllerAsAbstract());
+
+        task.getUseUrlConnectionCache().convention(openApiSpec.getUseUrlConnectionCache());
+        task.getGenerateEnumConverters().convention(openApiSpec.getGenerateEnumConverters());
+        task.getUseTags().convention(openApiSpec.getUseTags());
+        task.getGenerateOperationOnlyForFirstTag().convention(openApiSpec.getGenerateOperationOnlyForFirstTag());
+
+        task.getJvmOverloads().convention(openApiSpec.getJvmOverloads());
+        task.getJvmRecord().convention(openApiSpec.getJvmRecord());
+        task.getJavaCompatibility().convention(openApiSpec.getJavaCompatibility());
+        task.getUserParameterMode().convention(openApiSpec.getUserParameterMode());
     }
 
     private void withJavaSourceSets(Consumer<? super SourceSetContainer> consumer) {
@@ -268,7 +291,18 @@ public abstract class DefaultOpenApiExtension implements OpenApiExtension {
         if (names.add(name)) {
             var clientSpec = project.getObjects().newInstance(OpenApiClientSpec.class);
             configureCommonExtensionDefaults(clientSpec);
+
+            clientSpec.getClientId();
+            clientSpec.getClientPath().convention(false);
             clientSpec.getUseAuth().convention(false);
+            clientSpec.getBasePathSeparator().convention(".");
+            clientSpec.getAdditionalClientTypeAnnotations();
+            clientSpec.getGenerateAuthClasses().convention(true);
+            clientSpec.getAuthFilter().convention(true);
+            clientSpec.getUseOauth().convention(true);
+            clientSpec.getUseBasicAuth().convention(true);
+            clientSpec.getUseApiKeyAuth().convention(true);
+
             spec.execute(clientSpec);
             var client = project.getTasks().register(generateApisTaskName(name), OpenApiClientGenerator.class, task -> {
                 configureCommonProperties(name, task, clientSpec, definition);
@@ -332,8 +366,18 @@ public abstract class DefaultOpenApiExtension implements OpenApiExtension {
         task.getClientPath().convention(clientSpec.getClientPath());
         task.getAdditionalClientTypeAnnotations().set(clientSpec.getAdditionalClientTypeAnnotations());
         task.getBasePathSeparator().convention(clientSpec.getBasePathSeparator());
-        task.getAuthorizationFilterPattern().convention(clientSpec.getAuthorizationFilterPattern());
+
         task.getUseAuth().convention(clientSpec.getUseAuth());
+        task.getGenerateAuthClasses().convention(clientSpec.getGenerateAuthClasses());
+        task.getAuthFilter().convention(clientSpec.getAuthFilter());
+        task.getUseOauth().convention(clientSpec.getUseOauth());
+        task.getUseBasicAuth().convention(clientSpec.getUseBasicAuth());
+        task.getUseApiKeyAuth().convention(clientSpec.getUseApiKeyAuth());
+        task.getAuthorizationFilterPattern().convention(clientSpec.getAuthorizationFilterPattern());
+        task.getAuthorizationFilterPatternStyle().convention(clientSpec.getAuthorizationFilterPatternStyle());
+        task.getAuthFilterClientIds().convention(clientSpec.getAuthFilterClientIds());
+        task.getAuthFilterExcludedClientIds().convention(clientSpec.getAuthFilterExcludedClientIds());
+        task.getAuthConfigName().convention(clientSpec.getAuthConfigName());
     }
 
     private static void throwDuplicateEntryFor(String name) {
@@ -352,6 +396,9 @@ public abstract class DefaultOpenApiExtension implements OpenApiExtension {
         task.getControllerPackage().convention(serverSpec.getControllerPackage());
         task.getUseAuth().convention(serverSpec.getUseAuth());
         task.getAot().convention(serverSpec.getAot());
+        task.getGenerateHardNullable().convention(serverSpec.getGenerateHardNullable());
+        task.getGenerateStreamingFileUpload().convention(serverSpec.getGenerateStreamingFileUpload());
+        task.getUserParameterMode().convention(serverSpec.getUserParameterMode());
     }
 
 }

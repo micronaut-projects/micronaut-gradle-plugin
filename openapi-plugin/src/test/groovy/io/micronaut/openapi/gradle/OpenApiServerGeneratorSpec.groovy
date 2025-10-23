@@ -161,6 +161,8 @@ class OpenApiServerGeneratorSpec extends AbstractOpenApiGeneratorSpec {
                         useReactive = true
                         generatedAnnotation = false
                         fluxForArrays = true
+                        useAuth = true
+                        userParameterMode = "AUTHENTICATION"
                         aot = true
                         apiNamePrefix = "ApiPrefix"
                         apiNameSuffix = "ApiSuffix"

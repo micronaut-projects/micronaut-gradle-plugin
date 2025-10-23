@@ -24,4 +24,8 @@ public interface OpenApiServerSpec extends OpenApiSpec {
     Property<Boolean> getUseAuth();
 
     Property<Boolean> getAot();
+
+    Property<Boolean> getGenerateHardNullable();
+
+    Property<Boolean> getGenerateStreamingFileUpload();
 }

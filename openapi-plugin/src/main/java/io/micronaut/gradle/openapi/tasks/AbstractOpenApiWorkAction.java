@@ -70,6 +70,8 @@ public abstract class AbstractOpenApiWorkAction<T extends AbstractOpenApiWorkAct
 
         Property<Boolean> getLombok();
 
+        Property<Boolean> getNoArgsConstructor();
+
         Property<Boolean> getKsp();
 
         Property<Boolean> getGeneratedAnnotation();
@@ -151,6 +153,22 @@ public abstract class AbstractOpenApiWorkAction<T extends AbstractOpenApiWorkAct
         Property<Boolean> getRequiredPropertiesInConstructor();
 
         Property<Boolean> getGenerateControllerAsAbstract();
+
+        Property<Boolean> getUseUrlConnectionCache();
+
+        Property<Boolean> getGenerateEnumConverters();
+
+        Property<Boolean> getUseTags();
+
+        Property<Boolean> getGenerateOperationOnlyForFirstTag();
+
+        Property<Boolean> getJvmOverloads();
+
+        Property<Boolean> getJvmRecord();
+
+        Property<Boolean> getJavaCompatibility();
+
+        Property<String> getUserParameterMode();
     }
 
     protected abstract void configureBuilder(MicronautCodeGeneratorBuilder builder);
@@ -168,78 +186,84 @@ public abstract class AbstractOpenApiWorkAction<T extends AbstractOpenApiWorkAct
                     .map(MicronautCodeGeneratorEntryPoint.OutputKind::of)
                     .toArray(MicronautCodeGeneratorEntryPoint.OutputKind[]::new)
             )
-            .withOptions(options -> options
-                .withLang("kotlin".equalsIgnoreCase(lang) ? GeneratorLanguage.KOTLIN : GeneratorLanguage.JAVA)
-                .withApiPackage(parameters.getApiPackageName().get())
-                .withInvokerPackage(parameters.getInvokerPackageName().get())
-                .withModelPackage(parameters.getModelPackageName().get())
-                .withBeanValidation(parameters.getUseBeanValidation().get())
-                .withUseOneOfInterfaces(parameters.getUseOneOfInterfaces().get())
-                .withOptional(parameters.getUseOptional().get())
-                .withReactive(parameters.getUseReactive().get())
-                .withSerializationLibrary(SerializationLibraryKind.valueOf(parameters.getSerializationFramework().get().toUpperCase(Locale.US)))
-                .withGenerateHttpResponseAlways(parameters.getAlwaysUseGenerateHttpResponse().get())
-                .withGenerateHttpResponseWhereRequired(parameters.getGenerateHttpResponseWhereRequired().get())
-                .withDateTimeFormat(MicronautCodeGeneratorOptionsBuilder.DateTimeFormat.valueOf(parameters.getDateTimeFormat().get().toUpperCase(Locale.US)))
-                .withParameterMappings(parameters.getParameterMappings()
-                    .get()
-                    .stream()
-                    .map(mapping -> new ParameterMapping(
-                        mapping.getName(),
-                        ParameterMapping.ParameterLocation.valueOf(mapping.getLocation().name()),
-                        mapping.getMappedType(),
-                        mapping.getMappedName(),
-                        mapping.isValidated())
+            .withOptions(options ->
+                options
+                    .withLang("kotlin".equalsIgnoreCase(lang) ? GeneratorLanguage.KOTLIN : GeneratorLanguage.JAVA)
+                    .withApiPackage(parameters.getApiPackageName().getOrNull())
+                    .withInvokerPackage(parameters.getInvokerPackageName().getOrNull())
+                    .withModelPackage(parameters.getModelPackageName().getOrNull())
+                    .withBeanValidation(parameters.getUseBeanValidation().get())
+                    .withUseOneOfInterfaces(parameters.getUseOneOfInterfaces().get())
+                    .withOptional(parameters.getUseOptional().get())
+                    .withReactive(parameters.getUseReactive().get())
+                    .withSerializationLibrary(SerializationLibraryKind.valueOf(parameters.getSerializationFramework().get().toUpperCase(Locale.US)))
+                    .withGenerateHttpResponseAlways(parameters.getAlwaysUseGenerateHttpResponse().get())
+                    .withGenerateHttpResponseWhereRequired(parameters.getGenerateHttpResponseWhereRequired().get())
+                    .withDateTimeFormat(MicronautCodeGeneratorOptionsBuilder.DateTimeFormat.valueOf(parameters.getDateTimeFormat().get().toUpperCase(Locale.US)))
+                    .withParameterMappings(parameters.getParameterMappings()
+                        .get()
+                        .stream()
+                        .map(mapping -> new ParameterMapping(
+                            mapping.getName(),
+                            ParameterMapping.ParameterLocation.valueOf(mapping.getLocation().name()),
+                            mapping.getMappedType(),
+                            mapping.getMappedName(),
+                            mapping.isValidated())
+                        )
+                        .toList()
                     )
-                    .toList()
-                )
-                .withResponseBodyMappings(parameters.getResponseBodyMappings()
-                    .get()
-                    .stream()
-                    .map(mapping -> new ResponseBodyMapping(
-                        mapping.getHeaderName(),
-                        mapping.getMappedBodyType(),
-                        mapping.isListWrapper(),
-                        mapping.isValidated()))
-                    .toList()
-                )
-                .withSchemaMapping(parameters.getSchemaMapping().get())
-                .withImportMapping(parameters.getImportMapping().get())
-                .withNameMapping(parameters.getNameMapping().get())
-                .withTypeMapping(parameters.getTypeMapping().get())
-                .withEnumNameMapping(parameters.getEnumNameMapping().get())
-                .withModelNameMapping(parameters.getModelNameMapping().get())
-                .withInlineSchemaNameMapping(parameters.getInlineSchemaNameMapping().get())
-                .withInlineSchemaOption(parameters.getInlineSchemaOption().get())
-                .withOpenapiNormalizer(parameters.getOpenapiNormalizer().get())
-                .withApiNamePrefix(parameters.getApiNamePrefix().get())
-                .withApiNameSuffix(parameters.getApiNameSuffix().get())
-                .withModelNamePrefix(parameters.getModelNamePrefix().get())
-                .withModelNameSuffix(parameters.getModelNameSuffix().get())
-                .withGenerateSwaggerAnnotations(parameters.getGenerateSwaggerAnnotations().get())
-                .withImplicitHeaders(parameters.getImplicitHeaders().get())
-                .withImplicitHeadersRegex(parameters.getImplicitHeadersRegex().get())
-                .withUseEnumCaseInsensitive(parameters.getUseEnumCaseInsensitive().get())
-                .withAdditionalEnumTypeAnnotations(parameters.getAdditionalEnumTypeAnnotations().get())
-                .withAdditionalModelTypeAnnotations(parameters.getAdditionalModelTypeAnnotations().get())
-                .withAdditionalOneOfTypeAnnotations(parameters.getAdditionalOneOfTypeAnnotations().get())
-                .withAdditionalProperties(parameters.getAdditionalProperties().get())
+                    .withResponseBodyMappings(parameters.getResponseBodyMappings()
+                        .get()
+                        .stream()
+                        .map(mapping -> new ResponseBodyMapping(
+                            mapping.getHeaderName(),
+                            mapping.getMappedBodyType(),
+                            mapping.isListWrapper(),
+                            mapping.isValidated()))
+                        .toList()
+                    )
+                    .withSchemaMapping(parameters.getSchemaMapping().getOrNull())
+                    .withImportMapping(parameters.getImportMapping().getOrNull())
+                    .withNameMapping(parameters.getNameMapping().getOrNull())
+                    .withTypeMapping(parameters.getTypeMapping().getOrNull())
+                    .withEnumNameMapping(parameters.getEnumNameMapping().getOrNull())
+                    .withModelNameMapping(parameters.getModelNameMapping().getOrNull())
+                    .withInlineSchemaNameMapping(parameters.getInlineSchemaNameMapping().getOrNull())
+                    .withInlineSchemaOption(parameters.getInlineSchemaOption().getOrNull())
+                    .withOpenapiNormalizer(parameters.getOpenapiNormalizer().getOrNull())
+                    .withApiNamePrefix(parameters.getApiNamePrefix().getOrNull())
+                    .withApiNameSuffix(parameters.getApiNameSuffix().getOrNull())
+                    .withModelNamePrefix(parameters.getModelNamePrefix().getOrNull())
+                    .withModelNameSuffix(parameters.getModelNameSuffix().getOrNull())
+                    .withGenerateSwaggerAnnotations(parameters.getGenerateSwaggerAnnotations().get())
+                    .withImplicitHeaders(parameters.getImplicitHeaders().get())
+                    .withImplicitHeadersRegex(parameters.getImplicitHeadersRegex().getOrNull())
+                    .withUseEnumCaseInsensitive(parameters.getUseEnumCaseInsensitive().get())
+                    .withAdditionalEnumTypeAnnotations(parameters.getAdditionalEnumTypeAnnotations().getOrNull())
+                    .withAdditionalModelTypeAnnotations(parameters.getAdditionalModelTypeAnnotations().getOrNull())
+                    .withAdditionalOneOfTypeAnnotations(parameters.getAdditionalOneOfTypeAnnotations().getOrNull())
+                    .withAdditionalProperties(parameters.getAdditionalProperties().getOrNull())
 
-                .withUseJakartaEe(parameters.getUseJakartaEe().get())
-                .withSortParamsByRequiredFlag(parameters.getSortParamsByRequiredFlag().get())
-                .withSkipOperationExample(parameters.getSkipOperationExample().get())
-                .withSkipSortingOperations(parameters.getSkipSortingOperations().get())
-                .withRemoveOperationIdPrefixDelimiter(parameters.getRemoveOperationIdPrefixDelimiter().get())
-                .withRemoveOperationIdPrefixCount(parameters.getRemoveOperationIdPrefixCount().get())
-                .withSortModelPropertiesByRequiredFlag(parameters.getSortModelPropertiesByRequiredFlag().get())
-                .withEnsureUniqueParams(parameters.getEnsureUniqueParams().get())
-                .withAllowUnicodeIdentifiers(parameters.getAllowUnicodeIdentifiers().get())
-                .withPrependFormOrBodyParameters(parameters.getPrependFormOrBodyParameters().get())
+                    .withUseJakartaEe(parameters.getUseJakartaEe().get())
+                    .withSortParamsByRequiredFlag(parameters.getSortParamsByRequiredFlag().get())
+                    .withSkipOperationExample(parameters.getSkipOperationExample().get())
+                    .withSkipSortingOperations(parameters.getSkipSortingOperations().get())
+                    .withRemoveOperationIdPrefixDelimiter(parameters.getRemoveOperationIdPrefixDelimiter().getOrNull())
+                    .withRemoveOperationIdPrefixCount(parameters.getRemoveOperationIdPrefixCount().get())
+                    .withSortModelPropertiesByRequiredFlag(parameters.getSortModelPropertiesByRequiredFlag().get())
+                    .withEnsureUniqueParams(parameters.getEnsureUniqueParams().get())
+                    .withAllowUnicodeIdentifiers(parameters.getAllowUnicodeIdentifiers().get())
+                    .withPrependFormOrBodyParameters(parameters.getPrependFormOrBodyParameters().get())
 
-                .withUseSealed(parameters.getUseSealed().get())
-                .withJsonIncludeAlwaysForRequiredFields(parameters.getJsonIncludeAlwaysForRequiredFields().get())
-                .withRequiredPropertiesInConstructor(parameters.getRequiredPropertiesInConstructor().get())
-                .withGenerateControllerAsAbstract(parameters.getGenerateControllerAsAbstract().get())
+                    .withUseSealed(parameters.getUseSealed().get())
+                    .withJsonIncludeAlwaysForRequiredFields(parameters.getJsonIncludeAlwaysForRequiredFields().get())
+                    .withRequiredPropertiesInConstructor(parameters.getRequiredPropertiesInConstructor().get())
+                    .withGenerateControllerAsAbstract(parameters.getGenerateControllerAsAbstract().get())
+
+                    .withUseUrlConnectionCache(parameters.getUseUrlConnectionCache().get())
+                    .withGenerateEnumConverters(parameters.getGenerateEnumConverters().get())
+                    .withUseTags(parameters.getUseTags().get())
+                    .withGenerateOperationOnlyForFirstTag(parameters.getGenerateOperationOnlyForFirstTag().get())
             );
 
         configureBuilder(builder);

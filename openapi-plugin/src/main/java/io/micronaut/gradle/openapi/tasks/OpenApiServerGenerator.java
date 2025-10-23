@@ -23,15 +23,25 @@ import org.gradle.api.tasks.Optional;
 @CacheableTask
 public abstract class OpenApiServerGenerator extends AbstractOpenApiGenerator<OpenApiServerWorkAction, OpenApiServerWorkAction.ServerParameters> {
 
+    @Optional
     @Input
     public abstract Property<String> getControllerPackage();
 
+    @Optional
     @Input
     public abstract Property<Boolean> getUseAuth();
 
     @Optional
     @Input
     public abstract Property<Boolean> getAot();
+
+    @Optional
+    @Input
+    public abstract Property<Boolean> getGenerateHardNullable();
+
+    @Optional
+    @Input
+    public abstract Property<Boolean> getGenerateStreamingFileUpload();
 
     @Override
     protected Class<OpenApiServerWorkAction> getWorkerAction() {
@@ -43,5 +53,8 @@ public abstract class OpenApiServerGenerator extends AbstractOpenApiGenerator<Op
         params.getControllerPackage().set(getControllerPackage());
         params.getUseAuth().set(getUseAuth());
         params.getAot().set(getAot());
+
+        params.getGenerateHardNullable().set(getGenerateHardNullable());
+        params.getGenerateStreamingFileUpload().set(getGenerateStreamingFileUpload());
     }
 }
