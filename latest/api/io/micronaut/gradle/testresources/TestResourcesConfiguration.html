@@ -89,7 +89,7 @@ extends io.micronaut.testresources.buildtools.KnownModules</span></div>
 <h2>Field Summary</h2>
 <div class="inherited-list">
 <h3 id="fields-inherited-from-class-io.micronaut.testresources.buildtools.KnownModules">Fields inherited from interface&nbsp;io.micronaut.testresources.buildtools.KnownModules</h3>
-<code>BOM, CLIENT, CONTROL_PANEL, CORE, ELASTICSEARCH, EMBEDDED, EXTENSIONS_CORE, EXTENSIONS_JUNIT_PLATFORM, HASHICORP_CONSUL, HASHICORP_VAULT, HIBERNATE_REACTIVE_CORE, HIBERNATE_REACTIVE_MARIADB, HIBERNATE_REACTIVE_MSSQL, HIBERNATE_REACTIVE_MYSQL, HIBERNATE_REACTIVE_ORACLE_FREE, HIBERNATE_REACTIVE_ORACLE_XE, HIBERNATE_REACTIVE_POSTGRESQL, HIVEMQ, JDBC_CORE, JDBC_MARIADB, JDBC_MSSQL, JDBC_MYSQL, JDBC_ORACLE_FREE, JDBC_ORACLE_XE, JDBC_POSTGRESQL, KAFKA, LOCALSTACK_CORE, LOCALSTACK_DYNAMODB, LOCALSTACK_S3, LOCALSTACK_SNS, LOCALSTACK_SQS, MONGODB, NEO4J, OPENSEARCH, R2DBC_CORE, R2DBC_MARIADB, R2DBC_MSSQL, R2DBC_MYSQL, R2DBC_ORACLE_FREE, R2DBC_ORACLE_XE, R2DBC_POOL, R2DBC_POSTGRESQL, RABBITMQ, REDIS, SERVER, SOLR, TESTCONTAINERS</code></div>
+<code>BOM, CLIENT, CONTROL_PANEL, CORE, ELASTICSEARCH, EMBEDDED, EXTENSIONS_CORE, EXTENSIONS_JUNIT_PLATFORM, HASHICORP_CONSUL, HASHICORP_VAULT, HIBERNATE_REACTIVE_CORE, HIBERNATE_REACTIVE_MARIADB, HIBERNATE_REACTIVE_MSSQL, HIBERNATE_REACTIVE_MYSQL, HIBERNATE_REACTIVE_ORACLE_FREE, HIBERNATE_REACTIVE_ORACLE_XE, HIBERNATE_REACTIVE_POSTGRESQL, HIVEMQ, JDBC_CORE, JDBC_MARIADB, JDBC_MSSQL, JDBC_MYSQL, JDBC_ORACLE_FREE, JDBC_ORACLE_TEST_PILOT, JDBC_ORACLE_XE, JDBC_POSTGRESQL, KAFKA, LOCALSTACK_CORE, LOCALSTACK_DYNAMODB, LOCALSTACK_S3, LOCALSTACK_SNS, LOCALSTACK_SQS, MONGODB, NEO4J, OPENSEARCH, R2DBC_CORE, R2DBC_MARIADB, R2DBC_MSSQL, R2DBC_MYSQL, R2DBC_ORACLE_FREE, R2DBC_ORACLE_XE, R2DBC_POOL, R2DBC_POSTGRESQL, RABBITMQ, REDIS, SERVER, SOLR, TESTCONTAINERS</code></div>
 </section>
 </li>
 <!-- ========== METHOD SUMMARY =========== -->
@@ -139,6 +139,18 @@ extends io.micronaut.testresources.buildtools.KnownModules</span></div>
  the test resources modules to include by inspecting
  the project dependencies: instead the user will need
  to add all modules explicitly.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>org.gradle.api.provider.Property&lt;<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&gt;</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#getJavaExecutable()" class="member-name-link">getJavaExecutable</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">
+<div class="block">An alternative to <a href="#getJavaLauncher()"><code>getJavaLauncher()</code></a> in which you can
+ specify the full path to the Java executable used to start the
+ test resources service, instead of a toolchain definition.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>org.gradle.api.provider.Property&lt;org.gradle.jvm.toolchain.JavaLauncher&gt;</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#getJavaLauncher()" class="member-name-link">getJavaLauncher</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">
+<div class="block">Sets the Java launcher for the test resources service.</div>
 </div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>org.gradle.api.provider.MapProperty&lt;<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>,<wbr><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&gt;</code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#getServerEnvironment()" class="member-name-link">getServerEnvironment</a>()</code></div>
@@ -342,6 +354,33 @@ extends io.micronaut.testresources.buildtools.KnownModules</span></div>
 <dl class="notes">
 <dt>Returns:</dt>
 <dd>the debug property</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="getJavaLauncher()">
+<h3>getJavaLauncher</h3>
+<div class="member-signature"><span class="return-type">org.gradle.api.provider.Property&lt;org.gradle.jvm.toolchain.JavaLauncher&gt;</span>&nbsp;<span class="element-name">getJavaLauncher</span>()</div>
+<div class="block">Sets the Java launcher for the test resources service.
+ If the project sets a Java toolchain, the same launcher will be used,
+ otherwise the service will be started with the same Java executable
+ as the one which was used to start the Gradle build.</div>
+<dl class="notes">
+<dt>Returns:</dt>
+<dd>the java launcher</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="getJavaExecutable()">
+<h3>getJavaExecutable</h3>
+<div class="member-signature"><span class="return-type">org.gradle.api.provider.Property&lt;<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&gt;</span>&nbsp;<span class="element-name">getJavaExecutable</span>()</div>
+<div class="block">An alternative to <a href="#getJavaLauncher()"><code>getJavaLauncher()</code></a> in which you can
+ specify the full path to the Java executable used to start the
+ test resources service, instead of a toolchain definition.</div>
+<dl class="notes">
+<dt>Returns:</dt>
+<dd>the path to the Java executable</dd>
 </dl>
 </section>
 </li>
