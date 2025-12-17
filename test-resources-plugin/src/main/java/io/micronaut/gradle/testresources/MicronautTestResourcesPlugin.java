@@ -107,19 +107,22 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
     }
 
     private void configurePlugin(Project project) {
+        var isIdeaSync = Boolean.getBoolean("idea.sync.active");
         Configuration server = createTestResourcesServerConfiguration(project);
         Configuration outgoing = createTestResourcesOutgoingConfiguration(project);
         ProviderFactory providers = project.getProviders();
         Provider<Integer> explicitPort = providers.systemProperty("micronaut.test-resources.server.port").map(Integer::parseInt);
         JavaPluginExtension javaPluginExtension = PluginsHelper.javaPluginExtensionOf(project);
-        TestResourcesConfiguration config = createTestResourcesConfiguration(project, explicitPort, javaPluginExtension);
+        TestResourcesConfiguration config = createTestResourcesConfiguration(project, explicitPort, javaPluginExtension, isIdeaSync);
         SourceSet testResourcesSourceSet = createTestResourcesSourceSet(javaPluginExtension);
         DependencyHandler dependencies = project.getDependencies();
         Configuration testResourcesCompileOnly = project.getConfigurations().getByName(testResourcesSourceSet.getCompileOnlyConfigurationName());
         Configuration testResourcesApi = project.getConfigurations().getByName(testResourcesSourceSet.getImplementationConfigurationName());
-        testResourcesCompileOnly.getDependencies().addLater(config.getVersion().map(v -> dependencies.create("io.micronaut.testresources:micronaut-test-resources-server:" + v)));
-        testResourcesApi.getDependencies().addLater(config.getVersion().map(v -> dependencies.create("io.micronaut.testresources:micronaut-test-resources-core:" + v)));
-        server.getDependencies().addAllLater(buildTestResourcesDependencyList(project, dependencies, config, testResourcesSourceSet));
+        if (!isIdeaSync) {
+            testResourcesCompileOnly.getDependencies().addLater(config.getVersion().map(v -> dependencies.create("io.micronaut.testresources:micronaut-test-resources-server:" + v)));
+            testResourcesApi.getDependencies().addLater(config.getVersion().map(v -> dependencies.create("io.micronaut.testresources:micronaut-test-resources-core:" + v)));
+            server.getDependencies().addAllLater(buildTestResourcesDependencyList(project, dependencies, config, testResourcesSourceSet));
+        }
         String accessToken = UUID.randomUUID().toString();
         Provider<String> accessTokenProvider = providers.provider(() -> accessToken);
         DirectoryProperty buildDirectory = project.getLayout().getBuildDirectory();
@@ -273,11 +276,11 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
         });
     }
 
-    private TestResourcesConfiguration createTestResourcesConfiguration(Project project, Provider<Integer> explicitPort, JavaPluginExtension javaPluginExtension) {
+    private TestResourcesConfiguration createTestResourcesConfiguration(Project project, Provider<Integer> explicitPort, JavaPluginExtension javaPluginExtension, boolean isIdeaSync) {
         MicronautExtension micronautExtension = PluginsHelper.findMicronautExtension(project);
         TestResourcesConfiguration testResources = micronautExtension.getExtensions().create("testResources", TestResourcesConfiguration.class);
         ProviderFactory providers = project.getProviders();
-        testResources.getEnabled().convention(true);
+        testResources.getEnabled().convention(!isIdeaSync);
         testResources.getVersion().convention(VersionInfo.getVersion());
         testResources.getExplicitPort().convention(explicitPort);
         testResources.getInferClasspath().convention(true);
