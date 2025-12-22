@@ -235,7 +235,7 @@ public abstract class StartTestResourcesService extends DefaultTask {
                     executable = javaLauncher.getExecutablePath().getAsFile().getAbsolutePath();
                 }
                 String finalExecutable = executable;
-                var logger = getProject().getLogger();
+                var logger = getLogger();
                 var result = getExecOperations().javaexec(spec -> {
                     if (finalExecutable != null) {
                         logger.info("Starting test resources service with Java at {}", finalExecutable);
