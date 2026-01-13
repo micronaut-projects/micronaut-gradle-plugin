@@ -64,6 +64,7 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
 
     private static final List<Integer> SUPPORTED_JAVA_VERSIONS = List.of(
             // keep those in descending order
+            25,
             21,
             17
     );
