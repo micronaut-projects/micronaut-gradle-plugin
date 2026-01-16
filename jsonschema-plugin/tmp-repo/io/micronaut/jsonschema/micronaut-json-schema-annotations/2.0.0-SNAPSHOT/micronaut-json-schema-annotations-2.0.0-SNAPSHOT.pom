@@ -8,8 +8,8 @@
   <!-- do_not_remove: published-with-gradle-metadata -->
   <modelVersion>4.0.0</modelVersion>
   <groupId>io.micronaut.jsonschema</groupId>
-  <artifactId>micronaut-json-schema-generator</artifactId>
-  <version>1.5.4-SNAPSHOT</version>
+  <artifactId>micronaut-json-schema-annotations</artifactId>
+  <version>2.0.0-SNAPSHOT</version>
   <name>Micronaut JSON schema</name>
   <description>JSON schema support for Micronaut</description>
   <url>https://micronaut.io</url>
@@ -36,7 +36,7 @@
       <dependency>
         <groupId>io.micronaut</groupId>
         <artifactId>micronaut-core-bom</artifactId>
-        <version>4.8.11</version>
+        <version>5.0.0-M8</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -46,50 +46,8 @@
     <dependency>
       <groupId>io.micronaut</groupId>
       <artifactId>micronaut-inject</artifactId>
-      <version>4.8.11</version>
+      <version>5.0.0-M8</version>
       <scope>compile</scope>
-    </dependency>
-    <dependency>
-      <groupId>io.micronaut.jsonschema</groupId>
-      <artifactId>micronaut-json-schema-annotations</artifactId>
-      <version>1.5.4-SNAPSHOT</version>
-      <scope>compile</scope>
-    </dependency>
-    <dependency>
-      <groupId>io.micronaut.jsonschema</groupId>
-      <artifactId>micronaut-json-schema-common</artifactId>
-      <version>1.5.4-SNAPSHOT</version>
-      <scope>compile</scope>
-    </dependency>
-    <dependency>
-      <groupId>io.micronaut.sourcegen</groupId>
-      <artifactId>micronaut-sourcegen-model</artifactId>
-      <version>1.7.5</version>
-      <scope>runtime</scope>
-    </dependency>
-    <dependency>
-      <groupId>io.micronaut.sourcegen</groupId>
-      <artifactId>micronaut-sourcegen-generator</artifactId>
-      <version>1.7.5</version>
-      <scope>runtime</scope>
-    </dependency>
-    <dependency>
-      <groupId>io.micronaut.sourcegen</groupId>
-      <artifactId>micronaut-sourcegen-generator-java</artifactId>
-      <version>1.7.5</version>
-      <scope>runtime</scope>
-    </dependency>
-    <dependency>
-      <groupId>io.micronaut.sourcegen</groupId>
-      <artifactId>micronaut-sourcegen-annotations</artifactId>
-      <version>1.7.5</version>
-      <scope>runtime</scope>
-    </dependency>
-    <dependency>
-      <groupId>io.micronaut.serde</groupId>
-      <artifactId>micronaut-serde-jackson</artifactId>
-      <version>2.14.0</version>
-      <scope>runtime</scope>
     </dependency>
   </dependencies>
 </project>
