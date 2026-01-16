@@ -7,6 +7,7 @@ repositories {
     maven {
         url("file://${layout.projectDirectory.dir("tmp-repo")}")
     }
+    mavenLocal()
     maven {
         url("https://s01.oss.sonatype.org/content/repositories/snapshots")
     }

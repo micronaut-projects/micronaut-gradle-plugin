@@ -1,0 +1,143 @@
+{
+  "formatVersion": "1.1",
+  "component": {
+    "group": "io.micronaut.jsonschema",
+    "module": "micronaut-json-schema-common",
+    "version": "2.0.0-SNAPSHOT",
+    "attributes": {
+      "org.gradle.status": "integration"
+    }
+  },
+  "createdBy": {
+    "gradle": {
+      "version": "9.2.0"
+    }
+  },
+  "variants": [
+    {
+      "name": "apiElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": 21,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-api"
+      },
+      "dependencies": [
+        {
+          "group": "io.micronaut",
+          "module": "micronaut-inject",
+          "version": {
+            "requires": "5.0.0-M8"
+          }
+        },
+        {
+          "group": "tools.jackson.core",
+          "module": "jackson-databind",
+          "version": {
+            "requires": "3.0.1"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "micronaut-json-schema-common-2.0.0-SNAPSHOT.jar",
+          "url": "micronaut-json-schema-common-2.0.0-SNAPSHOT.jar",
+          "size": 19118,
+          "sha512": "7e2a3591cb9cb21b6065f7d05a6ae44d5d6176e9788af73f189de09fd6cf743f86f6fe139d18f856fb085c59d0293485f704d4d676a06120db8a27168282eb51",
+          "sha256": "2312a2baebf1ee08cf3d42e635ff35c4aff23be8a933fc6cc0e3e06a3e973e78",
+          "sha1": "9f3df750426a89f56e3d97d1fb3b4caa8c43a12e",
+          "md5": "ecbbe0070e5c9d756fe27b5d2457f471"
+        }
+      ]
+    },
+    {
+      "name": "runtimeElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": 21,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-runtime"
+      },
+      "dependencies": [
+        {
+          "group": "io.micronaut",
+          "module": "micronaut-inject",
+          "version": {
+            "requires": "5.0.0-M8"
+          }
+        },
+        {
+          "group": "tools.jackson.core",
+          "module": "jackson-databind",
+          "version": {
+            "requires": "3.0.1"
+          }
+        },
+        {
+          "group": "io.micronaut",
+          "module": "micronaut-core-bom",
+          "version": {
+            "requires": "5.0.0-M8"
+          },
+          "attributes": {
+            "org.gradle.category": "platform"
+          },
+          "endorseStrictVersions": true
+        }
+      ],
+      "files": [
+        {
+          "name": "micronaut-json-schema-common-2.0.0-SNAPSHOT.jar",
+          "url": "micronaut-json-schema-common-2.0.0-SNAPSHOT.jar",
+          "size": 19118,
+          "sha512": "7e2a3591cb9cb21b6065f7d05a6ae44d5d6176e9788af73f189de09fd6cf743f86f6fe139d18f856fb085c59d0293485f704d4d676a06120db8a27168282eb51",
+          "sha256": "2312a2baebf1ee08cf3d42e635ff35c4aff23be8a933fc6cc0e3e06a3e973e78",
+          "sha1": "9f3df750426a89f56e3d97d1fb3b4caa8c43a12e",
+          "md5": "ecbbe0070e5c9d756fe27b5d2457f471"
+        }
+      ]
+    },
+    {
+      "name": "sourcesElements",
+      "attributes": {
+        "org.gradle.category": "documentation",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.docstype": "sources",
+        "org.gradle.usage": "java-runtime"
+      },
+      "files": [
+        {
+          "name": "micronaut-json-schema-common-2.0.0-SNAPSHOT-sources.jar",
+          "url": "micronaut-json-schema-common-2.0.0-SNAPSHOT-sources.jar",
+          "size": 10205,
+          "sha512": "9feaa335f6fe1457fbb810be710a27e43b956fe901e18371ad68d1b2e336ab54ee2cd99d3f6135a02ad4875814ca78c84319781d418e83e5cdaaaf5a064d2aac",
+          "sha256": "089e05af34b06cf3ca168513792761044fc37f06bac6c8603691bc5c53240b19",
+          "sha1": "323585bcae38b5b616aff94e64211671641bce17",
+          "md5": "ac87ab3fda0b91d59448176be2a0f777"
+        }
+      ]
+    },
+    {
+      "name": "javadocElements",
+      "attributes": {
+        "org.gradle.category": "documentation",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.docstype": "javadoc",
+        "org.gradle.usage": "java-runtime"
+      },
+      "files": [
+        {
+          "name": "micronaut-json-schema-common-2.0.0-SNAPSHOT-javadoc.jar",
+          "url": "micronaut-json-schema-common-2.0.0-SNAPSHOT-javadoc.jar",
+          "size": 4181268,
+          "sha512": "0af1de4c30c6427068d9e5c160c531445235c73deac2eb2afa9f9fa7486d80eaa9edcc1c27a15b75a7f280fabb3a4a0a8c125e800a05bb034c8fce4e96e55b1f",
+          "sha256": "1f33ed30554be94706dd8bda3e57215f49528ecb996ba9fda61c4d5bb711e514",
+          "sha1": "4ade4ef84c86e8637c1266019cf8830d0c3d7caf",
+          "md5": "24451df56e1432ec44d3c5bf83609212"
+        }
+      ]
+    }
+  ]
+}
