@@ -14,6 +14,9 @@ import static org.mockserver.model.HttpRequest.request
 import static org.mockserver.model.HttpResponse.response
 
 class JsonSchemaGeneratorSpec extends AbstractGradleBuildSpec{
+
+    var repo = new File("tmp-repo").absolutePath
+
     def "can generate source code from URL"() {
         given:
         def mockServer = ClientAndServer.startClientAndServer()
@@ -33,6 +36,10 @@ class JsonSchemaGeneratorSpec extends AbstractGradleBuildSpec{
                 id "io.micronaut.jsonschema"
             }
             
+            repositories {
+                maven { url("$repo") }
+            }
+
             micronaut {
                 version "$micronautVersion"
                 jsonschema {
@@ -73,9 +80,14 @@ class JsonSchemaGeneratorSpec extends AbstractGradleBuildSpec{
         given:
         settingsFile << "rootProject.name = 'jsonschema-url'"
         buildFile << """
+            import io.micronaut.gradle.jsonschema.model.Language
             plugins {
                 id "io.micronaut.minimal.application"
                 id "io.micronaut.jsonschema"
+            }
+
+            repositories {
+                maven { url("$repo") }
             }
             
             micronaut {
@@ -83,8 +95,9 @@ class JsonSchemaGeneratorSpec extends AbstractGradleBuildSpec{
                 jsonschema {
                     fromFile(file("animal.schema.json")) {
                         outputPackageName = "com.example.animal"
-                        lang = "java"
+                        language = Language.JAVA
                         outputDirectory = layout.buildDirectory.dir("generated/json-schema")
+                        javadoc.replaceHTML = false
                     }
                 }
             }
@@ -111,9 +124,9 @@ class JsonSchemaGeneratorSpec extends AbstractGradleBuildSpec{
         result.task(":compileJava").outcome == TaskOutcome.SUCCESS
 
         and:
-        file("build/generated/json-schema/generatingSourcesFromAnimal/src/main/java/com/example/animal/").exists()
-        file("build/generated/json-schema/generatingSourcesFromAnimal/src/main/java/com/example/animal/").list().size() == 5
-        file("build/generated/json-schema/generatingSourcesFromAnimal/src/main/java/com/example/animal/Animal.java").exists()
+        file("build/generated/json-schema/src/main/java/com/example/animal/").exists()
+        file("build/generated/json-schema/src/main/java/com/example/animal/").list().size() == 5
+        file("build/generated/json-schema/src/main/java/com/example/animal/Animal.java").exists()
     }
 
     @Ignore("This test is broken")
@@ -124,6 +137,10 @@ class JsonSchemaGeneratorSpec extends AbstractGradleBuildSpec{
             plugins {
                 id "io.micronaut.minimal.application"
                 id "io.micronaut.jsonschema"
+            }
+
+            repositories {
+                maven { url("$repo") }
             }
             
             micronaut {
