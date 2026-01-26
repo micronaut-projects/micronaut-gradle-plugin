@@ -1,0 +1,192 @@
+{
+  "formatVersion": "1.1",
+  "component": {
+    "group": "io.micronaut.jsonschema",
+    "module": "micronaut-json-schema-generator",
+    "version": "2.0.0-SNAPSHOT",
+    "attributes": {
+      "org.gradle.status": "integration"
+    }
+  },
+  "createdBy": {
+    "gradle": {
+      "version": "9.2.0"
+    }
+  },
+  "variants": [
+    {
+      "name": "apiElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": 21,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-api"
+      },
+      "dependencies": [
+        {
+          "group": "io.micronaut",
+          "module": "micronaut-inject",
+          "version": {
+            "requires": "5.0.0-M8"
+          }
+        },
+        {
+          "group": "io.micronaut.jsonschema",
+          "module": "micronaut-json-schema-annotations",
+          "version": {
+            "requires": "2.0.0-SNAPSHOT"
+          }
+        },
+        {
+          "group": "io.micronaut.jsonschema",
+          "module": "micronaut-json-schema-common",
+          "version": {
+            "requires": "2.0.0-SNAPSHOT"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "micronaut-json-schema-generator-2.0.0-SNAPSHOT.jar",
+          "url": "micronaut-json-schema-generator-2.0.0-SNAPSHOT.jar",
+          "size": 56581,
+          "sha512": "d489d8d60340316acad9ef75323913a6720c7bf70c83ed4588496b2a9d23274fb8c1ae953292ac4dfcc9da2bebcb64ab26e96172732a6e60f839b1a60d4643a9",
+          "sha256": "e5a4e786528c22c62ae70350e3ac93cd34fd5ba474c04309952a8913e36e7155",
+          "sha1": "1cce7dd697ea51ae5f690e28fa035f9f2973f8b1",
+          "md5": "25a1902d79727f166296f7865b072369"
+        }
+      ]
+    },
+    {
+      "name": "runtimeElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": 21,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-runtime"
+      },
+      "dependencies": [
+        {
+          "group": "io.micronaut.sourcegen",
+          "module": "micronaut-sourcegen-model",
+          "version": {
+            "requires": "2.0.0-M1"
+          }
+        },
+        {
+          "group": "io.micronaut.sourcegen",
+          "module": "micronaut-sourcegen-generator",
+          "version": {
+            "requires": "2.0.0-M1"
+          }
+        },
+        {
+          "group": "io.micronaut.sourcegen",
+          "module": "micronaut-sourcegen-generator-java",
+          "version": {
+            "requires": "2.0.0-M1"
+          }
+        },
+        {
+          "group": "io.micronaut.sourcegen",
+          "module": "micronaut-sourcegen-annotations",
+          "version": {
+            "requires": "2.0.0-M1"
+          }
+        },
+        {
+          "group": "io.micronaut.serde",
+          "module": "micronaut-serde-jackson",
+          "version": {
+            "requires": "3.0.0-M2"
+          }
+        },
+        {
+          "group": "io.micronaut",
+          "module": "micronaut-inject",
+          "version": {
+            "requires": "5.0.0-M8"
+          }
+        },
+        {
+          "group": "io.micronaut.jsonschema",
+          "module": "micronaut-json-schema-annotations",
+          "version": {
+            "requires": "2.0.0-SNAPSHOT"
+          }
+        },
+        {
+          "group": "io.micronaut.jsonschema",
+          "module": "micronaut-json-schema-common",
+          "version": {
+            "requires": "2.0.0-SNAPSHOT"
+          }
+        },
+        {
+          "group": "io.micronaut",
+          "module": "micronaut-core-bom",
+          "version": {
+            "requires": "5.0.0-M8"
+          },
+          "attributes": {
+            "org.gradle.category": "platform"
+          },
+          "endorseStrictVersions": true
+        }
+      ],
+      "files": [
+        {
+          "name": "micronaut-json-schema-generator-2.0.0-SNAPSHOT.jar",
+          "url": "micronaut-json-schema-generator-2.0.0-SNAPSHOT.jar",
+          "size": 56581,
+          "sha512": "d489d8d60340316acad9ef75323913a6720c7bf70c83ed4588496b2a9d23274fb8c1ae953292ac4dfcc9da2bebcb64ab26e96172732a6e60f839b1a60d4643a9",
+          "sha256": "e5a4e786528c22c62ae70350e3ac93cd34fd5ba474c04309952a8913e36e7155",
+          "sha1": "1cce7dd697ea51ae5f690e28fa035f9f2973f8b1",
+          "md5": "25a1902d79727f166296f7865b072369"
+        }
+      ]
+    },
+    {
+      "name": "sourcesElements",
+      "attributes": {
+        "org.gradle.category": "documentation",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.docstype": "sources",
+        "org.gradle.usage": "java-runtime"
+      },
+      "files": [
+        {
+          "name": "micronaut-json-schema-generator-2.0.0-SNAPSHOT-sources.jar",
+          "url": "micronaut-json-schema-generator-2.0.0-SNAPSHOT-sources.jar",
+          "size": 32594,
+          "sha512": "35e9a0a7a2bb5644980b934c92846b89f73f4452c001bea08322f2f54e499c10633f8074bfbf16bfbc8a346903c4982f184040424ffe40c54cc9c46e373be65d",
+          "sha256": "840d8817276fa4e0ec390397d92a5b963477e53c49f090869ae1c4a84b040ce0",
+          "sha1": "70d811437e1d5ac12d284062bc5d791018d86356",
+          "md5": "f2fe44495a6af802a381b15cfe2f5bce"
+        }
+      ]
+    },
+    {
+      "name": "javadocElements",
+      "attributes": {
+        "org.gradle.category": "documentation",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.docstype": "javadoc",
+        "org.gradle.usage": "java-runtime"
+      },
+      "files": [
+        {
+          "name": "micronaut-json-schema-generator-2.0.0-SNAPSHOT-javadoc.jar",
+          "url": "micronaut-json-schema-generator-2.0.0-SNAPSHOT-javadoc.jar",
+          "size": 4236072,
+          "sha512": "2db56c1d0132bb8973935210de887c47b72064eeac2cef5af4b6f811cf631d04b0ab3a8e293f6aaf5ee27c792c57af26519258bb5518920b1e5eba4c646cc4c3",
+          "sha256": "22200db580c62def7f74fdc9319a781c0d9941efb5912931f98156c7adde7576",
+          "sha1": "52b62ca1e6db2e4c07376a51d7b8a33ba01f40c5",
+          "md5": "863ccb98d37cdd0694a31be67264f7f1"
+        }
+      ]
+    }
+  ]
+}
