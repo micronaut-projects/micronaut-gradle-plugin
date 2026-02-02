@@ -57,6 +57,15 @@ public final class ParameterMappingModel implements Serializable {
     private final boolean isValidated;
 
     /**
+     * Create an additional parameter to add to all request methods.
+     *
+     * @param mappedType The type of the parameter.
+     */
+    public ParameterMappingModel(String mappedType) {
+        this(null, null, mappedType);
+    }
+
+    /**
      * Create a parameter mapping
      *
      * @param name The name of the parameter as described by the name field in specification.
