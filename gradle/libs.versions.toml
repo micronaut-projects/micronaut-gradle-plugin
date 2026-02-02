@@ -20,7 +20,8 @@ micronaut-platform = "4.9.4" # This is the platform version, used in our tests
 micronaut-aot = "2.8.0"
 micronaut-openapi = "6.19.1"
 micronaut-testresources = "2.10.1"
-micronaut-jsonschema = "1.7.3"
+micronaut-jsonschema = "2.0.0-SNAPSHOT"
+micronaut-build-plugin-sourcegen = "0.0.1-SNAPSHOT"
 
 [libraries]
 # Core
@@ -53,6 +54,9 @@ micronaut-openapi-generator = { module = "io.micronaut.openapi:micronaut-openapi
 micronaut-testresources = { module = "io.micronaut.testresources:micronaut-test-resources-build-tools", version.ref = "micronaut-testresources" }
 
 micronaut-jsonschema-generator = { module = "io.micronaut.jsonschema:micronaut-json-schema-generator", version.ref = "micronaut-jsonschema" }
+
+micronaut-build-plugin-sourcegen-annotations = { module = "io.micronaut.build.plugin.sourcegen:micronaut-build-plugin-sourcegen-annotations", version.ref = "micronaut-build-plugin-sourcegen" }
+micronaut-build-plugin-sourcegen-generator = { module = "io.micronaut.build.plugin.sourcegen:micronaut-build-plugin-sourcegen-generator", version.ref = "micronaut-build-plugin-sourcegen" }
 
 mockserver-netty = { module = "org.mock-server:mockserver-netty", version.ref = "mockserver" }
 mockserver-client = { module = "org.mock-server:mockserver-client-java", version.ref = "mockserver" }
