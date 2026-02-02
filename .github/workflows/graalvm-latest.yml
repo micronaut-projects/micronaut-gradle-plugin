@@ -46,7 +46,7 @@ jobs:
         id: pre-build
         with:
           distribution: 'graalvm-community'
-          java: '17'
+          java: '21'
       - name: Build Steps
         uses: micronaut-projects/github-actions/graalvm/build@master
         id: build
@@ -60,4 +60,4 @@ jobs:
         uses: micronaut-projects/github-actions/graalvm/post-build@master
         id: post-build
         with:
-          java: '17'
+          java: '21'
