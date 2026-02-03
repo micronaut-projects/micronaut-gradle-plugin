@@ -205,7 +205,7 @@ public abstract class AbstractOpenApiWorkAction<T extends AbstractOpenApiWorkAct
                         .stream()
                         .map(mapping -> new ParameterMapping(
                             mapping.getName(),
-                            ParameterMapping.ParameterLocation.valueOf(mapping.getLocation().name()),
+                            mapping.getLocation() == null ? null : ParameterMapping.ParameterLocation.valueOf(mapping.getLocation().name()),
                             mapping.getMappedType(),
                             mapping.getMappedName(),
                             mapping.isValidated())
