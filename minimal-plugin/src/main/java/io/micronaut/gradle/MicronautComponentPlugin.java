@@ -166,7 +166,7 @@ public class MicronautComponentPlugin implements Plugin<Project> {
 
     private void configureMicronautBom(Project project, MicronautExtension micronautExtension) {
         Configuration micronautBoms = project.getConfigurations().getByName(MICRONAUT_BOMS_CONFIGURATION);
-        PluginsHelper.maybeAddMicronautPlaformBom(project, micronautBoms);
+        PluginsHelper.maybeAddMicronautPlatformBom(project, micronautBoms);
         var registry = project.getExtensions().getByType(SourceSetConfigurerRegistry.class);
         var knownSourceSets = new HashSet<SourceSet>();
         registry.register(sourceSet -> {
