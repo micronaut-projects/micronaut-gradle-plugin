@@ -407,7 +407,7 @@ class OpenApiClientWithKotlinSpec extends AbstractOpenApiWithKotlinSpec {
             }
             
             $repositoriesBlock
-            mainClassName="example.Application"
+            application { mainClass = "example.Application" }
 
             dependencies {
 

@@ -29,7 +29,7 @@ class DockerBuildTaskSpec extends AbstractGradleBuildSpec {
             
             $repositoriesBlock
 
-            mainClassName="example.Application"
+            application { mainClass = "example.Application" }
             
         """
         testProjectDir.newFolder("src", "main", "java", "example")
@@ -72,7 +72,7 @@ class Application {
             
             $repositoriesBlock
 
-            mainClassName="example.Application"
+            application { mainClass = "example.Application" }
             
         """
         testProjectDir.newFolder("src", "main", "java", "example")
@@ -114,7 +114,7 @@ class Application {
             
             $repositoriesBlock
 
-            mainClassName="example.Application"
+            application { mainClass = "example.Application" }
             
         """
         testProjectDir.newFolder("src", "main", "java", "example")
@@ -165,7 +165,7 @@ ENTRYPOINT ["java", "-jar", "/home/alternate/application.jar"]
 
             $repositoriesBlock
 
-            mainClassName="example.Application"
+            application { mainClass = "example.Application" }
 
         """
         testProjectDir.newFolder("src", "main", "java", "example")
@@ -210,7 +210,7 @@ class Application {
             
             $repositoriesBlock
 
-            mainClassName="example.Application"
+            application { mainClass = "example.Application" }
 
             tasks.withType(DockerBuildOptions).configureEach {
                 targetWorkingDirectory = "/home/alternate"
@@ -266,7 +266,7 @@ ENTRYPOINT ["java", "-jar", "/home/alternate/application.jar"]
             
             $repositoriesBlock
 
-            mainClassName="example.Application"
+            application { mainClass = "example.Application" }
 
             tasks.withType(MicronautDockerfile).configureEach {
                 useCopyLink = false
@@ -322,7 +322,7 @@ ENTRYPOINT ["java", "-jar", "/home/app/application.jar"]
             
             $repositoriesBlock
 
-            mainClassName="example.Application"
+            application { mainClass = "example.Application" }
 
             dependencies {
                 implementation project(":project-lib")
@@ -418,7 +418,7 @@ public class ProjectLib {}
                 }        
             }
             
-            mainClassName="example.Application"
+            application { mainClass = "example.Application" }
 
             dependencies {
                 implementation "dummy:dummy:5.0.0-SNAPSHOT"
@@ -478,7 +478,7 @@ class Application {
             
             $repositoriesBlock
 
-            mainClassName="example.Application"
+            application { mainClass = "example.Application" }
             
         """
 

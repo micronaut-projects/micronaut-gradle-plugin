@@ -111,7 +111,7 @@ class MicronautGraalPluginSpec extends AbstractEagerConfiguringFunctionalTest {
             }
             $repositoriesBlock
             group = "example.micronaut"
-            mainClassName="example.Application"
+            application { mainClass = "example.Application" }
 
             graalvmNative {
                 binaries {
@@ -162,7 +162,7 @@ class Application {
             
             $repositoriesBlock
             group = "example.micronaut"
-            mainClassName="example.Application"
+            application { mainClass = "example.Application" }
 
             graalvmNative {
                 binaries {

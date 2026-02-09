@@ -22,7 +22,7 @@ class MicronautApplicationPluginSpec extends AbstractGradleBuildSpec {
             $withSerde
             
             $repositoriesBlock
-            mainClassName="example.Application"
+            application { mainClass = "example.Application" }
         """
         testProjectDir.newFolder("src", "test", "java", "example")
         def javaFile = testProjectDir.newFile("src/test/java/example/ExampleTest.java")
@@ -150,7 +150,7 @@ public class ExampleTest {
             dependencies {
                 implementation "org.apache.groovy:groovy"
             }
-            mainClassName="example.Application"
+            application { mainClass = "example.Application" }
         """
 
         testProjectDir.newFolder("src", "main", "groovy", "example")

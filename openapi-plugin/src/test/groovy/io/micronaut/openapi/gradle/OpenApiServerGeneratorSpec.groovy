@@ -25,7 +25,7 @@ class OpenApiServerGeneratorSpec extends AbstractOpenApiGeneratorSpec {
             }
             
             $repositoriesBlock
-            mainClassName="example.Application"
+            application { mainClass = "example.Application" }
 
             dependencies {
                 implementation "io.micronaut.security:micronaut-security"
@@ -71,7 +71,7 @@ class OpenApiServerGeneratorSpec extends AbstractOpenApiGeneratorSpec {
             }
             
             $repositoriesBlock
-            mainClassName="example.Application"
+            application { mainClass = "example.Application" }
 
             dependencies {
                 implementation "io.micronaut.security:micronaut-security"
@@ -116,7 +116,7 @@ class OpenApiServerGeneratorSpec extends AbstractOpenApiGeneratorSpec {
             }
             
             $repositoriesBlock
-            mainClassName="example.Application"
+            application { mainClass = "example.Application" }
 
             dependencies {
                 implementation "io.micronaut.security:micronaut-security"
@@ -173,7 +173,7 @@ class OpenApiServerGeneratorSpec extends AbstractOpenApiGeneratorSpec {
             }
             
             $repositoriesBlock
-            mainClassName="example.Application"
+            application { mainClass = "example.Application" }
 
             dependencies {
 
@@ -230,7 +230,7 @@ class OpenApiServerGeneratorSpec extends AbstractOpenApiGeneratorSpec {
             }
             
             $repositoriesBlock
-            mainClassName="example.Application"
+            application { mainClass = "example.Application" }
 
             dependencies {
 
@@ -287,7 +287,7 @@ class OpenApiServerGeneratorSpec extends AbstractOpenApiGeneratorSpec {
             }
             
             $repositoriesBlock
-            mainClassName="example.Application"
+            application { mainClass = "example.Application" }
 
             dependencies {
 

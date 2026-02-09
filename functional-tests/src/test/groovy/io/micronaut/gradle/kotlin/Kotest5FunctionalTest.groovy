@@ -37,10 +37,10 @@ class Kotest5FunctionalTest extends AbstractEagerConfiguringFunctionalTest {
                        |    runtimeOnly("io.micronaut.serde:micronaut-serde-jackson")
                        |}
                        |
-                       |$repositoriesBlock
-                       |
-                       |mainClassName="example.Application"
-                       """.stripMargin()
+                        |$repositoriesBlock
+                        |
+                        |application { mainClass = "example.Application" }
+                        """.stripMargin()
         testProjectDir.newFolder("src", "test", "kotlin", "example")
         def testFile = testProjectDir.newFile("src/test/kotlin/example/ExampleTest.kt")
         testFile << """package com.example

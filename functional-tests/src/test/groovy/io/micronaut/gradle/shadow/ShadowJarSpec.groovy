@@ -35,7 +35,7 @@ class ShadowJarSpec extends AbstractEagerConfiguringFunctionalTest {
             }
             
             $repositoriesBlock
-            mainClassName="example.Application"
+            application { mainClass = "example.Application" }
             
             dependencies {
                 annotationProcessor("info.picocli:picocli-codegen")
@@ -114,7 +114,7 @@ public class Application implements Runnable {
             }
             
             $repositoriesBlock
-            mainClassName="example.Application"
+            application { mainClass = "example.Application" }
             
             dependencies {
                 annotationProcessor("info.picocli:picocli-codegen")

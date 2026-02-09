@@ -36,7 +36,7 @@ class OpenApiServerWithKotlinSpec extends AbstractOpenApiWithKotlinSpec {
             }
             
             $repositoriesBlock
-            mainClassName="example.Application"
+            application { mainClass = "example.Application" }
 
             dependencies {
 
@@ -96,7 +96,7 @@ class OpenApiServerWithKotlinSpec extends AbstractOpenApiWithKotlinSpec {
             }
             
             $repositoriesBlock
-            mainClassName="example.Application"
+            application { mainClass = "example.Application" }
 
             dependencies {
 
@@ -153,7 +153,7 @@ class OpenApiServerWithKotlinSpec extends AbstractOpenApiWithKotlinSpec {
             }
             
             $repositoriesBlock
-            mainClassName="example.Application"
+            application { mainClass = "example.Application" }
 
             dependencies {
 

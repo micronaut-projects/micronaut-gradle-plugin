@@ -34,9 +34,9 @@ class DockerNativeFunctionalTest extends AbstractEagerConfiguringFunctionalTest 
             }
             
             $repositoriesBlock
-            
-            mainClassName="example.Application"
-            
+             
+            application { mainClass = "example.Application" }
+             
             java {
                 sourceCompatibility = JavaVersion.toVersion('17')
                 targetCompatibility = JavaVersion.toVersion('17')
@@ -347,7 +347,7 @@ micronaut:
                 targetCompatibility = JavaVersion.toVersion('17')
             }
             
-            mainClassName="example.Application"
+            application { mainClass = "example.Application" }
 
             graalvmNative.binaries.all {
                 buildArgs.addAll(["--exclude-config", "micronaut-function-aws-api-proxy-.*.jar", "META-INF/native-image/.*.properties"])
@@ -417,7 +417,7 @@ class Application {
                 entryPoint('./entrypoint.sh')
             }
             
-            mainClassName="example.Application"
+            application { mainClass = "example.Application" }
         """
         testProjectDir.newFolder("src", "main", "java", "other")
         def javaFile = testProjectDir.newFile("src/main/java/other/Application.java")
@@ -476,8 +476,8 @@ class Application {
                 runtimeOnly("ch.qos.logback:logback-classic")
                 testImplementation("io.micronaut:micronaut-http-client")
             }
-            mainClassName="example.Application"
-            
+            application { mainClass = "example.Application" }
+             
         """
 
         when:
@@ -535,7 +535,7 @@ class Application {
                 instruction \"\"\"HEALTHCHECK CMD curl -s localhost:8090/health | grep '"status":"UP"'\"\"\"
             }
             
-            mainClassName="example.Application"
+            application { mainClass = "example.Application" }
         """
         testProjectDir.newFolder("src", "main", "java", "other")
         def javaFile = testProjectDir.newFile("src/main/java/other/Application.java")
@@ -598,7 +598,7 @@ class Application {
             
             $repositoriesBlock
             
-            mainClassName="example.Application"
+            application { mainClass = "example.Application" }
             
             java {
                 sourceCompatibility = JavaVersion.toVersion('17')
@@ -701,7 +701,7 @@ micronaut {
             
 $repositoriesBlock
 
-mainClassName="example.Application"
+application { mainClass = "example.Application" }
 
 // Force realization of all tasks to trigger the problem
 afterEvaluate {
@@ -735,7 +735,7 @@ afterEvaluate {
                 version "$micronautVersion"
             }
 
-            mainClassName="example.Application"
+            application { mainClass = "example.Application" }
 
             tasks.withType(io.micronaut.gradle.docker.DockerBuildOptions).configureEach {
                 editDockerfile {
@@ -813,7 +813,7 @@ ENTRYPOINT ["/app/application"]
                 version "$micronautVersion"
             }
 
-            mainClassName="example.Application"
+            application { mainClass = "example.Application" }
 
             tasks.withType(io.micronaut.gradle.docker.DockerBuildOptions).configureEach {
                 editDockerfile {
