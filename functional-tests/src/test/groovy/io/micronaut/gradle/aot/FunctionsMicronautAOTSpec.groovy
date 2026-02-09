@@ -48,7 +48,7 @@ class FunctionsMicronautAOTSpec extends AbstractAOTPluginSpec {
 
     }
 
-    @Requires({ AbstractGradleBuildSpec.graalVmAvailable && !os.windows })
+    @Requires({ AbstractGradleBuildSpec.graalVmAvailable && AbstractGradleBuildSpec.nativeImageCompilationSupported && !os.windows })
     def "can build a native library function for #provider"() {
         withSample("aot/${provider}-function")
 
