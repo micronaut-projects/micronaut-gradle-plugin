@@ -1,13 +1,13 @@
 [versions]
 kotlin = "1.9.25"
-kotlin2 = "2.2.10"
+kotlin2 = "2.3.0"
 ksp = "1.9.25-1.0.20"
-ksp2 = "2.2.10-2.0.2"
+ksp2 = "2.3.4"
 docker = "9.4.0"
 diffplug = "4.4.1"
 shadow = "8.3.9"
-groovy = "3.0.25"
-spock = "2.3-groovy-3.0"
+groovy = "4.0.29"
+spock = "2.4-groovy-4.0"
 oraclelinux = "9"
 amazonlinux = "2023-minimal"
 graalvmPlugin = "0.11.2"
@@ -17,10 +17,10 @@ tomlj = "1.1.1"
 openrewrite = "7.19.0"
 
 micronaut-platform = "4.9.4" # This is the platform version, used in our tests
-micronaut-aot = "2.8.0"
+micronaut-aot = "3.0.0-M1"
 micronaut-openapi = "6.19.1"
-micronaut-testresources = "2.10.1"
-micronaut-jsonschema = "1.7.3"
+micronaut-testresources = "3.0.0-M5"
+micronaut-jsonschema = "2.0.0-M1"
 
 [libraries]
 # Core
@@ -38,7 +38,7 @@ kotlin2-gradlePlugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", v
 ksp-gradlePlugin = { module = "com.google.devtools.ksp:symbol-processing-gradle-plugin", version.ref = "ksp" }
 ksp2-gradlePlugin = { module = "com.google.devtools.ksp:symbol-processing-gradle-plugin", version.ref = "ksp2" }
 
-groovy-core = { module = "org.codehaus.groovy:groovy", version.ref = "groovy" }
+groovy-core = { module = "org.apache.groovy:groovy", version.ref = "groovy" }
 spock-core = { module = "org.spockframework:spock-core", version.ref = "spock" }
 spock-junit4 = { module = "org.spockframework:spock-junit4", version.ref = "spock" }
 log4j2-core = { module = "org.apache.logging.log4j:log4j-core", version.ref = "log4j2" }
