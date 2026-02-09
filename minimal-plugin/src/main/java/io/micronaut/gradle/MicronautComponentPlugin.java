@@ -40,6 +40,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Stream;
 
 import static io.micronaut.gradle.PluginsHelper.applyAdditionalProcessors;
 import static io.micronaut.gradle.PluginsHelper.configureAnnotationProcessors;
@@ -148,6 +149,22 @@ public class MicronautComponentPlugin implements Plugin<Project> {
             DependencyHandler dependencyHandler = project.getDependencies();
             MicronautTestRuntime testRuntime = micronautExtension.getTestRuntime().get();
 
+            // If users bring their own JUnit 5 dependencies (without explicitly configuring micronaut.testRuntime),
+            // ensure tests still run on the JUnit Platform.
+            if (!testRuntime.isUsingJunitPlatform() && hasJunit5Dependencies(project)) {
+                project.getTasks().withType(Test.class).configureEach(Test::useJUnitPlatform);
+                // Gradle 9+ no longer guarantees the launcher is present unless provided by the build.
+                // Keep this best-effort and only add it when missing.
+                maybeAddDependencyIfMissing(
+                        project,
+                        dependencyHandler,
+                        JavaPlugin.TEST_RUNTIME_ONLY_CONFIGURATION_NAME,
+                        "org.junit.platform",
+                        "junit-platform-launcher",
+                        "org.junit.platform:junit-platform-launcher"
+                );
+            }
+
             testRuntime.getDependencies().forEach((scope, dependencies) -> {
                 for (String dependency : dependencies) {
                     dependencyHandler.add(scope, dependency);
@@ -162,6 +179,40 @@ public class MicronautComponentPlugin implements Plugin<Project> {
         });
 
 
+    }
+
+    private static boolean hasJunit5Dependencies(Project project) {
+        try {
+            var testImplementation = project.getConfigurations().getByName(JavaPlugin.TEST_IMPLEMENTATION_CONFIGURATION_NAME).getAllDependencies();
+            var testRuntimeOnly = project.getConfigurations().getByName(JavaPlugin.TEST_RUNTIME_ONLY_CONFIGURATION_NAME).getAllDependencies();
+            return Stream.concat(testImplementation.stream(), testRuntimeOnly.stream())
+                    .anyMatch(d ->
+                            ("org.junit.jupiter".equals(d.getGroup()) && "junit-jupiter-engine".equals(d.getName()))
+                                    || ("io.micronaut.test".equals(d.getGroup()) && "micronaut-test-junit5".equals(d.getName()))
+                    );
+        } catch (Exception e) {
+            // Best-effort detection; ignore and fall back to explicit configuration.
+            return false;
+        }
+    }
+
+    private static void maybeAddDependencyIfMissing(
+            Project project,
+            DependencyHandler dependencyHandler,
+            String configurationName,
+            String group,
+            String name,
+            String dependencyNotation
+    ) {
+        try {
+            var deps = project.getConfigurations().getByName(configurationName).getAllDependencies();
+            boolean present = deps.stream().anyMatch(d -> group.equals(d.getGroup()) && name.equals(d.getName()));
+            if (!present) {
+                dependencyHandler.add(configurationName, dependencyNotation);
+            }
+        } catch (Exception e) {
+            // Best-effort addition; ignore and fall back to explicit configuration.
+        }
     }
 
     private void configureMicronautBom(Project project, MicronautExtension micronautExtension) {

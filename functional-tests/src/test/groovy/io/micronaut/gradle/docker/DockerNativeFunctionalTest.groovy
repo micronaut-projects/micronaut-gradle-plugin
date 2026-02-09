@@ -7,7 +7,7 @@ import spock.lang.IgnoreIf
 import spock.lang.Issue
 import spock.lang.Requires
 
-@Requires({ graalVmAvailable })
+@Requires({ graalVmAvailable && dockerAvailable })
 @IgnoreIf({ os.windows })
 class DockerNativeFunctionalTest extends AbstractEagerConfiguringFunctionalTest {
 

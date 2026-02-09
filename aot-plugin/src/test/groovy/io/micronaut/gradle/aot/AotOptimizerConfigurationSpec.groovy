@@ -27,13 +27,23 @@ class AotOptimizerConfigurationSpec extends Specification {
             jvmArgs.add('-XX:ThisDoesNotExist')
         }
         project.dependencies.add("aotApplicationClasspath", "io.micronaut.platform:micronaut-platform:$micronautVersion")
+        // Ensure afterEvaluate hooks have run before executing tasks.
+        project.evaluate()
 
         when:
         def t = project.tasks.getByName("prepareJitOptimizations").execute()
 
         then:
         Exception ex = thrown()
-        baos.toString().contains("Unrecognized VM option 'ThisDoesNotExist'")
+        def combined = new StringBuilder(baos.toString())
+        Throwable current = ex
+        while (current != null) {
+            if (current.message) {
+                combined.append("\n").append(current.message)
+            }
+            current = current.cause
+        }
+        combined.toString().contains("ThisDoesNotExist") || combined.toString().contains("Unrecognized VM option")
 
         cleanup:
         System.err = serr

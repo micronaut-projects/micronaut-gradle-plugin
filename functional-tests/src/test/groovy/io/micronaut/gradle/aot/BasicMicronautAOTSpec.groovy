@@ -22,6 +22,8 @@ class BasicMicronautAOTSpec extends AbstractAOTPluginSpec {
             withProperty('serviceloading.jit.enabled', 'true')
             withProperty('serviceloading.native.enabled', 'true')
             withProperty('yaml.to.java.config.enabled', 'true')
+            withProperty('property-source-loader.generate.enabled', 'true')
+            withProperty('property-source-loader.types', 'io.micronaut.context.env.yaml.YamlPropertySourceLoader')
             withProperty('scan.reactive.types.enabled', 'true')
             withProperty('known.missing.types.enabled', 'true')
             withProperty('sealed.property.source.enabled', 'true')
@@ -84,6 +86,8 @@ class BasicMicronautAOTSpec extends AbstractAOTPluginSpec {
             withProperty('serviceloading.jit.enabled', 'true')
             withProperty('serviceloading.native.enabled', 'true')
             withProperty('yaml.to.java.config.enabled', 'true')
+            withProperty('property-source-loader.generate.enabled', 'true')
+            withProperty('property-source-loader.types', 'io.micronaut.context.env.yaml.YamlPropertySourceLoader')
             withProperty('scan.reactive.types.enabled', 'true')
             withProperty('known.missing.types.enabled', 'false')
             withProperty('sealed.property.source.enabled', 'true')
@@ -156,7 +160,7 @@ class BasicMicronautAOTSpec extends AbstractAOTPluginSpec {
         result.task(":prepareJitOptimizations").outcome == TaskOutcome.SUCCESS
     }
 
-    @Requires({ AbstractGradleBuildSpec.graalVmAvailable && !os.windows })
+    @Requires({ AbstractGradleBuildSpec.graalVmAvailable && AbstractGradleBuildSpec.nativeImageCompilationSupported && !os.windows })
     def "can compile standard and optimized native apps"() {
         withSample("aot/basic-app")
         withPlugins(Plugins.APPLICATION)
@@ -202,6 +206,8 @@ class BasicMicronautAOTSpec extends AbstractAOTPluginSpec {
             withProperty('serviceloading.jit.enabled', 'true')
             withProperty('serviceloading.native.enabled', 'true')
             withProperty('yaml.to.java.config.enabled', 'true')
+            withProperty('property-source-loader.generate.enabled', 'true')
+            withProperty('property-source-loader.types', 'io.micronaut.context.env.yaml.YamlPropertySourceLoader')
             withProperty('scan.reactive.types.enabled', 'true')
             withProperty('known.missing.types.enabled', 'false')
             withProperty('sealed.property.source.enabled', 'true')

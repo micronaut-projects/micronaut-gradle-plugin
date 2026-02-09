@@ -93,7 +93,7 @@ class LambdaNativeImageSpec extends AbstractFunctionalTest {
         dockerfileNativeTask.outcome == TaskOutcome.SUCCESS
 
         and:
-        dockerFileNative.find() { it.contains("graalvm-jdk-17_linux-${archset}_bin.tar.gz ") }
+        dockerFileNative.find { it ==~ /.*graalvm-jdk-\d+_linux-${archset}_bin\.tar\.gz.*/ }
 
         where:
         archset   | desc

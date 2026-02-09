@@ -30,6 +30,59 @@ abstract class AbstractGradleBuildSpec extends Specification {
         return false
     }
 
+    /**
+     * Native-image compilation support depends on the exact GraalVM version.
+     * Some early / dev builds can fail functional tests for reasons unrelated to this plugin.
+     */
+    static boolean isNativeImageCompilationSupported() {
+        int feature = graalVmJavaFeatureVersion()
+        // If we cannot determine the version, assume it's supported.
+        if (feature < 0) {
+            return true
+        }
+        // GraalVM 25+ currently breaks native compilation of our functional test fixtures.
+        return feature < 25
+    }
+
+    private static int graalVmJavaFeatureVersion() {
+        try {
+            String graalvmHome = System.getenv("GRAALVM_HOME")
+            if (!graalvmHome) {
+                return -1
+            }
+            def javaBin = Paths.get(graalvmHome, "bin", "java").toFile()
+            if (!javaBin.exists()) {
+                return -1
+            }
+            def proc = new ProcessBuilder(javaBin.absolutePath, "-version")
+                    .redirectErrorStream(true)
+                    .start()
+            String out = proc.inputStream.text
+            proc.waitFor()
+            def m = (out =~ /version "(\d+)\./)
+            if (m.find()) {
+                return Integer.parseInt(m.group(1))
+            }
+        } catch (Throwable ignored) {
+            // ignore
+        }
+        return -1
+    }
+
+    static boolean isDockerAvailable() {
+        String dockerHost = System.getenv("DOCKER_HOST")
+        if (dockerHost) {
+            if (dockerHost.startsWith("unix://")) {
+                String socketPath = dockerHost.substring("unix://".length())
+                return new File(socketPath).exists()
+            }
+            // tcp://, npipe://, etc. Assume Docker is reachable if configured.
+            return true
+        }
+        return new File("/var/run/docker.sock").exists() ||
+                new File(new File(System.getProperty("user.home")), ".docker/run/docker.sock").exists()
+    }
+
     boolean allowSnapshots = false
     // This flag is only for local tests, do not push with this flag set to true
     boolean allowMavenLocal = false
@@ -211,12 +264,10 @@ abstract class AbstractGradleBuildSpec extends Specification {
         }
         runner.withProjectDir(baseDir.toFile())
                 .withArguments(["--no-watch-fs",
-                                "-S",
-                                "-Porg.gradle.java.installations.auto-download=false",
-                                "-Porg.gradle.java.installations.auto-detect=false",
-                                "-Porg.gradle.java.installations.fromEnv=GRAALVM_HOME",
-                                "-Dio.micronaut.graalvm.rich.output=false",
-                                *args])
+                                 "-S",
+                                 "-Porg.gradle.java.installations.auto-download=false",
+                                 "-Dio.micronaut.graalvm.rich.output=false",
+                                 *args])
                 .forwardStdOutput(System.out.newWriter())
                 .forwardStdError(System.err.newWriter())
                 .withDebug(true)

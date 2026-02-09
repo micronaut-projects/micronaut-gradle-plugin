@@ -13,7 +13,7 @@ class DockerBuildTaskSpec extends AbstractGradleBuildSpec {
     private final String today = new Date().format("yyyyMMdd")
     private final String now = new Date().format("HHmmss")
 
-    @IgnoreIf({ os.windows })
+    @IgnoreIf({ os.windows || !dockerAvailable })
     def "can apply the docker plugin first"() {
         given:
         settingsFile << "rootProject.name = 'hello-world'"
@@ -56,7 +56,7 @@ class Application {
     }
 
 
-    @IgnoreIf({ os.windows })
+    @IgnoreIf({ os.windows || !dockerAvailable })
     def "test build docker image"() {
         given:
         settingsFile << "rootProject.name = 'hello-world'"
@@ -98,7 +98,7 @@ class Application {
 
     }
 
-    @IgnoreIf({ os.windows })
+    @IgnoreIf({ os.windows || !dockerAvailable })
     def "test build docker image using custom Dockerfile"() {
         given:
         settingsFile << "rootProject.name = 'hello-world'"
@@ -239,7 +239,7 @@ class Application {
 
         and:
         def dockerfile = new File(testProjectDir.root, 'build/docker/main/Dockerfile').text
-        dockerfile == """FROM eclipse-temurin:17-jre
+        dockerfile == """FROM eclipse-temurin:21-jre
 WORKDIR /home/alternate
 COPY --link layers/libs /home/alternate/libs
 COPY --link layers/app /home/alternate/
@@ -295,7 +295,7 @@ class Application {
 
         and:
         def dockerfile = new File(testProjectDir.root, 'build/docker/main/Dockerfile').text
-        dockerfile == """FROM eclipse-temurin:17-jre
+        dockerfile == """FROM eclipse-temurin:21-jre
 WORKDIR /home/app
 COPY layers/libs /home/app/libs
 COPY layers/app /home/app/

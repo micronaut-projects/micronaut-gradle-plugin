@@ -60,7 +60,7 @@ class Foo {}
 
         where:
         plugin            | kotlin         | ksp
-        'library'         | kotlinVersion  | kspVersion
+        'library'         | kotlin2Version | ksp2Version
         'minimal.library' | kotlin2Version | ksp2Version
     }
 
@@ -107,7 +107,7 @@ class Foo {}
 
         where:
         plugin            | kotlin
-        'library'         | kotlinVersion
+        'library'         | kotlin2Version
         'minimal.library' | kotlin2Version
     }
 
@@ -163,7 +163,7 @@ class Foo {}
 
         where:
         plugin            | kotlin
-        'library'         | kotlinVersion
+        'library'         | kotlin2Version
         'minimal.library' | kotlin2Version
     }
 }

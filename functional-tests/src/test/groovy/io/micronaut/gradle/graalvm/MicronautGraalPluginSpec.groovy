@@ -50,7 +50,7 @@ class MicronautGraalPluginSpec extends AbstractEagerConfiguringFunctionalTest {
         resourceConfigJson.resources.includes.pattern.any { it == "\\QMETA-INF/swagger/views/swagger-ui/index.html\\E" }
     }
 
-    @Requires({ AbstractGradleBuildSpec.graalVmAvailable && !os.windows })
+    @Requires({ AbstractGradleBuildSpec.graalVmAvailable && AbstractGradleBuildSpec.nativeImageCompilationSupported && !os.windows })
     void 'native-image is called with the generated JSON file directory (Micronaut Application)'() {
         given:
         withSwaggerMicronautApplication()
@@ -65,7 +65,8 @@ class MicronautGraalPluginSpec extends AbstractEagerConfiguringFunctionalTest {
         result.task(":nativeCompile").outcome == TaskOutcome.SUCCESS
 
         and:
-        argFileContentsOf(result).contains("-H:ConfigurationFileDirectories=${new File(testProjectDir.root, 'build/native/generated/generateResourcesConfigFile').absolutePath}")
+        def expectedConfigDir = new File(testProjectDir.root, 'build/native/generated/generateResourcesConfigFile').canonicalPath
+        argFileContentsOf(result).contains("-H:ConfigurationFileDirectories=${expectedConfigDir}")
 
         where:
         plugins << [
@@ -88,7 +89,8 @@ class MicronautGraalPluginSpec extends AbstractEagerConfiguringFunctionalTest {
         result.task(":nativeCompile").outcome == TaskOutcome.SUCCESS
 
         and:
-        argFileContentsOf(result).contains("-H:ConfigurationFileDirectories=${new File(testProjectDir.root, 'build/native/generated/generateResourcesConfigFile').absolutePath}")
+        def expectedConfigDir = new File(testProjectDir.root, 'build/native/generated/generateResourcesConfigFile').canonicalPath
+        argFileContentsOf(result).contains("-H:ConfigurationFileDirectories=${expectedConfigDir}")
     }
 
     private void withSwaggerMicronautApplication() {

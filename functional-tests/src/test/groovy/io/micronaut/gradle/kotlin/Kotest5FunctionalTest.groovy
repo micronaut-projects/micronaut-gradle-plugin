@@ -9,20 +9,24 @@ class Kotest5FunctionalTest extends AbstractEagerConfiguringFunctionalTest {
     @Shared
     private final String kotlinVersion = System.getProperty("kotlinVersion")
     @Shared
+    private final String kotlin2Version = System.getProperty("kotlin2Version")
+    @Shared
     private final String kspVersion = System.getProperty("kspVersion")
+    @Shared
+    private final String ksp2Version = System.getProperty("ksp2Version")
 
     @Shared
-    private final String kaptPlugin = "id(\"org.jetbrains.kotlin.kapt\") version \"$kotlinVersion\""
+    private final String kaptPlugin = "id(\"org.jetbrains.kotlin.kapt\") version \"$kotlin2Version\""
     @Shared
-    private final String kspPlugin = "id(\"com.google.devtools.ksp\") version \"$kspVersion\""
+    private final String kspPlugin = "id(\"com.google.devtools.ksp\") version \"$ksp2Version\""
 
     def "test kotest 5 test runtime with #plugin and #processingPlugin"() {
         given:
         settingsFile << "rootProject.name = 'hello-world'"
         buildFile << """plugins {
-                       |    id("org.jetbrains.kotlin.jvm") version "$kotlinVersion"
+                       |    id("org.jetbrains.kotlin.jvm") version "$kotlin2Version"
                        |    $processingPlugin
-                       |    id("org.jetbrains.kotlin.plugin.allopen") version "$kotlinVersion"
+                       |    id("org.jetbrains.kotlin.plugin.allopen") version "$kotlin2Version"
                        |    $plugin
                        |}
                        |
