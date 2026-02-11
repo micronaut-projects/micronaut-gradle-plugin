@@ -130,8 +130,7 @@ class Application {
 }
 """
 
-        testProjectDir.newFile("Dockerfile") << """
- FROM eclipse-temurin:25-jre
+        testProjectDir.newFile("Dockerfile") << """FROM eclipse-temurin:25-jre
 WORKDIR /home/alternate
 COPY --link layers/libs /home/alternate/libs
 COPY --link layers/app/application.jar /home/alternate/application.jar
