@@ -131,7 +131,7 @@ class Application {
 """
 
         testProjectDir.newFile("Dockerfile") << """
-FROM eclipse-temurin:17-jre
+ FROM eclipse-temurin:25-jre
 WORKDIR /home/alternate
 COPY --link layers/libs /home/alternate/libs
 COPY --link layers/app/application.jar /home/alternate/application.jar
@@ -239,7 +239,7 @@ class Application {
 
         and:
         def dockerfile = new File(testProjectDir.root, 'build/docker/main/Dockerfile').text
-        dockerfile == """FROM eclipse-temurin:21-jre
+        dockerfile == """FROM eclipse-temurin:25-jre
 WORKDIR /home/alternate
 COPY --link layers/libs /home/alternate/libs
 COPY --link layers/app /home/alternate/
@@ -295,7 +295,7 @@ class Application {
 
         and:
         def dockerfile = new File(testProjectDir.root, 'build/docker/main/Dockerfile').text
-        dockerfile == """FROM eclipse-temurin:21-jre
+        dockerfile == """FROM eclipse-temurin:25-jre
 WORKDIR /home/app
 COPY layers/libs /home/app/libs
 COPY layers/app /home/app/

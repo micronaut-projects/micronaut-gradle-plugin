@@ -33,8 +33,8 @@ class LambdaNativeImageSpec extends AbstractFunctionalTest {
             }
             
             java {
-                sourceCompatibility = JavaVersion.toVersion('17')
-                targetCompatibility = JavaVersion.toVersion('17')
+                sourceCompatibility = JavaVersion.toVersion('25')
+                targetCompatibility = JavaVersion.toVersion('25')
             }
         """
 
@@ -74,8 +74,8 @@ class LambdaNativeImageSpec extends AbstractFunctionalTest {
             }
 
             java {
-                sourceCompatibility = JavaVersion.toVersion('17')
-                targetCompatibility = JavaVersion.toVersion('17')
+                sourceCompatibility = JavaVersion.toVersion('25')
+                targetCompatibility = JavaVersion.toVersion('25')
             }
 
             dockerfileNative {
@@ -123,8 +123,8 @@ class LambdaNativeImageSpec extends AbstractFunctionalTest {
             }
             
             java {
-                sourceCompatibility = JavaVersion.toVersion('17')
-                targetCompatibility = JavaVersion.toVersion('17')
+                sourceCompatibility = JavaVersion.toVersion('25')
+                targetCompatibility = JavaVersion.toVersion('25')
             }
             
             graalvmNative {
@@ -182,8 +182,8 @@ class LambdaNativeImageSpec extends AbstractFunctionalTest {
             }
 
             java {
-                sourceCompatibility = JavaVersion.toVersion('17')
-                targetCompatibility = JavaVersion.toVersion('17')
+                sourceCompatibility = JavaVersion.toVersion('25')
+                targetCompatibility = JavaVersion.toVersion('25')
             }
         """
 
@@ -231,8 +231,8 @@ class LambdaNativeImageSpec extends AbstractFunctionalTest {
             }
 
             java {
-                sourceCompatibility = JavaVersion.toVersion('17')
-                targetCompatibility = JavaVersion.toVersion('17')
+                sourceCompatibility = JavaVersion.toVersion('25')
+                targetCompatibility = JavaVersion.toVersion('25')
             }
 
             dockerfileNative {
@@ -283,8 +283,8 @@ class LambdaNativeImageSpec extends AbstractFunctionalTest {
             }
 
             java {
-                sourceCompatibility = JavaVersion.toVersion('17')
-                targetCompatibility = JavaVersion.toVersion('17')
+                sourceCompatibility = JavaVersion.toVersion('25')
+                targetCompatibility = JavaVersion.toVersion('25')
             }
         """
 
@@ -324,8 +324,8 @@ class LambdaNativeImageSpec extends AbstractFunctionalTest {
             }
             
             java {
-                sourceCompatibility = JavaVersion.toVersion('17')
-                targetCompatibility = JavaVersion.toVersion('17')
+                sourceCompatibility = JavaVersion.toVersion('25')
+                targetCompatibility = JavaVersion.toVersion('25')
             }
             
             graalvmNative {
@@ -387,8 +387,8 @@ class LambdaNativeImageSpec extends AbstractFunctionalTest {
             }
 
             java {
-                sourceCompatibility = JavaVersion.toVersion('17')
-                targetCompatibility = JavaVersion.toVersion('17')
+                sourceCompatibility = JavaVersion.toVersion('25')
+                targetCompatibility = JavaVersion.toVersion('25')
             }
         """
 

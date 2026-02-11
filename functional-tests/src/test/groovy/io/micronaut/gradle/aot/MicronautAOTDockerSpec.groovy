@@ -19,7 +19,7 @@ class MicronautAOTDockerSpec extends AbstractAOTPluginSpec {
         result.task(":optimizedDockerfile").outcome != TaskOutcome.FAILED
 
         def dockerFile = normalizeLineEndings(file("build/docker/optimized/Dockerfile").text)
-        dockerFile == """FROM eclipse-temurin:17-jre
+        dockerFile == """FROM eclipse-temurin:25-jre
 WORKDIR /home/app
 COPY --link layers/libs /home/app/libs
 COPY --link layers/app /home/app/
@@ -46,7 +46,7 @@ ENTRYPOINT ["java", "-jar", "/home/app/application.jar"]
         result.task(":optimizedDockerBuild").outcome != TaskOutcome.FAILED
 
         def dockerFile = normalizeLineEndings(file("build/docker/optimized/Dockerfile").text)
-        dockerFile == """FROM eclipse-temurin:17-jre
+        dockerFile == """FROM eclipse-temurin:25-jre
 WORKDIR /home/app
 COPY --link layers/libs /home/app/libs
 COPY --link layers/app /home/app/
@@ -70,7 +70,7 @@ ENTRYPOINT ["java", "-jar", "/home/app/application.jar"]
 
         then:
         dockerFile == """
-            FROM ghcr.io/graalvm/native-image-community:17-ol${DefaultVersions.ORACLELINUX} AS graalvm
+            FROM ghcr.io/graalvm/native-image-community:25-ol${DefaultVersions.ORACLELINUX} AS graalvm
             WORKDIR /home/app
             COPY --link layers/libs /home/app/libs
             COPY --link layers/app /home/app/
