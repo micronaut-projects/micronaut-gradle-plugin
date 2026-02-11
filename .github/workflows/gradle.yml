@@ -64,7 +64,7 @@ jobs:
           ./gradlew check --no-daemon --continue
 
       - name: "🔎 Run static analysis"
-        if: env.SONAR_TOKEN != ''
+        if: env.SONAR_TOKEN != '' && github.event_name == 'push'
         run: |
           ./gradlew sonar
 
