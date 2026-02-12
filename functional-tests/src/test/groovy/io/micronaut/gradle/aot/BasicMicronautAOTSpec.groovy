@@ -160,7 +160,7 @@ class BasicMicronautAOTSpec extends AbstractAOTPluginSpec {
         result.task(":prepareJitOptimizations").outcome == TaskOutcome.SUCCESS
     }
 
-    @Requires({ AbstractGradleBuildSpec.graalVmAvailable && AbstractGradleBuildSpec.nativeImageCompilationSupported && !os.windows })
+    @Requires({ AbstractGradleBuildSpec.graalVmAvailable && !os.windows })
     def "can compile standard and optimized native apps"() {
         withSample("aot/basic-app")
         withPlugins(Plugins.APPLICATION)

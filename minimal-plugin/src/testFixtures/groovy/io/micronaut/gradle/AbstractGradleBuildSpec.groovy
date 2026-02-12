@@ -30,45 +30,6 @@ abstract class AbstractGradleBuildSpec extends Specification {
         return false
     }
 
-    /**
-     * Native-image compilation support depends on the exact GraalVM version.
-     * Some early / dev builds can fail functional tests for reasons unrelated to this plugin.
-     */
-    static boolean isNativeImageCompilationSupported() {
-        int feature = graalVmJavaFeatureVersion()
-        // If we cannot determine the version, assume it's supported.
-        if (feature < 0) {
-            return true
-        }
-        // GraalVM 25+ currently breaks native compilation of our functional test fixtures.
-        return feature < 25
-    }
-
-    private static int graalVmJavaFeatureVersion() {
-        try {
-            String graalvmHome = System.getenv("GRAALVM_HOME")
-            if (!graalvmHome) {
-                return -1
-            }
-            def javaBin = Paths.get(graalvmHome, "bin", "java").toFile()
-            if (!javaBin.exists()) {
-                return -1
-            }
-            def proc = new ProcessBuilder(javaBin.absolutePath, "-version")
-                    .redirectErrorStream(true)
-                    .start()
-            String out = proc.inputStream.text
-            proc.waitFor()
-            def m = (out =~ /version "(\d+)\./)
-            if (m.find()) {
-                return Integer.parseInt(m.group(1))
-            }
-        } catch (Throwable ignored) {
-            // ignore
-        }
-        return -1
-    }
-
     static boolean isDockerAvailable() {
         String dockerHost = System.getenv("DOCKER_HOST")
         if (dockerHost) {

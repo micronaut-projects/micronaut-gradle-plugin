@@ -50,7 +50,7 @@ class MicronautGraalPluginSpec extends AbstractEagerConfiguringFunctionalTest {
         resourceConfigJson.resources.includes.pattern.any { it == "\\QMETA-INF/swagger/views/swagger-ui/index.html\\E" }
     }
 
-    @Requires({ AbstractGradleBuildSpec.graalVmAvailable && AbstractGradleBuildSpec.nativeImageCompilationSupported && !os.windows })
+    @Requires({ AbstractGradleBuildSpec.graalVmAvailable && !os.windows })
     void 'native-image is called with the generated JSON file directory (Micronaut Application)'() {
         given:
         withSwaggerMicronautApplication()

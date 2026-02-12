@@ -2,9 +2,7 @@ package io.micronaut.gradle.shadow
 
 import io.micronaut.gradle.fixtures.AbstractEagerConfiguringFunctionalTest
 import org.gradle.testkit.runner.TaskOutcome
-import org.gradle.util.GradleVersion
 import spock.lang.Issue
-import spock.lang.IgnoreIf
 import spock.lang.Unroll
 
 class ShadowJarSpec extends AbstractEagerConfiguringFunctionalTest {
@@ -14,7 +12,6 @@ class ShadowJarSpec extends AbstractEagerConfiguringFunctionalTest {
      */
     @Unroll
     @Issue("https://github.com/micronaut-projects/micronaut-gradle-plugin/issues/406")
-    @IgnoreIf({ GradleVersion.current() >= GradleVersion.version('9.0') })
     def "merges service files when building shadow jar (OLD)"(String runtime, String micronautGradlePlugin) {
         File shadowJar = file("build/libs/hello-world-1.0-all.jar")
 
