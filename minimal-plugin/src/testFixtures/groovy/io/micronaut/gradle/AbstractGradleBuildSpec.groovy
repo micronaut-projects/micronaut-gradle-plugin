@@ -227,8 +227,10 @@ abstract class AbstractGradleBuildSpec extends Specification {
                 .withArguments(["--no-watch-fs",
                                  "-S",
                                  "-Porg.gradle.java.installations.auto-download=false",
-                                 "-Dio.micronaut.graalvm.rich.output=false",
-                                 *args])
+                                 "-Porg.gradle.java.installations.auto-detect=false",
+                                 "-Porg.gradle.java.installations.fromEnv=GRAALVM_HOME",
+                                  "-Dio.micronaut.graalvm.rich.output=false",
+                                  *args])
                 .forwardStdOutput(System.out.newWriter())
                 .forwardStdError(System.err.newWriter())
                 .withDebug(true)
