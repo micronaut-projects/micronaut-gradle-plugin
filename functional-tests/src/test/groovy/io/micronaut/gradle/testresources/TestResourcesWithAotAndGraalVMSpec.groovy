@@ -4,7 +4,7 @@ import io.micronaut.gradle.AbstractGradleBuildSpec
 import org.gradle.testkit.runner.TaskOutcome
 import spock.lang.Requires
 
-@Requires({ AbstractGradleBuildSpec.graalVmAvailable && AbstractGradleBuildSpec.nativeImageCompilationSupported && !os.windows })
+@Requires({ AbstractGradleBuildSpec.graalVmAvailable && !os.windows })
 class TestResourcesWithAotAndGraalVMSpec extends AbstractTestResourcesSpec {
 
     def "runs optimized binary"() {
