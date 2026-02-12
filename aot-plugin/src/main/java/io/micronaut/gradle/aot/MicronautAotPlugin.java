@@ -257,6 +257,9 @@ public abstract class MicronautAotPlugin implements Plugin<Project> {
             binary.getMainClass().set(main.getMainClass());
             binary.getClasspath().from(optimizedJar);
             binary.getClasspath().from(project.getConfigurations().findByName(mainSourceSet.getRuntimeClasspathConfigurationName()));
+            // GraalVM 25 enables strict image heap by default, which breaks AOT optimized native builds.
+            // See https://github.com/micronaut-projects/micronaut-gradle-plugin/pull/1214
+            binary.buildArgs("-H:-StrictImageHeap");
             // The following lines are a hack for the fact that the GraalVM plugin doesn't configure all binaries
             // to use the metadata repository, but only the ones that it knows about (`main` and `test`).
             binary.getConfigurationFileDirectories().from(main.getConfigurationFileDirectories());
