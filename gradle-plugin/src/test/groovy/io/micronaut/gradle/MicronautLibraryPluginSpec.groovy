@@ -381,12 +381,17 @@ class Foo {}
             micronaut {
                 version "$micronautVersion"
             }
+
+            tasks.withType(Test).configureEach {
+                useJUnitPlatform()
+            }
             
             $repositoriesBlock
             
             dependencies {
                 testImplementation("io.micronaut.test:micronaut-test-junit5")
-                testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")            
+                testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
+                testRuntimeOnly("org.junit.platform:junit-platform-launcher")
             }
             
         """

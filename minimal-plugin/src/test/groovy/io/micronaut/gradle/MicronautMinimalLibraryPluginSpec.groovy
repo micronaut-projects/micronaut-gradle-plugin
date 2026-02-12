@@ -332,6 +332,10 @@ class Foo {}
             micronaut {
                 version "$micronautVersion"
             }
+
+            tasks.withType(Test).configureEach {
+                useJUnitPlatform()
+            }
             
             $repositoriesBlock
             
