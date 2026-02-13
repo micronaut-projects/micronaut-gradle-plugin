@@ -219,7 +219,8 @@ abstract class AbstractGradleBuildSpec extends Specification {
             if (Jvm.current.java16Compatible) {
                 runner = runner.withJvmArguments(
                         '--illegal-access=permit',
-                        '--add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED'
+                        '--add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED',
+                        '--add-opens=java.base/java.lang.invoke=ALL-UNNAMED'
                 )
             }
         }
