@@ -39,7 +39,7 @@ public class ShadowPluginSupport {
         p.getPluginManager().withPlugin(OLD_SHADOW_PLUGIN, unused -> {
             p.afterEvaluate(project -> {
                 if (!hasNew.get()) {
-                    LOGGER.warn("The legacy Shadow plugin (id '{}') is deprecated. Please use the Gradle Shadow plugin instead (id = '{}')", OLD_SHADOW_PLUGIN, SHADOW_PLUGIN);
+                    throw new IllegalStateException("The legacy Shadow plugin (id '" + OLD_SHADOW_PLUGIN + "') is no longer supported. Please use the Gradle Shadow plugin instead (id = '" + SHADOW_PLUGIN + "')");
                 }
             });
             applied.set(true);
