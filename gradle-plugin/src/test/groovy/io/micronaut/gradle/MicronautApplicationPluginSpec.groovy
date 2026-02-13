@@ -79,7 +79,7 @@ public class ExampleTest {
 //            }
 //
 //            micronaut {
-//                version "3.5.1"
+//                version "4.10.8"
 //                runtime "netty"
 //                testRuntime "spock"
 //            }
