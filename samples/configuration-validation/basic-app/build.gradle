@@ -1,0 +1,35 @@
+plugins {
+    id("io.micronaut.application")
+    id("io.micronaut.configuration.validation")
+}
+
+version = "0.1"
+group = "demo.app"
+
+micronaut {
+    runtime("netty")
+    testRuntime("junit5")
+    processing {
+        incremental(true)
+        annotations("demo.app.*")
+    }
+}
+
+tasks.withType(Test).configureEach {
+    useJUnitPlatform()
+}
+
+dependencies {
+    implementation("io.micronaut:micronaut-http-server-netty")
+    runtimeOnly("ch.qos.logback:logback-classic")
+    runtimeOnly("org.yaml:snakeyaml")
+}
+
+application {
+    mainClass.set("demo.app.Application")
+}
+
+java {
+    sourceCompatibility = JavaVersion.toVersion("25")
+    targetCompatibility = JavaVersion.toVersion("25")
+}

@@ -84,10 +84,115 @@ For example, the `minimal` plugins can be used to reduce the number of tasks, fo
 |Adds support for generating source code from JSON Schema.
 |
 
+|https://plugins.gradle.org/plugin/io.micronaut.configuration.validation[`io.micronaut.configuration.validation`]
+|Validates Micronaut configuration against JSON Schemas at build time.
+|
+
 |https://plugins.gradle.org/plugin/io.micronaut.openrewrite[`io.micronaut.openrewrite`]
 |Adds support for applying OpenRewrite recipes for Micronaut applications and libraries.
 |
 |===
+
+[[configuration-validation]]
+== Micronaut Configuration Validation Plugin
+
+The https://plugins.gradle.org/plugin/io.micronaut.configuration.validation[Micronaut configuration validation plugin] validates your configuration files (for example `application.yml`, `application.properties`, `application.toml`) against JSON Schemas published by Micronaut modules and generated from `@ConfigurationProperties`.
+
+It provides scenario-specific tasks and wires them into the standard Gradle lifecycle so validation runs automatically:
+
+* `runConfigurationValidation` runs before `run` (default environment: `dev`)
+* `testConfigurationValidation` runs before `test` (default environment: `test`)
+* `configurationValidation` runs before `assemble`, `check`, and `build` (production configuration, no default environment)
+
+Each scenario also has a cacheable report task (`*ConfigurationValidationReport`) that generates reports.
+Reports are written under `build/reports/micronaut/config-validation/<scenario>` by default.
+
+=== Applying the plugin
+
+[source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
+----
+plugins {
+  id 'io.micronaut.application' version '{gradle-project-version}'
+  id 'io.micronaut.configuration.validation' version '{gradle-project-version}'
+}
+----
+
+[source, kotlin, subs="verbatim,attributes", role="multi-language-sample"]
+----
+plugins {
+  id("io.micronaut.application") version "{gradle-project-version}"
+  id("io.micronaut.configuration.validation") version "{gradle-project-version}"
+}
+----
+
+=== Configuration
+
+The plugin is configured via the `micronaut { configurationValidation { ... } }` extension.
+
+The underlying validator supports the following inputs:
+
+* classpath used to discover schemas and configuration (`--classpath`)
+* enabled environments (`--env`)
+* suppression patterns (`--suppress`)
+* unknown-property handling (`--fail-on-not-present`)
+* environment deduction (`--deduce-environments`)
+* report output directory and format (`--out`, `--format`)
+
+.Example configuration
+[source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
+----
+micronaut {
+  configurationValidation {
+    // Global defaults
+    failOnNotPresent.set(true)
+    format.set("both") // json, html, both
+
+    run {
+      // Default: ["dev"]
+      environments.set(["dev"]) 
+    }
+
+    test {
+      // Default: ["test"]
+      environments.set(["test"]) 
+    }
+
+    assemble {
+      // No default environment
+      environments.set([])
+    }
+  }
+}
+----
+
+[source, kotlin, subs="verbatim,attributes", role="multi-language-sample"]
+----
+micronaut {
+  configurationValidation {
+    // Global defaults
+    failOnNotPresent.set(true)
+    format.set("both") // json, html, both
+
+    run {
+      environments.set(listOf("dev"))
+    }
+    test {
+      environments.set(listOf("test"))
+    }
+    assemble {
+      environments.set(emptyList())
+    }
+  }
+}
+----
+
+
+
+=== Caching and configuration cache
+
+The `*ConfigurationValidationReport` tasks are cacheable and compatible with Gradle configuration cache.
+To preserve failure results across cache hits (so that cached invalid configuration still fails subsequent builds), the failing `*ConfigurationValidation` tasks read the result marker produced by their corresponding report task.
+
 
 Using the `io.micronaut.application` plugin:
 

@@ -39,6 +39,7 @@ dependencies {
     javadoc project(":micronaut-openapi-plugin")
     javadoc project(":micronaut-platform-catalog-plugin")
     javadoc project(":micronaut-jsonschema-plugin")
+    javadoc project(":micronaut-configuration-validation-plugin")
     javadoc libs.micronaut.openapi.generator
     javadoc libs.bundles.optionalPlugins
     javadoc libs.shadowPlugin
