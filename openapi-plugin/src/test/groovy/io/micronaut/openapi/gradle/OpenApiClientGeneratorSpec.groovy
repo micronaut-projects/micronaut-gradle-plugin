@@ -407,7 +407,7 @@ class OpenApiClientGeneratorSpec extends AbstractOpenApiGeneratorSpec {
             }
             
             $repositoriesBlock
-            mainClassName="example.Application"
+            application { mainClass = "example.Application" }
 
             dependencies {
 

@@ -251,12 +251,24 @@ public abstract class MicronautAotPlugin implements Plugin<Project> {
     private void registerOptimizedBinary(Project project, TaskProvider<Jar> optimizedJar) {
         GraalVMExtension graalVMExtension = project.getExtensions().getByType(GraalVMExtension.class);
         NamedDomainObjectContainer<NativeImageOptions> binaries = graalVMExtension.getBinaries();
+
+        // AOT-specific native-image arguments required for GraalVM 25+.
+        // Apply to both the default `main` binary (nativeCompile/nativeRun) and the AOT `optimized` binary
+        // (nativeOptimizedCompile/nativeOptimizedRun).
+        binaries.named(MAIN_BINARY_NAME, mainBinary ->
+                mainBinary.buildArgs("--initialize-at-build-time=io.micronaut.context.ApplicationContextConfigurer$1")
+        );
+
         binaries.create(OPTIMIZED_BINARY_NAME, binary -> {
             var mainSourceSet = PluginsHelper.findSourceSets(project).getByName(SourceSet.MAIN_SOURCE_SET_NAME);
             NativeImageOptions main = binaries.getByName(MAIN_BINARY_NAME);
             binary.getMainClass().set(main.getMainClass());
             binary.getClasspath().from(optimizedJar);
             binary.getClasspath().from(project.getConfigurations().findByName(mainSourceSet.getRuntimeClasspathConfigurationName()));
+            // GraalVM 25 enables strict image heap by default, which breaks AOT optimized native builds.
+            // See https://github.com/micronaut-projects/micronaut-gradle-plugin/pull/1214
+            binary.buildArgs("-H:-StrictImageHeap");
+            binary.buildArgs("--initialize-at-build-time=io.micronaut.context.ApplicationContextConfigurer$1");
             // The following lines are a hack for the fact that the GraalVM plugin doesn't configure all binaries
             // to use the metadata repository, but only the ones that it knows about (`main` and `test`).
             binary.getConfigurationFileDirectories().from(main.getConfigurationFileDirectories());

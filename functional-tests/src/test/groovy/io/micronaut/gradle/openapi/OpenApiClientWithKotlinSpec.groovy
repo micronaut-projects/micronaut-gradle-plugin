@@ -12,9 +12,9 @@ class OpenApiClientWithKotlinSpec extends AbstractOpenApiWithKotlinSpec {
             plugins {
                 id "io.micronaut.minimal.application"
                 id "io.micronaut.openapi"
-                id "org.jetbrains.kotlin.jvm" version "$kotlinVersion"
-                id "org.jetbrains.kotlin.plugin.allopen" version "$kotlinVersion"
-                id "org.jetbrains.kotlin.kapt" version "$kotlinVersion"
+                id "org.jetbrains.kotlin.jvm" version "$kotlin2Version"
+                id "org.jetbrains.kotlin.plugin.allopen" version "$kotlin2Version"
+                id "org.jetbrains.kotlin.kapt" version "$kotlin2Version"
             }
             
             micronaut {
@@ -70,9 +70,9 @@ class OpenApiClientWithKotlinSpec extends AbstractOpenApiWithKotlinSpec {
             plugins {
                 id "io.micronaut.minimal.application"
                 id "io.micronaut.openapi"
-                id "org.jetbrains.kotlin.jvm" version "$kotlinVersion"
-                id "org.jetbrains.kotlin.plugin.allopen" version "$kotlinVersion"
-                id "org.jetbrains.kotlin.kapt" version "$kotlinVersion"
+                id "org.jetbrains.kotlin.jvm" version "$kotlin2Version"
+                id "org.jetbrains.kotlin.plugin.allopen" version "$kotlin2Version"
+                id "org.jetbrains.kotlin.kapt" version "$kotlin2Version"
             }
             
             micronaut {
@@ -129,9 +129,9 @@ class OpenApiClientWithKotlinSpec extends AbstractOpenApiWithKotlinSpec {
             plugins {
                 id "io.micronaut.minimal.application"
                 id "io.micronaut.openapi"
-                id "org.jetbrains.kotlin.jvm" version "$kotlinVersion"
-                id "org.jetbrains.kotlin.plugin.allopen" version "$kotlinVersion"
-                id "org.jetbrains.kotlin.kapt" version "$kotlinVersion"
+                id "org.jetbrains.kotlin.jvm" version "$kotlin2Version"
+                id "org.jetbrains.kotlin.plugin.allopen" version "$kotlin2Version"
+                id "org.jetbrains.kotlin.kapt" version "$kotlin2Version"
             }
             
             micronaut {
@@ -186,9 +186,9 @@ class OpenApiClientWithKotlinSpec extends AbstractOpenApiWithKotlinSpec {
             plugins {
                 id "io.micronaut.minimal.application"
                 id "io.micronaut.openapi"
-                id "org.jetbrains.kotlin.jvm" version "$kotlinVersion"
-                id "org.jetbrains.kotlin.plugin.allopen" version "$kotlinVersion"
-                id "com.google.devtools.ksp" version "$kspVersion"
+                id "org.jetbrains.kotlin.jvm" version "$kotlin2Version"
+                id "org.jetbrains.kotlin.plugin.allopen" version "$kotlin2Version"
+                id "com.google.devtools.ksp" version "$ksp2Version"
             }
             
             micronaut {
@@ -245,9 +245,9 @@ class OpenApiClientWithKotlinSpec extends AbstractOpenApiWithKotlinSpec {
             plugins {
                 id "io.micronaut.minimal.application"
                 id "io.micronaut.openapi"
-                id "org.jetbrains.kotlin.jvm" version "$kotlinVersion"
-                id "org.jetbrains.kotlin.plugin.allopen" version "$kotlinVersion"
-                id "com.google.devtools.ksp" version "$kspVersion"
+                id "org.jetbrains.kotlin.jvm" version "$kotlin2Version"
+                id "org.jetbrains.kotlin.plugin.allopen" version "$kotlin2Version"
+                id "com.google.devtools.ksp" version "$ksp2Version"
             }
             
             micronaut {
@@ -305,9 +305,9 @@ class OpenApiClientWithKotlinSpec extends AbstractOpenApiWithKotlinSpec {
             plugins {
                 id "io.micronaut.minimal.application"
                 id "io.micronaut.openapi"
-                id "org.jetbrains.kotlin.jvm" version "$kotlinVersion"
-                id "org.jetbrains.kotlin.plugin.allopen" version "$kotlinVersion"
-                id "com.google.devtools.ksp" version "$kspVersion"
+                id "org.jetbrains.kotlin.jvm" version "$kotlin2Version"
+                id "org.jetbrains.kotlin.plugin.allopen" version "$kotlin2Version"
+                id "com.google.devtools.ksp" version "$ksp2Version"
             }
             
             micronaut {
@@ -385,9 +385,9 @@ class OpenApiClientWithKotlinSpec extends AbstractOpenApiWithKotlinSpec {
             plugins {
                 id "io.micronaut.minimal.application"
                 id "io.micronaut.openapi"
-                id "org.jetbrains.kotlin.jvm" version "$kotlinVersion"
-                id "org.jetbrains.kotlin.plugin.allopen" version "$kotlinVersion"
-                id "com.google.devtools.ksp" version "$kspVersion"
+                id "org.jetbrains.kotlin.jvm" version "$kotlin2Version"
+                id "org.jetbrains.kotlin.plugin.allopen" version "$kotlin2Version"
+                id "com.google.devtools.ksp" version "$ksp2Version"
             }
             
             micronaut {
@@ -407,7 +407,7 @@ class OpenApiClientWithKotlinSpec extends AbstractOpenApiWithKotlinSpec {
             }
             
             $repositoriesBlock
-            mainClassName="example.Application"
+            application { mainClass = "example.Application" }
 
             dependencies {
 

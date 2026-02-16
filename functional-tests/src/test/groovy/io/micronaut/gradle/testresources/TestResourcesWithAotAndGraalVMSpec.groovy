@@ -26,7 +26,7 @@ graalvmNative.binaries.all {
 micronaut {
     aot {
         deduceEnvironment = true
-        optimizeServiceLoading = true
+        optimizeServiceLoading = false
     }
 }
 """)

@@ -129,9 +129,9 @@ class CracCustomizationSpec extends BaseCracGradleBuildSpec {
         fileTextContents("build/docker/main/Dockerfile.CRaCCheckpoint").readLines().head() == "FROM --platform=raspberry-pi/arm64 timyates:latest"
     }
 
-    void "Arch defaults to OS arch, and java version defaults to 17"() {
+    void "Arch defaults to OS arch, and java version defaults to 25"() {
         given:
-        def javaVersion = "17"
+        def javaVersion = "25"
         def expectedArch = System.properties['os.arch'] == MicronautCRaCPlugin.ARM_ARCH ? MicronautCRaCPlugin.ARM_ARCH : MicronautCRaCPlugin.X86_64_ARCH
         settingsFile << "rootProject.name = 'hello-world'"
         buildFile << getBuildFileBlockWithMicronautConfig(getMicronautConfigBlock())
@@ -146,7 +146,7 @@ class CracCustomizationSpec extends BaseCracGradleBuildSpec {
     void "default CRaC URL returns a single JDK"() {
         when:
         def expectedArch = System.properties['os.arch'] == MicronautCRaCPlugin.ARM_ARCH ? MicronautCRaCPlugin.ARM_ARCH : MicronautCRaCPlugin.X86_64_ARCH
-        def json = new URL(CRaCCheckpointDockerfile.getUrl("17", MicronautCRaCPlugin.DEFAULT_OS, expectedArch)).text
+        def json = new URL(CRaCCheckpointDockerfile.getUrl("25", MicronautCRaCPlugin.DEFAULT_OS, expectedArch)).text
         def result = new JsonSlurper().parseText(json)
 
         then:

@@ -65,7 +65,8 @@ class MicronautGraalPluginSpec extends AbstractEagerConfiguringFunctionalTest {
         result.task(":nativeCompile").outcome == TaskOutcome.SUCCESS
 
         and:
-        argFileContentsOf(result).contains("-H:ConfigurationFileDirectories=${new File(testProjectDir.root, 'build/native/generated/generateResourcesConfigFile').absolutePath}")
+        def expectedConfigDir = new File(testProjectDir.root, 'build/native/generated/generateResourcesConfigFile').canonicalPath
+        argFileContentsOf(result).contains("-H:ConfigurationFileDirectories=${expectedConfigDir}")
 
         where:
         plugins << [
@@ -88,7 +89,8 @@ class MicronautGraalPluginSpec extends AbstractEagerConfiguringFunctionalTest {
         result.task(":nativeCompile").outcome == TaskOutcome.SUCCESS
 
         and:
-        argFileContentsOf(result).contains("-H:ConfigurationFileDirectories=${new File(testProjectDir.root, 'build/native/generated/generateResourcesConfigFile').absolutePath}")
+        def expectedConfigDir = new File(testProjectDir.root, 'build/native/generated/generateResourcesConfigFile').canonicalPath
+        argFileContentsOf(result).contains("-H:ConfigurationFileDirectories=${expectedConfigDir}")
     }
 
     private void withSwaggerMicronautApplication() {
@@ -111,7 +113,7 @@ class MicronautGraalPluginSpec extends AbstractEagerConfiguringFunctionalTest {
             }
             $repositoriesBlock
             group = "example.micronaut"
-            mainClassName="example.Application"
+            application { mainClass = "example.Application" }
 
             graalvmNative {
                 binaries {
@@ -162,7 +164,7 @@ class Application {
             
             $repositoriesBlock
             group = "example.micronaut"
-            mainClassName="example.Application"
+            application { mainClass = "example.Application" }
 
             graalvmNative {
                 binaries {

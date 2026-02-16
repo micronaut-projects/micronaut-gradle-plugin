@@ -236,6 +236,9 @@ public abstract class MicronautDockerfile extends Dockerfile implements DockerBu
     private String getDockerDefaultImageJavaTag() {
         JavaVersion javaVersion = getJdkVersion().get();
 
+        if (javaVersion.isCompatibleWith(JavaVersion.VERSION_25)) {
+            return "25-jre";
+        }
         if (javaVersion.isCompatibleWith(JavaVersion.VERSION_21)) {
             return "21-jre";
         }

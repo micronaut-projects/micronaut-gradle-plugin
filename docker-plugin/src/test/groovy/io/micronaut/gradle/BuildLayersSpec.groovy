@@ -25,7 +25,7 @@ class BuildLayersSpec extends AbstractGradleBuildSpec {
                 runtimeOnly("ch.qos.logback:logback-classic")
                 testImplementation("io.micronaut:micronaut-http-client")
             }
-            mainClassName="example.Application"
+            application { mainClass = "example.Application" }
             
             project.buildDir = "build-custom"
         """
@@ -62,7 +62,7 @@ class BuildLayersSpec extends AbstractGradleBuildSpec {
                 runtimeOnly("ch.qos.logback:logback-classic")
                 testImplementation("io.micronaut:micronaut-http-client")
             }
-            mainClassName="example.Application"
+            application { mainClass = "example.Application" }
 
             def jar1 = tasks.register("otherJar", Jar) {
                 destinationDirectory = file("build/libs1")

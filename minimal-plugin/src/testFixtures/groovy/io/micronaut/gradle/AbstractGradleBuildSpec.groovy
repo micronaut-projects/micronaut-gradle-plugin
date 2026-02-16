@@ -30,6 +30,20 @@ abstract class AbstractGradleBuildSpec extends Specification {
         return false
     }
 
+    static boolean isDockerAvailable() {
+        String dockerHost = System.getenv("DOCKER_HOST")
+        if (dockerHost) {
+            if (dockerHost.startsWith("unix://")) {
+                String socketPath = dockerHost.substring("unix://".length())
+                return new File(socketPath).exists()
+            }
+            // tcp://, npipe://, etc. Assume Docker is reachable if configured.
+            return true
+        }
+        return new File("/var/run/docker.sock").exists() ||
+                new File(new File(System.getProperty("user.home")), ".docker/run/docker.sock").exists()
+    }
+
     boolean allowSnapshots = false
     // This flag is only for local tests, do not push with this flag set to true
     boolean allowMavenLocal = false
@@ -211,12 +225,12 @@ abstract class AbstractGradleBuildSpec extends Specification {
         }
         runner.withProjectDir(baseDir.toFile())
                 .withArguments(["--no-watch-fs",
-                                "-S",
-                                "-Porg.gradle.java.installations.auto-download=false",
-                                "-Porg.gradle.java.installations.auto-detect=false",
-                                "-Porg.gradle.java.installations.fromEnv=GRAALVM_HOME",
-                                "-Dio.micronaut.graalvm.rich.output=false",
-                                *args])
+                                 "-S",
+                                 "-Porg.gradle.java.installations.auto-download=false",
+                                 "-Porg.gradle.java.installations.auto-detect=false",
+                                 "-Porg.gradle.java.installations.fromEnv=GRAALVM_HOME",
+                                  "-Dio.micronaut.graalvm.rich.output=false",
+                                  *args])
                 .forwardStdOutput(System.out.newWriter())
                 .forwardStdError(System.err.newWriter())
                 .withDebug(true)
