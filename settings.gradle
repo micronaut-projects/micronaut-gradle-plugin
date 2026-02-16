@@ -25,6 +25,7 @@ include("test-resources-plugin")
 include("functional-tests")
 include("jsonschema-plugin")
 include("openrewrite-plugin")
+include("configuration-validation-plugin")
 
 enableFeaturePreview 'TYPESAFE_PROJECT_ACCESSORS'
 

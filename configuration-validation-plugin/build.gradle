@@ -1,0 +1,14 @@
+plugins {
+    id "io.micronaut.internal.build.gradle-plugin"
+}
+
+description = "Micronaut Configuration Validation Gradle plugin"
+
+micronautPlugins {
+    register('configuration.validation', 'io.micronaut.gradle.configuration.validation.MicronautConfigurationValidationPlugin', 'Micronaut Configuration Validation Plugin')
+}
+
+dependencies {
+    implementation projects.micronautMinimalPlugin
+    testImplementation testFixtures(projects.micronautMinimalPlugin)
+}

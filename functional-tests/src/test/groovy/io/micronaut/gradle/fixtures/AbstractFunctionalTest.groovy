@@ -37,6 +37,7 @@ abstract class AbstractFunctionalTest extends AbstractGradleBuildSpec {
                     id 'io.micronaut.aot' version '${version}'
                     id 'io.micronaut.openapi' version '${version}'
                     id 'io.micronaut.test-resources' version '${version}'
+                    id 'io.micronaut.configuration.validation' version '${version}'
                 }
             }
         """ + (settingsFile.exists() ? settingsFile.text : "")
