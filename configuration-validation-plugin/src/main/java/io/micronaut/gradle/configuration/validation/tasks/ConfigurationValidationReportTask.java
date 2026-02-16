@@ -26,6 +26,8 @@ import org.gradle.api.tasks.CacheableTask;
 import org.gradle.api.tasks.Classpath;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.Internal;
+import org.gradle.api.tasks.Nested;
+import org.gradle.api.tasks.Optional;
 import org.gradle.api.tasks.OutputDirectory;
 import org.gradle.api.tasks.OutputFile;
 import org.gradle.api.tasks.TaskAction;
@@ -187,8 +189,8 @@ public abstract class ConfigurationValidationReportTask extends DefaultTask {
      *
      * @return java launcher
      */
-    @org.gradle.api.tasks.Nested
-    @org.gradle.api.tasks.Optional
+    @Nested
+    @Optional
     public abstract Property<JavaLauncher> getJavaLauncher();
 
     /**
@@ -197,7 +199,7 @@ public abstract class ConfigurationValidationReportTask extends DefaultTask {
      * @return executable
      */
     @Input
-    @org.gradle.api.tasks.Optional
+    @Optional
     public abstract Property<String> getJavaExecutable();
 
     /**

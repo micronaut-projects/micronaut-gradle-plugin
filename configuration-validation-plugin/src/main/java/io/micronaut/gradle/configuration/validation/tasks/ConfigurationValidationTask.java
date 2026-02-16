@@ -37,6 +37,10 @@ import java.util.Properties;
  */
 public abstract class ConfigurationValidationTask extends DefaultTask {
 
+    public static final String FORMAT_BOTH = "both";
+    public static final String FORMAT_JSON = "json";
+    public static final String FORMAT_HTML = "html";
+
     /**
      * Default constructor.
      */
@@ -106,16 +110,16 @@ public abstract class ConfigurationValidationTask extends DefaultTask {
             throw new GradleException("Micronaut configuration validation failed to execute. See reports in " + getOutputDirectory().getAsFile().get());
         }
 
-        String format = getFormat().getOrElse("both");
+        String format = getFormat().getOrElse(FORMAT_BOTH);
         StringBuilder message = new StringBuilder("Micronaut configuration validation failed.");
         message.append(System.lineSeparator());
         message.append("Reports: ").append(getOutputDirectory().getAsFile().get());
         message.append(System.lineSeparator());
-        if ("json".equalsIgnoreCase(format) || "both".equalsIgnoreCase(format)) {
+        if (FORMAT_JSON.equalsIgnoreCase(format) || FORMAT_BOTH.equalsIgnoreCase(format)) {
             message.append("- ").append(getOutputDirectory().file("configuration-errors.json").get().getAsFile());
             message.append(System.lineSeparator());
         }
-        if ("html".equalsIgnoreCase(format) || "both".equalsIgnoreCase(format)) {
+        if (FORMAT_HTML.equalsIgnoreCase(format) || FORMAT_BOTH.equalsIgnoreCase(format)) {
             message.append("- ").append(getOutputDirectory().file("configuration-errors.html").get().getAsFile());
             message.append(System.lineSeparator());
         }
