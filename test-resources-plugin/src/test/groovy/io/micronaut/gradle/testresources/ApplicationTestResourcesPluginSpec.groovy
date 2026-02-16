@@ -23,7 +23,9 @@ class ApplicationTestResourcesPluginSpec extends AbstractGradleBuildSpec {
         result = build 'test'
 
         then:
-        result.task(':test').outcome == TaskOutcome.UP_TO_DATE
+        // Gradle TestKit doesn't always report UP-TO-DATE tasks in BuildResult on newer Gradle versions.
+        def testTask = result.task(':test')
+        testTask == null || testTask.outcome == TaskOutcome.UP_TO_DATE
     }
 
     def "creates temp test-resources directory when running 'clean build'"() {

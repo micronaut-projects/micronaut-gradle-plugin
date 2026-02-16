@@ -1,6 +1,7 @@
 package io.micronaut.gradle.aot
 
 import io.micronaut.gradle.DefaultVersions
+import io.micronaut.gradle.AbstractGradleBuildSpec
 import org.gradle.testkit.runner.TaskOutcome
 import spock.lang.IgnoreIf
 import spock.lang.Requires
@@ -18,7 +19,7 @@ class MicronautAOTDockerSpec extends AbstractAOTPluginSpec {
         result.task(":optimizedDockerfile").outcome != TaskOutcome.FAILED
 
         def dockerFile = normalizeLineEndings(file("build/docker/optimized/Dockerfile").text)
-        dockerFile == """FROM eclipse-temurin:17-jre
+        dockerFile == """FROM eclipse-temurin:25-jre
 WORKDIR /home/app
 COPY --link layers/libs /home/app/libs
 COPY --link layers/app /home/app/
@@ -29,6 +30,7 @@ ENTRYPOINT ["java", "-jar", "/home/app/application.jar"]
     }
 
     @IgnoreIf({ os.windows })
+    @IgnoreIf({ !AbstractGradleBuildSpec.dockerAvailable })
     def "generates an optimized docker image"() {
         withSample("aot/basic-app")
 
@@ -44,7 +46,7 @@ ENTRYPOINT ["java", "-jar", "/home/app/application.jar"]
         result.task(":optimizedDockerBuild").outcome != TaskOutcome.FAILED
 
         def dockerFile = normalizeLineEndings(file("build/docker/optimized/Dockerfile").text)
-        dockerFile == """FROM eclipse-temurin:17-jre
+        dockerFile == """FROM eclipse-temurin:25-jre
 WORKDIR /home/app
 COPY --link layers/libs /home/app/libs
 COPY --link layers/app /home/app/
@@ -54,6 +56,7 @@ ENTRYPOINT ["java", "-jar", "/home/app/application.jar"]
 
     }
 
+    @IgnoreIf({ !AbstractGradleBuildSpec.dockerAvailable })
     @Requires({ graalVmAvailable && !os.windows })
     def "generates a native optimized docker image"() {
         withSample("aot/basic-app")
@@ -67,7 +70,7 @@ ENTRYPOINT ["java", "-jar", "/home/app/application.jar"]
 
         then:
         dockerFile == """
-            FROM ghcr.io/graalvm/native-image-community:17-ol${DefaultVersions.ORACLELINUX} AS graalvm
+            FROM ghcr.io/graalvm/native-image-community:25-ol${DefaultVersions.ORACLELINUX} AS graalvm
             WORKDIR /home/app
             COPY --link layers/libs /home/app/libs
             COPY --link layers/app /home/app/

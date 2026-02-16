@@ -21,7 +21,7 @@ class MicronautMinimalApplicationPluginSpec extends AbstractGradleBuildSpec {
             }
             
             $repositoriesBlock
-            mainClassName="example.Application"
+            application { mainClass = "example.Application" }
 
             $withSerde
         """
@@ -62,7 +62,7 @@ class MicronautMinimalApplicationPluginSpec extends AbstractGradleBuildSpec {
             }
             $withSerde
 
-            mainClassName="example.Application"
+            application { mainClass = "example.Application" }
         """
 
         testProjectDir.newFolder("src", "main", "groovy", "example")
@@ -100,7 +100,7 @@ class MicronautMinimalApplicationPluginSpec extends AbstractGradleBuildSpec {
             }
             
             $repositoriesBlock
-            mainClassName="example.Application"
+            application { mainClass = "example.Application" }
             configurations.all {
                 exclude module: 'snakeyaml'
             }
@@ -169,7 +169,7 @@ public class ExampleTest {
             }
             
             $repositoriesBlock
-            mainClassName="example.Application"
+            application { mainClass = "example.Application" }
 
             $withSerde
         """
@@ -218,7 +218,7 @@ public class ExampleTest {
             }
             
             $repositoriesBlock
-            mainClassName="example.Application"
+            application { mainClass = "example.Application" }
 
             $withSerde
         """
@@ -249,7 +249,7 @@ public class ExampleTest {
             }
             
             $repositoriesBlock
-            mainClassName="example.Application"
+            application { mainClass = "example.Application" }
 
             $withSerde
         """
@@ -285,7 +285,7 @@ public class ExampleTest {
             }
             
             $repositoriesBlock
-            mainClassName="example.Application"
+            application { mainClass = "example.Application" }
 
             $withSerde
         """
@@ -316,7 +316,7 @@ public class ExampleTest {
             }
             
             $repositoriesBlock
-            mainClassName="example.Application"
+            application { mainClass = "example.Application" }
 
             $withSerde
         """
@@ -349,7 +349,7 @@ public class ExampleTest {
             }
             
             $repositoriesBlock
-            mainClassName="example.Application"
+            application { mainClass = "example.Application" }
         """
         testProjectDir.newFolder("src", "test", "java", "example")
         def javaFile = writeExampleClass()

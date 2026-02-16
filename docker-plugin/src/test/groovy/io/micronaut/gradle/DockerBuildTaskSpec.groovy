@@ -13,7 +13,7 @@ class DockerBuildTaskSpec extends AbstractGradleBuildSpec {
     private final String today = new Date().format("yyyyMMdd")
     private final String now = new Date().format("HHmmss")
 
-    @IgnoreIf({ os.windows })
+    @IgnoreIf({ os.windows || !dockerAvailable })
     def "can apply the docker plugin first"() {
         given:
         settingsFile << "rootProject.name = 'hello-world'"
@@ -29,7 +29,7 @@ class DockerBuildTaskSpec extends AbstractGradleBuildSpec {
             
             $repositoriesBlock
 
-            mainClassName="example.Application"
+            application { mainClass = "example.Application" }
             
         """
         testProjectDir.newFolder("src", "main", "java", "example")
@@ -56,7 +56,7 @@ class Application {
     }
 
 
-    @IgnoreIf({ os.windows })
+    @IgnoreIf({ os.windows || !dockerAvailable })
     def "test build docker image"() {
         given:
         settingsFile << "rootProject.name = 'hello-world'"
@@ -72,7 +72,7 @@ class Application {
             
             $repositoriesBlock
 
-            mainClassName="example.Application"
+            application { mainClass = "example.Application" }
             
         """
         testProjectDir.newFolder("src", "main", "java", "example")
@@ -98,7 +98,7 @@ class Application {
 
     }
 
-    @IgnoreIf({ os.windows })
+    @IgnoreIf({ os.windows || !dockerAvailable })
     def "test build docker image using custom Dockerfile"() {
         given:
         settingsFile << "rootProject.name = 'hello-world'"
@@ -114,7 +114,7 @@ class Application {
             
             $repositoriesBlock
 
-            mainClassName="example.Application"
+            application { mainClass = "example.Application" }
             
         """
         testProjectDir.newFolder("src", "main", "java", "example")
@@ -130,8 +130,7 @@ class Application {
 }
 """
 
-        testProjectDir.newFile("Dockerfile") << """
-FROM eclipse-temurin:17-jre
+        testProjectDir.newFile("Dockerfile") << """FROM eclipse-temurin:25-jre
 WORKDIR /home/alternate
 COPY --link layers/libs /home/alternate/libs
 COPY --link layers/app/application.jar /home/alternate/application.jar
@@ -165,7 +164,7 @@ ENTRYPOINT ["java", "-jar", "/home/alternate/application.jar"]
 
             $repositoriesBlock
 
-            mainClassName="example.Application"
+            application { mainClass = "example.Application" }
 
         """
         testProjectDir.newFolder("src", "main", "java", "example")
@@ -210,7 +209,7 @@ class Application {
             
             $repositoriesBlock
 
-            mainClassName="example.Application"
+            application { mainClass = "example.Application" }
 
             tasks.withType(DockerBuildOptions).configureEach {
                 targetWorkingDirectory = "/home/alternate"
@@ -239,7 +238,7 @@ class Application {
 
         and:
         def dockerfile = new File(testProjectDir.root, 'build/docker/main/Dockerfile').text
-        dockerfile == """FROM eclipse-temurin:17-jre
+        dockerfile == """FROM eclipse-temurin:25-jre
 WORKDIR /home/alternate
 COPY --link layers/libs /home/alternate/libs
 COPY --link layers/app /home/alternate/
@@ -266,7 +265,7 @@ ENTRYPOINT ["java", "-jar", "/home/alternate/application.jar"]
             
             $repositoriesBlock
 
-            mainClassName="example.Application"
+            application { mainClass = "example.Application" }
 
             tasks.withType(MicronautDockerfile).configureEach {
                 useCopyLink = false
@@ -295,7 +294,7 @@ class Application {
 
         and:
         def dockerfile = new File(testProjectDir.root, 'build/docker/main/Dockerfile').text
-        dockerfile == """FROM eclipse-temurin:17-jre
+        dockerfile == """FROM eclipse-temurin:25-jre
 WORKDIR /home/app
 COPY layers/libs /home/app/libs
 COPY layers/app /home/app/
@@ -322,7 +321,7 @@ ENTRYPOINT ["java", "-jar", "/home/app/application.jar"]
             
             $repositoriesBlock
 
-            mainClassName="example.Application"
+            application { mainClass = "example.Application" }
 
             dependencies {
                 implementation project(":project-lib")
@@ -418,7 +417,7 @@ public class ProjectLib {}
                 }        
             }
             
-            mainClassName="example.Application"
+            application { mainClass = "example.Application" }
 
             dependencies {
                 implementation "dummy:dummy:5.0.0-SNAPSHOT"
@@ -478,7 +477,7 @@ class Application {
             
             $repositoriesBlock
 
-            mainClassName="example.Application"
+            application { mainClass = "example.Application" }
             
         """
 

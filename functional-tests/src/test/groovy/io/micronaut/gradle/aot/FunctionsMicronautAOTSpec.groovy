@@ -22,6 +22,8 @@ class FunctionsMicronautAOTSpec extends AbstractAOTPluginSpec {
             withProperty('serviceloading.jit.enabled', 'true')
             withProperty('serviceloading.native.enabled', 'true')
             withProperty('yaml.to.java.config.enabled', 'true')
+            withProperty('property-source-loader.generate.enabled', 'true')
+            withProperty('property-source-loader.types', 'io.micronaut.context.env.yaml.YamlPropertySourceLoader')
             withProperty('scan.reactive.types.enabled', 'true')
             withProperty('known.missing.types.enabled', 'true')
             withProperty('sealed.property.source.enabled', 'true')
@@ -32,7 +34,7 @@ class FunctionsMicronautAOTSpec extends AbstractAOTPluginSpec {
         }
 
         then: "prepares optimizations"
-        result.output.contains 'Converting application.yml into Java based configuration'
+        result.output.contains 'Converting application into Java based configuration'
 
         when:
         result = build "optimizedJitJar", "optimizedJitJarAll"

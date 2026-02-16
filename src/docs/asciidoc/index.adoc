@@ -2,7 +2,7 @@
 :native-gradle-plugin: https://graalvm.github.io/native-build-tools/{native-build-tools-version}/gradle-plugin.html
 :gradle-docs: https://docs.gradle.org/{gradle-version}/userguide
 :gradle-toolchains: {gradle-docs}/toolchains.html
-:default-docker-image: eclipse-temurin:17-jre
+:default-docker-image: eclipse-temurin:25-jre
 :docker-plugin: https://github.com/bmuschko/gradle-docker-plugin
 :aws-docs: https://micronaut-projects.github.io/micronaut-aws/latest/guide/index.html#customRuntimes
 :testresources-guide: https://micronaut-projects.github.io/micronaut-test-resources/latest/guide
@@ -1829,7 +1829,7 @@ micronaut {
         os = "linux-glibc"
 
         // The version of the Azul CRaC JDK to use in the image (currently only 17 is supported)
-        javaVersion = JavaLanguageVersion.of(17)
+        javaVersion = JavaLanguageVersion.of(25)
 
         // A command to run that will be successful when the application is ready to be checkpointed.
         preCheckpointReadinessCheck = "curl --output /dev/null --silent --head http://localhost:8080"
@@ -1867,7 +1867,7 @@ micronaut {
         os.set("linux-glibc")
 
         // The version of the Azul CRaC JDK to use in the image (currently only 17 is supported)
-        javaVersion.set(JavaLanguageVersion.of(17))
+        javaVersion.set(JavaLanguageVersion.of(25))
 
         // A command to run that will be successful when the application is ready to be checkpointed.
         preCheckpointReadinessCheck.set("curl --output /dev/null --silent --head http://localhost:8080")

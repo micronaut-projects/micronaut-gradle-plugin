@@ -89,7 +89,7 @@ ${cracConfig.readLines().collect {"                ${it}"}.join("\n")}
           |$dependenciesBlock
           |$withSerde
           |$micronautConfig
-          |mainClassName="example.Application"
+          |application { mainClass = "example.Application" }
           |""".stripMargin()
     }
 }
