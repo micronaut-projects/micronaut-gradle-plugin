@@ -14,7 +14,7 @@ graalvmPlugin = "0.11.4"
 mockserver = "5.15.0"
 log4j2 = "2.24.3"
 tomlj = "1.1.1"
-openrewrite = "7.19.0"
+openrewrite = "7.26.0"
 
 micronaut-platform = "4.9.4" # This is the platform version, used in our tests
 micronaut-aot = "3.0.0-M1"
