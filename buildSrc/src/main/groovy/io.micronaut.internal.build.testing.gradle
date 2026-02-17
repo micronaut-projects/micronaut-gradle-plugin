@@ -30,6 +30,29 @@ tasks.withType(Test).configureEach {
     maxParallelForks = Math.max(1, (int) (Runtime.runtime.availableProcessors()/2))
 }
 
+// Required for configuration cache serialization on JDK 25.
+tasks.named("generateJacocoTestKitProperties").configure {
+    doLast {
+        def propsFile = outputs.files.singleFile
+        def lines = propsFile.readLines('UTF-8')
+        def opensArg = "--add-opens=java.base/java.lang.invoke=ALL-UNNAMED"
+        def updated = lines.collect { line ->
+            if (!line.startsWith("org.gradle.jvmargs=")) {
+                return line
+            }
+            if (line.contains(opensArg)) {
+                return line
+            }
+            // Keep the value quoted and append the additional JVM arg.
+            if (line.endsWith('"')) {
+                return line[0..-2] + " ${opensArg}\""
+            }
+            return line + " ${opensArg}"
+        }
+        propsFile.text = updated.join(System.lineSeparator()) + System.lineSeparator()
+    }
+}
+
 testlogger {
     theme = 'standard-parallel'
     showFullStackTraces = true

@@ -408,7 +408,7 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
     private static Configuration createTestResourcesServerConfiguration(Project project) {
         ConfigurationContainer configurations = project.getConfigurations();
         Configuration boms = configurations.findByName(MICRONAUT_BOMS_CONFIGURATION);
-        PluginsHelper.maybeAddMicronautPlaformBom(project, boms);
+        PluginsHelper.maybeAddMicronautPlatformBom(project, boms);
         return configurations.create(TESTRESOURCES_CONFIGURATION, conf -> {
             conf.extendsFrom(boms);
             conf.setDescription("Dependencies for the Micronaut test resources service");
