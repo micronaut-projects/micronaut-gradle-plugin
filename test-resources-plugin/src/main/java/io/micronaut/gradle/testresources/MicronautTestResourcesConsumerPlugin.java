@@ -62,7 +62,7 @@ public class MicronautTestResourcesConsumerPlugin implements Plugin<Project> {
     private Configuration createTestResourcesExtension(Project project) {
         ConfigurationContainer configurations = project.getConfigurations();
         Configuration boms = configurations.findByName(MICRONAUT_BOMS_CONFIGURATION);
-        PluginsHelper.maybeAddMicronautPlaformBom(project, boms);
+        PluginsHelper.maybeAddMicronautPlatformBom(project, boms);
         var testResourcesConfiguration = project.getConfigurations().create(MicronautTestResourcesPlugin.TESTRESOURCES_CONFIGURATION, conf -> {
             conf.extendsFrom(boms);
             conf.setCanBeConsumed(false);

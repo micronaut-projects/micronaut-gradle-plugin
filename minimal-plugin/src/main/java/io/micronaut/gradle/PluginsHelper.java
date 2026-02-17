@@ -93,7 +93,7 @@ public abstract class PluginsHelper {
     private PluginsHelper() {
     }
 
-    public static void maybeAddMicronautPlaformBom(Project p, Configuration configuration) {
+    public static void maybeAddMicronautPlatformBom(Project p, Configuration configuration) {
         MicronautExtension micronautExtension = p.getExtensions().findByType(MicronautExtension.class);
         configuration.getDependencies().addAllLater(
                 micronautExtension.getImportMicronautPlatform().zip(PluginsHelper.findMicronautVersion(p), (usePlatform, version) -> {
