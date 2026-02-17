@@ -19,8 +19,6 @@ class FunctionsMicronautAOTSpec extends AbstractAOTPluginSpec {
             withProperty('graalvm.config.enabled', 'native' == runtime ? 'true' : 'false')
             withProperty('logback.xml.to.java.enabled', 'false')
             withProperty('cached.environment.enabled', 'true')
-            withProperty('serviceloading.jit.enabled', 'true')
-            withProperty('serviceloading.native.enabled', 'true')
             withProperty('yaml.to.java.config.enabled', 'true')
             withProperty('property-source-loader.generate.enabled', 'true')
             withProperty('property-source-loader.types', 'io.micronaut.context.env.yaml.YamlPropertySourceLoader')
@@ -30,7 +28,7 @@ class FunctionsMicronautAOTSpec extends AbstractAOTPluginSpec {
             withProperty('precompute.environment.properties.enabled', 'true')
             withProperty('deduce.environment.enabled', 'false')
             withProperty('netty.properties.enabled', 'false')
-            withExtraPropertyKeys 'service.types', 'known.missing.types.list'
+            withExtraPropertyKeys 'known.missing.types.list'
         }
 
         then: "prepares optimizations"
