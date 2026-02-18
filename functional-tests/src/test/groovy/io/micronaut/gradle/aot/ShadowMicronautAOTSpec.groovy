@@ -37,7 +37,6 @@ class ShadowMicronautAOTSpec extends AbstractAOTPluginSpec {
                 'io.micronaut.core.reflect.ClassUtils$Optimizations',
                 'io.micronaut.core.util.EnvironmentProperties',
                 'io.micronaut.core.async.publisher.PublishersOptimizations',
-                'io.micronaut.core.io.service.SoftServiceLoader$Optimizations',
                 'io.micronaut.context.env.ConstantPropertySources'
         ].each {
             assert outputText.contains("Setting optimizations for class $it")

@@ -1302,7 +1302,6 @@ micronaut {
         version = "1.0.1"
 
         // optimizations configuration
-        optimizeServiceLoading = true
         convertYamlToJava = true
         precomputeOperations = true
         cacheEnvironment = true
@@ -1322,7 +1321,6 @@ micronaut {
         version.set("1.0.0")
 
         // optimizations configuration
-        optimizeServiceLoading.set(true)
         convertYamlToJava.set(true)
         precomputeOperations.set(true)
         cacheEnvironment.set(true)
