@@ -16,41 +16,16 @@
 package io.micronaut.gradle.aot;
 
 import io.micronaut.aot.core.Environments;
-import io.micronaut.aot.std.sourcegen.AbstractStaticServiceLoaderSourceGenerator;
-import io.micronaut.aot.std.sourcegen.CachedEnvironmentSourceGenerator;
-import io.micronaut.aot.std.sourcegen.ConstantPropertySourcesSourceGenerator;
-import io.micronaut.aot.std.sourcegen.DeduceEnvironmentSourceGenerator;
-import io.micronaut.aot.std.sourcegen.EnvironmentPropertiesSourceGenerator;
-import io.micronaut.aot.std.sourcegen.GenericPropertySourceGenerator;
-import io.micronaut.aot.std.sourcegen.GraalVMOptimizationFeatureSourceGenerator;
-import io.micronaut.aot.std.sourcegen.JitStaticServiceLoaderSourceGenerator;
-import io.micronaut.aot.std.sourcegen.KnownMissingTypesSourceGenerator;
-import io.micronaut.aot.std.sourcegen.LogbackConfigurationSourceGenerator;
-import io.micronaut.aot.std.sourcegen.NativeStaticServiceLoaderSourceGenerator;
-import io.micronaut.aot.std.sourcegen.NettyPropertiesSourceGenerator;
-import io.micronaut.aot.std.sourcegen.PublishersSourceGenerator;
+import io.micronaut.aot.std.sourcegen.*;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.GradleException;
-import org.gradle.api.InvalidUserCodeException;
 import org.gradle.api.file.RegularFileProperty;
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Property;
 import org.gradle.api.provider.Provider;
-import org.gradle.api.tasks.Input;
-import org.gradle.api.tasks.InputFile;
-import org.gradle.api.tasks.Nested;
-import org.gradle.api.tasks.Optional;
-import org.gradle.api.tasks.OutputFile;
-import org.gradle.api.tasks.PathSensitive;
-import org.gradle.api.tasks.PathSensitivity;
-import org.gradle.api.tasks.TaskAction;
+import org.gradle.api.tasks.*;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.PrintWriter;
+import java.io.*;
 import java.nio.file.Files;
 import java.util.List;
 import java.util.Properties;
@@ -126,21 +101,16 @@ public abstract class MicronautAOTConfigWriterTask extends DefaultTask {
         if (!props.containsKey(KnownMissingTypesSourceGenerator.OPTION.key())) {
             props.setProperty(KnownMissingTypesSourceGenerator.OPTION.key(), String.join(",", MicronautAotPlugin.TYPES_TO_CHECK));
         }
-        if (!props.containsKey(AbstractStaticServiceLoaderSourceGenerator.SERVICE_TYPES)) {
-            props.setProperty(AbstractStaticServiceLoaderSourceGenerator.SERVICE_TYPES, String.join(",", MicronautAotPlugin.SERVICE_TYPES));
+        if (optimizations.getOptimizeServiceLoading().isPresent() && optimizations.getOptimizeServiceLoading().get()) {
+            getLogger().warn("The 'optimizeServiceLoading' optimization is enabled but has been removed from Micronaut AOT. Please remove it from your configuration.");
         }
         booleanOptimization(props, GraalVMOptimizationFeatureSourceGenerator.ID, getForNative());
         booleanOptimization(props, LogbackConfigurationSourceGenerator.ID, optimizations.getReplaceLogbackXml());
         booleanOptimization(props, CachedEnvironmentSourceGenerator.ID, optimizations.getCacheEnvironment());
-        booleanOptimization(props, JitStaticServiceLoaderSourceGenerator.ID, optimizations.getOptimizeServiceLoading());
-        booleanOptimization(props, NativeStaticServiceLoaderSourceGenerator.ID, optimizations.getOptimizeServiceLoading());
         booleanOptimization(props, GenericPropertySourceGenerator.ID, optimizations.getConvertYamlToJava());
         booleanOptimization(props, KnownMissingTypesSourceGenerator.ID, optimizations.getOptimizeClassLoading());
         booleanOptimization(props, PublishersSourceGenerator.ID, optimizations.getOptimizeClassLoading());
         if (optimizations.getConvertYamlToJava().isPresent() && optimizations.getConvertYamlToJava().get()) {
-            if (!optimizations.getOptimizeServiceLoading().isPresent() || !optimizations.getOptimizeServiceLoading().get()) {
-                throw new InvalidUserCodeException("YAML conversion requires service loading optimizations to be enabled too.");
-            }
             String typesKey = PROPERTY_SOURCE_LOADER_TYPES_KEY;
             String yamlLoaderType = YAML_PROPERTY_SOURCE_LOADER_TYPE;
             if (!props.containsKey(typesKey)) {
