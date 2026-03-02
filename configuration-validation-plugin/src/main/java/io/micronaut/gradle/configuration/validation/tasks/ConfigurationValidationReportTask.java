@@ -118,6 +118,14 @@ public abstract class ConfigurationValidationReportTask extends DefaultTask {
     public abstract Property<Boolean> getDeduceEnvironments();
 
     /**
+     * Whether dependency injection should be validated.
+     *
+     * @return flag
+     */
+    @Input
+    public abstract Property<Boolean> getValidateDependencyInjection();
+
+    /**
      * Report format (json/html/both).
      *
      * @return format
@@ -266,6 +274,9 @@ public abstract class ConfigurationValidationReportTask extends DefaultTask {
             args.add(String.valueOf(getFailOnNotPresent().getOrElse(true)));
             args.add("--deduce-environments");
             args.add(String.valueOf(getDeduceEnvironments().getOrElse(false)));
+            if (getValidateDependencyInjection().getOrElse(false)) {
+                args.add("--validate-dependency-injection");
+            }
 
             String baseDirPath = getProjectBaseDirPath().getOrNull();
             File baseDir = baseDirPath != null ? new File(baseDirPath) : getProjectBaseDir().getAsFile().get();

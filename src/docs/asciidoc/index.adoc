@@ -136,6 +136,7 @@ The underlying validator supports the following inputs:
 * suppression patterns (`--suppress`)
 * unknown-property handling (`--fail-on-not-present`)
 * environment deduction (`--deduce-environments`)
+* dependency injection validation (`--validate-dependency-injection`)
 * report output directory and format (`--out`, `--format`)
 
 .Example configuration
@@ -145,6 +146,7 @@ micronaut {
   configurationValidation {
     // Global defaults
     failOnNotPresent.set(true)
+    validateDependencyInjection.set(false)
     format.set("both") // json, html, both
 
     run {
@@ -171,6 +173,7 @@ micronaut {
   configurationValidation {
     // Global defaults
     failOnNotPresent.set(true)
+    validateDependencyInjection.set(false)
     format.set("both") // json, html, both
 
     run {

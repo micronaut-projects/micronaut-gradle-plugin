@@ -103,6 +103,14 @@ class ConfigurationValidationFunctionalTest extends AbstractFunctionalTest {
                 }
             }
         """
+        file("src/main/resources/application.yml") << """
+micronaut:
+  jsonschema:
+    configuration:
+      validator:
+        dependency-injection:
+          enabled: true
+"""
 
         when:
         def result = fails("configurationValidation")
@@ -152,5 +160,123 @@ class ConfigurationValidationFunctionalTest extends AbstractFunctionalTest {
         result.output.contains("micronaut.server.ssl.enabled")
         result.task(":configurationValidationReport").outcome == TaskOutcome.SUCCESS
         result.task(":configurationValidation").outcome == TaskOutcome.FAILED
+    }
+
+    def "configurationValidation fails for dependency injection errors when opt-in is enabled"() {
+        given:
+        allowMavenLocal = true
+        withSample("configuration-validation/basic-app")
+        buildFile << """
+
+            micronaut {
+                configurationValidation {
+                    version.set("2.0.0-BUILD-SNAPSHOT")
+                    validateDependencyInjection.set(true)
+                    failOnNotPresent.set(false)
+                    format.set("json")
+                }
+            }
+        """
+        file("src/main/resources/application.yml").text = """micronaut:
+  application:
+    name: basic-app
+  server:
+    port: 8080
+  jsonschema:
+    configuration:
+      validator:
+        dependency-injection:
+          enabled: true
+"""
+
+        file("src/main/java/demo/app/MissingDependency.java").text = """package demo.app;
+
+public final class MissingDependency {
+}
+"""
+        file("src/main/java/demo/app/FieldInjectionBean.java").text = """package demo.app;
+
+import io.micronaut.context.annotation.Context;
+import jakarta.inject.Inject;
+
+@Context
+final class FieldInjectionBean {
+    @Inject
+    MissingDependency missingDependency;
+}
+"""
+
+        when:
+        def result = fails("configurationValidation")
+
+        then:
+        result.task(":configurationValidationReport").outcome == TaskOutcome.SUCCESS
+        result.task(":configurationValidation").outcome == TaskOutcome.FAILED
+        file("build/reports/micronaut/config-validation/production/configuration-errors.json").text.contains('"dependencyInjectionErrors"')
+        file("build/reports/micronaut/config-validation/production/configuration-errors.json").text.contains('MissingDependency')
+    }
+
+    def "dependency injection validation cache is invalidated when classpath changes"() {
+        given:
+        allowMavenLocal = true
+        withSample("configuration-validation/basic-app")
+        file("gradle.properties") << "org.gradle.caching=true\n"
+        buildFile << """
+
+            micronaut {
+                configurationValidation {
+                    version.set("2.0.0-BUILD-SNAPSHOT")
+                    validateDependencyInjection.set(true)
+                    failOnNotPresent.set(false)
+                }
+            }
+        """
+        file("src/main/resources/application.yml").text = """micronaut:
+  application:
+    name: basic-app
+  server:
+    port: 8080
+  jsonschema:
+    configuration:
+      validator:
+        dependency-injection:
+          enabled: true
+"""
+        when:
+        def first = build("clean", "configurationValidationReport")
+
+        then:
+        first.task(":configurationValidationReport").outcome == TaskOutcome.SUCCESS
+
+        when:
+        def second = build("clean", "configurationValidationReport")
+
+        then:
+        second.task(":configurationValidationReport").outcome == TaskOutcome.FROM_CACHE
+
+        when:
+        file("src/main/java/demo/app/MissingDependency.java").text = """package demo.app;
+
+public final class MissingDependency {
+}
+"""
+        file("src/main/java/demo/app/FieldInjectionBean.java").text = """package demo.app;
+
+import io.micronaut.context.annotation.Context;
+import jakarta.inject.Inject;
+
+@Context
+final class FieldInjectionBean {
+    @Inject
+    MissingDependency missingDependency;
+}
+"""
+        def third = fails("clean", "configurationValidation")
+
+        then:
+        third.task(":configurationValidationReport").outcome == TaskOutcome.SUCCESS
+        third.task(":configurationValidation").outcome == TaskOutcome.FAILED
+        file("build/reports/micronaut/config-validation/production/configuration-errors.json").text.contains('"dependencyInjectionErrors"')
+        file("build/reports/micronaut/config-validation/production/configuration-errors.json").text.contains('MissingDependency')
     }
 }

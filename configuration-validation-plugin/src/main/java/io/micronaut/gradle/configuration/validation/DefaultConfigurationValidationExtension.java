@@ -46,6 +46,7 @@ public abstract class DefaultConfigurationValidationExtension implements Configu
         getEnabled().convention(true);
         getFailOnNotPresent().convention(true);
         getDeduceEnvironments().convention(false);
+        getValidateDependencyInjection().convention(false);
         getFormat().convention("both");
         getSuppressions().convention(List.of());
         getProjectBaseDir().convention(project.getLayout().getProjectDirectory());
@@ -86,6 +87,9 @@ public abstract class DefaultConfigurationValidationExtension implements Configu
 
     @Override
     public abstract Property<Boolean> getDeduceEnvironments();
+
+    @Override
+    public abstract Property<Boolean> getValidateDependencyInjection();
 
     @Override
     public abstract Property<String> getFormat();

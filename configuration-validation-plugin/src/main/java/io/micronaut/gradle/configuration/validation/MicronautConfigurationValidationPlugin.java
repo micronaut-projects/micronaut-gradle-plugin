@@ -207,6 +207,7 @@ public class MicronautConfigurationValidationPlugin implements Plugin<Project> {
             task.getEnvironments().convention(scenario.getEnvironments());
             task.getFailOnNotPresent().convention(scenario.getFailOnNotPresent());
             task.getDeduceEnvironments().convention(scenario.getDeduceEnvironments());
+            task.getValidateDependencyInjection().convention(extension.getValidateDependencyInjection());
             task.getFormat().convention(scenario.getFormat());
 
             task.getSuppressions().set(extension.getSuppressions().zip(scenario.getSuppressions(), (global, local) -> {

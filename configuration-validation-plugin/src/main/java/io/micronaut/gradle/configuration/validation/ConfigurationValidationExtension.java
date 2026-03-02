@@ -77,6 +77,15 @@ public interface ConfigurationValidationExtension {
     Property<Boolean> getDeduceEnvironments();
 
     /**
+     * Whether dependency injection should be validated.
+     * <p>
+     * Maps to {@code --validate-dependency-injection}.
+     *
+     * @return validate-dependency-injection flag
+     */
+    Property<Boolean> getValidateDependencyInjection();
+
+    /**
      * Report format.
      * <p>
      * Valid values are {@code json}, {@code html}, and {@code both}.
