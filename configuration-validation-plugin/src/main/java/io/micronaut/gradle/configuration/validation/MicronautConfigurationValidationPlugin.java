@@ -216,6 +216,12 @@ public class MicronautConfigurationValidationPlugin implements Plugin<Project> {
                 return out;
             }));
 
+            task.getSuppressedInjectionErrors().set(extension.getSuppressedInjectionErrors().zip(scenario.getSuppressedInjectionErrors(), (global, local) -> {
+                var out = new ArrayList<>(global);
+                out.addAll(local);
+                return out;
+            }));
+
             task.getProjectBaseDir().convention(extension.getProjectBaseDir());
             task.getProjectBaseDirPath().convention(extension.getProjectBaseDir().map(d -> d.getAsFile().getAbsolutePath()));
             task.getResourcesDirs().convention(scenario.getResourcesDirs());

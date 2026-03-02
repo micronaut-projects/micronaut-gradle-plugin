@@ -102,6 +102,17 @@ public abstract class ConfigurationValidationReportTask extends DefaultTask {
     public abstract ListProperty<String> getSuppressions();
 
     /**
+     * Dependency injection suppression patterns.
+     * <p>
+     * When non-empty, passed to the validator CLI via {@code --suppress-inject-errors <csv>}.
+     *
+     * @return dependency injection suppression patterns
+     * @since 5.1.0
+     */
+    @Input
+    public abstract ListProperty<String> getSuppressedInjectionErrors();
+
+    /**
      * Whether unknown properties are errors.
      *
      * @return flag
@@ -268,6 +279,12 @@ public abstract class ConfigurationValidationReportTask extends DefaultTask {
                     args.add("--suppress");
                     args.add(sup);
                 }
+            }
+
+            List<String> suppressedInjectionErrors = getSuppressedInjectionErrors().getOrElse(List.of());
+            if (!suppressedInjectionErrors.isEmpty()) {
+                args.add("--suppress-inject-errors");
+                args.add(String.join(",", suppressedInjectionErrors));
             }
 
             args.add("--fail-on-not-present");

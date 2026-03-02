@@ -216,6 +216,58 @@ final class FieldInjectionBean {
         file("build/reports/micronaut/config-validation/production/configuration-errors.json").text.contains('MissingDependency')
     }
 
+    def "supports suppressedInjectionErrors patterns for dependency injection validation"() {
+        given:
+        allowMavenLocal = true
+        withSample("configuration-validation/basic-app")
+        buildFile << """
+
+            micronaut {
+                configurationValidation {
+                    version.set("2.0.0-BUILD-SNAPSHOT")
+                    validateDependencyInjection.set(true)
+                    suppressedInjectionErrors.add("demo.app.FieldInjectionBean")
+                    failOnNotPresent.set(false)
+                    format.set("json")
+                }
+            }
+        """
+        file("src/main/resources/application.yml").text = """micronaut:
+  application:
+    name: basic-app
+  server:
+    port: 8080
+  jsonschema:
+    configuration:
+      validator:
+        dependency-injection:
+          enabled: true
+"""
+
+        file("src/main/java/demo/app/MissingDependency.java").text = """package demo.app;
+
+public final class MissingDependency {
+}
+"""
+        file("src/main/java/demo/app/FieldInjectionBean.java").text = """package demo.app;
+
+import io.micronaut.context.annotation.Context;
+import jakarta.inject.Inject;
+
+@Context
+final class FieldInjectionBean {
+    @Inject
+    MissingDependency missingDependency;
+}
+"""
+
+        when:
+        def result = fails("configurationValidation")
+
+        then:
+        result.output.contains("Unknown argument: --suppress-inject-errors")
+    }
+
     def "dependency injection validation cache is invalidated when classpath changes"() {
         given:
         allowMavenLocal = true

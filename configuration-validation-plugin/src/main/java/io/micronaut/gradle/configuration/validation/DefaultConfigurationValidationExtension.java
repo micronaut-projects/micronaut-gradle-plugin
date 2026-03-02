@@ -49,6 +49,7 @@ public abstract class DefaultConfigurationValidationExtension implements Configu
         getValidateDependencyInjection().convention(false);
         getFormat().convention("both");
         getSuppressions().convention(List.of());
+        getSuppressedInjectionErrors().convention(List.of());
         getProjectBaseDir().convention(project.getLayout().getProjectDirectory());
         getOutputDirectory().convention(project.getLayout().getBuildDirectory().dir("reports/micronaut/config-validation"));
 
@@ -96,6 +97,8 @@ public abstract class DefaultConfigurationValidationExtension implements Configu
 
     @Override
     public abstract ListProperty<String> getSuppressions();
+
+    public abstract ListProperty<String> getSuppressedInjectionErrors();
 
     @Override
     public abstract DirectoryProperty getProjectBaseDir();

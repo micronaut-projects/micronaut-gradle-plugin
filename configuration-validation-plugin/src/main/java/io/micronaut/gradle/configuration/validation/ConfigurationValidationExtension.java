@@ -85,6 +85,7 @@ public interface ConfigurationValidationExtension {
      */
     Property<Boolean> getValidateDependencyInjection();
 
+
     /**
      * Report format.
      * <p>
@@ -103,6 +104,16 @@ public interface ConfigurationValidationExtension {
      * @return suppression patterns
      */
     ListProperty<String> getSuppressions();
+
+    /**
+     * Dependency injection suppression patterns.
+     * <p>
+     * Each pattern is a fully qualified class name or {@code *}-wildcard pattern, passed to the validator CLI via
+     * {@code --suppress-inject-errors <csv>}.
+     *
+     * @return dependency injection suppression patterns
+     */
+    ListProperty<String> getSuppressedInjectionErrors();
 
     /**
      * Project base directory used for origin path rewriting in console output.
