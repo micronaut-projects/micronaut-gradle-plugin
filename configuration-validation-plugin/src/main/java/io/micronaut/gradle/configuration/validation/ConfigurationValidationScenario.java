@@ -81,6 +81,16 @@ public interface ConfigurationValidationScenario {
     ListProperty<String> getSuppressions();
 
     /**
+     * Dependency injection suppression patterns.
+     * <p>
+     * Patterns are appended to global patterns declared via
+     * {@link ConfigurationValidationExtension#getSuppressedInjectionErrors()}.
+     *
+     * @return dependency injection suppression patterns
+     */
+    ListProperty<String> getSuppressedInjectionErrors();
+
+    /**
      * Scenario output directory.
      *
      * @return output directory
