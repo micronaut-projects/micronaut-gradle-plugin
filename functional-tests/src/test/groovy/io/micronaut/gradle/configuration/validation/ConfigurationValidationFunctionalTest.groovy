@@ -285,10 +285,12 @@ final class FieldInjectionBean {
 """
 
         when:
-        def result = fails("configurationValidation")
+        def result = build("configurationValidation")
 
         then:
-        result.output.contains("Unknown argument: --suppress-inject-errors")
+        result.task(":configurationValidationReport").outcome == TaskOutcome.SUCCESS
+        result.task(":configurationValidation").outcome == TaskOutcome.SUCCESS
+        !file("build/reports/micronaut/config-validation/production/configuration-errors.json").text.contains('MissingDependency')
     }
 
     def "dependency injection validation cache is invalidated when classpath changes"() {
