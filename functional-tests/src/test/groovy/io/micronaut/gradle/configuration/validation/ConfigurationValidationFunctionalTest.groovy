@@ -25,6 +25,29 @@ class ConfigurationValidationFunctionalTest extends AbstractFunctionalTest {
         file("build/reports/micronaut/config-validation/production/result.properties").exists()
     }
 
+    def "configurationValidationReport does not include duplicate logback resources on classpath"() {
+        given:
+        withSample("configuration-validation/basic-app")
+        file("src/main/resources/logback.xml").text = """<configuration>
+  <appender name=\"STDOUT\" class=\"ch.qos.logback.core.ConsoleAppender\">
+    <encoder>
+      <pattern>%msg%n</pattern>
+    </encoder>
+  </appender>
+  <root level=\"INFO\">
+    <appender-ref ref=\"STDOUT\"/>
+  </root>
+</configuration>
+"""
+
+        when:
+        def result = build("configurationValidationReport")
+
+        then:
+        result.task(":configurationValidationReport").outcome == TaskOutcome.SUCCESS
+        !result.output.contains("Resource [logback.xml] occurs multiple times on the classpath")
+    }
+
     def "runConfigurationValidation fails for invalid configuration"() {
         given:
         withSample("configuration-validation/basic-app")

@@ -257,14 +257,14 @@ public class MicronautConfigurationValidationPlugin implements Plugin<Project> {
     }
 
     private static FileCollection defaultRunClasspath(Project project, SourceSet main) {
-        return project.files(main.getOutput(), main.getResources().getSrcDirs());
+        return project.files(main.getOutput().getClassesDirs(), main.getResources().getSrcDirs());
     }
 
     private static FileCollection defaultProductionClasspath(Project project, SourceSet main) {
-        return project.files(main.getOutput(), main.getResources().getSrcDirs());
+        return project.files(main.getOutput().getClassesDirs(), main.getResources().getSrcDirs());
     }
 
     private static FileCollection defaultTestClasspath(Project project, SourceSet main, SourceSet test) {
-        return project.files(main.getOutput(), test.getOutput(), main.getResources().getSrcDirs(), test.getResources().getSrcDirs());
+        return project.files(main.getOutput().getClassesDirs(), test.getOutput().getClassesDirs(), main.getResources().getSrcDirs(), test.getResources().getSrcDirs());
     }
 }
