@@ -193,7 +193,7 @@ micronaut:
 
             micronaut {
                 configurationValidation {
-                    version.set("2.0.0-BUILD-SNAPSHOT")
+                    version.set("2.0.0-M3")
                     validateDependencyInjection.set(true)
                     failOnNotPresent.set(false)
                     format.set("json")
@@ -247,7 +247,7 @@ final class FieldInjectionBean {
 
             micronaut {
                 configurationValidation {
-                    version.set("2.0.0-BUILD-SNAPSHOT")
+                    version.set("2.0.0-M3")
                     validateDependencyInjection.set(true)
                     suppressedInjectionErrors.add("demo.app.FieldInjectionBean")
                     failOnNotPresent.set(false)
@@ -300,7 +300,7 @@ final class FieldInjectionBean {
 
             micronaut {
                 configurationValidation {
-                    version.set("2.0.0-BUILD-SNAPSHOT")
+                    version.set("2.0.0-M3")
                     validateDependencyInjection.set(true)
                     failOnNotPresent.set(false)
                 }
