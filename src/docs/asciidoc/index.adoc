@@ -135,17 +135,21 @@ The underlying validator supports the following inputs:
 * enabled environments (`--env`)
 * suppression patterns (`--suppress`)
 * unknown-property handling (`--fail-on-not-present`)
-* environment deduction (`--deduce-environments`)
-* report output directory and format (`--out`, `--format`)
+ * environment deduction (`--deduce-environments`)
+ * dependency injection validation (`--validate-dependency-injection`)
+ * dependency injection suppression patterns (`--suppress-inject-errors`)
+ * report output directory and format (`--out`, `--format`)
 
 .Example configuration
 [source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
 ----
 micronaut {
   configurationValidation {
-    // Global defaults
-    failOnNotPresent.set(true)
-    format.set("both") // json, html, both
+     // Global defaults
+     failOnNotPresent.set(true)
+     validateDependencyInjection.set(false)
+     suppressedInjectionErrors.addAll([])
+     format.set("both") // json, html, both
 
     run {
       // Default: ["dev"]
@@ -169,9 +173,11 @@ micronaut {
 ----
 micronaut {
   configurationValidation {
-    // Global defaults
-    failOnNotPresent.set(true)
-    format.set("both") // json, html, both
+     // Global defaults
+     failOnNotPresent.set(true)
+     validateDependencyInjection.set(false)
+     suppressedInjectionErrors.addAll(emptyList())
+     format.set("both") // json, html, both
 
     run {
       environments.set(listOf("dev"))
@@ -185,6 +191,40 @@ micronaut {
   }
 }
 ----
+
+=== Dependency injection suppression patterns
+
+When dependency injection validation is enabled (`validateDependencyInjection=true`), you can suppress dependency injection errors for specific classes (or wildcard patterns) using `suppressedInjectionErrors`.
+
+[source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
+----
+micronaut {
+  configurationValidation {
+    validateDependencyInjection.set(true)
+    suppressedInjectionErrors.addAll(
+      "com.example.legacy.LegacyBean",
+      "com.example.generated.*"
+    )
+  }
+}
+----
+
+[source, kotlin, subs="verbatim,attributes", role="multi-language-sample"]
+----
+micronaut {
+  configurationValidation {
+    validateDependencyInjection.set(true)
+    suppressedInjectionErrors.addAll(
+      "com.example.legacy.LegacyBean",
+      "com.example.generated.*"
+    )
+  }
+}
+----
+
+NOTE: This requires a validator version that supports the CLI argument `--suppress-inject-errors`.
+
+
 
 
 

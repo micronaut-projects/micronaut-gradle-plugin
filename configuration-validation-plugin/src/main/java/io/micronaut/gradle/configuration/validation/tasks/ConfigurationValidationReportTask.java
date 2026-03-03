@@ -102,6 +102,17 @@ public abstract class ConfigurationValidationReportTask extends DefaultTask {
     public abstract ListProperty<String> getSuppressions();
 
     /**
+     * Dependency injection suppression patterns.
+     * <p>
+     * When non-empty, passed to the validator CLI via {@code --suppress-inject-errors <csv>}.
+     *
+     * @return dependency injection suppression patterns
+     * @since 5.1.0
+     */
+    @Input
+    public abstract ListProperty<String> getSuppressedInjectionErrors();
+
+    /**
      * Whether unknown properties are errors.
      *
      * @return flag
@@ -116,6 +127,14 @@ public abstract class ConfigurationValidationReportTask extends DefaultTask {
      */
     @Input
     public abstract Property<Boolean> getDeduceEnvironments();
+
+    /**
+     * Whether dependency injection should be validated.
+     *
+     * @return flag
+     */
+    @Input
+    public abstract Property<Boolean> getValidateDependencyInjection();
 
     /**
      * Report format (json/html/both).
@@ -262,10 +281,19 @@ public abstract class ConfigurationValidationReportTask extends DefaultTask {
                 }
             }
 
+            List<String> suppressedInjectionErrors = getSuppressedInjectionErrors().getOrElse(List.of());
+            if (!suppressedInjectionErrors.isEmpty()) {
+                args.add("--suppress-inject-errors");
+                args.add(String.join(",", suppressedInjectionErrors));
+            }
+
             args.add("--fail-on-not-present");
             args.add(String.valueOf(getFailOnNotPresent().getOrElse(true)));
             args.add("--deduce-environments");
             args.add(String.valueOf(getDeduceEnvironments().getOrElse(false)));
+            if (getValidateDependencyInjection().getOrElse(false)) {
+                args.add("--validate-dependency-injection");
+            }
 
             String baseDirPath = getProjectBaseDirPath().getOrNull();
             File baseDir = baseDirPath != null ? new File(baseDirPath) : getProjectBaseDir().getAsFile().get();

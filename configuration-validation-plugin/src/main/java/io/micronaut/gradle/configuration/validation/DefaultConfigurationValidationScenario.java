@@ -40,6 +40,7 @@ public abstract class DefaultConfigurationValidationScenario implements Configur
         getOverrideClasspath().convention(false);
         getResourcesDirs().convention(List.of());
         getSuppressions().convention(List.of());
+        getSuppressedInjectionErrors().convention(List.of());
     }
 
     @Override
@@ -59,6 +60,8 @@ public abstract class DefaultConfigurationValidationScenario implements Configur
 
     @Override
     public abstract ListProperty<String> getSuppressions();
+
+    public abstract ListProperty<String> getSuppressedInjectionErrors();
 
     @Override
     public abstract DirectoryProperty getOutputDirectory();

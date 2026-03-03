@@ -77,6 +77,16 @@ public interface ConfigurationValidationExtension {
     Property<Boolean> getDeduceEnvironments();
 
     /**
+     * Whether dependency injection should be validated.
+     * <p>
+     * Maps to {@code --validate-dependency-injection}.
+     *
+     * @return validate-dependency-injection flag
+     */
+    Property<Boolean> getValidateDependencyInjection();
+
+
+    /**
      * Report format.
      * <p>
      * Valid values are {@code json}, {@code html}, and {@code both}.
@@ -94,6 +104,16 @@ public interface ConfigurationValidationExtension {
      * @return suppression patterns
      */
     ListProperty<String> getSuppressions();
+
+    /**
+     * Dependency injection suppression patterns.
+     * <p>
+     * Each pattern is a fully qualified class name or {@code *}-wildcard pattern, passed to the validator CLI via
+     * {@code --suppress-inject-errors <csv>}.
+     *
+     * @return dependency injection suppression patterns
+     */
+    ListProperty<String> getSuppressedInjectionErrors();
 
     /**
      * Project base directory used for origin path rewriting in console output.
