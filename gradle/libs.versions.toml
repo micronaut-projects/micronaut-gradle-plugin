@@ -8,6 +8,7 @@ diffplug = "4.4.1"
 shadow = "8.3.9"
 groovy = "5.0.4"
 spock = "2.4-groovy-4.0"
+junit-platform = "1.14.1"
 oraclelinux = "9"
 amazonlinux = "2023-minimal"
 graalvmPlugin = "0.11.4"
@@ -41,6 +42,7 @@ ksp2-gradlePlugin = { module = "com.google.devtools.ksp:symbol-processing-gradle
 groovy-core = { module = "org.apache.groovy:groovy", version.ref = "groovy" }
 spock-core = { module = "org.spockframework:spock-core", version.ref = "spock" }
 spock-junit4 = { module = "org.spockframework:spock-junit4", version.ref = "spock" }
+junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher", version.ref = "junit-platform" }
 log4j2-core = { module = "org.apache.logging.log4j:log4j-core", version.ref = "log4j2" }
 
 micronaut-aot-api = { module = "io.micronaut.aot:micronaut-aot-api", version.ref = "micronaut-aot" }
