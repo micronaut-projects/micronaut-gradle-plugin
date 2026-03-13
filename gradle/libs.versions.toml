@@ -12,7 +12,7 @@ oraclelinux = "9"
 amazonlinux = "2023-minimal"
 graalvmPlugin = "0.11.4"
 mockserver = "5.15.0"
-log4j2 = "2.24.3"
+log4j2 = "2.25.3"
 tomlj = "1.1.1"
 openrewrite = "7.26.0"
 
