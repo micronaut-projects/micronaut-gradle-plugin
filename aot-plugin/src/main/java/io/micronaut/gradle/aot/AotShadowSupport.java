@@ -68,7 +68,7 @@ class AotShadowSupport {
                 }
                 shadow.from(optimizedJar.map(jar -> archiveOperations.zipTree(jar.getArchiveFile().get())));
                 compatAddConfiguration(shadow, project.getConfigurations().findByName("runtimeClasspath"));
-                shadow.getExcludes().addAll(tasks.named(ShadowJavaPlugin.SHADOW_JAR_TASK_NAME, ShadowJar.class).get().getExcludes());
+                shadow.getExcludes().addAll(tasks.named(ShadowJar.SHADOW_JAR_TASK_NAME, ShadowJar.class).get().getExcludes());
             });
             tasks.named("assemble").configure(assemble -> assemble.dependsOn(shadowProvider));
         });
