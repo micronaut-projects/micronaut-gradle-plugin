@@ -8,6 +8,7 @@ dependencies {
     testImplementation libs.groovy.core
     testImplementation libs.spock.core
     testImplementation libs.spock.junit4
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
 // We are NOT using the `jvm-test-suite` plugin because
