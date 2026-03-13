@@ -53,3 +53,13 @@ asciidoctorj {
             'gradle-version': GradleVersion.current().version,
             'shadow-version': libs.versions.shadow.get()
 }
+
+if (System.getenv("SONAR_TOKEN")) {
+    allprojects {
+        tasks.configureEach {
+            if (name == "sonar" || name == "sonarqube") {
+                enabled = false
+            }
+        }
+    }
+}
