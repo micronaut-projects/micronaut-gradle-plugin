@@ -33,9 +33,12 @@ import org.gradle.api.plugins.PluginManager;
 import org.gradle.api.tasks.InputFiles;
 import org.gradle.api.tasks.JavaExec;
 import org.gradle.api.tasks.OutputDirectory;
+import org.gradle.api.tasks.PathSensitive;
+import org.gradle.api.tasks.PathSensitivity;
 import org.gradle.api.tasks.TaskAction;
 import org.gradle.api.tasks.TaskProvider;
 import org.gradle.api.tasks.testing.Test;
+import org.gradle.work.DisableCachingByDefault;
 
 import javax.inject.Inject;
 
@@ -112,8 +115,10 @@ public class MicronautTestResourcesConsumerPlugin implements Plugin<Project> {
         }
     }
 
+    @DisableCachingByDefault(because = "Not worth caching")
     public abstract static class CopyServerConfiguration extends DefaultTask {
         @InputFiles
+        @PathSensitive(PathSensitivity.NONE)
         public abstract ConfigurableFileCollection getFiles();
 
         @OutputDirectory

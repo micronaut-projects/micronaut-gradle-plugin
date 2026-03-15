@@ -21,6 +21,7 @@ import org.gradle.api.file.DirectoryProperty;
 import org.gradle.api.internal.file.FileOperations;
 import org.gradle.api.tasks.Destroys;
 import org.gradle.api.tasks.TaskAction;
+import org.gradle.work.DisableCachingByDefault;
 
 import javax.inject.Inject;
 import java.io.IOException;
@@ -28,6 +29,7 @@ import java.io.IOException;
 /**
  * A task to explicitly stop the test resources server.
  */
+@DisableCachingByDefault(because = "Stopping a server is a side effect")
 public abstract class StopTestResourcesService extends DefaultTask {
     @Destroys
     public abstract DirectoryProperty getSettingsDirectory();
