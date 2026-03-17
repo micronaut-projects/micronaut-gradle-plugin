@@ -28,10 +28,9 @@ import org.gradle.api.provider.SetProperty;
 import org.gradle.api.tasks.TaskContainer;
 import org.gradle.api.tasks.TaskProvider;
 import org.gradle.api.tasks.bundling.Jar;
+import org.gradle.language.base.plugins.LifecycleBasePlugin;
 
 import java.lang.reflect.InvocationTargetException;
-
-import static com.github.jengelman.gradle.plugins.shadow.ShadowJavaPlugin.SHADOW_GROUP;
 
 /**
  * A support class which is separate from the main code just to avoid eagerly
@@ -53,7 +52,7 @@ class AotShadowSupport {
             JavaApplication javaApplication = project.getExtensions().findByType(JavaApplication.class);
             var taskName = optimizedJar.getName() + "All";
             TaskProvider<ShadowJar> shadowProvider = tasks.register(taskName, ShadowJar.class, shadow -> {
-                shadow.setGroup(SHADOW_GROUP);
+                shadow.setGroup(LifecycleBasePlugin.BUILD_GROUP);
                 shadow.setDescription("Creates a fat jar including the Micronaut AOT optimizations");
                 shadow.getArchiveClassifier().convention("all-optimized");
                 Jar mainJar = tasks.named("jar", Jar.class).get();
@@ -68,7 +67,7 @@ class AotShadowSupport {
                 }
                 shadow.from(optimizedJar.map(jar -> archiveOperations.zipTree(jar.getArchiveFile().get())));
                 compatAddConfiguration(shadow, project.getConfigurations().findByName("runtimeClasspath"));
-                shadow.getExcludes().addAll(tasks.named(ShadowJavaPlugin.SHADOW_JAR_TASK_NAME, ShadowJar.class).get().getExcludes());
+                shadow.getExcludes().addAll(tasks.named(ShadowJar.SHADOW_JAR_TASK_NAME, ShadowJar.class).get().getExcludes());
             });
             tasks.named("assemble").configure(assemble -> assemble.dependsOn(shadowProvider));
         });
