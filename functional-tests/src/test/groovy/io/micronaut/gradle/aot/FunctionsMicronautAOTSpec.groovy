@@ -19,20 +19,20 @@ class FunctionsMicronautAOTSpec extends AbstractAOTPluginSpec {
             withProperty('graalvm.config.enabled', 'native' == runtime ? 'true' : 'false')
             withProperty('logback.xml.to.java.enabled', 'false')
             withProperty('cached.environment.enabled', 'true')
-            withProperty('serviceloading.jit.enabled', 'true')
-            withProperty('serviceloading.native.enabled', 'true')
             withProperty('yaml.to.java.config.enabled', 'true')
+            withProperty('property-source-loader.generate.enabled', 'true')
+            withProperty('property-source-loader.types', 'io.micronaut.context.env.yaml.YamlPropertySourceLoader')
             withProperty('scan.reactive.types.enabled', 'true')
             withProperty('known.missing.types.enabled', 'true')
             withProperty('sealed.property.source.enabled', 'true')
             withProperty('precompute.environment.properties.enabled', 'true')
             withProperty('deduce.environment.enabled', 'false')
             withProperty('netty.properties.enabled', 'false')
-            withExtraPropertyKeys 'service.types', 'known.missing.types.list'
+            withExtraPropertyKeys 'known.missing.types.list'
         }
 
         then: "prepares optimizations"
-        result.output.contains 'Converting application.yml into Java based configuration'
+        result.output.contains 'Converting application into Java based configuration'
 
         when:
         result = build "optimizedJitJar", "optimizedJitJarAll"

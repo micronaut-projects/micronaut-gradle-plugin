@@ -7,7 +7,7 @@ import spock.lang.IgnoreIf
 import spock.lang.Issue
 import spock.lang.Requires
 
-@Requires({ graalVmAvailable })
+@Requires({ graalVmAvailable && dockerAvailable })
 @IgnoreIf({ os.windows })
 class DockerNativeFunctionalTest extends AbstractEagerConfiguringFunctionalTest {
 
@@ -34,12 +34,12 @@ class DockerNativeFunctionalTest extends AbstractEagerConfiguringFunctionalTest 
             }
             
             $repositoriesBlock
-            
-            mainClassName="example.Application"
-            
+             
+            application { mainClass = "example.Application" }
+             
             java {
-                sourceCompatibility = JavaVersion.toVersion('17')
-                targetCompatibility = JavaVersion.toVersion('17')
+                sourceCompatibility = JavaVersion.toVersion('25')
+                targetCompatibility = JavaVersion.toVersion('25')
             }
             
             dockerfileNative {
@@ -103,10 +103,10 @@ micronaut:
 
         where:
         runtime           | jdk | nativeImage
-        "netty"           | 17  | "FROM ghcr.io/graalvm/native-image-community:17-ol${DefaultVersions.ORACLELINUX}"
-        "lambda_provided" | 17  | "FROM public.ecr.aws/amazonlinux/amazonlinux:${DefaultVersions.AMAZONLINUX} AS graalvm"
+        "netty"           | 25  | "FROM ghcr.io/graalvm/native-image-community:25-ol${DefaultVersions.ORACLELINUX}"
+        "lambda_provided" | 25  | "FROM public.ecr.aws/amazonlinux/amazonlinux:${DefaultVersions.AMAZONLINUX} AS graalvm"
         "lambda_provided" | 21  | "FROM public.ecr.aws/amazonlinux/amazonlinux:${DefaultVersions.AMAZONLINUX} AS graalvm"
-        "jetty"           | 17  | "FROM ghcr.io/graalvm/native-image-community:17-ol${DefaultVersions.ORACLELINUX}"
+        "jetty"           | 25  | "FROM ghcr.io/graalvm/native-image-community:25-ol${DefaultVersions.ORACLELINUX}"
     }
 
     void 'build mostly static native images when using distroless docker image for runtime=#runtime'() {
@@ -132,8 +132,8 @@ micronaut:
             }
 
             java {
-                sourceCompatibility = JavaVersion.toVersion('17')
-                targetCompatibility = JavaVersion.toVersion('17')
+                sourceCompatibility = JavaVersion.toVersion('25')
+                targetCompatibility = JavaVersion.toVersion('25')
             }
 
             dockerfileNative {
@@ -227,10 +227,10 @@ micronaut:
 
         where:
         jdkVersion | kotlinDsl || expected
+        '25'       | true      || '25-ol9'
+        '25'       | false     || '25-ol9'
         '21'       | true      || '21-ol9'
         '21'       | false     || '21-ol9'
-        '17'       | true      || '17-ol9'
-        '17'       | false     || '17-ol9'
 
         dsl = kotlinDsl ? 'kotlin' : 'groovy'
     }
@@ -257,8 +257,8 @@ micronaut:
             }
 
             java {
-                sourceCompatibility = JavaVersion.toVersion('17')
-                targetCompatibility = JavaVersion.toVersion('17')
+                sourceCompatibility = JavaVersion.toVersion('25')
+                targetCompatibility = JavaVersion.toVersion('25')
             }
         """
 
@@ -298,8 +298,8 @@ micronaut:
             }
 
             java {
-                sourceCompatibility = JavaVersion.toVersion('17')
-                targetCompatibility = JavaVersion.toVersion('17')
+                sourceCompatibility = JavaVersion.toVersion('25')
+                targetCompatibility = JavaVersion.toVersion('25')
             }
         """
 
@@ -343,11 +343,11 @@ micronaut:
             }
             
             java {
-                sourceCompatibility = JavaVersion.toVersion('17')
-                targetCompatibility = JavaVersion.toVersion('17')
+                sourceCompatibility = JavaVersion.toVersion('25')
+                targetCompatibility = JavaVersion.toVersion('25')
             }
             
-            mainClassName="example.Application"
+            application { mainClass = "example.Application" }
 
             graalvmNative.binaries.all {
                 buildArgs.addAll(["--exclude-config", "micronaut-function-aws-api-proxy-.*.jar", "META-INF/native-image/.*.properties"])
@@ -400,8 +400,8 @@ class Application {
             }
             
             java {
-                sourceCompatibility = JavaVersion.toVersion('17')
-                targetCompatibility = JavaVersion.toVersion('17')
+                sourceCompatibility = JavaVersion.toVersion('25')
+                targetCompatibility = JavaVersion.toVersion('25')
             }
             
             dockerfile {
@@ -417,7 +417,7 @@ class Application {
                 entryPoint('./entrypoint.sh')
             }
             
-            mainClassName="example.Application"
+            application { mainClass = "example.Application" }
         """
         testProjectDir.newFolder("src", "main", "java", "other")
         def javaFile = testProjectDir.newFile("src/main/java/other/Application.java")
@@ -476,8 +476,8 @@ class Application {
                 runtimeOnly("ch.qos.logback:logback-classic")
                 testImplementation("io.micronaut:micronaut-http-client")
             }
-            mainClassName="example.Application"
-            
+            application { mainClass = "example.Application" }
+             
         """
 
         when:
@@ -520,8 +520,8 @@ class Application {
             }
                     
             java {
-                sourceCompatibility = JavaVersion.toVersion('17')
-                targetCompatibility = JavaVersion.toVersion('17')
+                sourceCompatibility = JavaVersion.toVersion('25')
+                targetCompatibility = JavaVersion.toVersion('25')
             }
             
             dockerfile {
@@ -535,7 +535,7 @@ class Application {
                 instruction \"\"\"HEALTHCHECK CMD curl -s localhost:8090/health | grep '"status":"UP"'\"\"\"
             }
             
-            mainClassName="example.Application"
+            application { mainClass = "example.Application" }
         """
         testProjectDir.newFolder("src", "main", "java", "other")
         def javaFile = testProjectDir.newFile("src/main/java/other/Application.java")
@@ -575,9 +575,9 @@ class Application {
 
         where:
         runtime           | nativeImage
-        "netty"           | "FROM ghcr.io/graalvm/native-image-community:17-ol${DefaultVersions.ORACLELINUX}"
+        "netty"           | "FROM ghcr.io/graalvm/native-image-community:25-ol${DefaultVersions.ORACLELINUX}"
         "lambda_provided" | 'FROM amazonlinux:2023 AS graalvm'
-        "jetty"           | "FROM ghcr.io/graalvm/native-image-community:17-ol${DefaultVersions.ORACLELINUX}"
+        "jetty"           | "FROM ghcr.io/graalvm/native-image-community:25-ol${DefaultVersions.ORACLELINUX}"
     }
 
     @Issue("https://github.com/micronaut-projects/micronaut-gradle-plugin/issues/402")
@@ -598,11 +598,11 @@ class Application {
             
             $repositoriesBlock
             
-            mainClassName="example.Application"
+            application { mainClass = "example.Application" }
             
             java {
-                sourceCompatibility = JavaVersion.toVersion('17')
-                targetCompatibility = JavaVersion.toVersion('17')
+                sourceCompatibility = JavaVersion.toVersion('25')
+                targetCompatibility = JavaVersion.toVersion('25')
             }
             
             dockerfileNative {
@@ -656,7 +656,7 @@ micronaut:
 
         then:
         dockerFile == """
-            FROM ghcr.io/graalvm/native-image-community:17-ol${DefaultVersions.ORACLELINUX} AS graalvm
+            FROM ghcr.io/graalvm/native-image-community:25-ol${DefaultVersions.ORACLELINUX} AS graalvm
             WORKDIR /home/alternate
             COPY --link layers/libs /home/alternate/libs
             COPY --link layers/app /home/alternate/
@@ -701,7 +701,7 @@ micronaut {
             
 $repositoriesBlock
 
-mainClassName="example.Application"
+application { mainClass = "example.Application" }
 
 // Force realization of all tasks to trigger the problem
 afterEvaluate {
@@ -735,7 +735,7 @@ afterEvaluate {
                 version "$micronautVersion"
             }
 
-            mainClassName="example.Application"
+            application { mainClass = "example.Application" }
 
             tasks.withType(io.micronaut.gradle.docker.DockerBuildOptions).configureEach {
                 editDockerfile {
@@ -764,7 +764,7 @@ class Application {
 
         then:
         def dockerfile = new File(testProjectDir.root, 'build/docker/main/Dockerfile').text
-        dockerfile == """FROM eclipse-temurin:17-jre
+        dockerfile == """FROM eclipse-temurin:25-jre
 WORKDIR /home/app
 COPY --link layers/libs /home/app/libs
 COPY --link server.iprof /home/app/server.iprof
@@ -779,7 +779,7 @@ ENTRYPOINT ["java", "-jar", "/home/app/application.jar"]
 
         then:
         def dockerfileNative = new File(testProjectDir.root, 'build/docker/native-main/DockerfileNative').text
-        dockerfileNative == """FROM ghcr.io/graalvm/native-image-community:17-ol${DefaultVersions.ORACLELINUX} AS graalvm
+        dockerfileNative == """FROM ghcr.io/graalvm/native-image-community:25-ol${DefaultVersions.ORACLELINUX} AS graalvm
 WORKDIR /home/app
 COPY --link layers/libs /home/app/libs
 COPY --link server.iprof /home/app/server.iprof
@@ -813,7 +813,7 @@ ENTRYPOINT ["/app/application"]
                 version "$micronautVersion"
             }
 
-            mainClassName="example.Application"
+            application { mainClass = "example.Application" }
 
             tasks.withType(io.micronaut.gradle.docker.DockerBuildOptions).configureEach {
                 editDockerfile {
@@ -842,7 +842,7 @@ class Application {
 
         then:
         def dockerfile = new File(testProjectDir.root, 'build/docker/main/Dockerfile').text
-        dockerfile == """FROM eclipse-temurin:17-jre
+        dockerfile == """FROM eclipse-temurin:25-jre
 WORKDIR /home/app
 COPY --link layers/libs /home/app/libs
 COPY --link server.iprof /home/app/server.iprof

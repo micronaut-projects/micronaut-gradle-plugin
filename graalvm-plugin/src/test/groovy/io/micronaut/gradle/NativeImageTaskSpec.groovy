@@ -26,7 +26,7 @@ class NativeImageTaskSpec extends AbstractGradleBuildSpec {
             $repositoriesBlock
             
             
-            mainClassName="example.Application"
+            application { mainClass = "example.Application" }
             
         """
         withNativeImageDryRun()
@@ -72,7 +72,7 @@ class Application {
             
             $repositoriesBlock
                         
-            mainClassName="example.Application"
+            application { mainClass = "example.Application" }
 
             graalvmNative {
                 binaries {

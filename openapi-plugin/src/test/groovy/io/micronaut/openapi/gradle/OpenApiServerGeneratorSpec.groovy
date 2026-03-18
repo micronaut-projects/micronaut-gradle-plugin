@@ -25,7 +25,7 @@ class OpenApiServerGeneratorSpec extends AbstractOpenApiGeneratorSpec {
             }
             
             $repositoriesBlock
-            mainClassName="example.Application"
+            application { mainClass = "example.Application" }
 
             dependencies {
                 implementation "io.micronaut.security:micronaut-security"
@@ -71,7 +71,7 @@ class OpenApiServerGeneratorSpec extends AbstractOpenApiGeneratorSpec {
             }
             
             $repositoriesBlock
-            mainClassName="example.Application"
+            application { mainClass = "example.Application" }
 
             dependencies {
                 implementation "io.micronaut.security:micronaut-security"
@@ -116,7 +116,7 @@ class OpenApiServerGeneratorSpec extends AbstractOpenApiGeneratorSpec {
             }
             
             $repositoriesBlock
-            mainClassName="example.Application"
+            application { mainClass = "example.Application" }
 
             dependencies {
                 implementation "io.micronaut.security:micronaut-security"
@@ -161,6 +161,8 @@ class OpenApiServerGeneratorSpec extends AbstractOpenApiGeneratorSpec {
                         useReactive = true
                         generatedAnnotation = false
                         fluxForArrays = true
+                        useAuth = true
+                        userParameterMode = "AUTHENTICATION"
                         aot = true
                         apiNamePrefix = "ApiPrefix"
                         apiNameSuffix = "ApiSuffix"
@@ -171,7 +173,7 @@ class OpenApiServerGeneratorSpec extends AbstractOpenApiGeneratorSpec {
             }
             
             $repositoriesBlock
-            mainClassName="example.Application"
+            application { mainClass = "example.Application" }
 
             dependencies {
 
@@ -228,7 +230,7 @@ class OpenApiServerGeneratorSpec extends AbstractOpenApiGeneratorSpec {
             }
             
             $repositoriesBlock
-            mainClassName="example.Application"
+            application { mainClass = "example.Application" }
 
             dependencies {
 
@@ -285,7 +287,7 @@ class OpenApiServerGeneratorSpec extends AbstractOpenApiGeneratorSpec {
             }
             
             $repositoriesBlock
-            mainClassName="example.Application"
+            application { mainClass = "example.Application" }
 
             dependencies {
 

@@ -29,7 +29,7 @@ class FullMicronautRuntimeSpec extends AbstractEagerConfiguringFunctionalTest {
                 testImplementation("io.micronaut:micronaut-http-client")
             }
             
-            mainClassName="example.Application"
+            application { mainClass = "example.Application" }
         """
         testProjectDir.newFolder("src", "main", "java", "example")
         def javaFile = testProjectDir.newFile("src/main/java/example/FooController.java")

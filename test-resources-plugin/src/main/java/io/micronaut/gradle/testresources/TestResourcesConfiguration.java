@@ -19,6 +19,7 @@ import io.micronaut.testresources.buildtools.KnownModules;
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.MapProperty;
 import org.gradle.api.provider.Property;
+import org.gradle.jvm.toolchain.JavaLauncher;
 
 /**
  * Configuration for the test resources plugin.
@@ -130,4 +131,22 @@ public interface TestResourcesConfiguration extends KnownModules {
      * @return the debug property
      */
     Property<Boolean> getDebugServer();
+
+    /**
+     * Sets the Java launcher for the test resources service.
+     * If the project sets a Java toolchain, the same launcher will be used,
+     * otherwise the service will be started with the same Java executable
+     * as the one which was used to start the Gradle build.
+     *
+     * @return the java launcher
+     */
+    Property<JavaLauncher> getJavaLauncher();
+
+    /**
+     * An alternative to {@link #getJavaLauncher()} in which you can
+     * specify the full path to the Java executable used to start the
+     * test resources service, instead of a toolchain definition.
+     * @return the path to the Java executable
+     */
+    Property<String> getJavaExecutable();
 }

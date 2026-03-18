@@ -166,6 +166,12 @@ public abstract class MicronautExtension implements ExtensionAware {
     }
 
     /**
+     * Property which drives if incremental native builds should be enabled.
+     * @return the incremental property
+     */
+    public abstract Property<Boolean> getIncrementalNativeBuild();
+
+    /**
      * Allows configuring processing.
      * @param processingAction The processing action
      * @return This extension

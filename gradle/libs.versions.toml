@@ -1,25 +1,27 @@
 [versions]
 kotlin = "1.9.25"
-kotlin2 = "2.2.10"
+kotlin2 = "2.3.10"
 ksp = "1.9.25-1.0.20"
-ksp2 = "2.2.10-2.0.2"
-docker = "9.4.0"
-diffplug = "4.3.0"
-shadow = "8.3.9"
-groovy = "3.0.25"
-spock = "2.3-groovy-3.0"
+ksp2 = "2.3.6"
+docker = "10.0.0"
+diffplug = "4.4.1"
+shadow = "9.4.0"
+groovy = "5.0.4"
+spock = "2.4-groovy-4.0"
+junit-platform = "1.14.3"
 oraclelinux = "9"
 amazonlinux = "2023-minimal"
-graalvmPlugin = "0.10.6"
+graalvmPlugin = "0.11.5"
 mockserver = "5.15.0"
-log4j2 = "2.24.3"
+log4j2 = "2.25.3"
 tomlj = "1.1.1"
+openrewrite = "7.26.0"
 
-micronaut-platform = "4.8.3" # This is the platform version, used in our tests
-micronaut-aot = "2.7.0"
-micronaut-openapi = "6.15.0"
-micronaut-testresources = "2.8.0"
-micronaut-jsonschema = "1.5.0"
+micronaut-platform = "4.10.10" # This is the platform version, used in our tests
+micronaut-aot = "3.0.0-M2"
+micronaut-openapi = "6.20.0"
+micronaut-testresources = "3.0.0-M6"
+micronaut-jsonschema = "2.0.0-M4"
 
 [libraries]
 # Core
@@ -29,6 +31,7 @@ dockerPlug = { module = "com.bmuschko:gradle-docker-plugin", version.ref = "dock
 diffplugPlugin = { module = "com.diffplug.gradle:goomph", version.ref = "diffplug" }
 shadowPlugin = { module = "com.gradleup.shadow:shadow-gradle-plugin", version.ref = "shadow" }
 graalvmPlugin = { module = "org.graalvm.buildtools:native-gradle-plugin", version.ref = "graalvmPlugin" }
+openrewritePlugin = { module = "org.openrewrite.rewrite:org.openrewrite.rewrite.gradle.plugin", version.ref = "openrewrite" }
 
 kotlin-allopen = { module = "org.jetbrains.kotlin:kotlin-allopen", version.ref = "kotlin" }
 kotlin-gradlePlugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
@@ -36,9 +39,10 @@ kotlin2-gradlePlugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", v
 ksp-gradlePlugin = { module = "com.google.devtools.ksp:symbol-processing-gradle-plugin", version.ref = "ksp" }
 ksp2-gradlePlugin = { module = "com.google.devtools.ksp:symbol-processing-gradle-plugin", version.ref = "ksp2" }
 
-groovy-core = { module = "org.codehaus.groovy:groovy", version.ref = "groovy" }
+groovy-core = { module = "org.apache.groovy:groovy", version.ref = "groovy" }
 spock-core = { module = "org.spockframework:spock-core", version.ref = "spock" }
 spock-junit4 = { module = "org.spockframework:spock-junit4", version.ref = "spock" }
+junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher", version.ref = "junit-platform" }
 log4j2-core = { module = "org.apache.logging.log4j:log4j-core", version.ref = "log4j2" }
 
 micronaut-aot-api = { module = "io.micronaut.aot:micronaut-aot-api", version.ref = "micronaut-aot" }
@@ -58,4 +62,4 @@ mockserver-client = { module = "org.mock-server:mockserver-client-java", version
 tomlj = { module = "org.tomlj:tomlj", version.ref = "tomlj" }
 
 [bundles]
-optionalPlugins = ["kotlin-allopen", "kotlin-gradlePlugin", "graalvmPlugin", "ksp-gradlePlugin"]
+optionalPlugins = ["kotlin-allopen", "kotlin-gradlePlugin", "graalvmPlugin", "ksp-gradlePlugin", "openrewritePlugin"]

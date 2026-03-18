@@ -28,7 +28,7 @@ class MicronautDeprecationsPluginSpec extends AbstractGradleBuildSpec {
             }
             
             $repositoriesBlock
-            mainClassName="example.Application"
+            application { mainClass = "example.Application" }
 
             $withSerde
         """
@@ -66,7 +66,7 @@ class MicronautDeprecationsPluginSpec extends AbstractGradleBuildSpec {
             }
             
             $repositoriesBlock
-            mainClassName="example.Application"
+            application { mainClass = "example.Application" }
 
             $withSerde
         """

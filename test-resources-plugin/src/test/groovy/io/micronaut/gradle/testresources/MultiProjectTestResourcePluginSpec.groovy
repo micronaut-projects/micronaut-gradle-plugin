@@ -39,7 +39,7 @@ class MultiProjectTestResourcePluginSpec extends AbstractGradleBuildSpec {
         result.task(':app3:internalStartTestResourcesService').outcome == TaskOutcome.SUCCESS
         result.task(':app3:test').outcome == TaskOutcome.SUCCESS
         if (System.getenv("TESTCONTAINERS_RYUK_DISABLED") != "true") {
-            assert result.output.count("Creating container for image: testcontainers/ryuk") == 2
+            assert result.output.count("Creating container for image: testcontainers/ryuk") == 3
         }
     }
 

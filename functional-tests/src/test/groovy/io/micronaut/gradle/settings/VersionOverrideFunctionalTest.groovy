@@ -23,7 +23,7 @@ class VersionOverrideFunctionalTest extends AbstractFunctionalTest {
             }
             
             $repositoriesBlock
-            mainClassName="example.Application"
+            application { mainClass = "example.Application" }
 
             $withSerde
         """
@@ -84,7 +84,7 @@ foo = { module = "com.group:foo", version.ref = "foo" }
             }
             
             $repositoriesBlock
-            mainClassName="example.Application"
+            application { mainClass = "example.Application" }
 
             configurations {
                 dummy

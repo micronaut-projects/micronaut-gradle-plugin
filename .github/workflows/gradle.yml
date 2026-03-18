@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        java: ['17']
+        java: ['25']
     env:
       GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GRADLE_ENTERPRISE_ACCESS_KEY }}
       GRADLE_ENTERPRISE_CACHE_USERNAME: ${{ secrets.GRADLE_ENTERPRISE_CACHE_USERNAME }}
@@ -40,19 +40,19 @@ jobs:
           df -h
 
       - name: "📥 Checkout repository"
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
       - name: "🔧 Setup GraalVM CE"
-        uses: graalvm/setup-graalvm@v1.3.5
+        uses: graalvm/setup-graalvm@v1.5.0
         with:
           distribution: 'graalvm-community'
           java-version: ${{ matrix.java }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: "🔧 Setup Gradle"
-        uses: gradle/actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@v5
 
       - name: "❓ Optional setup step"
         run: |
@@ -64,13 +64,13 @@ jobs:
           ./gradlew check --no-daemon --continue
 
       - name: "🔎 Run static analysis"
-        if: env.SONAR_TOKEN != ''
+        if: env.SONAR_TOKEN != '' && github.event_name == 'push'
         run: |
           ./gradlew sonar
 
       - name: "📊 Publish Test Report"
         if: always()
-        uses: mikepenz/action-junit-report@v5
+        uses: mikepenz/action-junit-report@v6
         with:
           check_name: Java CI / Test Report (${{ matrix.java }})
           report_paths: '**/build/test-results/test/TEST-*.xml'
@@ -78,7 +78,7 @@ jobs:
 
       - name: "📜 Upload binary compatibility check results"
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: binary-compatibility-reports
           path: "**/build/reports/binary-compatibility-*.html"

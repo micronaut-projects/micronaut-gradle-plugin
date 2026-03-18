@@ -13,6 +13,7 @@ import org.graalvm.buildtools.gradle.dsl.NativeImageOptions;
 import org.graalvm.buildtools.gradle.tasks.BuildNativeImageTask;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
+import org.gradle.api.artifacts.ConfigurationContainer;
 import org.gradle.api.artifacts.DependencySet;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.SourceSet;
@@ -55,10 +56,12 @@ public class MicronautGraalPlugin implements Plugin<Project> {
         project.getPluginManager().withPlugin("io.micronaut.minimal.library", plugin -> {
             MicronautExtension extension = PluginsHelper.findMicronautExtension(project);
             configureAnnotationProcessing(project, extension);
+            configureExperimentalGraalvmFeatures(project, extension);
         });
         project.getPluginManager().withPlugin("io.micronaut.minimal.application", plugin -> {
             MicronautExtension extension = PluginsHelper.findMicronautExtension(project);
             configureAnnotationProcessing(project, extension);
+            configureExperimentalGraalvmFeatures(project, extension);
         });
         project.getPlugins().withType(MicronautComponentPlugin.class, unused -> {
             var extension = PluginsHelper.findMicronautExtension(project);
@@ -114,6 +117,7 @@ public class MicronautGraalPlugin implements Plugin<Project> {
                     });
                 })
         );
+
     }
 
     private static void configureAnnotationProcessing(Project project, MicronautExtension extension) {
@@ -141,6 +145,50 @@ public class MicronautGraalPlugin implements Plugin<Project> {
                         .filter(sourceSet -> SOURCE_SETS.contains(sourceSet.getName()))
                         .toList()
         );
+    }
+
+    private static void configureExperimentalGraalvmFeatures(Project project, MicronautExtension extension) {
+        var providers = project.getProviders();
+        extension.getIncrementalNativeBuild().convention(providers.gradleProperty("graalvm.native.incremental").map(Boolean::parseBoolean).orElse(project.provider(() -> false)));
+        project.afterEvaluate(unused -> {
+            if (extension.getIncrementalNativeBuild().getOrElse(false)) {
+                project.getLogger().warn("Experimental support for incremental native builds is ON");
+                configureIncrementalLayeredImages(project.getExtensions().findByType(GraalVMExtension.class), project.getConfigurations());
+            }
+        });
+    }
+
+    private static void configureIncrementalLayeredImages(GraalVMExtension graalVMExtension, ConfigurationContainer configurations) {
+        var binaries = graalVMExtension.getBinaries();
+        // TODO: this list of initializations is dependent on the version of Micronaut being used
+        // so ideally, it should be shipped with Micronaut itself, maybe in a separate artifact?
+        binaries.all(binary -> binary.buildArgs(
+            "--initialize-at-run-time=io.netty.channel.unix.Errors",
+            "--initialize-at-run-time=io.netty.channel.unix.IovArray",
+            "--initialize-at-run-time=io.netty.channel.unix.Limits",
+            "--initialize-at-run-time=io.netty.buffer",
+            "--initialize-at-run-time=io.netty.channel",
+            "--initialize-at-run-time=io.netty.handler",
+            "--initialize-at-run-time=io.netty.resolver",
+            "--initialize-at-run-time=io.netty.util",
+            "--initialize-at-run-time=io.netty.bootstrap",
+            "-H:+UseSharedLayerGraphs",
+            "--initialize-at-build-time=io.micronaut.http.server.netty.discovery.$NettyServiceDiscovery$ApplicationEventListener$onStop2$Intercepted$Definition$Exec",
+            "--initialize-at-build-time=io.micronaut.http.server.netty.discovery.$NettyServiceDiscovery$ApplicationEventListener$onStart1$Intercepted$Definition$Exec"
+        ));
+        binaries.create("libdependencies", binary -> {
+            var externalJars = configurations.getByName("runtimeClasspath");
+            binary.createLayer(layer -> {
+                layer.getModules().convention(List.of("java.base"));
+                layer.getJars().from(externalJars);
+            });
+            binary.buildArgs(
+                "-H:ApplicationLayerOnlySingletons=io.micronaut.core.io.service.ServiceScanner$StaticServiceDefinitions",
+                "-H:ApplicationLayerInitializedClasses=io.micronaut.core.io.service.MicronautMetaServiceLoaderUtils",
+                "-H:ApplicationLayerInitializedClasses=io.micronaut.inject.annotation.AnnotationMetadataSupport"
+            );
+        });
+        binaries.named("main", mainBinary -> mainBinary.useLayer("libdependencies"));
     }
 
     private static void addGraalVMAnnotationProcessorDependency(Project project, Iterable<SourceSet> sourceSets) {

@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:micronaut:config:demo.app.BasicServerConfig",
+  "title": "Basic Server Config",
+  "x-micronaut": {
+    "prefix": "micronaut.server",
+    "type": "demo.app.BasicServerConfig",
+    "kind": "configuration-properties"
+  },
+  "type": "object",
+  "properties": {
+    "port": {
+      "type": "integer"
+    }
+  }
+}

@@ -29,6 +29,7 @@ class CatalogPluginFunctionalTest extends AbstractGradleBuildSpec {
                 testRuntimeOnly(mn.micronaut.http.server.netty)
                 // Should probably be managed in Micronaut Test
                 testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
+                testRuntimeOnly("org.junit.platform:junit-platform-launcher")
             }
             
             tasks.withType(Test) {

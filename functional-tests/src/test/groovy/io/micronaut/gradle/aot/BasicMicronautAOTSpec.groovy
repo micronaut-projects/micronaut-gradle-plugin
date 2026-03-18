@@ -19,16 +19,16 @@ class BasicMicronautAOTSpec extends AbstractAOTPluginSpec {
             withProperty('graalvm.config.enabled', 'native' == runtime ? 'true' : 'false')
             withProperty('logback.xml.to.java.enabled', 'true')
             withProperty('cached.environment.enabled', 'true')
-            withProperty('serviceloading.jit.enabled', 'true')
-            withProperty('serviceloading.native.enabled', 'true')
             withProperty('yaml.to.java.config.enabled', 'true')
+            withProperty('property-source-loader.generate.enabled', 'true')
+            withProperty('property-source-loader.types', 'io.micronaut.context.env.yaml.YamlPropertySourceLoader')
             withProperty('scan.reactive.types.enabled', 'true')
             withProperty('known.missing.types.enabled', 'true')
             withProperty('sealed.property.source.enabled', 'true')
             withProperty('precompute.environment.properties.enabled', 'true')
             withProperty('deduce.environment.enabled', 'true')
             withProperty('netty.properties.enabled', 'true')
-            withExtraPropertyKeys 'service.types', 'known.missing.types.list'
+            withExtraPropertyKeys 'known.missing.types.list'
         }
 
         then: "Context configurer is loaded"
@@ -43,7 +43,6 @@ class BasicMicronautAOTSpec extends AbstractAOTPluginSpec {
                 'io.micronaut.core.reflect.ClassUtils$Optimizations',
                 'io.micronaut.core.util.EnvironmentProperties',
                 'io.micronaut.core.async.publisher.PublishersOptimizations',
-                'io.micronaut.core.io.service.SoftServiceLoader$Optimizations',
                 'io.micronaut.context.env.ConstantPropertySources'
         ].each {
             assert result.output.contains("Setting optimizations for class $it")
@@ -81,9 +80,9 @@ class BasicMicronautAOTSpec extends AbstractAOTPluginSpec {
             withProperty('graalvm.config.enabled', 'native' == runtime ? 'true' : 'false')
             withProperty('logback.xml.to.java.enabled', 'true')
             withProperty('cached.environment.enabled', 'true')
-            withProperty('serviceloading.jit.enabled', 'true')
-            withProperty('serviceloading.native.enabled', 'true')
             withProperty('yaml.to.java.config.enabled', 'true')
+            withProperty('property-source-loader.generate.enabled', 'true')
+            withProperty('property-source-loader.types', 'io.micronaut.context.env.yaml.YamlPropertySourceLoader')
             withProperty('scan.reactive.types.enabled', 'true')
             withProperty('known.missing.types.enabled', 'false')
             withProperty('sealed.property.source.enabled', 'true')
@@ -91,7 +90,7 @@ class BasicMicronautAOTSpec extends AbstractAOTPluginSpec {
             withProperty('deduce.environment.enabled', 'true')
             withProperty('some.plugin.enabled', 'true')
             withProperty('netty.properties.enabled', 'true')
-            withExtraPropertyKeys 'service.types', 'known.missing.types.list'
+            withExtraPropertyKeys 'known.missing.types.list'
         }
 
         then: "Context configurer is loaded"
@@ -105,7 +104,6 @@ class BasicMicronautAOTSpec extends AbstractAOTPluginSpec {
         [
                 'io.micronaut.core.util.EnvironmentProperties',
                 'io.micronaut.core.async.publisher.PublishersOptimizations',
-                'io.micronaut.core.io.service.SoftServiceLoader$Optimizations',
                 'io.micronaut.context.env.ConstantPropertySources'
         ].each {
             assert result.output.contains("Setting optimizations for class $it")
@@ -134,7 +132,6 @@ class BasicMicronautAOTSpec extends AbstractAOTPluginSpec {
                 'io.micronaut.core.reflect.ClassUtils$Optimizations',
                 'io.micronaut.core.util.EnvironmentProperties',
                 'io.micronaut.core.async.publisher.PublishersOptimizations',
-                'io.micronaut.core.io.service.SoftServiceLoader$Optimizations',
                 'io.micronaut.context.env.ConstantPropertySources'
         ].each {
             assert result.output.contains("Setting optimizations for class $it")
@@ -199,9 +196,9 @@ class BasicMicronautAOTSpec extends AbstractAOTPluginSpec {
             withProperty('graalvm.config.enabled', 'native' == runtime ? 'true' : 'false')
             withProperty('logback.xml.to.java.enabled', 'true')
             withProperty('cached.environment.enabled', 'true')
-            withProperty('serviceloading.jit.enabled', 'true')
-            withProperty('serviceloading.native.enabled', 'true')
             withProperty('yaml.to.java.config.enabled', 'true')
+            withProperty('property-source-loader.generate.enabled', 'true')
+            withProperty('property-source-loader.types', 'io.micronaut.context.env.yaml.YamlPropertySourceLoader')
             withProperty('scan.reactive.types.enabled', 'true')
             withProperty('known.missing.types.enabled', 'false')
             withProperty('sealed.property.source.enabled', 'true')
@@ -209,7 +206,7 @@ class BasicMicronautAOTSpec extends AbstractAOTPluginSpec {
             withProperty('deduce.environment.enabled', 'true')
             withProperty('some.plugin.enabled', 'true')
             withProperty('netty.properties.enabled', 'true')
-            withExtraPropertyKeys 'service.types', 'known.missing.types.list'
+            withExtraPropertyKeys 'known.missing.types.list'
         }
 
         then: "Context configurer is loaded"
@@ -223,7 +220,6 @@ class BasicMicronautAOTSpec extends AbstractAOTPluginSpec {
         [
                 'io.micronaut.core.util.EnvironmentProperties',
                 'io.micronaut.core.async.publisher.PublishersOptimizations',
-                'io.micronaut.core.io.service.SoftServiceLoader$Optimizations',
                 'io.micronaut.context.env.ConstantPropertySources'
         ].each {
 

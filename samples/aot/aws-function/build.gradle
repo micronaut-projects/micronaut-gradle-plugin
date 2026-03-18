@@ -1,7 +1,7 @@
 plugins {
     id("io.micronaut.library")
     id("io.micronaut.aot")
-    id("com.gradleup.shadow") version "8.3.6"
+    id("com.gradleup.shadow") version "9.4.0"
 }
 
 version = "0.1"
@@ -16,7 +16,6 @@ micronaut {
     }
     aot {
         cacheEnvironment.set(true)
-        optimizeServiceLoading.set(true)
         optimizeClassLoading.set(true)
         convertYamlToJava.set(true)
         precomputeOperations.set(true)
@@ -38,8 +37,8 @@ dependencies {
 
 
 java {
-    sourceCompatibility = JavaVersion.toVersion("17")
-    targetCompatibility = JavaVersion.toVersion("17")
+    sourceCompatibility = JavaVersion.toVersion("25")
+    targetCompatibility = JavaVersion.toVersion("25")
 }
 
 tasks.named("assemble") {

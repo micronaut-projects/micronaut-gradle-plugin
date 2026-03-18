@@ -2,7 +2,7 @@
 :native-gradle-plugin: https://graalvm.github.io/native-build-tools/{native-build-tools-version}/gradle-plugin.html
 :gradle-docs: https://docs.gradle.org/{gradle-version}/userguide
 :gradle-toolchains: {gradle-docs}/toolchains.html
-:default-docker-image: eclipse-temurin:17-jre
+:default-docker-image: eclipse-temurin:25-jre
 :docker-plugin: https://github.com/bmuschko/gradle-docker-plugin
 :aws-docs: https://micronaut-projects.github.io/micronaut-aws/latest/guide/index.html#customRuntimes
 :testresources-guide: https://micronaut-projects.github.io/micronaut-test-resources/latest/guide
@@ -83,7 +83,156 @@ For example, the `minimal` plugins can be used to reduce the number of tasks, fo
 |https://plugins.gradle.org/plugin/io.micronaut.jsonschema[`io.micronaut.jsonschema`]
 |Adds support for generating source code from JSON Schema.
 |
+
+|https://plugins.gradle.org/plugin/io.micronaut.configuration.validation[`io.micronaut.configuration.validation`]
+|Validates Micronaut configuration against JSON Schemas at build time.
+|
+
+|https://plugins.gradle.org/plugin/io.micronaut.openrewrite[`io.micronaut.openrewrite`]
+|Adds support for applying OpenRewrite recipes for Micronaut applications and libraries.
+|
 |===
+
+[[configuration-validation]]
+== Micronaut Configuration Validation Plugin
+
+The https://plugins.gradle.org/plugin/io.micronaut.configuration.validation[Micronaut configuration validation plugin] validates your configuration files (for example `application.yml`, `application.properties`, `application.toml`) against JSON Schemas published by Micronaut modules and generated from `@ConfigurationProperties`.
+
+It provides scenario-specific tasks and wires them into the standard Gradle lifecycle so validation runs automatically:
+
+* `runConfigurationValidation` runs before `run` (default environment: `dev`)
+* `testConfigurationValidation` runs before `test` (default environment: `test`)
+* `configurationValidation` runs before `assemble`, `check`, and `build` (production configuration, no default environment)
+
+Each scenario also has a cacheable report task (`*ConfigurationValidationReport`) that generates reports.
+Reports are written under `build/reports/micronaut/config-validation/<scenario>` by default.
+
+=== Applying the plugin
+
+[source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
+----
+plugins {
+  id 'io.micronaut.application' version '{gradle-project-version}'
+  id 'io.micronaut.configuration.validation' version '{gradle-project-version}'
+}
+----
+
+[source, kotlin, subs="verbatim,attributes", role="multi-language-sample"]
+----
+plugins {
+  id("io.micronaut.application") version "{gradle-project-version}"
+  id("io.micronaut.configuration.validation") version "{gradle-project-version}"
+}
+----
+
+=== Configuration
+
+The plugin is configured via the `micronaut { configurationValidation { ... } }` extension.
+
+The underlying validator supports the following inputs:
+
+* classpath used to discover schemas and configuration (`--classpath`)
+* enabled environments (`--env`)
+* suppression patterns (`--suppress`)
+* unknown-property handling (`--fail-on-not-present`)
+ * environment deduction (`--deduce-environments`)
+ * dependency injection validation (`--validate-dependency-injection`)
+ * dependency injection suppression patterns (`--suppress-inject-errors`)
+ * report output directory and format (`--out`, `--format`)
+
+.Example configuration
+[source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
+----
+micronaut {
+  configurationValidation {
+     // Global defaults
+     failOnNotPresent.set(true)
+     validateDependencyInjection.set(false)
+     suppressedInjectionErrors.addAll([])
+     format.set("both") // json, html, both
+
+    run {
+      // Default: ["dev"]
+      environments.set(["dev"]) 
+    }
+
+    test {
+      // Default: ["test"]
+      environments.set(["test"]) 
+    }
+
+    assemble {
+      // No default environment
+      environments.set([])
+    }
+  }
+}
+----
+
+[source, kotlin, subs="verbatim,attributes", role="multi-language-sample"]
+----
+micronaut {
+  configurationValidation {
+     // Global defaults
+     failOnNotPresent.set(true)
+     validateDependencyInjection.set(false)
+     suppressedInjectionErrors.addAll(emptyList())
+     format.set("both") // json, html, both
+
+    run {
+      environments.set(listOf("dev"))
+    }
+    test {
+      environments.set(listOf("test"))
+    }
+    assemble {
+      environments.set(emptyList())
+    }
+  }
+}
+----
+
+=== Dependency injection suppression patterns
+
+When dependency injection validation is enabled (`validateDependencyInjection=true`), you can suppress dependency injection errors for specific classes (or wildcard patterns) using `suppressedInjectionErrors`.
+
+[source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
+----
+micronaut {
+  configurationValidation {
+    validateDependencyInjection.set(true)
+    suppressedInjectionErrors.addAll(
+      "com.example.legacy.LegacyBean",
+      "com.example.generated.*"
+    )
+  }
+}
+----
+
+[source, kotlin, subs="verbatim,attributes", role="multi-language-sample"]
+----
+micronaut {
+  configurationValidation {
+    validateDependencyInjection.set(true)
+    suppressedInjectionErrors.addAll(
+      "com.example.legacy.LegacyBean",
+      "com.example.generated.*"
+    )
+  }
+}
+----
+
+NOTE: This requires a validator version that supports the CLI argument `--suppress-inject-errors`.
+
+
+
+
+
+=== Caching and configuration cache
+
+The `*ConfigurationValidationReport` tasks are cacheable and compatible with Gradle configuration cache.
+To preserve failure results across cache hits (so that cached invalid configuration still fails subsequent builds), the failing `*ConfigurationValidation` tasks read the result marker produced by their corresponding report task.
+
 
 Using the `io.micronaut.application` plugin:
 
@@ -1193,7 +1342,6 @@ micronaut {
         version = "1.0.1"
 
         // optimizations configuration
-        optimizeServiceLoading = true
         convertYamlToJava = true
         precomputeOperations = true
         cacheEnvironment = true
@@ -1213,7 +1361,6 @@ micronaut {
         version.set("1.0.0")
 
         // optimizations configuration
-        optimizeServiceLoading.set(true)
         convertYamlToJava.set(true)
         precomputeOperations.set(true)
         cacheEnvironment.set(true)
@@ -1520,6 +1667,8 @@ micronaut {
         serverIdleTimeoutMinutes = 60 // if the server doesn't receive any request for this amount of time, it will be shut down
         sharedServer = true // false by default
         sharedServerNamespace = 'custom' // unset by default
+        javaLauncher = javaToolchainSpec // uses the project's toolchain if available, otherwise uses the same Java executable as Gradle
+        javaExecutable = '/usr/bin/java' // an alternative to javaLauncher, allows specifying the full path to the Java executable
     }
 }
 ----
@@ -1536,6 +1685,8 @@ micronaut {
         clientTimeout.set(60) // in seconds, maximum time to wait for resources to be available, 60s by default
         sharedServer.set(true) // false by default
         sharedServerNamespace.set("custom") // unset by default
+        javaLauncher.set(javaToolchainSpec) // uses the project's toolchain if available, otherwise uses the same Java executable as Gradle
+        javaExecutable.set("/usr/bin/java") // an alternative to javaLauncher, allows specifying the full path to the Java executable
     }
 }
 ----
@@ -1821,7 +1972,7 @@ micronaut {
         os = "linux-glibc"
 
         // The version of the Azul CRaC JDK to use in the image (currently only 17 is supported)
-        javaVersion = JavaLanguageVersion.of(17)
+        javaVersion = JavaLanguageVersion.of(25)
 
         // A command to run that will be successful when the application is ready to be checkpointed.
         preCheckpointReadinessCheck = "curl --output /dev/null --silent --head http://localhost:8080"
@@ -1859,7 +2010,7 @@ micronaut {
         os.set("linux-glibc")
 
         // The version of the Azul CRaC JDK to use in the image (currently only 17 is supported)
-        javaVersion.set(JavaLanguageVersion.of(17))
+        javaVersion.set(JavaLanguageVersion.of(25))
 
         // A command to run that will be successful when the application is ready to be checkpointed.
         preCheckpointReadinessCheck.set("curl --output /dev/null --silent --head http://localhost:8080")
@@ -2280,3 +2431,9 @@ In addition, the official GraalVM plugin makes use of Gradle toolchains support,
 then we recommend tweaking toolchain detection as described in <<#toolchain-behavior, this section of the documentation>>.
 
 In any case, make sure to follow the <<#native-image,configuration instructions>>.
+
+== Micronaut OpenRewrite Plugin
+
+The `io.micronaut.openrewrite` plugin integrates with the https://docs.openrewrite.org/[OpenRewrite] framework to support automated code migrations and best practice refactoring for Micronaut projects. It automatically applies the `org.openrewrite.rewrite` Gradle plugin and configures the default set of Micronaut OpenRewrite recipes.
+
+By default, the plugin adds the `io.micronaut.openrewrite:micronaut-openrewrite` recipes dependency to your build.
