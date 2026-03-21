@@ -1,6 +1,6 @@
 [versions]
 kotlin = "1.9.25"
-kotlin2 = "2.3.10"
+kotlin2 = "2.3.20"
 ksp = "1.9.25-1.0.20"
 ksp2 = "2.3.6"
 docker = "10.0.0"
