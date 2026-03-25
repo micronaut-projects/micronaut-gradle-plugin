@@ -97,6 +97,15 @@ public class Dependencies {
             return this;
         }
 
+        public Builder testRuntimeOnly(String coordinates) {
+            return testRuntimeOnly(coordinates, null);
+        }
+
+        public Builder testRuntimeOnly(String coordinates, ConfigurableVersionProperty version) {
+            this.dependencies.add(new AutomaticDependency(JavaPlugin.TEST_RUNTIME_ONLY_CONFIGURATION_NAME, coordinates, Optional.ofNullable(version)));
+            return this;
+        }
+
         public Dependencies build() {
             return new Dependencies(Collections.unmodifiableList(dependencies));
         }
