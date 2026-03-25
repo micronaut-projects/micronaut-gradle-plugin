@@ -267,7 +267,7 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
             task.getStopFile().set(stopFile.toFile());
             task.getStandalone().set(isStandalone);
             task.getClassDataSharingDir().convention(cdsDir);
-            task.getUseClassDataSharing().convention(JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_17));
+            task.getUseClassDataSharing().convention(false);
             task.getSystemProperties().convention(config.getServerSystemProperties());
             task.getEnvironment().convention(config.getServerEnvironment());
             task.getDebugServer().convention(config.getDebugServer());
