@@ -248,6 +248,102 @@ ENTRYPOINT ["java", "-jar", "/home/alternate/application.jar"]
 """
     }
 
+    @Issue("https://github.com/micronaut-projects/micronaut-gradle-plugin/issues/765")
+    def "dockerfile includes application default JVM args in entrypoint"() {
+        given:
+        settingsFile << "rootProject.name = 'hello-world'"
+        buildFile << """
+            plugins {
+                id "io.micronaut.minimal.application"
+                id "io.micronaut.docker"
+            }
+
+            micronaut {
+                version "$micronautVersion"
+            }
+
+            $repositoriesBlock
+
+            application {
+                mainClass = "example.Application"
+                applicationDefaultJvmArgs = ["-Dtest.flag=from-application", "-Xmx256m"]
+            }
+        """
+        testProjectDir.newFolder("src", "main", "java", "example")
+        def javaFile = testProjectDir.newFile("src/main/java/example/Application.java")
+        javaFile.parentFile.mkdirs()
+        javaFile << """
+package example;
+
+class Application {
+    public static void main(String... args) {
+
+    }
+}
+"""
+
+        when:
+        def result = build('dockerfile', '-s')
+
+        then:
+        result.task(":dockerfile").outcome == TaskOutcome.SUCCESS
+
+        and:
+        def dockerfile = new File(testProjectDir.root, 'build/docker/main/Dockerfile').text
+        dockerfile.contains('ENTRYPOINT ["java", "-Dtest.flag=from-application", "-Xmx256m", "-jar", "/home/app/application.jar"]')
+    }
+
+    @Issue("https://github.com/micronaut-projects/micronaut-gradle-plugin/issues/765")
+    def "dockerfile task args override application default JVM args"() {
+        given:
+        settingsFile << "rootProject.name = 'hello-world'"
+        buildFile << """
+            plugins {
+                id "io.micronaut.minimal.application"
+                id "io.micronaut.docker"
+            }
+
+            micronaut {
+                version "$micronautVersion"
+            }
+
+            $repositoriesBlock
+
+            application {
+                mainClass = "example.Application"
+                applicationDefaultJvmArgs = ["-Dtest.flag=from-application", "-Xmx256m"]
+            }
+
+            dockerfile {
+                args("-Xmx128m")
+            }
+        """
+        testProjectDir.newFolder("src", "main", "java", "example")
+        def javaFile = testProjectDir.newFile("src/main/java/example/Application.java")
+        javaFile.parentFile.mkdirs()
+        javaFile << """
+package example;
+
+class Application {
+    public static void main(String... args) {
+
+    }
+}
+"""
+
+        when:
+        def result = build('dockerfile', '-s')
+
+        then:
+        result.task(":dockerfile").outcome == TaskOutcome.SUCCESS
+
+        and:
+        def dockerfile = new File(testProjectDir.root, 'build/docker/main/Dockerfile').text
+        dockerfile.contains('ENTRYPOINT ["java", "-Xmx128m", "-jar", "/home/app/application.jar"]')
+        !dockerfile.contains('-Dtest.flag=from-application')
+        !dockerfile.contains('-Xmx256m')
+    }
+
     @IgnoreIf({ os.windows })
     def "can disable the use of the COPY --link option"() {
         given:
