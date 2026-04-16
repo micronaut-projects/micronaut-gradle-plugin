@@ -25,6 +25,28 @@ class MultiProjectTestResourcePluginSpec extends AbstractGradleBuildSpec {
         result.output.contains "io.micronaut.testresources.postgres.PostgreSQLTestResourceProvider"
     }
 
+    def "runs the application with test resources support in a multiproject consumer"() {
+        withSample("test-resources/multiproject")
+
+        // The sample Application.java already checks System.getProperty("interruptStartup"),
+        // but the build.gradle doesn't forward the system property from Gradle to the JVM.
+        file("app1/build.gradle") << """
+            tasks.withType(JavaExec).configureEach {
+                if (System.getProperty("interruptStartup")) {
+                    systemProperty "interruptStartup", "true"
+                }
+            }
+        """
+
+        when:
+        def result = build '-DinterruptStartup=true', ':app1:run'
+
+        then:
+        result.task(':testresources:internalStartTestResourcesService').outcome == TaskOutcome.SUCCESS
+        result.task(':app1:run').outcome == TaskOutcome.SUCCESS
+        result.output.contains "Loaded 4 test resources resolvers"
+    }
+
     def "can use independent test resource services"() {
         withSample("test-resources/isolated-multiproject")
 
