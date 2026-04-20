@@ -344,6 +344,48 @@ class Application {
         !dockerfile.contains('-Xmx256m')
     }
 
+    @Issue("https://github.com/micronaut-projects/micronaut-gradle-plugin/issues/765")
+    def "dockerfile is configuration cache compatible with application default JVM args"() {
+        given:
+        settingsFile << "rootProject.name = 'hello-world'"
+        buildFile << """
+            plugins {
+                id "io.micronaut.minimal.application"
+                id "io.micronaut.docker"
+            }
+
+            micronaut {
+                version "$micronautVersion"
+            }
+
+            $repositoriesBlock
+
+            application {
+                mainClass = "example.Application"
+                applicationDefaultJvmArgs = ["-Dtest.flag=from-application"]
+            }
+        """
+        testProjectDir.newFolder("src", "main", "java", "example")
+        def javaFile = testProjectDir.newFile("src/main/java/example/Application.java")
+        javaFile.parentFile.mkdirs()
+        javaFile << """
+package example;
+
+class Application {
+    public static void main(String... args) {
+
+    }
+}
+"""
+
+        when:
+        def result = build('dockerfile', '--configuration-cache')
+
+        then:
+        result.task(":dockerfile").outcome == TaskOutcome.SUCCESS
+        result.output.toLowerCase().contains('configuration cache entry stored')
+    }
+
     @IgnoreIf({ os.windows })
     def "can disable the use of the COPY --link option"() {
         given:

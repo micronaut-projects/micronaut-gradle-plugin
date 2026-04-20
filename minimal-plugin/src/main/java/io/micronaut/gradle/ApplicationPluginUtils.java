@@ -28,6 +28,10 @@ public final class ApplicationPluginUtils {
 
     public static List<String> applicationDefaultJvmArgs(Project project) {
         JavaApplication javaApplication = project.getExtensions().findByType(JavaApplication.class);
+        return applicationDefaultJvmArgs(javaApplication);
+    }
+
+    private static List<String> applicationDefaultJvmArgs(JavaApplication javaApplication) {
         if (javaApplication == null) {
             return List.of();
         }
@@ -39,6 +43,7 @@ public final class ApplicationPluginUtils {
     }
 
     public static Provider<List<String>> applicationDefaultJvmArgsProvider(Project project) {
-        return project.provider(() -> applicationDefaultJvmArgs(project));
+        JavaApplication javaApplication = project.getExtensions().findByType(JavaApplication.class);
+        return project.provider(() -> applicationDefaultJvmArgs(javaApplication));
     }
 }
