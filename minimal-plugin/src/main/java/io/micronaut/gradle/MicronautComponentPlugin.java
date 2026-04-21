@@ -20,6 +20,8 @@ import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.Dependency;
 import org.gradle.api.artifacts.ExternalModuleDependency;
+import org.gradle.api.artifacts.component.ComponentIdentifier;
+import org.gradle.api.artifacts.component.ModuleComponentIdentifier;
 import org.gradle.api.artifacts.dsl.DependencyHandler;
 import org.gradle.api.plugins.BasePlugin;
 import org.gradle.api.plugins.JavaPlugin;
@@ -40,6 +42,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.regex.Pattern;
 
 import static io.micronaut.gradle.PluginsHelper.applyAdditionalProcessors;
 import static io.micronaut.gradle.PluginsHelper.configureAnnotationProcessors;
@@ -72,6 +75,7 @@ public class MicronautComponentPlugin implements Plugin<Project> {
     );
     public static final String MICRONAUT_BOMS_CONFIGURATION = "micronautBoms";
     public static final String INSPECT_RUNTIME_CLASSPATH_TASK_NAME = "inspectRuntimeClasspath";
+    public static final String GENERATE_IMPORT_FACTORIES_TASK_NAME = "generateImportFactories";
 
     @Override
     public void apply(Project project) {
@@ -81,7 +85,7 @@ public class MicronautComponentPlugin implements Plugin<Project> {
         TaskContainer tasks = project.getTasks();
         TaskProvider<ApplicationClasspathInspector> inspectRuntimeClasspath = registerInspectRuntimeClasspath(project, tasks);
 
-        configureJava(project, tasks);
+        configureJava(project, tasks, micronautExtension);
 
         configureGroovy(project, tasks, micronautExtension);
 
@@ -216,9 +220,18 @@ public class MicronautComponentPlugin implements Plugin<Project> {
     }
 
 
-    private void configureJava(Project project, TaskContainer tasks) {
+    private void configureJava(Project project, TaskContainer tasks, MicronautExtension micronautExtension) {
+        TaskProvider<GenerateImportFactoryTask> generateImportFactories = registerGenerateImportFactories(project, tasks, micronautExtension);
 
         project.afterEvaluate(p -> {
+            boolean importFactoryEnabled = micronautExtension.getImportFactory().getEnabled().getOrElse(false);
+            generateImportFactories.configure(task -> task.setEnabled(importFactoryEnabled));
+            if (importFactoryEnabled) {
+                SourceSet mainSourceSet = PluginsHelper.findSourceSets(p).findByName(SourceSet.MAIN_SOURCE_SET_NAME);
+                if (mainSourceSet != null) {
+                    mainSourceSet.getJava().srcDir(generateImportFactories);
+                }
+            }
             var sourceSets = PluginsHelper.findSourceSets(p);
             for (String sourceSetName : SOURCESETS) {
                 SourceSet sourceSet = sourceSets.findByName(sourceSetName);
@@ -245,7 +258,6 @@ public class MicronautComponentPlugin implements Plugin<Project> {
             }
 
             tasks.withType(JavaCompile.class).configureEach(javaCompile -> {
-                final MicronautExtension micronautExtension = p.getExtensions().getByType(MicronautExtension.class);
                 final AnnotationProcessing processing = micronautExtension.getProcessing();
                 final boolean isIncremental = processing.getIncremental().getOrElse(true);
                 final String group = processing.getGroup().getOrElse(p.getGroup().toString());
@@ -276,6 +288,38 @@ public class MicronautComponentPlugin implements Plugin<Project> {
             });
         });
 
+    }
+
+    private static TaskProvider<GenerateImportFactoryTask> registerGenerateImportFactories(Project project,
+                                                                                           TaskContainer tasks,
+                                                                                           MicronautExtension micronautExtension) {
+        return tasks.register(GENERATE_IMPORT_FACTORIES_TASK_NAME, GenerateImportFactoryTask.class, task -> {
+            ImportFactoryConfiguration importFactory = micronautExtension.getImportFactory();
+            task.setGroup(BasePlugin.BUILD_GROUP);
+            task.setDescription("Generates Micronaut import factories from dependency jars");
+            task.getIncludePackagesFilter().convention(importFactory.getIncludePackagesFilter());
+            task.getExcludePackagesFilter().convention(importFactory.getExcludePackagesFilter());
+            task.getTargetPackage().convention(importFactory.getTargetPackage());
+            task.getOutputDirectory().convention(project.getLayout().getBuildDirectory().dir("generated-sources/importfactory"));
+            task.getDependencyJars().from(project.getConfigurations()
+                .getByName(JavaPlugin.RUNTIME_CLASSPATH_CONFIGURATION_NAME)
+                .getIncoming()
+                .artifactView(view -> view.componentFilter(componentIdentifier ->
+                    matchesDependencyFilter(componentIdentifier,
+                        importFactory.getIncludeDependenciesFilter().get(),
+                        importFactory.getExcludeDependenciesFilter().get())))
+                .getFiles());
+        });
+    }
+
+    private static boolean matchesDependencyFilter(ComponentIdentifier componentIdentifier,
+                                                  String includeFilter,
+                                                  String excludeFilter) {
+        if (!(componentIdentifier instanceof ModuleComponentIdentifier moduleComponentIdentifier)) {
+            return false;
+        }
+        String identifier = moduleComponentIdentifier.getGroup() + ":" + moduleComponentIdentifier.getModule();
+        return Pattern.matches(includeFilter, identifier) && !Pattern.matches(excludeFilter, identifier);
     }
 
 
