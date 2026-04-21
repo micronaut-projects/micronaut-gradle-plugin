@@ -28,6 +28,7 @@ public final class FunctionPluginSupport {
     public static final String MINIMAL_FUNCTION_PLUGIN_ID = "io.micronaut.minimal.function";
     public static final String FUNCTION_PLUGIN_ID = "io.micronaut.function";
     public static final String APPLICATION_PLUGIN_ID = "application";
+    public static final String FUNCTION_EXTENSION_NAME = "function";
 
     private static final String FUNCTION_PROJECT_MARKER = "io.micronaut.internal.function-project";
     private static final String APPLICATION_BRIDGE_PROPERTY = "application";
@@ -47,12 +48,15 @@ public final class FunctionPluginSupport {
     }
 
     public static void configureFunctionRuntime(Project project) {
+        var functionConfiguration = ensureFunctionConfiguration(project);
         var applicationBridge = ensureApplicationBridge(project);
-        if (applicationBridge != null) {
-            project.getPluginManager().withPlugin(APPLICATION_PLUGIN_ID, unused ->
-                applicationBridge.attach(project.getExtensions().getByType(JavaApplication.class))
-            );
-        }
+        project.getPluginManager().withPlugin(APPLICATION_PLUGIN_ID, unused -> {
+            var javaApplication = project.getExtensions().getByType(JavaApplication.class);
+            javaApplication.getMainClass().convention(functionConfiguration.getMainClass());
+            if (applicationBridge != null) {
+                applicationBridge.attach(javaApplication);
+            }
+        });
         var micronautExtension = PluginsHelper.findMicronautExtension(project);
         micronautExtension.onRuntimeConfigured(runtime -> maybeApplyApplicationPlugin(project, runtime));
         var configuredRuntime = findConfiguredRuntime(project);
@@ -95,5 +99,14 @@ public final class FunctionPluginSupport {
         var bridge = new FunctionApplicationBridge(project);
         extraProperties.set(APPLICATION_BRIDGE_PROPERTY, bridge);
         return bridge;
+    }
+
+    private static FunctionConfiguration ensureFunctionConfiguration(Project project) {
+        var micronautExtension = PluginsHelper.findMicronautExtension(project);
+        var existing = micronautExtension.getExtensions().findByType(FunctionConfiguration.class);
+        if (existing != null) {
+            return existing;
+        }
+        return micronautExtension.getExtensions().create(FUNCTION_EXTENSION_NAME, FunctionConfiguration.class);
     }
 }
