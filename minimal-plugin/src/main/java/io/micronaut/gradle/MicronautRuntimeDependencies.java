@@ -167,6 +167,11 @@ public final class MicronautRuntimeDependencies {
         return GROUP_MICRONAUT_AWS.equals(groupId) && ARTIFACT_ID_MICRONAUT_AWS_FUNCTION.equals(artifactId);
     }
 
+    static boolean isAutomaticAwsApiProxyDependency(String coordinates) {
+        return micronautAwsDependency(ARTIFACT_ID_MICRONAUT_AWS_API_PROXY).equals(coordinates)
+                || micronautAwsDependency(ARTIFACT_ID_MICRONAUT_AWS_API_PROXY_TEST).equals(coordinates);
+    }
+
     private static String micronautGcpDependency(String artifactId) {
         return dependency(GROUP_MICRONAUT_GCP, artifactId);
     }

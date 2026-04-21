@@ -84,7 +84,6 @@ class RuntimeDependenciesSpec extends AbstractEagerConfiguringFunctionalTest {
 
             dependencies {
                 implementation("io.micronaut.aws:micronaut-function-aws")
-                $extraDependency
             }
         """
 
@@ -92,11 +91,12 @@ class RuntimeDependenciesSpec extends AbstractEagerConfiguringFunctionalTest {
         !containsDependency("io.micronaut.aws:micronaut-function-aws-api-proxy", "compileClasspath")
         !containsDependency("io.micronaut.aws:micronaut-function-aws-api-proxy-test", "developmentOnly")
         !containsDependency("io.micronaut.aws:micronaut-function-aws-api-proxy-test", "testRuntimeClasspath")
+        containsCustomRuntime == containsDependency("io.micronaut.aws:micronaut-function-aws-custom-runtime", "compileClasspath")
 
         where:
-        runtime            | extraDependency
-        'lambda_java'      | ''
-        'lambda_provided'  | 'implementation("io.micronaut.aws:micronaut-function-aws-custom-runtime")'
+        runtime            | containsCustomRuntime
+        'lambda_java'      | false
+        'lambda_provided'  | true
     }
 
     @Unroll

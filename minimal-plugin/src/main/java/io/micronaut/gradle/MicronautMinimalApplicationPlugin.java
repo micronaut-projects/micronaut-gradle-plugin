@@ -177,15 +177,18 @@ public class MicronautMinimalApplicationPlugin implements Plugin<Project> {
         project.afterEvaluate(p -> {
             MicronautRuntime micronautRuntime = resolveRuntime(p);
             DependencyHandler dependencyHandler = p.getDependencies();
-            if (!(micronautRuntime.isLambda() && hasExplicitAwsFunctionRuntimeDependency(project))) {
-                MicronautRuntimeDependencies.findApplicationPluginDependenciesByRuntime(micronautRuntime)
-                        .toMap()
-                        .forEach((scope, dependencies) -> {
-                    for (AutomaticDependency dependency : dependencies) {
-                        dependency.applyTo(project);
+            boolean hasExplicitAwsFunctionRuntimeDependency = micronautRuntime.isLambda() && hasExplicitAwsFunctionRuntimeDependency(project);
+            MicronautRuntimeDependencies.findApplicationPluginDependenciesByRuntime(micronautRuntime)
+                    .toMap()
+                    .forEach((scope, dependencies) -> {
+                for (AutomaticDependency dependency : dependencies) {
+                    if (hasExplicitAwsFunctionRuntimeDependency
+                            && MicronautRuntimeDependencies.isAutomaticAwsApiProxyDependency(dependency.coordinates())) {
+                        continue;
                     }
-                });
-            }
+                    dependency.applyTo(project);
+                }
+            });
             if (micronautRuntime == MicronautRuntime.GOOGLE_FUNCTION) {
                 configureGoogleCloudFunctionRuntime(project, p, dependencyHandler);
             }
