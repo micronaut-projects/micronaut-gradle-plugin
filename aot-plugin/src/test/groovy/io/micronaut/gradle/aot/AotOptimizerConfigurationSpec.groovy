@@ -3,8 +3,10 @@ package io.micronaut.gradle.aot
 import io.micronaut.gradle.MicronautComponentPlugin
 import org.gradle.api.plugins.JavaPlugin
 import org.gradle.api.plugins.JavaPluginExtension
+import org.gradle.api.plugins.ApplicationPlugin
 import org.gradle.jvm.toolchain.JavaLanguageVersion
 import org.gradle.jvm.toolchain.JavaToolchainService
+import org.gradle.api.tasks.testing.Test
 import org.gradle.testfixtures.ProjectBuilder
 import spock.lang.Specification
 
@@ -83,7 +85,7 @@ class AotOptimizerConfigurationSpec extends Specification {
         ex.message != null && (ex.message.toString().contains("Failed to query the value of task ':prepareJitOptimizations' property 'javaLauncher'"))
     }
 
-        def "AOT task falls back to default when no toolchain configured"() {
+    def "AOT task falls back to default when no toolchain configured"() {
         given:
         def project = ProjectBuilder.builder().build()
 
@@ -102,5 +104,27 @@ class AotOptimizerConfigurationSpec extends Specification {
 
         then:
         !aotTask.javaLauncher.isPresent()
+    }
+
+    def "registers optimized test task for applications"() {
+        given:
+        def project = ProjectBuilder.builder().build()
+
+        String micronautVersion = System.getProperty("micronautVersion")
+        project.extensions.add('micronautVersion', micronautVersion)
+
+        project.pluginManager.apply(JavaPlugin)
+        project.pluginManager.apply(ApplicationPlugin)
+        project.pluginManager.apply(MicronautComponentPlugin)
+        project.pluginManager.apply(MicronautAotPlugin)
+        project.repositories.mavenCentral()
+        project.dependencies.add("aotApplicationClasspath", "io.micronaut.platform:micronaut-platform:$micronautVersion")
+
+        when:
+        project.evaluate()
+
+        then:
+        project.configurations.findByName(MicronautAotPlugin.OPTIMIZED_TEST_RUNTIME_CLASSPATH_CONFIGURATION_NAME) != null
+        project.tasks.findByName("optimizedTest") instanceof Test
     }
 }
