@@ -556,7 +556,7 @@ plugins {
 
 === Minimal Build
 
-With the `io.micronaut.library` plugin applied a minimal build to get started writing a library for Micronaut that is written in Java and uses the default JUnit runtime looks like:
+With the `io.micronaut.library` plugin applied, a minimal build to get started writing a library for Micronaut that is written in Java and configures the JUnit test runtime looks like:
 
 .A minimal build file
 [source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
@@ -643,7 +643,7 @@ $ ./gradlew run -t
 
 === Minimal Build
 
-With the `io.micronaut.application` plugin applied a minimal build to get started with a Micronaut server application that is written in Java and uses the default JUnit runtime looks like:
+With the `io.micronaut.application` plugin applied, a minimal build to get started with a Micronaut server application that is written in Java and configures the JUnit test runtime looks like:
 
 [source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
 ----

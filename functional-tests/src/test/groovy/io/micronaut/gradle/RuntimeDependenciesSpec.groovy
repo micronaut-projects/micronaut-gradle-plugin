@@ -9,7 +9,7 @@ Micronaut Gradle plugin adds dependencies depending on the environment being tar
 """)
 class RuntimeDependenciesSpec extends AbstractEagerConfiguringFunctionalTest {
 
-    def "junit test runtime adds the Micronaut 5 JUnit 6 stack"() {
+    def "junit test runtime adds the Micronaut JUnit runtime coordinates"() {
         given:
         settingsFile << "rootProject.name = 'hello-world'"
         buildFile << """
