@@ -106,6 +106,40 @@ class FunctionPluginSpec extends AbstractFunctionalTest {
         result.task(':verifyFunctionPlugin').outcome == TaskOutcome.SUCCESS
     }
 
+    def "function plugin supports Kotlin DSL main class configuration for lambda provided"() {
+        given:
+        settingsFile << "rootProject.name = \"hello-world\""
+        kotlinBuildFile << """
+            plugins {
+                id("io.micronaut.function")
+            }
+
+            micronaut {
+                version("$micronautVersion")
+                runtime("lambda_provided")
+                function {
+                    mainClass.set("com.example.Function")
+                }
+            }
+
+            ${getRepositoriesBlock('kotlin')}
+
+            tasks.register("verifyFunctionPlugin") {
+                doLast {
+                    check(project.pluginManager.hasPlugin("application"))
+                    check(project.tasks.findByName("run") != null)
+                    check(project.extensions.getByType(org.gradle.api.plugins.JavaApplication::class.java).mainClass.get() == "com.example.Function")
+                }
+            }
+        """.stripIndent()
+
+        when:
+        def result = build('verifyFunctionPlugin')
+
+        then:
+        result.task(':verifyFunctionPlugin').outcome == TaskOutcome.SUCCESS
+    }
+
     def "full function plugin applies docker and graalvm support"() {
         given:
         settingsFile << "rootProject.name = 'hello-world'"
