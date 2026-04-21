@@ -7,10 +7,12 @@ import org.gradle.api.provider.Property;
 import org.gradle.api.provider.SetProperty;
 
 import javax.inject.Inject;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.function.Consumer;
 
 /**
  * Configuration for the Micronaut extension.
@@ -25,6 +27,7 @@ public abstract class MicronautExtension implements ExtensionAware {
     private final Property<Boolean> enableNativeImage;
     private final Property<MicronautRuntime> runtime;
     private final Property<MicronautTestRuntime> testRuntime;
+    private final List<Consumer<MicronautRuntime>> runtimeConfiguredListeners = new ArrayList<>();
 
     /**
      * If set to false, then the Micronaut Gradle plugins will not automatically
@@ -110,7 +113,7 @@ public abstract class MicronautExtension implements ExtensionAware {
      */
     public MicronautExtension runtime(String runtime) {
         if (runtime != null) {
-            this.runtime.set(MicronautRuntime.valueOf(runtime.toUpperCase(Locale.ENGLISH)));
+            setRuntime(MicronautRuntime.valueOf(runtime.toUpperCase(Locale.ENGLISH)));
         }
         return this;
     }
@@ -123,7 +126,7 @@ public abstract class MicronautExtension implements ExtensionAware {
      */
     public MicronautExtension runtime(MicronautRuntime micronautRuntime) {
         if (micronautRuntime != null) {
-            this.runtime.set(micronautRuntime);
+            setRuntime(micronautRuntime);
         }
         return this;
     }
@@ -171,6 +174,10 @@ public abstract class MicronautExtension implements ExtensionAware {
      */
     public abstract Property<Boolean> getIncrementalNativeBuild();
 
+    public void onRuntimeConfigured(Consumer<MicronautRuntime> listener) {
+        runtimeConfiguredListeners.add(listener);
+    }
+
     /**
      * Allows configuring processing.
      * @param processingAction The processing action
@@ -193,5 +200,10 @@ public abstract class MicronautExtension implements ExtensionAware {
             answer.put(values[i++].toString(), (List<String>) values[i++]);
         }
         return answer;
+    }
+
+    private void setRuntime(MicronautRuntime micronautRuntime) {
+        this.runtime.set(micronautRuntime);
+        runtimeConfiguredListeners.forEach(listener -> listener.accept(micronautRuntime));
     }
 }
