@@ -62,11 +62,11 @@ For example, the `minimal` plugins can be used to reduce the number of tasks, fo
 
 |https://plugins.gradle.org/plugin/io.micronaut.library[`io.micronaut.library`]
 |A typical Micronaut Library, with support for GraalVM
-|https://plugins.gradle.org/plugin/io.micronaut.minimal.library[`io.micronaut.minimal.library`], https://plugins.gradle.org/plugin/io.micronaut.graalvm[`io.micronaut.graalvm`], `AptEclipsePlugin`
+|https://plugins.gradle.org/plugin/io.micronaut.minimal.library[`io.micronaut.minimal.library`], https://plugins.gradle.org/plugin/io.micronaut.graalvm[`io.micronaut.graalvm`], and `AptEclipsePlugin` when the Gradle `eclipse` plugin is applied
 
 |https://plugins.gradle.org/plugin/io.micronaut.application[`io.micronaut.application`]
 |A typical Micronaut Application, with support for GraalVM and Docker
-|https://plugins.gradle.org/plugin/io.micronaut.minimal.application[`io.micronaut.minimal.application`], https://plugins.gradle.org/plugin/io.micronaut.graalvm[`io.micronaut.graalvm`], https://plugins.gradle.org/plugin/io.micronaut.docker[`io.micronaut.docker`], `AptEclipsePlugin`
+|https://plugins.gradle.org/plugin/io.micronaut.minimal.application[`io.micronaut.minimal.application`], https://plugins.gradle.org/plugin/io.micronaut.graalvm[`io.micronaut.graalvm`], https://plugins.gradle.org/plugin/io.micronaut.docker[`io.micronaut.docker`], and `AptEclipsePlugin` when the Gradle `eclipse` plugin is applied
 
 |https://plugins.gradle.org/plugin/io.micronaut.test-resources[`io.micronaut.test-resources`]
 |Provides automatic test resources provisioning on a single project
@@ -259,7 +259,6 @@ plugins {
   id 'io.micronaut.docker' version '{gradle-project-version}'
   id 'io.micronaut.graalvm' version '{gradle-project-version}'
 }
-apply plugin: com.diffplug.gradle.eclipse.apt.AptEclipsePlugin
 ----
 
 [source, kotlin, subs="verbatim,attributes", role="multi-language-sample"]
@@ -269,10 +268,11 @@ plugins {
   id("io.micronaut.docker") version "{gradle-project-version}"
   id("io.micronaut.graalvm") version "{gradle-project-version}"
 }
-apply(plugin=com.diffplug.gradle.eclipse.apt.AptEclipsePlugin::class.java)
 ----
 
-`io.micronaut.minimal.application`, `io.micronaut.graalvm` and `io.micronaut.docker` plugins (as well as the Eclipse annotation processing support plugin).
+`io.micronaut.minimal.application`, `io.micronaut.graalvm` and `io.micronaut.docker` plugins.
+
+If the Gradle `eclipse` plugin is also applied, `io.micronaut.application` additionally applies `com.diffplug.gradle.eclipse.apt.AptEclipsePlugin`.
 
 == Quick Start
 
@@ -459,6 +459,7 @@ The https://plugins.gradle.org/plugin/io.micronaut.library[Micronaut library plu
 * Applies the `java-library` plugin
 * Configures annotation processing for the current language (Groovy, Java or Kotlin)
 * <<#sec:automatic-annotation-processors, Adds annotation processors automatically>> for Micronaut modules
+* Applies `com.diffplug.gradle.eclipse.apt.AptEclipsePlugin` when the Gradle `eclipse` plugin is applied
 
 The `micronaut` DSL can be used to configure how this behaves.
 
@@ -627,6 +628,7 @@ The https://plugins.gradle.org/plugin/io.micronaut.application[Micronaut applica
 * Instead of the `java-library` plugin the plugin applies the Gradle `application` plugin
 * Applies the `io.micronaut.graalvm` plugin
 * Correctly configures Gradle for continuous build
+* Applies `com.diffplug.gradle.eclipse.apt.AptEclipsePlugin` when the Gradle `eclipse` plugin is applied
 
 The following additional tasks are provided by this plugin:
 

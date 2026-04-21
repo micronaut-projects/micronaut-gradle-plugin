@@ -19,7 +19,7 @@ public class MicronautApplicationPlugin extends MicronautLibraryPlugin {
     public void apply(Project project) {
         PluginManager pluginManager = project.getPluginManager();
         pluginManager.apply(MicronautMinimalApplicationPlugin.class);
-        pluginManager.apply(AptEclipsePlugin.class);
+        applyEclipseAptPlugin(project);
         pluginManager.apply(MicronautDockerPlugin.class);
         pluginManager.apply(MicronautGraalPlugin.class);
     }
