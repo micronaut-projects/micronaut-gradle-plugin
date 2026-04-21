@@ -2,6 +2,7 @@ package io.micronaut.gradle.docker;
 
 import com.bmuschko.gradle.docker.tasks.image.Dockerfile;
 import io.micronaut.gradle.DefaultVersions;
+import io.micronaut.gradle.FunctionPluginSupport;
 import io.micronaut.gradle.PluginsHelper;
 import io.micronaut.gradle.docker.model.Layer;
 import io.micronaut.gradle.docker.tasks.DockerResourceConfigDirectoryNamer;
@@ -607,12 +608,14 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
         } else if (buildStrategy == DockerBuildStrategy.LAMBDA) {
             var micronautExtension = findMicronautExtension(getProject());
             var nativeLambdaExtension = micronautExtension.getExtensions().getByType(NativeLambdaExtension.class);
-            JavaApplication javaApplication = getProject().getExtensions().getByType(JavaApplication.class);
-            if (!javaApplication.getMainClass().isPresent()) {
-                options.getMainClass().set(nativeLambdaExtension.getLambdaRuntimeClassName());
-            }
-            if (!options.getMainClass().isPresent()) {
-                options.getMainClass().set(nativeLambdaExtension.getLambdaRuntimeClassName());
+            if (FunctionPluginSupport.usesApplicationLambdaRuntime(getProject())) {
+                JavaApplication javaApplication = getProject().getExtensions().findByType(JavaApplication.class);
+                if (javaApplication == null || !javaApplication.getMainClass().isPresent()) {
+                    options.getMainClass().set(nativeLambdaExtension.getLambdaRuntimeClassName());
+                }
+                if (!options.getMainClass().isPresent()) {
+                    options.getMainClass().set(nativeLambdaExtension.getLambdaRuntimeClassName());
+                }
             }
         }
         var commandLine = new ArrayList<String>();
