@@ -1,6 +1,5 @@
 package io.micronaut.gradle;
 
-import com.diffplug.gradle.eclipse.apt.AptEclipsePlugin;
 import io.micronaut.gradle.docker.MicronautDockerPlugin;
 import io.micronaut.gradle.graalvm.MicronautGraalPlugin;
 import org.gradle.api.Project;

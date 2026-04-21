@@ -270,7 +270,7 @@ plugins {
 }
 ----
 
-`io.micronaut.minimal.application`, `io.micronaut.graalvm` and `io.micronaut.docker` plugins.
+This applies the `io.micronaut.minimal.application`, `io.micronaut.graalvm` and `io.micronaut.docker` plugins.
 
 If the Gradle `eclipse` plugin is also applied, `io.micronaut.application` additionally applies `com.diffplug.gradle.eclipse.apt.AptEclipsePlugin`.
 
