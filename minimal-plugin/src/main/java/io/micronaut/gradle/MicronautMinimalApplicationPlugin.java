@@ -195,11 +195,22 @@ public class MicronautMinimalApplicationPlugin implements Plugin<Project> {
     }
 
     private boolean hasExplicitAwsFunctionRuntimeDependency(Project project) {
-        for (Configuration configuration : project.getConfigurations()) {
-            for (Dependency dependency : configuration.getDependencies()) {
-                if (MicronautRuntimeDependencies.isExplicitAwsFunctionRuntimeDependency(dependency.getGroup(), dependency.getName())) {
-                    return true;
-                }
+        SourceSetContainer sourceSets = PluginsHelper.findSourceSets(project);
+        SourceSet sourceSet = sourceSets == null ? null : sourceSets.findByName(SourceSet.MAIN_SOURCE_SET_NAME);
+        if (sourceSet == null) {
+            return false;
+        }
+        return hasExplicitAwsFunctionRuntimeDependency(project.getConfigurations().findByName(sourceSet.getImplementationConfigurationName()))
+                || hasExplicitAwsFunctionRuntimeDependency(project.getConfigurations().findByName(sourceSet.getRuntimeOnlyConfigurationName()));
+    }
+
+    private boolean hasExplicitAwsFunctionRuntimeDependency(Configuration configuration) {
+        if (configuration == null) {
+            return false;
+        }
+        for (Dependency dependency : configuration.getDependencies()) {
+            if (MicronautRuntimeDependencies.isExplicitAwsFunctionRuntimeDependency(dependency.getGroup(), dependency.getName())) {
+                return true;
             }
         }
         return false;

@@ -98,4 +98,38 @@ class RuntimeDependenciesSpec extends AbstractEagerConfiguringFunctionalTest {
         'lambda_java'      | ''
         'lambda_provided'  | 'implementation("io.micronaut.aws:micronaut-function-aws-custom-runtime")'
     }
+
+    @Unroll
+    def "test-scoped AWS function dependencies keep automatic lambda API proxy dependencies for #runtime"() {
+        given:
+        settingsFile << "rootProject.name = 'hello-world'"
+        buildFile << """
+            plugins {
+                id "io.micronaut.minimal.application"
+                id("com.gradleup.shadow") version("$shadowVersion")
+            }
+
+            micronaut {
+                version "$micronautVersion"
+                runtime "$runtime"
+            }
+
+            $repositoriesBlock
+
+            dependencies {
+                testImplementation("io.micronaut.aws:micronaut-function-aws")
+                $extraDependency
+            }
+        """
+
+        expect:
+        containsDependency("io.micronaut.aws:micronaut-function-aws-api-proxy", "compileClasspath")
+        containsDependency("io.micronaut.aws:micronaut-function-aws-api-proxy-test", "developmentOnly")
+        containsDependency("io.micronaut.aws:micronaut-function-aws-api-proxy-test", "testRuntimeClasspath")
+
+        where:
+        runtime            | extraDependency
+        'lambda_java'      | ''
+        'lambda_provided'  | ''
+    }
 }
