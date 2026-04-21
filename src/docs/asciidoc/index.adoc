@@ -1309,8 +1309,9 @@ The advantage of allowing your dependencies to be dictated by the runtime is tha
 If you are interested in deploying your Micronaut application to AWS Lambda using GraalVM, set the runtime to `lambda_provided` and execute `./gradlew buildNativeLambda`.
 This task will generate a GraalVM native executable inside a Docker container, and create the file `build/libs/your-app.zip` file ready to be deployed to AWS Lambda using a custom runtime. See more information in {aws-docs}[Micronaut AWS documentation].
 
-When you are building a function project, prefer the `io.micronaut.function` or `io.micronaut.minimal.function` plugin ids and configure `application.mainClass` with your function entry point.
-For function builds on `lambda_provided`, the configured main class is preserved for native images.
+When you are building a function project, prefer the `io.micronaut.function` or `io.micronaut.minimal.function` plugin ids and configure `micronaut.function.mainClass` with your function entry point.
+For function builds on `lambda_provided`, the configured function main class is preserved for native images.
+If you are using the Groovy DSL and already rely on Gradle's `application {}` block, that path remains supported for `lambda_provided`.
 
 ===== Architecture considerations
 
