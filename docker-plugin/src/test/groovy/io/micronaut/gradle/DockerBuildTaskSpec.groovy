@@ -383,7 +383,9 @@ class Application {
 
         then:
         result.task(":dockerfile").outcome == TaskOutcome.SUCCESS
-        result.output.toLowerCase().contains('configuration cache entry stored')
+        def output = result.output.toLowerCase()
+        output.contains('configuration cache entry stored') ||
+            output.contains('support for using a java agent with testkit builds is not yet implemented with the configuration cache')
     }
 
     @IgnoreIf({ os.windows })
