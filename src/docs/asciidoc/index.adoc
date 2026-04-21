@@ -1129,6 +1129,14 @@ tasks.withType(io.micronaut.gradle.docker.tasks.BuildLayersTask) {
 }
 ----
 
+==== Docker build layers
+
+The `buildLayers` task creates files under `build/docker/main/layers` for the generated Docker image.
+This directory is an internal Docker build artifact, not a supported application distribution.
+
+The plugin also produces an additional runner JAR in `build/libs` with the `runner` classifier.
+That archive is used to populate the Docker layers and is not meant to be copied or run on its own.
+
 
 === Micronaut Runtimes
 
@@ -1251,13 +1259,11 @@ dockerfileNative {
 === Packaging the application
 
 By default, the plugin doesn't create a runnable fatjar when running `./gradlew assemble`.
-There are a couple of options:
 
-==== Layered application
+==== Standard distribution
 
-The plugin creates a "layered" application in `build/docker/main/layers` and from that directory you can run `java -jar myapp.jar`.
-It works because that directory contains a `lib` directory with all the libraries and a `resources` directory with the configuration.
-Keep in mind that copying the only `.jar` file to another directory won't work.
+Use the standard Gradle application distributions provided in `build/distributions`.
+These distributions include the application scripts together with the dependency layout expected by the application.
 
 ==== Add Shadow plugin
 
@@ -1545,7 +1551,7 @@ tasks.withType(ShadowJar).configureEach {
 [source, kotlin, subs="verbatim,attributes", role="multi-language-sample"]
 ----
 tasks.withType<ShadowJar>().configureEach {
-    zip64.set(true)
+    isZip64 = true
 }
 ----
 ====
