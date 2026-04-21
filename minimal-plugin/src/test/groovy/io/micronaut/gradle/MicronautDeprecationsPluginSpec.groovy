@@ -21,7 +21,7 @@ class MicronautDeprecationsPluginSpec extends AbstractGradleBuildSpec {
             micronaut {
                 version "$micronautVersion"
                 runtime "netty"
-                testRuntime "junit5"
+                testRuntime "junit"
                 processing {
                     additionalSourceSets.add(sourceSets.custom)
                 }
@@ -59,7 +59,7 @@ class MicronautDeprecationsPluginSpec extends AbstractGradleBuildSpec {
             micronaut {
                 version "$micronautVersion"
                 runtime "netty"
-                testRuntime "junit5"
+                testRuntime "junit"
                 processing {
                     sourceSets(sourceSets.custom)
                 }

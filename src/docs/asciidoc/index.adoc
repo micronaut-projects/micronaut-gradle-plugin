@@ -556,7 +556,7 @@ plugins {
 
 === Minimal Build
 
-With the `io.micronaut.library` plugin applied a minimal build to get started writing a library for Micronaut that written in Java and is tested with JUnit 5 looks like:
+With the `io.micronaut.library` plugin applied a minimal build to get started writing a library for Micronaut that is written in Java and uses the default JUnit runtime looks like:
 
 .A minimal build file
 [source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
@@ -574,11 +574,7 @@ repositories {
 
 micronaut {
     version = "{micronaut-version}"
-}
-
-dependencies {
-    testImplementation("io.micronaut.test:micronaut-test-junit5")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
+    testRuntime("junit")
 }
 ----
 
@@ -597,11 +593,7 @@ repositories {
 
 micronaut {
     version.set("{micronaut-version}")
-}
-
-dependencies {
-    testImplementation("io.micronaut.test:micronaut-test-junit5")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
+    testRuntime("junit")
 }
 ----
 
@@ -651,7 +643,7 @@ $ ./gradlew run -t
 
 === Minimal Build
 
-With the `io.micronaut.application` plugin applied a minimal build to get started with a Micronaut server application that is written in Java and tested with JUnit 5 looks like:
+With the `io.micronaut.application` plugin applied a minimal build to get started with a Micronaut server application that is written in Java and uses the default JUnit runtime looks like:
 
 [source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
 ----
@@ -668,13 +660,12 @@ repositories {
 
 micronaut {
     version = "{micronaut-version}"
+    testRuntime("junit")
 }
 
 dependencies {
     implementation("io.micronaut:micronaut-http-server-netty")
     runtimeOnly("ch.qos.logback:logback-classic")
-    testImplementation("io.micronaut.test:micronaut-test-junit5")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
 }
 
 application {
@@ -697,13 +688,12 @@ repositories {
 
 micronaut {
     version.set("{micronaut-version}")
+    testRuntime("junit")
 }
 
 dependencies {
     implementation("io.micronaut:micronaut-http-server-netty")
     runtimeOnly("ch.qos.logback:logback-classic")
-    testImplementation("io.micronaut.test:micronaut-test-junit5")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
 }
 
 application {
@@ -733,6 +723,7 @@ repositories {
 
 micronaut {
     version = "{micronaut-version}"
+    testRuntime("junit")
 }
 
 dependencies {
@@ -740,8 +731,6 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:{kotlin-version}")
     implementation("org.jetbrains.kotlin:kotlin-reflect:{kotlin-version}")
     runtimeOnly("ch.qos.logback:logback-classic")
-    testImplementation("io.micronaut.test:micronaut-test-junit5")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
 }
 
 application {
@@ -767,6 +756,7 @@ repositories {
 
 micronaut {
     version.set("{micronaut-version}")
+    testRuntime("junit")
 }
 
 dependencies {
@@ -774,8 +764,6 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:{kotlin-version}")
     implementation("org.jetbrains.kotlin:kotlin-reflect:{kotlin-version}")
     runtimeOnly("ch.qos.logback:logback-classic")
-    testImplementation("io.micronaut.test:micronaut-test-junit5")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
 }
 
 application {
