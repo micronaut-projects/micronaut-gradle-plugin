@@ -22,8 +22,12 @@ import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.ConfigurationContainer;
 import org.gradle.api.artifacts.Dependency;
 import org.gradle.api.artifacts.ModuleDependency;
+import org.gradle.api.artifacts.component.ComponentIdentifier;
 import org.gradle.api.artifacts.component.ModuleComponentIdentifier;
+import org.gradle.api.artifacts.component.ProjectComponentIdentifier;
 import org.gradle.api.artifacts.dsl.DependencyHandler;
+import org.gradle.api.artifacts.result.ResolvedComponentResult;
+import org.gradle.api.artifacts.result.ResolvedDependencyResult;
 import org.gradle.api.attributes.Usage;
 import org.gradle.api.file.Directory;
 import org.gradle.api.file.DirectoryProperty;
@@ -53,7 +57,9 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -318,12 +324,25 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
             }
             List<MavenDependency> mavenDependencies = Collections.emptyList();
             if (Boolean.TRUE.equals(infer)) {
-                mavenDependencies = project.getConfigurations().getByName("runtimeClasspath")
-                        .getAllDependencies()
+                Configuration runtimeClasspath = project.getConfigurations().getByName("runtimeClasspath");
+                Stream<MavenDependency> directDependencies = runtimeClasspath.getAllDependencies()
                         .stream()
                         .filter(ModuleDependency.class::isInstance)
                         .map(ModuleDependency.class::cast)
-                        .map(d -> new MavenDependency(d.getGroup(), d.getName(), d.getVersion()))
+                        .map(d -> new MavenDependency(d.getGroup(), d.getName(), d.getVersion()));
+                Stream<MavenDependency> projectDependencies = runtimeClasspath.getIncoming()
+                        .getResolutionResult()
+                        .getRootComponent()
+                        .get()
+                        .getDependencies()
+                        .stream()
+                        .filter(ResolvedDependencyResult.class::isInstance)
+                        .map(ResolvedDependencyResult.class::cast)
+                        .map(ResolvedDependencyResult::getSelected)
+                        .filter(component -> component.getId() instanceof ProjectComponentIdentifier)
+                        .flatMap(component -> collectResolvedModuleDependencies(component, new HashSet<>()));
+                mavenDependencies = concat(directDependencies, projectDependencies)
+                        .distinct()
                         .toList();
             }
             String testResourcesVersion = config.getVersion().get();
@@ -339,6 +358,28 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
                     Stream.of(dependencies.create(testResourcesSourceSet.getRuntimeClasspath())))
                     .toList();
         }).orElse(Collections.emptyList());
+    }
+
+    private static Stream<MavenDependency> collectResolvedModuleDependencies(ResolvedComponentResult component,
+                                                                             Set<ComponentIdentifier> seenComponents) {
+        if (!seenComponents.add(component.getId())) {
+            return Stream.empty();
+        }
+        return component.getDependencies()
+                .stream()
+                .filter(ResolvedDependencyResult.class::isInstance)
+                .map(ResolvedDependencyResult.class::cast)
+                .map(ResolvedDependencyResult::getSelected)
+                .flatMap(selected -> {
+                    if (selected.getId() instanceof ModuleComponentIdentifier moduleComponentIdentifier) {
+                        return Stream.of(new MavenDependency(
+                                moduleComponentIdentifier.getGroup(),
+                                moduleComponentIdentifier.getModule(),
+                                moduleComponentIdentifier.getVersion()
+                        ));
+                    }
+                    return collectResolvedModuleDependencies(selected, seenComponents);
+                });
     }
 
     private static void assertMinimalVersion(String testedVersion) {
