@@ -20,8 +20,11 @@ import org.gradle.api.tasks.OutputDirectory;
 import org.gradle.api.tasks.TaskAction;
 
 import javax.inject.Inject;
+import java.io.File;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.file.Files;
+import java.util.Comparator;
 
 @CacheableTask
 public abstract class BuildLayersTask extends DefaultTask {
@@ -45,7 +48,6 @@ public abstract class BuildLayersTask extends DefaultTask {
         fileOperations.delete(getOutputDir());
         // Create folders if case there are no resources/libs in project
         for (Layer layer : getLayers().get()) {
-            final Provider<Directory> layerDir = layerDirectoryOf(layer, getOutputDir());
             if (layer.getLayerKind().get() == LayerKind.APP) {
                 if (layer.getRuntimeKind().get() == RuntimeKind.NATIVE) {
                     fileOperations.copy(copy -> {
@@ -58,11 +60,13 @@ public abstract class BuildLayersTask extends DefaultTask {
                     fileOperations.copy(copy -> {
                         configureDuplicatesStrategy(copy);
                         copy.from(layer.getFiles().getFiles().stream()
+                            .sorted(Comparator.comparing(File::getAbsolutePath))
                             .map(file -> file.getName().endsWith(".jar") ? fileOperations.zipTree(file) : file)
                             .toList()).into(appClassesDir);
                     });
                 }
             } else {
+                final Provider<Directory> layerDir = layerDirectoryOf(layer, getOutputDir());
                 fileOperations.copy(copy -> {
                     configureDuplicatesStrategy(copy);
                     copy.from(layer.getFiles()).into(layerDir);
@@ -72,10 +76,11 @@ public abstract class BuildLayersTask extends DefaultTask {
     }
 
     private static void createDir(Provider<Directory> dir) {
+        var path = dir.get().getAsFile().toPath();
         try {
-            Files.createDirectories(dir.get().getAsFile().toPath());
+            Files.createDirectories(path);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new UncheckedIOException("Failed to create directory " + path, e);
         }
     }
 
