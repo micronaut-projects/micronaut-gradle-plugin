@@ -31,6 +31,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.List;
 import java.util.Properties;
 
@@ -128,6 +129,9 @@ public abstract class MicronautCatalogSettingsPlugin implements Plugin<Settings>
     private Provider<String> readFromVersionCatalog(Settings settings) {
         ProviderFactory providers = settings.getProviders();
         var catalogFile = resolveCatalogInputFile(settings, "gradle/libs.versions.toml");
+        if (!catalogFile.exists()) {
+            return providers.provider(() -> null);
+        }
         return providers.fileContents(getDefaultGradleVersionCatalogFile().fileValue(catalogFile))
                 .getAsBytes()
                 .map(libsFile -> {
@@ -142,7 +146,7 @@ public abstract class MicronautCatalogSettingsPlugin implements Plugin<Settings>
                         }
                         return null;
                     } catch (IOException e) {
-                        return null;
+                        throw new UncheckedIOException("Failed to read Micronaut version catalog from " + catalogFile, e);
                     }
                 });
     }
@@ -156,7 +160,7 @@ public abstract class MicronautCatalogSettingsPlugin implements Plugin<Settings>
             properties.load(in);
             return properties.getProperty("micronautVersion");
         } catch (IOException e) {
-            return null;
+            throw new UncheckedIOException("Failed to read Micronaut version from " + gradlePropertiesFile, e);
         }
     }
 
