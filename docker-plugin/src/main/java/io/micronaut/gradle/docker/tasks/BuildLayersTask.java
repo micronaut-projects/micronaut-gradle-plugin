@@ -2,6 +2,7 @@ package io.micronaut.gradle.docker.tasks;
 
 import io.micronaut.gradle.docker.model.Layer;
 import io.micronaut.gradle.docker.model.LayerKind;
+import io.micronaut.gradle.docker.model.RuntimeKind;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.file.CopySpec;
 import org.gradle.api.file.Directory;
@@ -46,17 +47,35 @@ public abstract class BuildLayersTask extends DefaultTask {
         for (Layer layer : getLayers().get()) {
             final Provider<Directory> layerDir = layerDirectoryOf(layer, getOutputDir());
             if (layer.getLayerKind().get() == LayerKind.APP) {
-                // special case for now
-                fileOperations.copy(copy -> {
-                    configureDuplicatesStrategy(copy);
-                    copy.from(layer.getFiles()).into(getOutputDir().dir("app")).rename(s -> "application.jar");
-                });
+                if (layer.getRuntimeKind().get() == RuntimeKind.NATIVE) {
+                    fileOperations.copy(copy -> {
+                        configureDuplicatesStrategy(copy);
+                        copy.from(layer.getFiles()).into(getOutputDir().dir("app")).rename(s -> "application.jar");
+                    });
+                } else {
+                    var appClassesDir = getOutputDir().dir("app/classes");
+                    createDir(appClassesDir);
+                    fileOperations.copy(copy -> {
+                        configureDuplicatesStrategy(copy);
+                        copy.from(layer.getFiles().getFiles().stream()
+                            .map(file -> file.getName().endsWith(".jar") ? fileOperations.zipTree(file) : file)
+                            .toList()).into(appClassesDir);
+                    });
+                }
             } else {
                 fileOperations.copy(copy -> {
                     configureDuplicatesStrategy(copy);
                     copy.from(layer.getFiles()).into(layerDir);
                 });
             }
+        }
+    }
+
+    private static void createDir(Provider<Directory> dir) {
+        try {
+            Files.createDirectories(dir.get().getAsFile().toPath());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -70,11 +89,7 @@ public abstract class BuildLayersTask extends DefaultTask {
                                                         DirectoryProperty outputDir) {
         var kind = layer.getLayerKind().get();
         var dir = outputDir.dir(kind.sourceDirName());
-        try {
-            Files.createDirectories(dir.get().getAsFile().toPath());
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        createDir(dir);
         return dir;
     }
 }

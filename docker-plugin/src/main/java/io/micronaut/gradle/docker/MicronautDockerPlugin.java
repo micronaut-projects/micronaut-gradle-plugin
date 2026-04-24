@@ -68,16 +68,23 @@ public class MicronautDockerPlugin implements Plugin<Project> {
             micronautExtension.getExtensions().add("dockerImages", dockerImages);
             dockerImages.all(image -> createDockerImage(project, image));
             TaskProvider<Jar> runnerJar = createMainRunnerJar(project, tasks);
+            SourceSet mainSourceSet = project.getExtensions().getByType(SourceSetContainer.class)
+                .getByName(SourceSet.MAIN_SOURCE_SET_NAME);
             dockerImages.create("main", image -> {
                 createDependencyLayers(image, project.getConfigurations().getByName(RUNTIME_CLASSPATH_CONFIGURATION_NAME));
                 image.addLayer(layer -> {
                     layer.getLayerKind().set(LayerKind.APP);
+                    layer.getRuntimeKind().set(RuntimeKind.JIT);
+                    layer.getFiles().from(mainSourceSet.getOutput().getClassesDirs());
+                });
+                image.addLayer(layer -> {
+                    layer.getLayerKind().set(LayerKind.APP);
+                    layer.getRuntimeKind().set(RuntimeKind.NATIVE);
                     layer.getFiles().from(runnerJar);
                 });
                 image.addLayer(layer -> {
                     layer.getLayerKind().set(LayerKind.EXPANDED_RESOURCES);
-                    layer.getFiles().from(project.getExtensions().getByType(SourceSetContainer.class)
-                        .getByName(SourceSet.MAIN_SOURCE_SET_NAME).getOutput().getResourcesDir());
+                    layer.getFiles().from(mainSourceSet.getOutput().getResourcesDir());
                 });
             });
         });

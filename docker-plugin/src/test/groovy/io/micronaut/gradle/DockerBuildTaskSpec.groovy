@@ -133,9 +133,9 @@ class Application {
         testProjectDir.newFile("Dockerfile") << """FROM eclipse-temurin:25-jre
 WORKDIR /home/alternate
 COPY --link layers/libs /home/alternate/libs
-COPY --link layers/app/application.jar /home/alternate/application.jar
+COPY --link layers/app /home/alternate/
 EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "/home/alternate/application.jar"]
+ENTRYPOINT ["java", "-cp", "/home/alternate/resources:/home/alternate/classes:/home/alternate/libs/*", "example.Application"]
 """
         when:
         def result = build('dockerBuild', '-s')
@@ -244,7 +244,7 @@ COPY --link layers/libs /home/alternate/libs
 COPY --link layers/app /home/alternate/
 COPY --link layers/resources /home/alternate/resources
 EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "/home/alternate/application.jar"]
+ENTRYPOINT ["java", "-cp", "/home/alternate/resources:/home/alternate/classes:/home/alternate/libs/*", "example.Application"]
 """
     }
 
@@ -300,7 +300,7 @@ COPY layers/libs /home/app/libs
 COPY layers/app /home/app/
 COPY layers/resources /home/app/resources
 EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "/home/app/application.jar"]
+ENTRYPOINT ["java", "-cp", "/home/app/resources:/home/app/classes:/home/app/libs/*", "example.Application"]
 """
     }
 

@@ -1134,8 +1134,10 @@ tasks.withType(io.micronaut.gradle.docker.tasks.BuildLayersTask) {
 The `buildLayers` task creates files under `build/docker/main/layers` for the generated Docker image.
 This directory is an internal Docker build artifact, not a supported application distribution.
 
-The plugin also produces an additional runner JAR in `build/libs` with the `runner` classifier.
-That archive is used to populate the Docker layers and is not meant to be copied or run on its own.
+For JIT images, the application layer now contains exploded classes under `layers/app/classes`, resources under `layers/resources`, and dependency buckets under the existing `layers/libs*` directories.
+The generated Dockerfile launches those layers with an explicit classpath and the configured application main class instead of `java -jar`.
+
+If you copied internal `layers/app/application.jar` paths into a custom Dockerfile, update those references to the exploded layout and use a classpath entrypoint such as `java -cp /home/app/resources:/home/app/classes:/home/app/libs/* your.main.Class`.
 
 
 === Micronaut Runtimes

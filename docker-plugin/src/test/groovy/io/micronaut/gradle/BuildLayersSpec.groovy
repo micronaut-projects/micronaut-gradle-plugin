@@ -39,6 +39,8 @@ class BuildLayersSpec extends AbstractGradleBuildSpec {
         task.outcome == TaskOutcome.SUCCESS
         new File(testProjectDir.root, "build-custom/docker/main/layers").exists()
         !new File(testProjectDir.root, "build/docker/main/layers").exists()
+        new File(testProjectDir.root, "build-custom/docker/main/layers/app/classes").exists()
+        !new File(testProjectDir.root, "build-custom/docker/main/layers/app/application.jar").exists()
     }
 
     void 'test build layers with duplicates strategy'() {
@@ -91,5 +93,48 @@ class BuildLayersSpec extends AbstractGradleBuildSpec {
         then:
         task.outcome == TaskOutcome.SUCCESS
         new File(testProjectDir.root, "build/docker/main/layers").exists()
+    }
+
+    void 'test native app layers keep application jar layout'() {
+        given:
+        settingsFile << "rootProject.name = 'hello-world'"
+        buildFile << """
+            import io.micronaut.gradle.docker.model.LayerKind
+            import io.micronaut.gradle.docker.model.RuntimeKind
+            import io.micronaut.gradle.docker.tasks.BuildLayersTask
+            import org.gradle.api.tasks.bundling.Zip
+
+            plugins {
+                id "base"
+                id "io.micronaut.docker"
+            }
+
+            def nativeLayer = objects.newInstance(io.micronaut.gradle.docker.model.Layer)
+            def appArchive = tasks.register("appArchive", Zip) {
+                archiveFileName = "runner.jar"
+                destinationDirectory = layout.buildDirectory.dir("native-input")
+                from(layout.projectDirectory.file("seed.txt"))
+            }
+
+            tasks.register("buildNativeLayersTask", BuildLayersTask) {
+                dependsOn(appArchive)
+                layers.set([nativeLayer])
+                outputDir = layout.buildDirectory.dir("docker/native-main/layers")
+            }
+
+            nativeLayer.layerKind.set(LayerKind.APP)
+            nativeLayer.runtimeKind.set(RuntimeKind.NATIVE)
+            nativeLayer.files.from(appArchive.flatMap { it.archiveFile })
+        """
+        file("seed.txt").text = "native"
+
+        when:
+        def result = build('buildNativeLayersTask')
+
+        then:
+        def task = result.task(":buildNativeLayersTask")
+        task.outcome == TaskOutcome.SUCCESS
+        new File(testProjectDir.root, "build/docker/native-main/layers/app/application.jar").exists()
+        !new File(testProjectDir.root, "build/docker/native-main/layers/app/classes").exists()
     }
 }
