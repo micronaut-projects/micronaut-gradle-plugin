@@ -7,6 +7,7 @@ import java.net.HttpURLConnection
 import java.net.ServerSocket
 import java.nio.file.Files
 import java.time.Duration
+import java.util.Properties
 
 @Issue("https://github.com/micronaut-projects/micronaut-gradle-plugin/issues/2")
 class ContinuousRunFunctionalTest extends AbstractFunctionalTest {
@@ -14,8 +15,9 @@ class ContinuousRunFunctionalTest extends AbstractFunctionalTest {
 
     def "parallel continuous run keeps sibling applications available"() {
         given:
-        int booksPort = findAvailablePort()
-        int authorsPort = findAvailablePort()
+        List<Integer> ports = findDistinctPorts(2)
+        int booksPort = ports[0]
+        int authorsPort = ports[1]
         settingsFile << """
             rootProject.name = 'multi-run'
             include 'books', 'authors'
@@ -54,10 +56,12 @@ class ContinuousRunFunctionalTest extends AbstractFunctionalTest {
 
         cleanup:
         buildProcess?.destroy()
-        if (buildProcess?.isAlive()) {
+        if (buildProcess?.isAlive() && !buildProcess.waitFor(5, java.util.concurrent.TimeUnit.SECONDS)) {
             buildProcess.destroyForcibly()
             buildProcess.waitFor()
         }
+        stopRecordedProcess(file("books/build/micronaut/continuous-run.properties"))
+        stopRecordedProcess(file("authors/build/micronaut/continuous-run.properties"))
     }
 
     def "continuous run fails when startup exits non-zero after 500ms"() {
@@ -223,13 +227,17 @@ public final class Application {
         current
     }
 
-    private static int findAvailablePort() {
-        ServerSocket socket = new ServerSocket(0)
-        try {
-            socket.localPort
-        } finally {
-            socket.close()
+    private static List<Integer> findDistinctPorts(int count) {
+        Set<Integer> ports = new LinkedHashSet<>()
+        while (ports.size() < count) {
+            ServerSocket socket = new ServerSocket(0)
+            try {
+                ports.add(socket.localPort)
+            } finally {
+                socket.close()
+            }
         }
+        ports.toList()
     }
 
     private static void awaitHttp(String description, String url, String expectedBody, Duration timeout, File outputFile) {
@@ -282,5 +290,52 @@ public final class Application {
             Thread.sleep(500)
         }
         throw new AssertionError(failureMessage("Timed out waiting for ${expectedBody} at ${url}.", outputFile))
+    }
+
+    private static boolean awaitProcessStopped(ProcessHandle handle, Duration timeout) {
+        if (handle == null) {
+            return true
+        }
+        try {
+            handle.onExit().get(timeout.toMillis(), java.util.concurrent.TimeUnit.MILLISECONDS)
+            true
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt()
+            !handle.alive
+        } catch (java.util.concurrent.ExecutionException | java.util.concurrent.TimeoutException ignored) {
+            !handle.alive
+        }
+    }
+
+    private static void stopBackgroundProcess(ProcessHandle handle) {
+        if (handle == null || !handle.alive) {
+            return
+        }
+        handle.destroy()
+        if (!awaitProcessStopped(handle, Duration.ofSeconds(5)) && handle.alive) {
+            handle.destroyForcibly()
+            awaitProcessStopped(handle, Duration.ofSeconds(5))
+        }
+    }
+
+    private static void stopRecordedProcess(File stateFile) {
+        if (!stateFile.exists()) {
+            return
+        }
+        Properties properties = new Properties()
+        try {
+            stateFile.withInputStream { properties.load(it) }
+        } catch (FileNotFoundException ignored) {
+            return
+        }
+        String pid = properties.getProperty("pid")
+        if (pid == null) {
+            return
+        }
+        try {
+            stopBackgroundProcess(ProcessHandle.of(Long.parseLong(pid)).orElse(null))
+        } catch (NumberFormatException ignored) {
+            // Ignore corrupted state during test cleanup.
+        }
     }
 }
