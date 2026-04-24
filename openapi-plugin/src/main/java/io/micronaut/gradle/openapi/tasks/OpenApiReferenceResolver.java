@@ -29,12 +29,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
+import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.constructor.SafeConstructor;
 import org.yaml.snakeyaml.error.YAMLException;
 
 final class OpenApiReferenceResolver {
 
     private static final Pattern URI_SCHEME_PATTERN = Pattern.compile("^[A-Za-z][A-Za-z0-9+.-]*:.*$");
+    private static final Pattern WINDOWS_ABSOLUTE_PATH_PATTERN = Pattern.compile("^[A-Za-z]:[\\\\/].*$");
 
     private OpenApiReferenceResolver() {
     }
@@ -75,7 +78,7 @@ final class OpenApiReferenceResolver {
 
     private static Object parseStructuredDocument(String content) {
         try {
-            return new Yaml().load(content);
+            return new Yaml(new SafeConstructor(new LoaderOptions())).load(content);
         } catch (YAMLException ignored) {
             return null;
         }
@@ -117,6 +120,9 @@ final class OpenApiReferenceResolver {
         if (referenceLocation.isEmpty()) {
             return null;
         }
+        if (isWindowsAbsolutePath(referenceLocation)) {
+            return normalize(Path.of(referenceLocation));
+        }
         if (URI_SCHEME_PATTERN.matcher(referenceLocation).matches()) {
             if (!referenceLocation.regionMatches(true, 0, "file:", 0, 5)) {
                 return null;
@@ -135,6 +141,10 @@ final class OpenApiReferenceResolver {
         int fragmentSeparator = reference.indexOf('#');
         String withoutFragment = fragmentSeparator >= 0 ? reference.substring(0, fragmentSeparator) : reference;
         return withoutFragment.trim();
+    }
+
+    static boolean isWindowsAbsolutePath(String referenceLocation) {
+        return WINDOWS_ABSOLUTE_PATH_PATTERN.matcher(referenceLocation).matches();
     }
 
     private static Path normalize(Path path) {

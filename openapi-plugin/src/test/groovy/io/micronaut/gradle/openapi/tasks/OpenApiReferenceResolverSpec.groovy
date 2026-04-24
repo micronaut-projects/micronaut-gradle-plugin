@@ -145,4 +145,38 @@ class OpenApiReferenceResolverSpec extends Specification {
         then:
         referencedFiles == [tracked.canonicalFile] as Set
     }
+
+    def "uses safe yaml loading for tagged values"() {
+        given:
+        def root = temporaryFolder.newFile("openapi.yml")
+        def tracked = new File(temporaryFolder.root, "tracked.json")
+
+        root.text = """
+            openapi: "3.0.0"
+            paths:
+              /foo:
+                get:
+                  responses:
+                    "200":
+                      content:
+                        application/json:
+                          schema:
+                            \$ref: !!java.net.URL '${tracked.toURI()}#/\$defs/Tracked'
+        """.stripIndent()
+        tracked.text = '{}'
+
+        when:
+        def referencedFiles = OpenApiReferenceResolver.referencedFiles(root)
+
+        then:
+        referencedFiles.empty
+    }
+
+    def "recognizes windows absolute paths as local filesystem refs"() {
+        expect:
+        OpenApiReferenceResolver.isWindowsAbsolutePath('C:/schemas/request.json')
+        OpenApiReferenceResolver.isWindowsAbsolutePath('C:\\schemas\\request.json')
+        !OpenApiReferenceResolver.isWindowsAbsolutePath('./schemas/request.json')
+        !OpenApiReferenceResolver.isWindowsAbsolutePath('file:///schemas/request.json')
+    }
 }
