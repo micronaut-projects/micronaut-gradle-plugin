@@ -152,7 +152,8 @@ public abstract class MicronautDockerfile extends Dockerfile implements DockerBu
                 );
                 break;
             case LAMBDA:
-                javaApplication.getMainClass().set("io.micronaut.function.aws.runtime.MicronautLambdaRuntime");
+                // Lambda JVM images use the standard runner JAR entrypoint.
+                // Native lambda main-class handling stays task-local in NativeImageDockerfile.
             default:
                 from(new Dockerfile.From(from != null ? from : DEFAULT_BASE_IMAGE + getDockerDefaultImageJavaTag()));
                 setupResources(this, getLayers().get(), null);
