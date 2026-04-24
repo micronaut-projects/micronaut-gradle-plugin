@@ -1157,6 +1157,7 @@ repositories {
 micronaut {
     version = "{micronaut-version}"
     runtime "netty"
+    serialization "serde-jackson"
 }
 
 dependencies {
@@ -1183,6 +1184,7 @@ repositories {
 micronaut {
     version.set("{micronaut-version}")
     runtime.set("netty")
+    serialization.set("serde-jackson")
 }
 
 dependencies {
@@ -1219,6 +1221,22 @@ The available runtimes are:
 * `http_server_jdk` - A server runtime based on the https://docs.oracle.com/javase/8/docs/jre/api/net/httpserver/spec/com/sun/net/httpserver/HttpServer.html[Java built-in Http Server].
 
 The advantage of allowing your dependencies to be dictated by the runtime is that you can potentially take the same application and deploy it to any of the above runtimes without changes.
+
+The plugin also supports selecting the runtime serialization library. By default, minimal application builds use `serde-jackson`, which adds the runtime-only dependency `io.micronaut.serde:micronaut-serde-jackson`. You can switch to `jackson` to add `io.micronaut.jackson:micronaut-jackson-databind` instead:
+
+[source, groovy]
+----
+micronaut {
+    serialization "jackson"
+}
+----
+
+[source, kotlin]
+----
+micronaut {
+    serialization.set("jackson")
+}
+----
 
 ==== Deploying to AWS Lambda as GraalVM native executable
 
