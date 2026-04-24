@@ -496,6 +496,79 @@ class Application {
         useCopyLink << [false, true]
     }
 
+    @IgnoreIf({ os.windows })
+    def "can build a docker buildx command with generated dockerfile and context"() {
+        given:
+        settingsFile << "rootProject.name = 'hello-world'"
+        buildFile << """import io.micronaut.gradle.docker.DockerBuildx
+
+            plugins {
+                id "io.micronaut.minimal.application"
+                id "io.micronaut.docker"
+            }
+
+            version = "0.1"
+
+            micronaut {
+                version "$micronautVersion"
+            }
+
+            $repositoriesBlock
+
+            application { mainClass = "example.Application" }
+
+            tasks.named("dockerBuildx", DockerBuildx) {
+                dockerExecutable = file("fake-docker.sh").absolutePath
+                platforms = ["linux/amd64", "linux/arm64"]
+                images = ["example.com/demo/app:0.1", "example.com/demo/app:latest"]
+                builder = "multiarch-builder"
+            }
+        """
+        testProjectDir.newFolder("src", "main", "java", "example")
+        def javaFile = testProjectDir.newFile("src/main/java/example/Application.java")
+        javaFile.parentFile.mkdirs()
+        javaFile << """
+package example;
+
+class Application {
+    public static void main(String... args) {
+    }
+}
+"""
+        def fakeDocker = file("fake-docker.sh")
+        fakeDocker.text = """#!/bin/sh
+set -eu
+mkdir -p "\$PWD/build"
+printf '%s\\n' "\$@" > "\$PWD/build/buildx-args.txt"
+"""
+        fakeDocker.setExecutable(true)
+
+        when:
+        def result = build('dockerBuildx')
+
+        then:
+        result.task(":dockerBuildx").outcome == TaskOutcome.SUCCESS
+
+        and:
+        file("build/docker/main/Dockerfile").exists()
+        file("build/buildx-args.txt").readLines() == [
+                "buildx",
+                "build",
+                "--builder",
+                "multiarch-builder",
+                "--platform",
+                "linux/amd64,linux/arm64",
+                "--tag",
+                "example.com/demo/app:0.1",
+                "--tag",
+                "example.com/demo/app:latest",
+                "--push",
+                "--file",
+                file("build/docker/main/Dockerfile").absolutePath,
+                file("build/docker/main").absolutePath
+        ]
+    }
+
     private static String getSnapshotMetadata() {
         DockerBuildTaskSpec.getResourceAsStream("/dummy-metadata.xml").text
     }

@@ -633,8 +633,10 @@ The following additional tasks are provided by this plugin:
 * `buildLayers` - Builds application layers for use in a Docker container
 * `dockerfile` - Builds a Docker File for a Micronaut application
 * `dockerBuild` - Builds a Docker Image using the https://github.com/bmuschko/gradle-docker-plugin[Docker Gradle plugin]
+* `dockerBuildx` - Builds and pushes a multi-platform Docker image using Docker Buildx
 * `dockerfileNative` - Builds a Docker File for GraalVM Native Image
 * `dockerBuildNative` - Builds a Native Docker Image using GraalVM Native Image
+* `dockerBuildxNative` - Builds and pushes a multi-platform Native Docker image using Docker Buildx
 * `dockerBuildCrac` - Builds a docker Image containing a CRaC enabled JDK and a pre-warmed, checkpointed application.
 * `dockerFileCrac` - Builds a Docker File for a CRaC checkpointed image.
 * `nativeCompile` - Builds a GraalVM Native Executable
@@ -921,6 +923,13 @@ To build a regular Java application into a Docker container that is ready to be 
 $ ./gradlew dockerBuild
 ----
 
+For multi-platform images, use Docker Buildx instead of `dockerBuild`:
+
+[source, bash]
+----
+$ ./gradlew dockerBuildx
+----
+
 The default uses an `{default-docker-image}` base image, however you can easily switch the base image to use with the `baseImage` property of the `dockerfile` task:
 
 [source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
@@ -944,6 +953,13 @@ To build the application into a Native Executable you can run:
 [source,bash]
 ----
 $ ./gradlew dockerBuildNative
+----
+
+For multi-platform native images, use Docker Buildx instead of `dockerBuildNative`:
+
+[source, bash]
+----
+$ ./gradlew dockerBuildxNative
 ----
 
 Note that for this to work you must build the application with the same GraalVM SDK as used to build the executable.
@@ -997,6 +1013,54 @@ tasks.named<DockerBuildImage>("dockerBuildCrac") {
 ----
 
 Notice that you can supply two different image names to push to for the JVM version and the native version of the application.
+
+==== Multi-platform images with Docker Buildx
+
+The `dockerBuildx` and `dockerBuildxNative` tasks provide first-class multi-platform Docker image support for Micronaut applications.
+They reuse the same generated build contexts as `dockerBuild` and `dockerBuildNative`, but invoke `docker buildx build` and always publish the result with `--push`.
+
+`dockerBuildx` and `dockerBuildxNative` require:
+
+* Docker Buildx support in your Docker installation
+* a configured builder when your environment does not use the default builder
+* explicit `platforms` and `images` configuration, because multi-platform builds are intended for registry publication
+
+Existing `dockerBuild` and `dockerBuildNative` tasks remain the single-platform default workflow.
+CRaC multi-platform images are not part of this feature and there is no `dockerBuildxCrac` task.
+
+For example, the following configuration publishes both JVM and native images for `linux/amd64` and `linux/arm64`:
+
+[source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
+----
+tasks.named("dockerBuildx") {
+    platforms = ["linux/amd64", "linux/arm64"]
+    images = ["registry.example.com/apps/my-app:$project.version"]
+    builder = "container-builder"
+}
+
+tasks.named("dockerBuildxNative") {
+    platforms = ["linux/amd64", "linux/arm64"]
+    images = ["registry.example.com/apps/my-app-native:$project.version"]
+    builder = "container-builder"
+}
+----
+
+[source, kotlin, subs="verbatim,attributes", role="multi-language-sample"]
+----
+tasks.named<io.micronaut.gradle.docker.DockerBuildx>("dockerBuildx") {
+    platforms.set(listOf("linux/amd64", "linux/arm64"))
+    images.set(listOf("registry.example.com/apps/my-app:$project.version"))
+    builder.set("container-builder")
+}
+
+tasks.named<io.micronaut.gradle.docker.DockerBuildx>("dockerBuildxNative") {
+    platforms.set(listOf("linux/amd64", "linux/arm64"))
+    images.set(listOf("registry.example.com/apps/my-app-native:$project.version"))
+    builder.set("container-builder")
+}
+----
+
+For AWS Lambda custom-runtime native images, `dockerBuildxNative` maps Docker Buildx target architectures to the correct GraalVM download automatically.
 
 ==== Customized docker files
 

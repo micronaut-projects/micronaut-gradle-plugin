@@ -189,6 +189,14 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
     @Optional
     public abstract Property<Boolean> getUseCopyLink();
 
+    /**
+     * If true, BuildKit target architecture metadata is used to resolve the GraalVM distribution.
+     * @return whether to use Buildx target architecture mapping
+     */
+    @Input
+    @Optional
+    public abstract Property<Boolean> getUseBuildxTargetArch();
+
     public NativeImageDockerfile() {
         Project project = getProject();
         JavaPluginExtension javaExtension = PluginsHelper.javaPluginExtensionOf(project);
@@ -209,15 +217,10 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
         getGraalArch().convention(ARM_ARCH.equals(osArch) ? ARM_ARCH : X86_64_ARCH);
         getTargetWorkingDirectory().convention(DEFAULT_WORKING_DIR);
         getExposedPorts().convention(Collections.singletonList(8080));
+        getUseBuildxTargetArch().convention(false);
         getGraalImage().convention(getJdkVersion().map(NativeImageDockerfile::toGraalVMBaseImageName));
         getGraalReleasesUrl().convention(GRAALVM_DOWNLOAD_BASE_URL);
-        var distributionPath = getJdkVersion().zip(getGraalArch(), (jdk, arch) -> {
-            if ("17".equals(jdk)) {
-                getLogger().warn("You are using the latest release of GraalVM available under the GraalVM Free Terms and Conditions (GFTC) licence (" + GRAALVM_FOR_JDK17 + "). Consider upgrading to Java 21.");
-                return GRAALVM_DISTRIBUTION_PATH.formatted(jdk, "archive", GRAALVM_FOR_JDK17, arch);
-            }
-            return GRAALVM_DISTRIBUTION_PATH.formatted(jdk, "latest", jdk, arch);
-        });
+        var distributionPath = getJdkVersion().zip(getGraalArch(), this::distributionPathFor);
         getGraalVMDistributionUrl().convention(
             getGraalReleasesUrl().zip(distributionPath, (base, path) -> base + path)
         );
@@ -486,10 +489,18 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
             environmentVariable("LANG", "en_US.UTF-8");
             runCommand("dnf update -y && dnf install -y gcc glibc-devel zlib-devel libstdc++-static tar && dnf clean all && rm -rf /var/cache/dnf");
             String jdkVersion = getJdkVersion().get();
-            String graalArch = getGraalArch().get();
-            // https://download.oracle.com/graalvm/17/latest/graalvm-jdk-17_linux-aarch64_bin.tar.gz
-            String fileName = "graalvm-jdk-" + jdkVersion + "_linux-" + graalArch + "_bin.tar.gz";
-            String graalvmDistributionUrl = getGraalVMDistributionUrl().get();
+            String fileName;
+            String graalvmDistributionUrl;
+            if (getUseBuildxTargetArch().get()) {
+                arg("TARGETARCH");
+                String graalArch = "$(" + graalArchResolutionCommand() + ")";
+                fileName = "graalvm-jdk-" + jdkVersion + "_linux-" + graalArch + "_bin.tar.gz";
+                graalvmDistributionUrl = getGraalReleasesUrl().get() + distributionPathFor(jdkVersion, graalArch);
+            } else {
+                String graalArch = getGraalArch().get();
+                fileName = "graalvm-jdk-" + jdkVersion + "_linux-" + graalArch + "_bin.tar.gz";
+                graalvmDistributionUrl = getGraalVMDistributionUrl().get();
+            }
             runCommand("curl -4 -L " + graalvmDistributionUrl + " -o /tmp/" + fileName);
             runCommand("tar -zxf /tmp/" + fileName + " -C /tmp && ls -d /tmp/graalvm-jdk-"+ jdkVersion + "* | grep -v \"tar.gz\" | xargs -I_ mv _ /usr/lib/graalvm");
             runCommand("rm -rf /tmp/*");
@@ -667,6 +678,18 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
             return Integer.parseInt(version.substring(0, version.indexOf('.')));
         }
         return Integer.parseInt(version);
+    }
+
+    private String distributionPathFor(String jdkVersion, String graalArch) {
+        if ("17".equals(jdkVersion)) {
+            getLogger().warn("You are using the latest release of GraalVM available under the GraalVM Free Terms and Conditions (GFTC) licence (" + GRAALVM_FOR_JDK17 + "). Consider upgrading to Java 21.");
+            return GRAALVM_DISTRIBUTION_PATH.formatted(jdkVersion, "archive", GRAALVM_FOR_JDK17, graalArch);
+        }
+        return GRAALVM_DISTRIBUTION_PATH.formatted(jdkVersion, "latest", jdkVersion, graalArch);
+    }
+
+    private static String graalArchResolutionCommand() {
+        return "case \"${TARGETARCH}\" in amd64) printf x64 ;; arm64) printf aarch64 ;; *) printf '%s' \"${TARGETARCH}\" ;; esac";
     }
 
     /**
