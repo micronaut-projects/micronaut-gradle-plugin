@@ -1717,6 +1717,13 @@ dependencies {
 ----
 ====
 
+[NOTE]
+====
+Private registry settings for Testcontainers must be visible to the Micronaut Test Resources server classpath, not only to the regular test classpath.
+For example, if you configure `hub.image.name.prefix` in `testcontainers.properties`, place that file in `src/testResources/resources/testcontainers.properties` when the project applies `io.micronaut.test-resources` directly.
+Putting `testcontainers.properties` only under `src/test/resources` configures the tests, but not the test-resources server that starts the containers.
+====
+
 [[src:test-resources-native]]
 === Using test resources with native binaries
 
@@ -1795,6 +1802,13 @@ micronaut {
 ----
 <1> use `test-resources` as a standalone plugin
 <2> declare that it will provide Kafka containers
+
+[NOTE]
+====
+When you use a standalone provider project, keep `testcontainers.properties` and other private registry or Testcontainers server settings in the provider project's `src/testResources/resources`.
+This ensures they are loaded from the test-resources server classpath.
+If consumer projects apply `io.micronaut.test-resources-consumer`, their regular test classpath can provide `test-resources.properties` connection details, but it does not replace server-side files such as `testcontainers.properties`.
+====
 
 Then each consumer of test resources need to apply the `io.micronaut.test-resources-consumer` plugin instead:
 
