@@ -4,6 +4,7 @@ import groovy.io.FileType
 import org.gradle.testkit.runner.TaskOutcome
 
 import java.nio.file.Files
+import java.nio.file.attribute.FileTime
 
 class BuildLayersSpec extends AbstractGradleBuildSpec {
 
@@ -129,7 +130,7 @@ class BuildLayersSpec extends AbstractGradleBuildSpec {
         def sourceMtime = Files.getLastModifiedTime(sourceJar.toPath()).toMillis()
         def firstCopiedMtime = Files.getLastModifiedTime(copiedJar.toPath()).toMillis()
 
-        sleep(1100)
+        Files.setLastModifiedTime(copiedJar.toPath(), FileTime.fromMillis(1))
         def secondBuild = build('buildLayers', '--rerun-tasks')
         def secondCopiedMtime = Files.getLastModifiedTime(copiedJar.toPath()).toMillis()
 
@@ -146,7 +147,7 @@ class BuildLayersSpec extends AbstractGradleBuildSpec {
             System.getenv("GRADLE_USER_HOME"),
             new File(System.getProperty("java.io.tmpdir"), ".gradle-test-kit").absolutePath,
             new File(System.getProperty("user.home"), ".gradle").absolutePath
-        ].findAll { it != null }
+        ].findAll { it?.trim() }
         for (def cacheRoot : cacheRoots) {
             def cacheDir = new File(cacheRoot, "caches/modules-2/files-2.1/${group}/${module}")
             if (!cacheDir.exists()) {
@@ -162,6 +163,6 @@ class BuildLayersSpec extends AbstractGradleBuildSpec {
                 return dependencyJar
             }
         }
-        assert false: "Unable to locate ${fileName} for ${group}:${module} under ${cacheRoots}"
+        throw new IllegalStateException("Unable to locate ${fileName} for ${group}:${module} under ${cacheRoots}")
     }
 }
