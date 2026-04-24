@@ -3,6 +3,8 @@ package io.micronaut.gradle;
 import org.gradle.api.plugins.JavaPlugin;
 
 import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -20,7 +22,7 @@ public enum MicronautTestRuntime {
     JUNIT_5(MicronautExtension.mapOf(
             JavaPlugin.TEST_IMPLEMENTATION_CONFIGURATION_NAME, List.of("org.junit.jupiter:junit-jupiter-api", "io.micronaut.test:micronaut-test-junit5"),
             JavaPlugin.TEST_RUNTIME_ONLY_CONFIGURATION_NAME, List.of("org.junit.jupiter:junit-jupiter-engine", "org.junit.platform:junit-platform-launcher")
-    ), true),
+    ), true, "junit"),
     /**
      * Spock 2.
      */
@@ -34,7 +36,7 @@ public enum MicronautTestRuntime {
                     "org.apache.groovy:groovy",
                     "org.junit.platform:junit-platform-launcher"
             )
-    ), true),
+    ), true, "spock"),
     /**
      * Kotest 4.
      */
@@ -49,7 +51,7 @@ public enum MicronautTestRuntime {
             ),
             JavaPlugin.TEST_RUNTIME_ONLY_CONFIGURATION_NAME,
             Collections.singletonList("io.kotest:kotest-runner-junit5-jvm")
-    ), true),
+    ), true, "kotest"),
 
     /**
      * Kotest 5.
@@ -65,7 +67,7 @@ public enum MicronautTestRuntime {
             ),
             JavaPlugin.TEST_RUNTIME_ONLY_CONFIGURATION_NAME,
             Collections.singletonList("io.kotest:kotest-runner-junit5-jvm")
-    ), true),
+    ), true, "kotest"),
     /**
      * No test runtime.
      */
@@ -73,15 +75,18 @@ public enum MicronautTestRuntime {
 
     private final Map<String, List<String>> implementation;
     private final boolean usesJunitPlatform;
+    private final String family;
 
     MicronautTestRuntime() {
         this.implementation = Collections.singletonMap(JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME, Collections.emptyList());
         this.usesJunitPlatform = false;
+        this.family = null;
     }
 
-    MicronautTestRuntime(Map<String, List<String>> implementation, boolean usesJunitPlatform) {
+    MicronautTestRuntime(Map<String, List<String>> implementation, boolean usesJunitPlatform, String family) {
         this.implementation = implementation;
         this.usesJunitPlatform = usesJunitPlatform;
+        this.family = family;
     }
 
     public Map<String, List<String>> getDependencies() {
@@ -111,5 +116,36 @@ public enum MicronautTestRuntime {
 
     public boolean isUsingJunitPlatform() {
         return usesJunitPlatform;
+    }
+
+    public static boolean isUsingJunitPlatform(List<MicronautTestRuntime> runtimes) {
+        return runtimes.stream().anyMatch(MicronautTestRuntime::isUsingJunitPlatform);
+    }
+
+    public static Map<String, List<String>> collectDependencies(List<MicronautTestRuntime> runtimes) {
+        Map<String, LinkedHashSet<String>> collected = new LinkedHashMap<>();
+        for (MicronautTestRuntime runtime : runtimes) {
+            runtime.getDependencies().forEach((scope, dependencies) ->
+                collected.computeIfAbsent(scope, ignored -> new LinkedHashSet<>()).addAll(dependencies)
+            );
+        }
+        Map<String, List<String>> answer = new LinkedHashMap<>();
+        collected.forEach((scope, dependencies) -> answer.put(scope, List.copyOf(dependencies)));
+        return answer;
+    }
+
+    public static void validateSelection(List<MicronautTestRuntime> runtimes) {
+        Map<String, LinkedHashSet<MicronautTestRuntime>> families = new LinkedHashMap<>();
+        for (MicronautTestRuntime runtime : runtimes) {
+            if (runtime.family == null) {
+                continue;
+            }
+            families.computeIfAbsent(runtime.family, ignored -> new LinkedHashSet<>()).add(runtime);
+        }
+        families.forEach((family, selectedRuntimes) -> {
+            if (selectedRuntimes.size() > 1) {
+                throw new IllegalArgumentException("Incompatible Micronaut test runtimes selected for family '" + family + "': " + selectedRuntimes);
+            }
+        });
     }
 }

@@ -140,15 +140,17 @@ public class MicronautComponentPlugin implements Plugin<Project> {
     private void configureTesting(Project project, MicronautExtension micronautExtension, TaskProvider<ApplicationClasspathInspector> inspectRuntimeClasspath) {
         project.getTasks().withType(Test.class).configureEach(t -> {
             t.dependsOn(inspectRuntimeClasspath);
-            if (micronautExtension.getTestRuntime().get().isUsingJunitPlatform()) {
-                t.useJUnitPlatform();
-            }
         });
         project.afterEvaluate(p -> {
             DependencyHandler dependencyHandler = project.getDependencies();
-            MicronautTestRuntime testRuntime = micronautExtension.getTestRuntime().get();
+            List<MicronautTestRuntime> testRuntimes = micronautExtension.resolveTestRuntimes();
+            MicronautTestRuntime.validateSelection(testRuntimes);
 
-            testRuntime.getDependencies().forEach((scope, dependencies) -> {
+            if (MicronautTestRuntime.isUsingJunitPlatform(testRuntimes)) {
+                project.getTasks().withType(Test.class).configureEach(Test::useJUnitPlatform);
+            }
+
+            MicronautTestRuntime.collectDependencies(testRuntimes).forEach((scope, dependencies) -> {
                 for (String dependency : dependencies) {
                     dependencyHandler.add(scope, dependency);
                 }
