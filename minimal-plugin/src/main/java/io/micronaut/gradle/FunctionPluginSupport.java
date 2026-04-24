@@ -70,6 +70,10 @@ public final class FunctionPluginSupport {
         return !isFunctionProject(project) || project.getPluginManager().hasPlugin(APPLICATION_PLUGIN_ID);
     }
 
+    public static boolean preservesApplicationMainClass(Project project) {
+        return isFunctionProject(project) && project.getPluginManager().hasPlugin(APPLICATION_PLUGIN_ID);
+    }
+
     private static void maybeApplyApplicationPlugin(Project project, MicronautRuntime runtime) {
         if (runtime != null && runtime != MicronautRuntime.LAMBDA_JAVA && runtime != MicronautRuntime.NONE) {
             project.getPluginManager().apply(ApplicationPlugin.class);
