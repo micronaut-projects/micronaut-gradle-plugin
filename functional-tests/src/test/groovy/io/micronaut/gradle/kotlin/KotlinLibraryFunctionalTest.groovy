@@ -148,7 +148,9 @@ class Foo {}
 
         then:
         result.task(":assemble").outcome == TaskOutcome.SUCCESS
-        file('build/generated/ksp/main/classes/example/$Foo$Definition.class').exists()
+        new File(testProjectDir.root, "build/generated/ksp/main/classes/example")
+                .listFiles()
+                ?.find { it.name.endsWith(".class") && it.name.contains('$Definition') }
         !file('build/tmp/kapt3/classes/main/example/$Foo$Definition.class').exists()
         result.output.contains("Micronaut processing will use KSP")
 

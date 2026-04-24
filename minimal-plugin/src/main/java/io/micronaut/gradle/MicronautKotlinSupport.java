@@ -117,7 +117,7 @@ public class MicronautKotlinSupport {
 
     private static void configureKapt(Project project) {
         warnAboutKspTakingPrecedence(project);
-        configureKotlinCompilerPlugin(project, KAPT_CONFIGURATIONS, "kapt", PluginsHelper.ANNOTATION_PROCESSOR_MODULES, () -> shouldConfigureMicronautKapt(project));
+        configureKotlinCompilerPlugin(project, KAPT_CONFIGURATIONS, "kapt", PluginsHelper.ANNOTATION_PROCESSOR_MODULES, () -> !isMicronautKaptDisabledByKsp(project));
 
         // Need to identify KAPT version. We can't configure KAPT 2.x for incremental processing
         // Remove this block after the end of support for KAPT 1.9
@@ -129,7 +129,7 @@ public class MicronautKotlinSupport {
             var processingConfig = micronautExtension.getProcessing();
             project.afterEvaluate(unused -> {
                 // need to use afterEvaluate because lazy APIs are not available on the Kotlin 1.9 plugin
-                if (!shouldConfigureMicronautKapt(project)) {
+                if (isMicronautKaptDisabledByKsp(project)) {
                     return;
                 }
                 var isIncremental = processingConfig.getIncremental().getOrElse(true);
@@ -304,12 +304,12 @@ public class MicronautKotlinSupport {
         });
     }
 
-    private static boolean shouldConfigureMicronautKapt(Project project) {
-        return !(project.getPluginManager().hasPlugin(KAPT_PLUGIN_ID) && project.getPluginManager().hasPlugin(KSP_PLUGIN_ID));
+    private static boolean isMicronautKaptDisabledByKsp(Project project) {
+        return project.getPluginManager().hasPlugin(KAPT_PLUGIN_ID) && project.getPluginManager().hasPlugin(KSP_PLUGIN_ID);
     }
 
     private static void warnAboutKspTakingPrecedence(Project project) {
-        if (!shouldConfigureMicronautKapt(project)) {
+        if (isMicronautKaptDisabledByKsp(project)) {
             ExtraPropertiesExtension extraProperties = project.getExtensions().getExtraProperties();
             if (!extraProperties.has(BOTH_KAPT_AND_KSP_WARNING_EMITTED)) {
                 extraProperties.set(BOTH_KAPT_AND_KSP_WARNING_EMITTED, true);
