@@ -1183,8 +1183,8 @@ repositories {
 
 micronaut {
     version.set("{micronaut-version}")
-    runtime.set("netty")
-    serialization.set("serde-jackson")
+    runtime("netty")
+    serialization("serde-jackson")
 }
 
 dependencies {
@@ -1234,7 +1234,7 @@ micronaut {
 [source, kotlin]
 ----
 micronaut {
-    serialization.set("jackson")
+    serialization("jackson")
 }
 ----
 
