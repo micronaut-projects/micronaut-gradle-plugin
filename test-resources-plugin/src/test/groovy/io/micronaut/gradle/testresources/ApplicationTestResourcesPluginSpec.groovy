@@ -161,9 +161,11 @@ testing {
         buildFile << """
 
 def assertTestResourcesTaskConfiguration = { org.gradle.api.tasks.testing.Test task, boolean expected ->
-    def dependencyNames = task.taskDependencies.getDependencies(task)*.name as Set
-    def hasStartDependency = dependencyNames.contains("internalStartTestResourcesService")
-    def hasServerConnectionProvider = task.jvmArgumentProviders.any { it.class.simpleName == "ServerConnectionParametersProvider" }
+    def dependencyPaths = task.taskDependencies.getDependencies(task)*.path as Set
+    def hasStartDependency = dependencyPaths.contains(":internalStartTestResourcesService")
+    def hasServerConnectionProvider = task.jvmArgumentProviders.any {
+        it.class.name == "io.micronaut.gradle.testresources.ServerConnectionParametersProvider"
+    }
     assert hasStartDependency == expected : "Expected \$task.name start dependency to be \$expected but was \$hasStartDependency"
     assert hasServerConnectionProvider == expected : "Expected \$task.name server connection provider to be \$expected but was \$hasServerConnectionProvider"
 }
