@@ -24,6 +24,7 @@ import org.gradle.api.Project;
 import org.gradle.api.Task;
 import org.gradle.api.file.RegularFile;
 import org.gradle.api.plugins.ExtensionContainer;
+import org.gradle.api.plugins.JavaApplication;
 import org.gradle.api.plugins.PluginManager;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.TaskContainer;
@@ -156,6 +157,7 @@ public class MicronautCRaCPlugin implements Plugin<Project> {
             task.getArch().set(configuration.getArch());
             task.getOs().set(configuration.getOs());
             task.getJavaVersion().set(configuration.getJavaVersion());
+            task.getArgs().set(project.getExtensions().getByType(JavaApplication.class).getMainClass().map(Collections::singletonList));
             task.setupDockerfileInstructions();
             task.getLayers().convention(buildLayersTask.flatMap(BuildLayersTask::getLayers));
         });
