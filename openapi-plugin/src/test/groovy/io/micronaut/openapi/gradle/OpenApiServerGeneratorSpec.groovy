@@ -4,6 +4,48 @@ import org.gradle.testkit.runner.TaskOutcome
 
 class OpenApiServerGeneratorSpec extends AbstractOpenApiGeneratorSpec {
 
+    private static final String EXAMPLE_SPEC = '''\
+        {
+          "swagger": "2.0",
+          "info": {
+            "title": "Example API",
+            "version": "1.0.0"
+          },
+          "paths": {},
+          "definitions": {
+            "Example": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+        '''.stripIndent()
+
+    private static final String OTHER_EXAMPLE_SPEC = '''\
+        {
+          "swagger": "2.0",
+          "info": {
+            "title": "Example API",
+            "version": "1.0.0"
+          },
+          "paths": {},
+          "definitions": {
+            "OtherExample": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+        '''.stripIndent()
+
     def "can generate an java OpenAPI server implementation"() {
         given:
         settingsFile << "rootProject.name = 'openapi-server'"
@@ -259,6 +301,51 @@ class OpenApiServerGeneratorSpec extends AbstractOpenApiGeneratorSpec {
         file("build/generated/openapi/generateMyServerOpenApiModels/src/main/java/io/micronaut/openapi/model/Pet.java").exists()
         file("build/classes/java/main/io/micronaut/openapi/api/PetApi.class").exists()
         file("build/classes/java/main/io/micronaut/openapi/model/Pet.class").exists()
+    }
+
+    def "prunes stale generated server models on rerun"() {
+        given:
+        settingsFile << "rootProject.name = 'openapi-server'"
+        buildFile << """
+            plugins {
+                id "io.micronaut.minimal.application"
+                id "io.micronaut.openapi"
+            }
+
+            micronaut {
+                version "$micronautVersion"
+                runtime "netty"
+                testRuntime "junit5"
+                openapi {
+                    server(file("petstore.json")) {
+                        generateApis = false
+                    }
+                }
+            }
+
+            $repositoriesBlock
+
+            dependencies {
+                implementation "io.micronaut.serde:micronaut-serde-jackson"
+            }
+        """
+        file("petstore.json").text = EXAMPLE_SPEC
+
+        when:
+        def firstResult = build("generateServerOpenApiModels")
+
+        then:
+        firstResult.task(":generateServerOpenApiModels").outcome == TaskOutcome.SUCCESS
+        file("build/generated/openapi/generateServerOpenApiModels/src/main/java/io/micronaut/openapi/model/Example.java").exists()
+
+        when:
+        file("petstore.json").text = OTHER_EXAMPLE_SPEC
+        def secondResult = build("generateServerOpenApiModels")
+
+        then:
+        secondResult.task(":generateServerOpenApiModels").outcome == TaskOutcome.SUCCESS
+        !file("build/generated/openapi/generateServerOpenApiModels/src/main/java/io/micronaut/openapi/model/Example.java").exists()
+        file("build/generated/openapi/generateServerOpenApiModels/src/main/java/io/micronaut/openapi/model/OtherExample.java").exists()
     }
 
     def "check properties for micronaut-openapi 6.14.0"() {
