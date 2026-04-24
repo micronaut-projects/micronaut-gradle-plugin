@@ -198,7 +198,6 @@ class Foo {}
         """
         testProjectDir.newFolder("src", "main", "kotlin", "example")
         def kotlinSource = testProjectDir.newFile("src/main/kotlin/example/Services.kt")
-        kotlinSource.parentFile.mkdirs()
         kotlinSource << """
 package example
 
@@ -224,10 +223,16 @@ class CachedService
         result.task(":compileKotlin").outcome == TaskOutcome.SUCCESS
         def classesDir = file("build/classes/kotlin/main")
         classesDir.directory
-        URLClassLoader classLoader = new URLClassLoader([classesDir.toURI().toURL()] as URL[], (ClassLoader) this.class.classLoader)
+        def classesDirUrl = classesDir.toURI().toURL()
+        URLClassLoader classLoader = new URLClassLoader([classesDirUrl] as URL[], (ClassLoader) this.class.classLoader)
         try {
-            !Modifier.isFinal(classLoader.loadClass("example.AroundService").modifiers)
-            !Modifier.isFinal(classLoader.loadClass("example.CachedService").modifiers)
+            def aroundServiceClass = classLoader.loadClass("example.AroundService")
+            def cachedServiceClass = classLoader.loadClass("example.CachedService")
+
+            aroundServiceClass.protectionDomain.codeSource.location == classesDirUrl
+            cachedServiceClass.protectionDomain.codeSource.location == classesDirUrl
+            !Modifier.isFinal(aroundServiceClass.modifiers)
+            !Modifier.isFinal(cachedServiceClass.modifiers)
         } finally {
             classLoader.close()
         }
