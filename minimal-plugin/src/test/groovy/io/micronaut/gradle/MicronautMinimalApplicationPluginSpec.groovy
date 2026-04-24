@@ -6,6 +6,7 @@ import org.gradle.testkit.runner.TaskOutcome
 import spock.lang.Issue
 
 class MicronautMinimalApplicationPluginSpec extends AbstractGradleBuildSpec {
+    private static final String INTERNAL_CONTINUOUS_STARTUP_TIMEOUT_PROPERTY = "io.micronaut.internal.gradle.continuous.startup.timeout"
 
     def "test junit 5 test runtime"() {
         given:
@@ -127,7 +128,11 @@ public class Application {
 
         when:
         long started = System.nanoTime()
-        result = build('run', "-D${MicronautMinimalApplicationPlugin.INTERNAL_CONTINUOUS_BACKGROUND_FLAG}=true")
+        result = build(
+            'run',
+            "-D${MicronautMinimalApplicationPlugin.INTERNAL_CONTINUOUS_BACKGROUND_FLAG}=true",
+            "-D${INTERNAL_CONTINUOUS_STARTUP_TIMEOUT_PROPERTY}=100"
+        )
         elapsedMillis = java.util.concurrent.TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - started)
         backgroundProcess = waitForProcess(pidFile)
 
@@ -139,6 +144,46 @@ public class Application {
 
         cleanup:
         stopBackgroundProcess(backgroundProcess)
+    }
+
+    def "continuous run fails when background startup exits non-zero after 500ms"() {
+        given:
+        settingsFile << "rootProject.name = 'hello-world'"
+        buildFile << """
+            plugins {
+                id "io.micronaut.minimal.application"
+            }
+
+            micronaut {
+                version "$micronautVersion"
+                runtime "netty"
+            }
+
+            $repositoriesBlock
+            application { mainClass = "example.Application" }
+        """
+
+        testProjectDir.newFolder("src", "main", "java", "example")
+        testProjectDir.newFile("src/main/java/example/Application.java") << """
+package example;
+
+public class Application {
+    public static void main(String[] args) throws Exception {
+        Thread.sleep(1500);
+        System.exit(1);
+    }
+}
+"""
+
+        when:
+        BuildResult result = fails(
+            'run',
+            "-D${MicronautMinimalApplicationPlugin.INTERNAL_CONTINUOUS_BACKGROUND_FLAG}=true",
+            "-D${INTERNAL_CONTINUOUS_STARTUP_TIMEOUT_PROPERTY}=3000"
+        )
+
+        then:
+        result.output.contains("Continuous run process exited during startup with code 1.")
     }
 
     @Issue("https://github.com/micronaut-projects/micronaut-gradle-plugin/issues/594")

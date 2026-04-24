@@ -16,8 +16,10 @@
 package io.micronaut.gradle.internal;
 
 import org.gradle.api.GradleException;
+import org.gradle.api.internal.project.ProjectInternal;
 import org.gradle.api.logging.Logger;
 import org.gradle.api.tasks.JavaExec;
+import org.gradle.initialization.BuildCancellationToken;
 import org.gradle.jvm.toolchain.JavaLauncher;
 
 import java.io.IOException;
@@ -39,6 +41,9 @@ import java.util.concurrent.TimeUnit;
  */
 public final class ContinuousRunSupport {
     private static final long PROCESS_STOP_TIMEOUT_SECONDS = 5;
+    private static final String INTERNAL_STARTUP_TIMEOUT_MILLIS_PROPERTY = "io.micronaut.internal.gradle.continuous.startup.timeout";
+    private static final long DEFAULT_STARTUP_TIMEOUT_MILLIS = 5_000;
+    private static final long STARTUP_POLL_INTERVAL_MILLIS = 100;
     private static final Map<Path, ProcessHandle> RUNNING_PROCESSES = new ConcurrentHashMap<>();
     private static volatile boolean shutdownHookInstalled;
 
@@ -64,11 +69,13 @@ public final class ContinuousRunSupport {
 
             Process process = builder.start();
             ProcessHandle handle = process.toHandle();
+            boolean cancelBuildOnFailure = javaExec.getProject().getGradle().getStartParameter().isContinuous();
+            BuildCancellationToken cancellationToken = ((ProjectInternal) javaExec.getProject()).getServices().get(BuildCancellationToken.class);
 
             writeState(statePath, commandLine.get(0), handle);
             registerShutdownCleanup(statePath, handle);
 
-            if (!waitForFailedStartup(process, logger, statePath)) {
+            if (!waitForFailedStartup(process, logger, statePath, cancellationToken, cancelBuildOnFailure)) {
                 logger.lifecycle("Started background continuous run process for {} (pid: {}).", javaExec.getPath(), handle.pid());
             }
         } catch (IOException e) {
@@ -217,17 +224,47 @@ public final class ContinuousRunSupport {
         return properties;
     }
 
-    private static boolean waitForFailedStartup(Process process, Logger logger, Path statePath) {
+    private static boolean waitForFailedStartup(Process process,
+                                                Logger logger,
+                                                Path statePath,
+                                                BuildCancellationToken cancellationToken,
+                                                boolean cancelBuildOnFailure) {
         try {
-            if (process.waitFor(500, TimeUnit.MILLISECONDS) && process.exitValue() != 0) {
-                deleteState(statePath, logger);
-                throw new GradleException("Continuous run process exited immediately with code " + process.exitValue() + ".");
+            long timeoutMillis = startupTimeoutMillis();
+            long deadline = System.nanoTime() + TimeUnit.MILLISECONDS.toNanos(timeoutMillis);
+            while (true) {
+                if (!process.isAlive()) {
+                    int exitValue = process.exitValue();
+                    if (exitValue != 0) {
+                        logger.error("Continuous run process exited during startup with code {}.", exitValue);
+                        deleteState(statePath, logger);
+                        requestBuildCancellation(cancellationToken, cancelBuildOnFailure);
+                        throw new GradleException("Continuous run process exited during startup with code " + exitValue + ".");
+                    }
+                    return true;
+                }
+                long remainingNanos = deadline - System.nanoTime();
+                if (remainingNanos <= 0) {
+                    return false;
+                }
+                long remainingMillis = Math.max(1, TimeUnit.NANOSECONDS.toMillis(remainingNanos));
+                process.waitFor(Math.min(remainingMillis, STARTUP_POLL_INTERVAL_MILLIS), TimeUnit.MILLISECONDS);
             }
-            return false;
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             deleteState(statePath, logger);
+            requestBuildCancellation(cancellationToken, cancelBuildOnFailure);
             throw new GradleException("Interrupted while launching the continuous run process.", e);
+        }
+    }
+
+    private static long startupTimeoutMillis() {
+        return Math.max(0, Long.getLong(INTERNAL_STARTUP_TIMEOUT_MILLIS_PROPERTY, DEFAULT_STARTUP_TIMEOUT_MILLIS));
+    }
+
+    private static void requestBuildCancellation(BuildCancellationToken cancellationToken, boolean cancelBuildOnFailure) {
+        if (cancelBuildOnFailure) {
+            cancellationToken.cancel();
         }
     }
 
