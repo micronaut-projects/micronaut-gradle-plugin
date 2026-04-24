@@ -72,7 +72,8 @@ public final class FunctionPluginSupport {
 
     public static boolean preservesApplicationMainClass(Project project) {
         return (isFunctionProject(project) && project.getPluginManager().hasPlugin(APPLICATION_PLUGIN_ID))
-            || hasImplementationDependency(project, "io.micronaut.aws", "micronaut-function-aws-custom-runtime");
+            || (hasImplementationDependency(project, "io.micronaut.aws", "micronaut-function-aws-custom-runtime")
+            && hasImplementationDependency(project, "io.micronaut.aws", "micronaut-function-aws"));
     }
 
     private static boolean hasImplementationDependency(Project project, String group, String artifactId) {
