@@ -1026,6 +1026,30 @@ tasks.named<io.micronaut.gradle.docker.NativeImageDockerfile>("dockerfileNative"
 
 The above configuration uses a max heap setting of `128m` for Java and `64m` for native executable for the application.
 
+The generated `dockerfile` and `dockerfileNative` tasks expose port `8080` by default. To override the ports declared in the generated Dockerfile, configure `exposedPorts` on the corresponding task:
+
+[source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
+----
+tasks.named("dockerfile") {
+   exposedPorts = [8123, 8443]
+}
+tasks.named("dockerfileNative") {
+   exposedPorts = [9000]
+}
+----
+
+[source, kotlin, subs="verbatim,attributes", role="multi-language-sample"]
+----
+tasks.named<MicronautDockerfile>("dockerfile") {
+   exposedPorts.set(listOf(8123, 8443))
+}
+tasks.named<io.micronaut.gradle.docker.NativeImageDockerfile>("dockerfileNative") {
+   exposedPorts.set(listOf(9000))
+}
+----
+
+After updating the task, run `./gradlew dockerfile` or `./gradlew dockerfileNative` and inspect the generated Dockerfile under `build/docker` to confirm the expected `EXPOSE` lines are present.
+
 ==== GraalVM JDK version
 
 By default, the `dockerfileNative` task will create a dockerfile that uses the Graal JDK base image with the current JDK version.
