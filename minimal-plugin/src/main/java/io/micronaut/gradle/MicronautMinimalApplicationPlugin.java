@@ -24,6 +24,7 @@ import org.gradle.api.Project;
 import org.gradle.api.Task;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.ConfigurationContainer;
+import org.gradle.api.artifacts.Dependency;
 import org.gradle.api.artifacts.dsl.DependencyHandler;
 import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.file.FileCollection;
@@ -40,6 +41,7 @@ import java.io.File;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -179,7 +181,12 @@ public class MicronautMinimalApplicationPlugin implements Plugin<Project> {
                     .getSerialization()
                     .getOrElse(MicronautSerialization.SERDE_JACKSON);
             DependencyHandler dependencyHandler = p.getDependencies();
-            MicronautRuntimeDependencies.findApplicationPluginDependenciesByRuntime(micronautRuntime, micronautSerialization)
+            boolean shouldAutoConfigureSerialization = !hasExplicitSerializationRuntimeDependency(p);
+            MicronautRuntimeDependencies.findApplicationPluginDependenciesByRuntime(
+                            micronautRuntime,
+                            micronautSerialization,
+                            shouldAutoConfigureSerialization
+                    )
                     .toMap()
                     .forEach((scope, dependencies) -> {
                 for (AutomaticDependency dependency : dependencies) {
@@ -192,6 +199,23 @@ public class MicronautMinimalApplicationPlugin implements Plugin<Project> {
             ShadowPluginSupport.withShadowPlugin(project, () -> ShadowPluginSupport.configureDefaults(project));
 
         });
+    }
+
+    private boolean hasExplicitSerializationRuntimeDependency(Project project) {
+        return project.getConfigurations().stream()
+                .flatMap(configuration -> configuration.getDependencies().stream())
+                .map(Dependency::getName)
+                .filter(Objects::nonNull)
+                .anyMatch(this::isSupportedSerializationArtifact);
+    }
+
+    private boolean isSupportedSerializationArtifact(String artifactId) {
+        for (MicronautSerialization serialization : MicronautSerialization.values()) {
+            if (serialization.matchesArtifact(artifactId)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void configureGoogleCloudFunctionRuntime(Project project, Project p, DependencyHandler dependencyHandler) {

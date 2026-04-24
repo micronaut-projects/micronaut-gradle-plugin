@@ -118,6 +118,37 @@ class MicronautMinimalApplicationPluginSpec extends AbstractGradleBuildSpec {
         !result.output.contains('io.micronaut.jackson:micronaut-jackson-databind')
     }
 
+    def "does not add default serde serialization when jackson runtime is already declared"() {
+        given:
+        settingsFile << "rootProject.name = 'hello-world'"
+        buildFile << """
+            plugins {
+                id "io.micronaut.minimal.application"
+            }
+
+            micronaut {
+                version "$micronautVersion"
+                runtime "netty"
+                testRuntime "junit5"
+            }
+
+            $repositoriesBlock
+
+            dependencies {
+                runtimeOnly "io.micronaut:micronaut-jackson-databind"
+            }
+
+            application { mainClass = "example.Application" }
+        """
+
+        when:
+        def result = build('dependencies', '--configuration', 'runtimeClasspath')
+
+        then:
+        result.output.contains('io.micronaut:micronaut-jackson-databind')
+        !result.output.contains('io.micronaut.serde:micronaut-serde-jackson')
+    }
+
     def "can override serde version for the default runtime serialization"() {
         given:
         settingsFile << "rootProject.name = 'hello-world'"
