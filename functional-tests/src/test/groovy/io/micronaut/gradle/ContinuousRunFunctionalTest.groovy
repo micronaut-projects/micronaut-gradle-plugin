@@ -10,6 +10,7 @@ import java.time.Duration
 
 @Issue("https://github.com/micronaut-projects/micronaut-gradle-plugin/issues/2")
 class ContinuousRunFunctionalTest extends AbstractFunctionalTest {
+    private static final String INTERNAL_CONTINUOUS_STARTUP_TIMEOUT_PROPERTY = "io.micronaut.internal.gradle.continuous.startup.timeout"
 
     def "parallel continuous run keeps sibling applications available"() {
         given:
@@ -59,7 +60,60 @@ class ContinuousRunFunctionalTest extends AbstractFunctionalTest {
         }
     }
 
+    def "continuous run fails when startup exits non-zero after 500ms"() {
+        given:
+        settingsFile << "rootProject.name = 'delayed-failure'"
+        buildFile << """
+            plugins {
+                id 'io.micronaut.application'
+            }
+
+            micronaut {
+                version '${micronautVersion}'
+                runtime 'netty'
+            }
+
+            repositories {
+                mavenCentral()
+            }
+
+            application {
+                mainClass = 'example.Application'
+            }
+        """
+        file("src/main/java/example").mkdirs()
+        file("src/main/java/example/Application.java").text = """
+package example;
+
+public final class Application {
+    private Application() {
+    }
+
+    public static void main(String[] args) throws Exception {
+        Thread.sleep(1500);
+        System.exit(1);
+    }
+}
+"""
+
+        File outputFile = file("build/continuous-run-failure.log")
+        outputFile.parentFile.mkdirs()
+        Process buildProcess = startContinuousBuild(outputFile, "-D${INTERNAL_CONTINUOUS_STARTUP_TIMEOUT_PROPERTY}=3000")
+
+        when:
+        int exitCode = awaitProcessExit(buildProcess, Duration.ofSeconds(120), outputFile)
+
+        then:
+        exitCode != 0
+        failureMessage("Expected Gradle to fail the continuous run build.", outputFile).contains("Continuous run process exited during startup with code 1.")
+        failureMessage("Expected Gradle to fail the continuous run build.", outputFile).contains("Build cancelled")
+    }
+
     private Process startContinuousBuild(File outputFile) {
+        startContinuousBuild(outputFile, new String[0])
+    }
+
+    private Process startContinuousBuild(File outputFile, String... extraArgs) {
         File repoRoot = findRepoRoot()
         List<String> command = [
             new File(repoRoot, "gradlew").canonicalPath,
@@ -72,13 +126,23 @@ class ContinuousRunFunctionalTest extends AbstractFunctionalTest {
             "-Porg.gradle.java.installations.auto-download=false",
             "-Porg.gradle.java.installations.auto-detect=false",
             "-Porg.gradle.java.installations.fromEnv=GRAALVM_HOME",
-            "-Dio.micronaut.graalvm.rich.output=false"
+            "-Dio.micronaut.graalvm.rich.output=false",
+            *extraArgs
         ]
         ProcessBuilder builder = new ProcessBuilder(command)
         builder.directory(repoRoot)
         builder.redirectErrorStream(true)
         builder.redirectOutput(outputFile)
         builder.start()
+    }
+
+    private static int awaitProcessExit(Process buildProcess, Duration timeout, File outputFile) {
+        if (!buildProcess.waitFor(timeout.toMillis(), java.util.concurrent.TimeUnit.MILLISECONDS)) {
+            buildProcess.destroyForcibly()
+            buildProcess.waitFor()
+            throw new AssertionError(failureMessage("Timed out waiting for Gradle to exit.", outputFile))
+        }
+        buildProcess.exitValue()
     }
 
     private void writeApplication(String projectName, int port, String controllerName, String route, String body) {
