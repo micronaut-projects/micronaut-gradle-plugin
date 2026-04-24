@@ -128,10 +128,14 @@ public class MicronautMinimalApplicationPlugin implements Plugin<Project> {
                         sysProps
                     );
                     if (backgroundContinuousRun && javaExec.getName().equals("run")) {
+                        File stateFile = project.file("build/micronaut/continuous-run.properties");
                         javaExec.setActions(new ArrayList<>());
-                        javaExec.doLast(task -> {
-                            configureWatchPaths(javaExec, sourceDirectories, additionalFilePathsToWatch);
-                            ContinuousRunSupport.launch(javaExec, project.file("build/micronaut/continuous-run.properties"));
+                        javaExec.doLast(new Action<>() {
+                            @Override
+                            public void execute(Task task) {
+                                configureWatchPaths(javaExec, sourceDirectories, additionalFilePathsToWatch);
+                                ContinuousRunSupport.launch(javaExec, stateFile);
+                            }
                         });
                     } else {
                         //noinspection Convert2Lambda
