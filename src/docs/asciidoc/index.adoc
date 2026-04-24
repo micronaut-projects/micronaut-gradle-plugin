@@ -1109,6 +1109,52 @@ The `editDockerfile` DSL allows you to:
 - insert lines by calling `insert`
 - replace lines by calling `replace`
 
+There is no dedicated Gradle DSL property for `dnf --releasever`. If you need to opt into a specific DNF release policy for the generated native-image Dockerfile, customize `dockerfileNative` directly and replace the generated `RUN dnf ...` lines.
+
+For example, the following recipe opts into `--releasever=latest` for the DNF-based native-image stages. A concrete release value such as `2023.6.20241031` may be safer than `latest` when your target distribution requires deterministic upgrades.
+
+[source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
+----
+tasks.named("dockerfileNative") {
+    editDockerfile {
+        before("FROM graalvm AS builder") {
+            replace(
+                "RUN dnf update -y && dnf install -y gcc glibc-devel zlib-devel libstdc++-static tar && dnf clean all && rm -rf /var/cache/dnf",
+                "RUN dnf --releasever=latest update -y && dnf --releasever=latest install -y gcc glibc-devel zlib-devel libstdc++-static tar && dnf clean all && rm -rf /var/cache/dnf"
+            )
+        }
+        after("FROM graalvm AS builder") {
+            replace(
+                "RUN dnf update -y && dnf install -y zip && dnf clean all",
+                "RUN dnf --releasever=latest update -y && dnf --releasever=latest install -y zip && dnf clean all"
+            )
+        }
+    }
+}
+----
+
+[source, kotlin, subs="verbatim,attributes", role="multi-language-sample"]
+----
+tasks.named<io.micronaut.gradle.docker.NativeImageDockerfile>("dockerfileNative") {
+    editDockerfile {
+        before("FROM graalvm AS builder") {
+            replace(
+                "RUN dnf update -y && dnf install -y gcc glibc-devel zlib-devel libstdc++-static tar && dnf clean all && rm -rf /var/cache/dnf",
+                "RUN dnf --releasever=latest update -y && dnf --releasever=latest install -y gcc glibc-devel zlib-devel libstdc++-static tar && dnf clean all && rm -rf /var/cache/dnf"
+            )
+        }
+        after("FROM graalvm AS builder") {
+            replace(
+                "RUN dnf update -y && dnf install -y zip && dnf clean all",
+                "RUN dnf --releasever=latest update -y && dnf --releasever=latest install -y zip && dnf clean all"
+            )
+        }
+    }
+}
+----
+
+After changing the recipe, run `./gradlew dockerfileNative` and inspect the generated `DockerfileNative` under `build/docker` to confirm the `RUN dnf ...` lines now include your chosen `--releasever` value.
+
 ==== Duplicates on classpath
 
 In some projects, it may happen that different transitive dependencies have the same file name.
