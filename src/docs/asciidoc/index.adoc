@@ -1721,6 +1721,7 @@ dependencies {
 ====
 Private registry settings for Testcontainers must be visible to the Micronaut Test Resources server classpath, not only to the regular test classpath.
 For example, if you configure `hub.image.name.prefix` in `testcontainers.properties`, place that file in `src/testResources/resources/testcontainers.properties` when the project applies `io.micronaut.test-resources` directly.
+The `src/testResources/resources` directory is the dedicated server-side resources location used for the Micronaut Test Resources server classpath.
 Putting `testcontainers.properties` only under `src/test/resources` configures the tests, but not the test-resources server that starts the containers.
 ====
 
