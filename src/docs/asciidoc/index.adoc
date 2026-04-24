@@ -711,6 +711,48 @@ application {
 }
 ----
 
+=== Multiple Test Runtimes
+
+The existing single-runtime configuration remains valid:
+
+[source, groovy]
+----
+micronaut {
+    testRuntime "junit5"
+}
+----
+
+If you need the plugin to auto-configure more than one supported test framework, use `testRuntimes` in addition to the legacy `testRuntime` path. The plugin merges the selected runtime dependencies and keeps JUnit Platform enabled when any selected runtime needs it.
+
+[source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
+----
+plugins {
+    id 'groovy'
+    id 'io.micronaut.application' version '{gradle-project-version}'
+}
+
+micronaut {
+    version = "{micronaut-version}"
+    testRuntime "junit5"
+    testRuntimes "spock2"
+}
+----
+
+[source, kotlin, subs="verbatim,attributes", role="multi-language-sample"]
+----
+import io.micronaut.gradle.MicronautTestRuntime
+
+plugins {
+    groovy
+    id("io.micronaut.application") version "{gradle-project-version}"
+}
+
+micronaut {
+    version.set("{micronaut-version}")
+    testRuntimes(MicronautTestRuntime.JUNIT_5, MicronautTestRuntime.SPOCK_2)
+}
+----
+
 === Kotlin Support
 
 The most simple Kotlin build using a `build.gradle(.kts)` file looks like:
