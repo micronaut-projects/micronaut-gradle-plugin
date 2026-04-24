@@ -96,6 +96,9 @@ public final class FunctionPluginSupport {
             }
             return null;
         }
+        // Function projects only apply Gradle's application plugin for runtimes that need
+        // application-style packaging. A temporary bridge keeps early Groovy DSL
+        // application { } blocks valid until that decision is made.
         var bridge = new FunctionApplicationBridge(project);
         extraProperties.set(APPLICATION_BRIDGE_PROPERTY, bridge);
         return bridge;

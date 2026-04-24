@@ -106,6 +106,40 @@ class FunctionPluginSpec extends AbstractFunctionalTest {
         result.task(':verifyFunctionPlugin').outcome == TaskOutcome.SUCCESS
     }
 
+    def "function plugin accepts zero-argument application closures before lambda provided runtime"() {
+        given:
+        settingsFile << "rootProject.name = 'hello-world'"
+        buildFile << """
+            plugins {
+                id "io.micronaut.function"
+            }
+
+            application { ->
+                mainClass.set("com.example.Function")
+            }
+
+            micronaut {
+                version "$micronautVersion"
+                runtime "lambda_provided"
+            }
+
+            $repositoriesBlock
+
+            tasks.register("verifyFunctionPlugin") {
+                doLast {
+                    assert project.pluginManager.hasPlugin("application")
+                    assert project.extensions.getByType(org.gradle.api.plugins.JavaApplication).mainClass.get() == "com.example.Function"
+                }
+            }
+        """
+
+        when:
+        def result = build('verifyFunctionPlugin')
+
+        then:
+        result.task(':verifyFunctionPlugin').outcome == TaskOutcome.SUCCESS
+    }
+
     def "function plugin supports Kotlin DSL main class configuration for lambda provided"() {
         given:
         settingsFile << "rootProject.name = \"hello-world\""

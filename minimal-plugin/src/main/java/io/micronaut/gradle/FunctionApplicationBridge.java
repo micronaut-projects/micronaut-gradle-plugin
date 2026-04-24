@@ -26,7 +26,10 @@ import java.util.List;
 
 /**
  * Captures early {@code application { }} configuration for function builds until
- * the real Gradle application plugin is applied.
+ * the real Gradle application plugin is applied for runtimes like
+ * {@code lambda_provided}. Groovy build scripts can declare the block before the
+ * runtime callback decides whether the real plugin is needed, so the bridge replays
+ * that configuration once {@link org.gradle.api.plugins.ApplicationPlugin} is present.
  */
 final class FunctionApplicationBridge {
     private final Property<String> mainModule;
@@ -71,7 +74,7 @@ final class FunctionApplicationBridge {
     public void call(Closure<?> closure) {
         closure.setResolveStrategy(Closure.DELEGATE_FIRST);
         closure.setDelegate(this);
-        closure.call(this);
+        closure.call();
     }
 
     @SuppressWarnings("unused")
