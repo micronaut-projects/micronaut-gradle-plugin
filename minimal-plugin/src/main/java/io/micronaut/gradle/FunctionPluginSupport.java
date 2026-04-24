@@ -71,7 +71,18 @@ public final class FunctionPluginSupport {
     }
 
     public static boolean preservesApplicationMainClass(Project project) {
-        return isFunctionProject(project) && project.getPluginManager().hasPlugin(APPLICATION_PLUGIN_ID);
+        return (isFunctionProject(project) && project.getPluginManager().hasPlugin(APPLICATION_PLUGIN_ID))
+            || hasImplementationDependency(project, "io.micronaut.aws", "micronaut-function-aws-custom-runtime");
+    }
+
+    private static boolean hasImplementationDependency(Project project, String group, String artifactId) {
+        var implementation = project.getConfigurations().findByName("implementation");
+        if (implementation == null) {
+            return false;
+        }
+        return implementation.getDependencies().stream().anyMatch(dependency ->
+            group.equals(dependency.getGroup()) && artifactId.equals(dependency.getName())
+        );
     }
 
     private static void maybeApplyApplicationPlugin(Project project, MicronautRuntime runtime) {
