@@ -15,13 +15,14 @@
  */
 package io.micronaut.gradle;
 
+import org.gradle.api.Action;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
+import org.gradle.api.Task;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.Dependency;
 import org.gradle.api.artifacts.ExternalModuleDependency;
 import org.gradle.api.artifacts.dsl.DependencyHandler;
-import org.gradle.api.file.FileCollection;
 import org.gradle.api.plugins.BasePlugin;
 import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.plugins.JavaPluginExtension;
@@ -40,7 +41,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static io.micronaut.gradle.PluginsHelper.applyAdditionalProcessors;
@@ -272,34 +272,27 @@ public class MicronautComponentPlugin implements Plugin<Project> {
                     compilerArgs.add("-Amicronaut.processing.module=" + module);
                 }
                 javaCompile.getOptions().setCompilerArgs(compilerArgs);
-                var annotationProcessorPath = javaCompile.getOptions().getAnnotationProcessorPath();
-                if (annotationProcessorPath != null) {
-                    javaCompile.getOptions().setAnnotationProcessorPath(
-                        reorderLombokAnnotationProcessorPath(project, annotationProcessorPath, loggedLombokWarning)
-                    );
-                }
+                javaCompile.doFirst(new Action<Task>() {
+                    @Override
+                    public void execute(Task unused) {
+                        reorderLombokAnnotationProcessorPath(project, javaCompile, loggedLombokWarning);
+                    }
+                });
             });
         });
 
     }
 
-    private FileCollection reorderLombokAnnotationProcessorPath(Project project,
-                                                                FileCollection annotationProcessorPath,
-                                                                AtomicBoolean loggedLombokWarning) {
-        return project.files(new Callable<List<File>>() {
-            @Override
-            public List<File> call() {
-                return reorderLombokAnnotationProcessorPathFiles(annotationProcessorPath.getFiles(), project, loggedLombokWarning);
-            }
-        });
-    }
-
-    private List<File> reorderLombokAnnotationProcessorPathFiles(Set<File> annotationProcessorPathFiles,
-                                                                 Project project,
-                                                                 AtomicBoolean loggedLombokWarning) {
-        var currentFiles = new ArrayList<>(annotationProcessorPathFiles);
+    private void reorderLombokAnnotationProcessorPath(Project project,
+                                                      JavaCompile javaCompile,
+                                                      AtomicBoolean loggedLombokWarning) {
+        var annotationProcessorPath = javaCompile.getOptions().getAnnotationProcessorPath();
+        if (annotationProcessorPath == null) {
+            return;
+        }
+        var currentFiles = new ArrayList<>(annotationProcessorPath.getFiles());
         if (currentFiles.isEmpty() || isLombokJar(currentFiles.get(0))) {
-            return currentFiles;
+            return;
         }
         for (File file : currentFiles) {
             if (isLombokJar(file)) {
@@ -310,11 +303,11 @@ public class MicronautComponentPlugin implements Plugin<Project> {
                         reorderedFiles.add(currentFile);
                     }
                 }
+                javaCompile.getOptions().setAnnotationProcessorPath(project.files(reorderedFiles));
                 warnAboutLombok(project, loggedLombokWarning);
-                return reorderedFiles;
+                return;
             }
         }
-        return currentFiles;
     }
 
     private boolean isLombokJar(File file) {
