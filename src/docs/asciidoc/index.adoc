@@ -2203,15 +2203,15 @@ The reference API documentation lists every property on link:api/io/micronaut/gr
 
 ==== Dependency expectations for generated code
 
-The Gradle plugin configures code generation, but it does not add the Micronaut Security or other application dependencies required by the generated sources. Treat the generated client like application code: after you enable an option such as `useAuth`, add the Micronaut modules that the emitted classes import and compile against.
+The Gradle plugin configures code generation and may add some supporting dependencies automatically, but it does not add all of the Micronaut Security or other application/runtime dependencies required by the generated sources. Treat the generated client like application code: after you enable an option such as `useAuth`, add the Micronaut modules that the emitted classes import and compile against.
 
-The exact dependency set depends on the auth features present in your OpenAPI definition and on the generator version you select. For example, the auth-enabled OpenAPI client tests in this repository compile with `io.micronaut.security:micronaut-security-oauth2` and `io.micronaut.reactor:micronaut-reactor` on the application classpath. If you generate auth support, regenerate the client and run your normal compile task to confirm that the required Micronaut Security modules are present.
+The exact dependency set depends on the auth features present in your OpenAPI definition and on the generator version you select. For example, the auth-enabled OpenAPI client tests in this repository compile with `io.micronaut.security:micronaut-security-oauth2` and `io.micronaut.reactor:micronaut-reactor` on the application classpath. The plugin can contribute some generated-code support dependencies automatically, but if you generate auth support, regenerate the client and run your normal compile task to confirm that the required Micronaut Security modules are present.
 
 ==== Ownership boundary for generated guides and READMEs
 
 This guide owns the Gradle plugin DSL and how to wire generation into your build. Generated files such as `README.md`, `api-guide.md`, or `auth-guide.md` come from the Micronaut OpenAPI generator templates, not from this documentation page.
 
-If those generated files are missing or incomplete, fix that in `micronaut-openapi` or select a newer generator release with the `openapi.version` setting described below. Use this repository guide to document the Gradle-side integration and dependency expectations; use the generator project to change generated content.
+If those generated files are missing or incomplete, fix that in `micronaut-openapi` or select a newer generator release with the `openapi { version = ... }` / `version.set(...)` configuration described below. Use this repository guide to document the Gradle-side integration and dependency expectations; use the generator project to change generated content.
 
 === Generating a server
 
