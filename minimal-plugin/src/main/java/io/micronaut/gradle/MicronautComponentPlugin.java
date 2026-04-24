@@ -282,6 +282,11 @@ public class MicronautComponentPlugin implements Plugin<Project> {
     private void configureGroovy(Project project, TaskContainer tasks, MicronautExtension micronautExtension) {
         project.getPluginManager().withPlugin("groovy", plugin -> {
             tasks.withType(GroovyCompile.class).configureEach(groovyCompile -> groovyCompile.getGroovyOptions().setParameters(true));
+            project.afterEvaluate(unused -> tasks.withType(GroovyCompile.class).configureEach(groovyCompile -> {
+                if (groovyCompile.getOptions().isIncremental()) {
+                    groovyCompile.getOptions().setAnnotationProcessorPath(project.files());
+                }
+            }));
             var javaPluginExtension = PluginsHelper.javaPluginExtensionOf(project);
             configureDefaultGroovySourceSet(
                     project,
