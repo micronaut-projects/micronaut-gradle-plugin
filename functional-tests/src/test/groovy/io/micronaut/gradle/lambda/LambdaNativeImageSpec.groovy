@@ -94,6 +94,9 @@ class LambdaNativeImageSpec extends AbstractFunctionalTest {
 
         and:
         dockerFileNative.find { it ==~ /.*graalvm-jdk-\d+_linux-${archset}_bin\.tar\.gz.*/ }
+        dockerFileNative.find { it.contains('archive_dir="$(tar -tzf /tmp/graalvm-jdk-25_linux-' + archset + '_bin.tar.gz') }
+        dockerFileNative.find { it.contains('mv "/tmp/${archive_dir}" /usr/lib/graalvm') }
+        !dockerFileNative.find { it.contains('ls -d /tmp/graalvm-jdk-25') }
 
         where:
         archset   | desc
@@ -353,6 +356,54 @@ class LambdaNativeImageSpec extends AbstractFunctionalTest {
         and:
         !dockerFileNative.find() { it.contains('https://github.com/graalvm/graalvm-ce-builds/releases/download') }
         dockerFileNative.find() { it.contains('https://releases.company.com/downloads') }
+    }
+
+    @Issue("https://github.com/micronaut-projects/micronaut-gradle-plugin/issues/915")
+    void 'it is possible to define the GraalVM distribution URL for a lambda community archive'() {
+        given:
+        settingsFile << "rootProject.name = 'hello-world'"
+        buildFile << """
+            plugins {
+                id "io.micronaut.minimal.application"
+                id "io.micronaut.graalvm"
+                id "io.micronaut.docker"
+            }
+
+            micronaut {
+                version "$micronautVersion"
+                runtime "lambda_provided"
+            }
+
+            $repositoriesBlock
+
+            application {
+                mainClass.set("com.example.Application")
+            }
+
+            java {
+                sourceCompatibility = JavaVersion.toVersion('25')
+                targetCompatibility = JavaVersion.toVersion('25')
+            }
+
+            tasks.named("dockerfileNative") {
+                graalVMDistributionUrl = "https://github.com/graalvm/graalvm-ce-builds/releases/download/jdk-25.0.2/graalvm-community-jdk-25.0.2_linux-x64_bin.tar.gz"
+            }
+        """
+
+        when:
+        def result = build('dockerfileNative')
+
+        def dockerfileNativeTask = result.task(':dockerfileNative')
+        def dockerFileNative = new File(testProjectDir.root, 'build/docker/native-main/DockerfileNative').readLines('UTF-8')
+
+        then:
+        dockerfileNativeTask.outcome == TaskOutcome.SUCCESS
+
+        and:
+        dockerFileNative.find() { it.contains('https://github.com/graalvm/graalvm-ce-builds/releases/download/jdk-25.0.2/graalvm-community-jdk-25.0.2_linux-x64_bin.tar.gz') }
+        dockerFileNative.find() { it.contains('archive_dir="$(tar -tzf /tmp/graalvm-jdk-25_linux-x64_bin.tar.gz') }
+        dockerFileNative.find() { it.contains('mv "/tmp/${archive_dir}" /usr/lib/graalvm') }
+        !dockerFileNative.find() { it.contains('ls -d /tmp/graalvm-jdk-25') }
     }
 
     @Issue("https://github.com/micronaut-projects/micronaut-gradle-plugin/issues/753")
