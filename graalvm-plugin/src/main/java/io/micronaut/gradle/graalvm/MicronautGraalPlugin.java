@@ -40,6 +40,7 @@ import static io.micronaut.gradle.PluginsHelper.findMicronautExtension;
 public class MicronautGraalPlugin implements Plugin<Project> {
 
     public static final String RICH_OUTPUT_PROPERTY = "io.micronaut.graalvm.rich.output";
+    private static final String SHARED_ARENA_SUPPORT = "-H:+SharedArenaSupport";
 
     private static final Set<String> SOURCE_SETS = Set.of("main", "test");
     private static final List<String> GRAALVM_MODULE_EXPORTS = List.of(
@@ -77,6 +78,7 @@ public class MicronautGraalPlugin implements Plugin<Project> {
                         inf.getIgnoreExistingResourcesConfigFile().convention(true);
                         inf.getRestrictToProjectDependencies().convention(true);
                     }));
+                    options.buildArgs(SHARED_ARENA_SUPPORT);
                     Provider<String> richOutput = project.getProviders().systemProperty(RICH_OUTPUT_PROPERTY);
                     if (richOutput.isPresent()) {
                         options.getRichOutput().convention(richOutput.map(Boolean::parseBoolean));

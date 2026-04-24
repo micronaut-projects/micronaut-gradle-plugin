@@ -52,6 +52,7 @@ class Application {
         def task = result.task(":nativeCompile")
         then:
         result.output.contains("Native Image written to")
+        argFileContentsOf(result).contains('-H:+SharedArenaSupport')
         task.outcome == TaskOutcome.SUCCESS
     }
 
@@ -106,6 +107,7 @@ class Application {
         def task = result.task(":nativeCompile")
         then:
         result.output.contains("Native Image written to")
+        argFileContentsOf(result).contains('-H:+SharedArenaSupport')
         argFileContentsOf(result).contains('-Dfoo=bar')
         task.outcome == TaskOutcome.SUCCESS
     }
