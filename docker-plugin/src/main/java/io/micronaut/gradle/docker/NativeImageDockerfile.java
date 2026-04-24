@@ -47,6 +47,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import static io.micronaut.gradle.PluginsHelper.findMicronautExtension;
 import static io.micronaut.gradle.docker.MicronautDockerfile.DEFAULT_WORKING_DIR;
@@ -75,6 +76,7 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
     private static final String GRAALVM_DISTRIBUTION_PATH = "/%s/%s/graalvm-jdk-%s_linux-%s_bin.tar.gz";
     //Latest version of GraalVM for JDK 17 available under the GraalVM Free Terms and Conditions (GFTC) licence
     private static final String GRAALVM_FOR_JDK17 = "17.0.12";
+    private static final Pattern POSIX_SAFE_SHELL_TOKEN = Pattern.compile("[A-Za-z0-9_@%+=:,./-]+");
 
     /**
      * @return The JDK version to use with native image. Defaults to the toolchain version, or the current Java version.
@@ -534,7 +536,7 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
                             .toList();
                 }
         ));
-        runCommand(getProviders().provider(() -> String.join(" ", buildActualCommandLine(executable, buildStrategy, imageResolver))));
+        runCommand(getProviders().provider(() -> renderShellCommand(buildActualCommandLine(executable, buildStrategy, imageResolver))));
         switch (buildStrategy) {
             case ORACLE_FUNCTION:
                 from(new From("fnproject/fn-java-fdk:" + getProjectFnVersion()).withStage("fnfdk"));
@@ -632,6 +634,22 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
             commandLine.add("-H:+StaticExecutableWithDynamicLibC");
         }
         return commandLine;
+    }
+
+    private static String renderShellCommand(List<String> commandLine) {
+        return String.join(" ", commandLine.stream()
+                .map(NativeImageDockerfile::renderShellToken)
+                .toList());
+    }
+
+    private static String renderShellToken(String token) {
+        if (token.isEmpty()) {
+            return "''";
+        }
+        if (POSIX_SAFE_SHELL_TOKEN.matcher(token).matches()) {
+            return token;
+        }
+        return "'" + token.replace("'", "'\"'\"'") + "'";
     }
 
     private List<String> buildNativeImageCommandLineArgs(Provider<String> executable, NativeImageOptions options) {
