@@ -94,6 +94,21 @@ public final class MicronautRuntimeDependencies {
      * @return The dependencies and scopes
      */
     public static Dependencies findApplicationPluginDependenciesByRuntime(MicronautRuntime runtime) {
+        return findApplicationPluginDependenciesByRuntime(runtime, MicronautSerialization.SERDE_JACKSON);
+    }
+
+    /**
+     * @param runtime Micronaut runtime
+     * @param serialization Micronaut runtime serialization
+     * @return The dependencies and scopes
+     */
+    public static Dependencies findApplicationPluginDependenciesByRuntime(MicronautRuntime runtime, MicronautSerialization serialization) {
+        Dependencies.Builder builder = builderForRuntime(runtime);
+        addSerializationDependency(builder, serialization);
+        return builder.build();
+    }
+
+    private static Dependencies.Builder builderForRuntime(MicronautRuntime runtime) {
         if (runtime.isLambda()) {
             Dependencies.Builder builder = Dependencies.builder()
                     .implementation(micronautAwsDependency(ARTIFACT_ID_MICRONAUT_AWS_API_PROXY), AWS_VERSION_PROPERTY)
@@ -102,15 +117,14 @@ public final class MicronautRuntimeDependencies {
             if (runtime.isLambdaProvided()) {
                 builder = builder.implementation(micronautAwsDependency(ARTIFACT_ID_MICRONAUT_AWS_CUSTOM_RUNTIME), AWS_VERSION_PROPERTY);
             }
-            return builder.build();
+            return builder;
 
         } else if (runtime == MicronautRuntime.ORACLE_FUNCTION) {
             return Dependencies.builder()
                     .implementation(micronautOracleDependency(ARTIFACT_ID_MICRONAUT_ORACLE_HTTP), ORACLECLOUD_VERSION_PROPERTY)
                     .testImplementation(micronautOracleDependency(ARTIFACT_ID_MICRONAUT_ORACLE_HTTP_TEST), ORACLECLOUD_VERSION_PROPERTY)
                     .developmentOnly(micronautOracleDependency(ARTIFACT_ID_MICRONAUT_ORACLE_HTTP_TEST), ORACLECLOUD_VERSION_PROPERTY)
-                    .runtimeOnly("com.fnproject.fn:runtime")
-                    .build();
+                    .runtimeOnly("com.fnproject.fn:runtime");
         } else if (runtime == MicronautRuntime.GOOGLE_FUNCTION) {
             return Dependencies.builder()
                     .implementation(micronautGcpDependency(ARTIFACT_ID_MICRONAUT_GCP_FUNCTION_HTTP), GCP_VERSION_PROPERTY)
@@ -118,40 +132,43 @@ public final class MicronautRuntimeDependencies {
                     .developmentOnly(micronautGcpDependency(ARTIFACT_ID_MICRONAUT_GCP_FUNCTION_HTTP_TEST), GCP_VERSION_PROPERTY)
                     .compileOnly(dependency(GROUP_GOOGLE_CLOUD_FUNCTIONS, ARTIFACT_ID_FUNCTIONS_FRAMEWORK_API))
                     .testImplementation(dependency(GROUP_GOOGLE_CLOUD_FUNCTIONS, ARTIFACT_ID_FUNCTIONS_FRAMEWORK_API))
-                    .testImplementation(micronautGcpDependency(ARTIFACT_ID_MICRONAUT_GCP_FUNCTION_HTTP_TEST), GCP_VERSION_PROPERTY)
-                    .build();
+                    .testImplementation(micronautGcpDependency(ARTIFACT_ID_MICRONAUT_GCP_FUNCTION_HTTP_TEST), GCP_VERSION_PROPERTY);
         } else if (runtime == MicronautRuntime.AZURE_FUNCTION) {
             return Dependencies.builder()
                     .implementation(micronautAzureDependency(ARTIFACT_ID_MICRONAUT_AZURE_FUNCTION_HTTP), AZURE_VERSION_PROPERTY)
                     .implementation("com.microsoft.azure.functions:azure-functions-java-library")
                     .developmentOnly(micronautAzureDependency(ARTIFACT_ID_MICRONAUT_AZURE_FUNCTION_HTTP_TEST), AZURE_VERSION_PROPERTY)
-                    .testImplementation(micronautAzureDependency(ARTIFACT_ID_MICRONAUT_AZURE_FUNCTION_HTTP_TEST), AZURE_VERSION_PROPERTY)
-                    .build();
+                    .testImplementation(micronautAzureDependency(ARTIFACT_ID_MICRONAUT_AZURE_FUNCTION_HTTP_TEST), AZURE_VERSION_PROPERTY);
 
         } else if (runtime == NETTY) {
-            return Dependencies.builder().implementation(dependency(GROUP_MICRONAUT, ARTIFACT_ID_MICRONAUT_SERVER_NETTY), HTTP_NETTY_VERSION_PROPERTY).build();
+            return Dependencies.builder().implementation(dependency(GROUP_MICRONAUT, ARTIFACT_ID_MICRONAUT_SERVER_NETTY), HTTP_NETTY_VERSION_PROPERTY);
 
         } else if (runtime == TOMCAT) {
-            return Dependencies.builder().implementation(micronautServletDependency(ARTIFACT_ID_MICRONAUT_SERVLET_TOMCAT), SERVLET_VERSION_PROPERTY).build();
+            return Dependencies.builder().implementation(micronautServletDependency(ARTIFACT_ID_MICRONAUT_SERVLET_TOMCAT), SERVLET_VERSION_PROPERTY);
 
         } else if (runtime == JETTY) {
-            return Dependencies.builder().implementation(micronautServletDependency(ARTIFACT_ID_MICRONAUT_SERVLET_JETTY), SERVLET_VERSION_PROPERTY).build();
+            return Dependencies.builder().implementation(micronautServletDependency(ARTIFACT_ID_MICRONAUT_SERVLET_JETTY), SERVLET_VERSION_PROPERTY);
 
         } else if (runtime == UNDERTOW) {
-            return Dependencies.builder().implementation(micronautServletDependency(ARTIFACT_ID_MICRONAUT_SERVLET_UNDERTOW), SERVLET_VERSION_PROPERTY).build();
+            return Dependencies.builder().implementation(micronautServletDependency(ARTIFACT_ID_MICRONAUT_SERVLET_UNDERTOW), SERVLET_VERSION_PROPERTY);
         } else if (runtime == HTTP_POJA) {
             return Dependencies.builder().implementation(micronautServletDependency(ARTIFACT_ID_MICRONAUT_SERVLET_POJA_APACHE), SERVLET_VERSION_PROPERTY)
-                    .testImplementation(micronautServletDependency(ARTIFACT_ID_MICRONAUT_SERVLET_POJA_TEST), SERVLET_VERSION_PROPERTY)
-                    .build();
+                    .testImplementation(micronautServletDependency(ARTIFACT_ID_MICRONAUT_SERVLET_POJA_TEST), SERVLET_VERSION_PROPERTY);
         } else if (runtime == HTTP_SERVER_JDK) {
             return Dependencies.builder()
-                    .implementation(micronautServletDependency(ARTIFACT_ID_MICRONAUT_HTTP_SERVER_JDK), SERVLET_VERSION_PROPERTY)
-                    .build();
+                    .implementation(micronautServletDependency(ARTIFACT_ID_MICRONAUT_HTTP_SERVER_JDK), SERVLET_VERSION_PROPERTY);
 
         } else if (runtime != NONE) {
             throw new GradleException("Application plugin dependencies not specified for runtime " + runtime.name());
         }
-        return Dependencies.builder().build();
+        return Dependencies.builder();
+    }
+
+    private static void addSerializationDependency(Dependencies.Builder builder, MicronautSerialization serialization) {
+        builder.runtimeOnly(
+                serialization.getRuntimeDependency(),
+                serialization.getVersionProperty().orElse(null)
+        );
     }
 
     private static String micronautOracleDependency(String artifactId) {
