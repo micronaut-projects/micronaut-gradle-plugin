@@ -37,6 +37,10 @@ public enum MicronautSerialization {
         return Optional.ofNullable(versionProperty);
     }
 
+    public boolean matchesArtifact(String artifactId) {
+        return runtimeDependency.endsWith(":" + artifactId);
+    }
+
     public static MicronautSerialization parse(String value) {
         if (value == null) {
             return SERDE_JACKSON;
