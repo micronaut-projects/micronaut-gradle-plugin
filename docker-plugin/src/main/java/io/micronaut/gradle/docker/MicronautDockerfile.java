@@ -155,8 +155,12 @@ public abstract class MicronautDockerfile extends Dockerfile implements DockerBu
                 );
                 break;
             case LAMBDA:
-                if (javaApplication != null && FunctionPluginSupport.usesApplicationLambdaRuntime(getProject()) && !javaApplication.getMainClass().isPresent()) {
-                    javaApplication.getMainClass().set("io.micronaut.function.aws.runtime.MicronautLambdaRuntime");
+                if (javaApplication != null) {
+                    if (!FunctionPluginSupport.preservesApplicationMainClass(getProject())) {
+                        javaApplication.getMainClass().set("io.micronaut.function.aws.runtime.MicronautLambdaRuntime");
+                    } else if (!javaApplication.getMainClass().isPresent()) {
+                        javaApplication.getMainClass().set("io.micronaut.function.aws.runtime.MicronautLambdaRuntime");
+                    }
                 }
             default:
                 from(new Dockerfile.From(from != null ? from : DEFAULT_BASE_IMAGE + getDockerDefaultImageJavaTag()));

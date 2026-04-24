@@ -101,7 +101,10 @@ public class MicronautGraalPlugin implements Plugin<Project> {
                     JavaApplication javaApplication = project.getExtensions().findByType(JavaApplication.class);
                     boolean explicitMainClass = javaApplication != null && javaApplication.getMainClass().isPresent();
 
-                    if (isAwsApp && !explicitMainClass && !nativeImageTask.getOptions().get().getMainClass().isPresent()) {
+                    if (isAwsApp && !FunctionPluginSupport.preservesApplicationMainClass(project)) {
+                        var nativeLambdaExtension = findMicronautExtension(project).getExtensions().getByType(NativeLambdaExtension.class);
+                        nativeImageTask.getOptions().get().getMainClass().set(nativeLambdaExtension.getLambdaRuntimeClassName());
+                    } else if (isAwsApp && !explicitMainClass && !nativeImageTask.getOptions().get().getMainClass().isPresent()) {
                         var nativeLambdaExtension = findMicronautExtension(project).getExtensions().getByType(NativeLambdaExtension.class);
                         nativeImageTask.getOptions().get().getMainClass().set(nativeLambdaExtension.getLambdaRuntimeClassName());
                     }
