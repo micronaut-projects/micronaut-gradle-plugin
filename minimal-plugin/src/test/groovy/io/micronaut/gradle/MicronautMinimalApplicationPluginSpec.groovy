@@ -1,6 +1,7 @@
 package io.micronaut.gradle
 
 
+import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.TaskOutcome
 import spock.lang.Issue
 
@@ -83,6 +84,61 @@ class MicronautMinimalApplicationPluginSpec extends AbstractGradleBuildSpec {
         then:
         task.outcome == TaskOutcome.SUCCESS
         watchLine.contains 'src/main/groovy'
+    }
+
+    def "continuous run can launch in the background for tests"() {
+        given:
+        settingsFile << "rootProject.name = 'hello-world'"
+        buildFile << """
+            plugins {
+                id "io.micronaut.minimal.application"
+            }
+
+            micronaut {
+                version "$micronautVersion"
+                runtime "netty"
+            }
+
+            $repositoriesBlock
+            application { mainClass = "example.Application" }
+        """
+
+        def pidFile = file("build/background.pid")
+        testProjectDir.newFolder("src", "main", "java", "example")
+        testProjectDir.newFile("src/main/java/example/Application.java") << """
+package example;
+
+import java.nio.file.Files;
+import java.nio.file.Path;
+
+public class Application {
+    public static void main(String[] args) throws Exception {
+        Path pidFile = Path.of("${pidFile.absolutePath.replace("\\", "\\\\")}");
+        Files.createDirectories(pidFile.getParent());
+        Files.writeString(pidFile, Long.toString(ProcessHandle.current().pid()));
+        Thread.sleep(300000);
+    }
+}
+"""
+
+        def elapsedMillis
+        def result
+        def backgroundProcess
+
+        when:
+        long started = System.nanoTime()
+        result = build('run', "-D${MicronautMinimalApplicationPlugin.INTERNAL_CONTINUOUS_BACKGROUND_FLAG}=true")
+        elapsedMillis = java.util.concurrent.TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - started)
+        backgroundProcess = waitForProcess(pidFile)
+
+        then:
+        result.task(":run").outcome == TaskOutcome.SUCCESS
+        backgroundProcess != null
+        backgroundProcess.alive
+        elapsedMillis < java.util.concurrent.TimeUnit.SECONDS.toMillis(120)
+
+        cleanup:
+        stopBackgroundProcess(backgroundProcess)
     }
 
     @Issue("https://github.com/micronaut-projects/micronaut-gradle-plugin/issues/594")
@@ -183,6 +239,29 @@ public class ExampleTest {
         then:
         result.output.contains('Could not find io.micronaut:micronaut-inject:2048')
 
+    }
+
+    private static ProcessHandle waitForProcess(File pidFile) {
+        long deadline = System.nanoTime() + java.util.concurrent.TimeUnit.SECONDS.toNanos(10)
+        while (System.nanoTime() < deadline) {
+            if (pidFile.exists()) {
+                long pid = pidFile.text.trim() as long
+                def handle = ProcessHandle.of(pid).orElse(null)
+                if (handle?.alive) {
+                    return handle
+                }
+            }
+            Thread.sleep(200)
+        }
+        null
+    }
+
+    private static void stopBackgroundProcess(ProcessHandle backgroundProcess) {
+        if (backgroundProcess == null) {
+            return
+        }
+        backgroundProcess.destroyForcibly()
+        backgroundProcess.onExit().get(5, java.util.concurrent.TimeUnit.SECONDS)
     }
 
     def "can override the default Micronaut core version via the Micronaut version catalog"() {
