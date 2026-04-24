@@ -77,11 +77,12 @@ public class MicronautComponentPlugin implements Plugin<Project> {
     public void apply(Project project) {
         PluginManager plugins = project.getPluginManager();
         plugins.apply(MicronautBasePlugin.class);
+        var loggedLombokWarning = new AtomicBoolean(false);
         MicronautExtension micronautExtension = project.getExtensions().getByType(MicronautExtension.class);
         TaskContainer tasks = project.getTasks();
         TaskProvider<ApplicationClasspathInspector> inspectRuntimeClasspath = registerInspectRuntimeClasspath(project, tasks);
 
-        configureJava(project, tasks);
+        configureJava(project, tasks, loggedLombokWarning);
 
         configureGroovy(project, tasks, micronautExtension);
 
@@ -97,11 +98,10 @@ public class MicronautComponentPlugin implements Plugin<Project> {
         });
         PluginsHelper.registerVersionExtensions(PluginsHelper.KNOWN_VERSION_PROPERTIES, project);
 
-        detectAndFixLombokUse(project);
+        detectAndFixLombokUse(project, loggedLombokWarning);
     }
 
-    private void detectAndFixLombokUse(Project project) {
-        var logged = new AtomicBoolean(false);
+    private void detectAndFixLombokUse(Project project, AtomicBoolean loggedLombokWarning) {
         project.afterEvaluate(unused -> {
             for (var conf : List.of("annotationProcessor", "testAnnotationProcessor")) {
                 var annotationProcessor = project.getConfigurations().findByName(conf);
@@ -121,10 +121,7 @@ public class MicronautComponentPlugin implements Plugin<Project> {
                         }
                         annotationProcessor.getDependencies().clear();
                         annotationProcessor.getDependencies().addAll(newDependencies);
-                        if (!logged.compareAndSet(false, true)) {
-                            project.getLogger().warn("Detected use of Lombok, which is strongly discouraged. Annotation processors have been reordered to avoid issues.\n" +
-                                                     "Consider using Micronaut Sourcegen instead: https://micronaut-projects.github.io/micronaut-sourcegen/latest/guide/");
-                        }
+                        warnAboutLombok(project, loggedLombokWarning);
                     }
                 }
             }
@@ -216,7 +213,7 @@ public class MicronautComponentPlugin implements Plugin<Project> {
     }
 
 
-    private void configureJava(Project project, TaskContainer tasks) {
+    private void configureJava(Project project, TaskContainer tasks, AtomicBoolean loggedLombokWarning) {
 
         project.afterEvaluate(p -> {
             var sourceSets = PluginsHelper.findSourceSets(p);
@@ -273,9 +270,48 @@ public class MicronautComponentPlugin implements Plugin<Project> {
                     compilerArgs.add("-Amicronaut.processing.module=" + module);
                 }
                 javaCompile.getOptions().setCompilerArgs(compilerArgs);
+                javaCompile.doFirst(unused -> reorderLombokAnnotationProcessorPath(project, javaCompile, loggedLombokWarning));
             });
         });
 
+    }
+
+    private void reorderLombokAnnotationProcessorPath(Project project,
+                                                      JavaCompile javaCompile,
+                                                      AtomicBoolean loggedLombokWarning) {
+        var annotationProcessorPath = javaCompile.getOptions().getAnnotationProcessorPath();
+        if (annotationProcessorPath == null) {
+            return;
+        }
+        var currentFiles = new ArrayList<>(annotationProcessorPath.getFiles());
+        if (currentFiles.isEmpty() || isLombokJar(currentFiles.get(0))) {
+            return;
+        }
+        for (File file : currentFiles) {
+            if (isLombokJar(file)) {
+                var reorderedFiles = new ArrayList<File>(currentFiles.size());
+                reorderedFiles.add(file);
+                for (File currentFile : currentFiles) {
+                    if (!file.equals(currentFile)) {
+                        reorderedFiles.add(currentFile);
+                    }
+                }
+                javaCompile.getOptions().setAnnotationProcessorPath(project.files(reorderedFiles));
+                warnAboutLombok(project, loggedLombokWarning);
+                return;
+            }
+        }
+    }
+
+    private boolean isLombokJar(File file) {
+        return file.getName().contains(LOMBOK_ARTIFACT_ID);
+    }
+
+    private void warnAboutLombok(Project project, AtomicBoolean loggedLombokWarning) {
+        if (loggedLombokWarning.compareAndSet(false, true)) {
+            project.getLogger().warn("Detected use of Lombok, which is strongly discouraged. Annotation processors have been reordered to avoid issues.\n" +
+                "Consider using Micronaut Sourcegen instead: https://micronaut-projects.github.io/micronaut-sourcegen/latest/guide/");
+        }
     }
 
 
