@@ -3,7 +3,7 @@ package io.micronaut.gradle;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.file.DirectoryProperty;
-import org.gradle.api.internal.file.FileOperations;
+import org.gradle.api.file.FileSystemOperations;
 import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.CacheableTask;
 import org.gradle.api.tasks.Classpath;
@@ -35,6 +35,8 @@ import java.util.regex.Pattern;
  */
 @CacheableTask
 public abstract class GenerateImportFactoryTask extends DefaultTask {
+    private static final Pattern MULTI_RELEASE_JAR_PREFIX = Pattern.compile("^META-INF/versions/\\d+/");
+
     @Classpath
     public abstract ConfigurableFileCollection getDependencyJars();
 
@@ -52,12 +54,12 @@ public abstract class GenerateImportFactoryTask extends DefaultTask {
     public abstract DirectoryProperty getOutputDirectory();
 
     @Inject
-    protected abstract FileOperations getFileOperations();
+    protected abstract FileSystemOperations getFileSystemOperations();
 
     @TaskAction
     public void generate() {
         File outputDirectory = getOutputDirectory().get().getAsFile();
-        getFileOperations().delete(outputDirectory);
+        getFileSystemOperations().delete(spec -> spec.delete(outputDirectory));
 
         Set<String> packages = collectPackages();
         if (packages.isEmpty()) {
@@ -103,7 +105,7 @@ public abstract class GenerateImportFactoryTask extends DefaultTask {
         if (entry.isDirectory()) {
             return null;
         }
-        String entryName = entry.getName();
+        String entryName = stripMultiReleaseJarPrefix(entry.getName());
         if (!entryName.endsWith(".class")) {
             return null;
         }
@@ -116,6 +118,10 @@ public abstract class GenerateImportFactoryTask extends DefaultTask {
             return null;
         }
         return packageName;
+    }
+
+    private String stripMultiReleaseJarPrefix(String entryName) {
+        return MULTI_RELEASE_JAR_PREFIX.matcher(entryName).replaceFirst("");
     }
 
     private String normalizedTargetPackage() {

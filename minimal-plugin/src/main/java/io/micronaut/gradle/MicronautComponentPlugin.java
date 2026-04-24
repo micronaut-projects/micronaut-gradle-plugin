@@ -295,6 +295,8 @@ public class MicronautComponentPlugin implements Plugin<Project> {
                                                                                            MicronautExtension micronautExtension) {
         return tasks.register(GENERATE_IMPORT_FACTORIES_TASK_NAME, GenerateImportFactoryTask.class, task -> {
             ImportFactoryConfiguration importFactory = micronautExtension.getImportFactory();
+            Pattern includeDependencyFilter = Pattern.compile(importFactory.getIncludeDependenciesFilter().get());
+            Pattern excludeDependencyFilter = Pattern.compile(importFactory.getExcludeDependenciesFilter().get());
             task.setGroup(BasePlugin.BUILD_GROUP);
             task.setDescription("Generates Micronaut import factories from dependency jars");
             task.getIncludePackagesFilter().convention(importFactory.getIncludePackagesFilter());
@@ -306,20 +308,20 @@ public class MicronautComponentPlugin implements Plugin<Project> {
                 .getIncoming()
                 .artifactView(view -> view.componentFilter(componentIdentifier ->
                     matchesDependencyFilter(componentIdentifier,
-                        importFactory.getIncludeDependenciesFilter().get(),
-                        importFactory.getExcludeDependenciesFilter().get())))
+                        includeDependencyFilter,
+                        excludeDependencyFilter)))
                 .getFiles());
         });
     }
 
     private static boolean matchesDependencyFilter(ComponentIdentifier componentIdentifier,
-                                                  String includeFilter,
-                                                  String excludeFilter) {
+                                                   Pattern includeFilter,
+                                                   Pattern excludeFilter) {
         if (!(componentIdentifier instanceof ModuleComponentIdentifier moduleComponentIdentifier)) {
             return false;
         }
         String identifier = moduleComponentIdentifier.getGroup() + ":" + moduleComponentIdentifier.getModule();
-        return Pattern.matches(includeFilter, identifier) && !Pattern.matches(excludeFilter, identifier);
+        return includeFilter.matcher(identifier).matches() && !excludeFilter.matcher(identifier).matches();
     }
 
 

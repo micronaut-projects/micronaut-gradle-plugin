@@ -169,10 +169,12 @@ class ImportFactoryEnabledTest {
         when:
         def result = build('compileJava')
         File generatedSources = file("build/generated-sources/importfactory")
-        List<String> generatedFiles = Files.walk(generatedSources.toPath())
-            .filter(path -> path.fileName.toString() == "ImportFactory.java")
-            .collect { generatedSources.toPath().relativize(it).toString().replace(File.separatorChar, '/' as char) }
-            .sort()
+        List<String> generatedFiles = Files.walk(generatedSources.toPath()).withCloseable { paths ->
+            paths
+                .filter(path -> path.fileName.toString() == "ImportFactory.java")
+                .collect { generatedSources.toPath().relativize(it).toString().replace(File.separatorChar, '/' as char) }
+                .sort()
+        }
 
         then:
         result.task(":generateImportFactories").outcome == TaskOutcome.SUCCESS
@@ -220,6 +222,46 @@ class ImportFactoryEnabledTest {
         result.task(":generateImportFactories").outcome == TaskOutcome.SUCCESS
         result.task(":compileJava").outcome == TaskOutcome.NO_SOURCE
         (!generatedSources.exists()) || generatedSources.list().length == 0
+    }
+
+    def "multi-release jar entries contribute package imports"() {
+        given:
+        File repositoryDir = publishDependencyRepository()
+        settingsFile << "rootProject.name = 'import-factory-multi-release'"
+        buildFile << """
+            plugins {
+                id "io.micronaut.minimal.library"
+            }
+
+            micronaut {
+                version "$micronautVersion"
+                importFactory {
+                    enabled.set(true)
+                    includeDependenciesFilter.set("com\\\\.example\\\\.imports:sample-alpha")
+                    includePackagesFilter.set("example\\\\.versioned.*")
+                    targetPackage.set("example.generated")
+                }
+            }
+
+            repositories {
+                maven { url = uri("${repositoryDir.toURI()}") }
+                mavenCentral()
+            }
+
+            dependencies {
+                implementation "com.example.imports:sample-alpha:1.0"
+            }
+        """
+
+        when:
+        def result = build('compileJava')
+        File generatedFactory = file("build/generated-sources/importfactory/example/generated/ImportFactory.java")
+
+        then:
+        result.task(":generateImportFactories").outcome == TaskOutcome.SUCCESS
+        result.task(":compileJava").outcome == TaskOutcome.SUCCESS
+        generatedFactory.exists()
+        normalizeLineEndings(generatedFactory.text).contains('"example.versioned"')
     }
 
     private File publishDependencyRepository() {
@@ -289,6 +331,7 @@ import jakarta.inject.Singleton;
 public class HiddenService {
 }
 """)
+        writeDependencyBinaryResource(repositoryProjectDir, "sample-alpha", "META-INF/versions/17/example/versioned/VersionedService.class")
         writeDependencySource(repositoryProjectDir, "sample-beta", "example/imported/beta/BetaService.java", """
 package example.imported.beta;
 
@@ -322,6 +365,12 @@ public class SharedBetaService {
         File sourceFile = new File(repositoryProjectDir, "${projectName}/src/main/java/${relativePath}")
         sourceFile.parentFile.mkdirs()
         sourceFile.text = source
+    }
+
+    private void writeDependencyBinaryResource(File repositoryProjectDir, String projectName, String relativePath) {
+        File resourceFile = new File(repositoryProjectDir, "${projectName}/src/main/resources/${relativePath}")
+        resourceFile.parentFile.mkdirs()
+        Files.write(resourceFile.toPath(), [0] as byte[])
     }
 
     private void writeTest(String source) {
