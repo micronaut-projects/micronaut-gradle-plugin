@@ -95,6 +95,8 @@ class LambdaNativeImageSpec extends AbstractFunctionalTest {
         and:
         dockerFileNative.find { it ==~ /.*graalvm-jdk-\d+_linux-${archset}_bin\.tar\.gz.*/ }
         dockerFileNative.find { it.contains('archive_dir="$(tar -tzf /tmp/graalvm-jdk-25_linux-' + archset + '_bin.tar.gz') }
+        dockerFileNative.find { it.contains('test -n "$archive_dir"') }
+        dockerFileNative.find { it.contains('test -d "/tmp/${archive_dir}"') }
         dockerFileNative.find { it.contains('mv "/tmp/${archive_dir}" /usr/lib/graalvm') }
         !dockerFileNative.find { it.contains('ls -d /tmp/graalvm-jdk-25') }
 
@@ -402,6 +404,8 @@ class LambdaNativeImageSpec extends AbstractFunctionalTest {
         and:
         dockerFileNative.find() { it.contains('https://github.com/graalvm/graalvm-ce-builds/releases/download/jdk-25.0.2/graalvm-community-jdk-25.0.2_linux-x64_bin.tar.gz') }
         dockerFileNative.find() { it.contains('archive_dir="$(tar -tzf /tmp/graalvm-jdk-25_linux-x64_bin.tar.gz') }
+        dockerFileNative.find() { it.contains('test -n "$archive_dir"') }
+        dockerFileNative.find() { it.contains('test -d "/tmp/${archive_dir}"') }
         dockerFileNative.find() { it.contains('mv "/tmp/${archive_dir}" /usr/lib/graalvm') }
         !dockerFileNative.find() { it.contains('ls -d /tmp/graalvm-jdk-25') }
     }

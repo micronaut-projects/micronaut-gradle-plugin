@@ -36,7 +36,7 @@ class DefaultEditorTest extends Specification {
               ENV LANG=en_US.UTF-8
               RUN dnf update -y && dnf install -y gcc glibc-devel zlib-devel libstdc++-static tar && dnf clean all && rm -rf /var/cache/dnf
               RUN curl -4 -L https://download.oracle.com/graalvm/21/latest/graalvm-jdk-21_linux-x64_bin.tar.gz -o /tmp/graalvm-jdk-21_linux-x64_bin.tar.gz
-              RUN archive_dir="$(tar -tzf /tmp/graalvm-jdk-21_linux-x64_bin.tar.gz | sed -n 's#^\\./##;s#/.*##;/^$/d;p;q')" && test -n "$archive_dir" && tar -zxf /tmp/graalvm-jdk-21_linux-x64_bin.tar.gz -C /tmp && mv "/tmp/${archive_dir}" /usr/lib/graalvm
+              RUN archive_dir="$(tar -tzf /tmp/graalvm-jdk-21_linux-x64_bin.tar.gz | sed -n 's#^\\./##;s#/.*##;/^$/d;p;q')" && test -n "$archive_dir" && tar -zxf /tmp/graalvm-jdk-21_linux-x64_bin.tar.gz -C /tmp && test -d "/tmp/${archive_dir}" && mv "/tmp/${archive_dir}" /usr/lib/graalvm
               RUN rm -rf /tmp/*
               CMD ["/usr/lib/graalvm/bin/native-image"]
               ENV PATH=/usr/lib/graalvm/bin:${PATH}
@@ -68,7 +68,7 @@ class DefaultEditorTest extends Specification {
               WORKDIR /function
               RUN dnf install -y zip
               COPY --link --from=builder /home/app/application /function/func
-              RUN echo "#!/bin/sh" >> bootstrap && echo "set -euo pipefail" >> bootstrap && echo "./func -XX:MaximumHeapSizePercent=80 -Dio.netty.allocator.numDirectArenas=0 -Dio.netty.noPreferDirect=true -Djava.library.path=$(pwd)" >> bootstrap
+              RUN echo "#!/bin/sh" >> bootstrap && echo "set -euo pipefail" >> bootstrap && echo "./func -XX:MaximumHeapSizePercent=80 -Dio.netty.allocator.numDirectArenas=0 -Dio.netty.noPreferDirect=true -Djava.library.path=\$(pwd)" >> bootstrap
               RUN chmod 777 bootstrap
               RUN chmod 777 func
               RUN zip -j function.zip bootstrap func
@@ -86,7 +86,7 @@ class DefaultEditorTest extends Specification {
                 ENV LANG=en_US.UTF-8
                 RUN dnf update -y && dnf install -y gcc glibc-devel zlib-devel libstdc++-static tar && dnf clean all && rm -rf /var/cache/dnf
                 RUN curl -4 -L https://download.oracle.com/graalvm/21/latest/graalvm-jdk-21_linux-x64_bin.tar.gz -o /tmp/graalvm-jdk-21_linux-x64_bin.tar.gz
-                RUN archive_dir="$(tar -tzf /tmp/graalvm-jdk-21_linux-x64_bin.tar.gz | sed -n 's#^\\./##;s#/.*##;/^$/d;p;q')" && test -n "$archive_dir" && tar -zxf /tmp/graalvm-jdk-21_linux-x64_bin.tar.gz -C /tmp && mv "/tmp/${archive_dir}" /usr/lib/graalvm
+                RUN archive_dir="$(tar -tzf /tmp/graalvm-jdk-21_linux-x64_bin.tar.gz | sed -n 's#^\\./##;s#/.*##;/^$/d;p;q')" && test -n "$archive_dir" && tar -zxf /tmp/graalvm-jdk-21_linux-x64_bin.tar.gz -C /tmp && test -d "/tmp/${archive_dir}" && mv "/tmp/${archive_dir}" /usr/lib/graalvm
                 RUN rm -rf /tmp/*
                 CMD ["/usr/lib/graalvm/bin/native-image"]
                 ENV PATH=/usr/lib/graalvm/bin:${PATH}
@@ -119,7 +119,7 @@ class DefaultEditorTest extends Specification {
                 WORKDIR /function
                 RUN dnf install -y zip
                 COPY --link --from=builder /home/app/application /function/func
-                RUN echo "#!/bin/sh" >> bootstrap && echo "set -euo pipefail" >> bootstrap && echo "./func -XX:MaximumHeapSizePercent=80 -Dio.netty.allocator.numDirectArenas=0 -Dio.netty.noPreferDirect=true -Djava.library.path=$(pwd)" >> bootstrap
+                RUN echo "#!/bin/sh" >> bootstrap && echo "set -euo pipefail" >> bootstrap && echo "./func -XX:MaximumHeapSizePercent=80 -Dio.netty.allocator.numDirectArenas=0 -Dio.netty.noPreferDirect=true -Djava.library.path=\$(pwd)" >> bootstrap
                 RUN chmod 777 bootstrap
                 RUN chmod 777 func
                 RUN zip -j function.zip bootstrap func
