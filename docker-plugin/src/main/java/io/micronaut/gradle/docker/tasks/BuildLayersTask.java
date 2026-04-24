@@ -19,8 +19,12 @@ import org.gradle.api.tasks.OutputDirectory;
 import org.gradle.api.tasks.TaskAction;
 
 import javax.inject.Inject;
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 @CacheableTask
 public abstract class BuildLayersTask extends DefaultTask {
@@ -47,15 +51,60 @@ public abstract class BuildLayersTask extends DefaultTask {
             final Provider<Directory> layerDir = layerDirectoryOf(layer, getOutputDir());
             if (layer.getLayerKind().get() == LayerKind.APP) {
                 // special case for now
-                fileOperations.copy(copy -> {
-                    configureDuplicatesStrategy(copy);
-                    copy.from(layer.getFiles()).into(getOutputDir().dir("app")).rename(s -> "application.jar");
-                });
+                copyLayer(fileOperations, layer, getOutputDir().dir("app"), true, copy -> copy.rename(s -> "application.jar"));
             } else {
-                fileOperations.copy(copy -> {
-                    configureDuplicatesStrategy(copy);
-                    copy.from(layer.getFiles()).into(layerDir);
+                copyLayer(fileOperations, layer, layerDir, false, copy -> {
                 });
+            }
+        }
+    }
+
+    private void copyLayer(FileOperations fileOperations,
+                           Layer layer,
+                           Provider<Directory> destination,
+                           boolean renameToApplicationJar,
+                           org.gradle.api.Action<CopySpec> customizer) {
+        Path destinationPath = destination.get().getAsFile().toPath();
+        Map<Path, Path> copiedFiles = copiedFilesOf(layer, destinationPath, renameToApplicationJar);
+        fileOperations.copy(copy -> {
+            configureDuplicatesStrategy(copy);
+            copy.from(layer.getFiles()).into(destination);
+            customizer.execute(copy);
+        });
+        restoreLastModifiedTimes(copiedFiles);
+    }
+
+    private Map<Path, Path> copiedFilesOf(Layer layer, Path destinationPath, boolean renameToApplicationJar) {
+        Map<Path, Path> copiedFiles = new LinkedHashMap<>();
+        for (File sourceFile : layer.getFiles().getFiles()) {
+            Path sourcePath = sourceFile.toPath();
+            if (!Files.exists(sourcePath)) {
+                continue;
+            }
+            if (Files.isDirectory(sourcePath)) {
+                try (var children = Files.walk(sourcePath)) {
+                    children.filter(Files::isRegularFile)
+                        .forEach(file -> copiedFiles.put(destinationPath.resolve(sourcePath.relativize(file).toString()), file));
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            } else if (renameToApplicationJar) {
+                copiedFiles.put(destinationPath.resolve("application.jar"), sourcePath);
+            } else {
+                copiedFiles.put(destinationPath.resolve(sourceFile.getName()), sourcePath);
+            }
+        }
+        return copiedFiles;
+    }
+
+    private void restoreLastModifiedTimes(Map<Path, Path> copiedFiles) {
+        for (Map.Entry<Path, Path> entry : copiedFiles.entrySet()) {
+            try {
+                if (Files.exists(entry.getKey())) {
+                    Files.setLastModifiedTime(entry.getKey(), Files.getLastModifiedTime(entry.getValue()));
+                }
+            } catch (IOException e) {
+                throw new RuntimeException(e);
             }
         }
     }
