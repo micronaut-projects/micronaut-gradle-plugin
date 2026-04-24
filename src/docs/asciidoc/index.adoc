@@ -1040,7 +1040,7 @@ tasks.named("dockerfileNative") {
 
 [source, kotlin, subs="verbatim,attributes", role="multi-language-sample"]
 ----
-tasks.named<MicronautDockerfile>("dockerfile") {
+tasks.named<io.micronaut.gradle.docker.MicronautDockerfile>("dockerfile") {
    exposedPorts.set(listOf(8123, 8443))
 }
 tasks.named<io.micronaut.gradle.docker.NativeImageDockerfile>("dockerfileNative") {
@@ -1048,7 +1048,7 @@ tasks.named<io.micronaut.gradle.docker.NativeImageDockerfile>("dockerfileNative"
 }
 ----
 
-After updating the task, run `./gradlew dockerfile` or `./gradlew dockerfileNative` and inspect the generated Dockerfile under `build/docker` to confirm the expected `EXPOSE` lines are present.
+After updating the task, run `./gradlew dockerfile` or `./gradlew dockerfileNative` and inspect the generated Dockerfile under `build/docker/<imageName>/Dockerfile` or `build/docker/native-<imageName>/DockerfileNative` (for example, `build/docker/main/Dockerfile`) to confirm the expected `EXPOSE` lines are present.
 
 ==== GraalVM JDK version
 
