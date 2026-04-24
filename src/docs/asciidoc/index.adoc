@@ -722,7 +722,7 @@ micronaut {
 }
 ----
 
-If you need the plugin to auto-configure more than one supported test framework, use `testRuntimes` in addition to the legacy `testRuntime` path. The plugin merges the selected runtime dependencies and keeps JUnit Platform enabled when any selected runtime needs it.
+If you need the plugin to auto-configure more than one supported test framework, use `testRuntimes` either by itself or alongside the legacy `testRuntime` path. The plugin merges the selected runtime dependencies and keeps JUnit Platform enabled when any selected runtime needs it.
 
 [source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
 ----

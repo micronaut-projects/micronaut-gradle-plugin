@@ -8,6 +8,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * An enum with the different supported test runtimes.
@@ -144,7 +145,8 @@ public enum MicronautTestRuntime {
         }
         families.forEach((family, selectedRuntimes) -> {
             if (selectedRuntimes.size() > 1) {
-                throw new IllegalArgumentException("Incompatible Micronaut test runtimes selected for family '" + family + "': " + selectedRuntimes);
+                String renderedRuntimes = selectedRuntimes.stream().map(Enum::name).collect(Collectors.joining(", "));
+                throw new IllegalArgumentException("Incompatible Micronaut test runtimes selected for family '" + family + "': " + renderedRuntimes + ". Select only one runtime from this family.");
             }
         });
     }
