@@ -315,6 +315,10 @@ public abstract class AbstractOpenApiGenerator<W extends AbstractOpenApiWorkActi
 
     @TaskAction
     public final void execute() {
+        var outputDirectory = getOutputDirectory().getAsFile().get();
+        getProject().delete(outputDirectory);
+        outputDirectory.mkdirs();
+
         getWorkerExecutor().classLoaderIsolation(spec -> spec.getClasspath().from(getClasspath()))
             .submit(getWorkerAction(), params -> {
                 params.getLang().set(getLang());
