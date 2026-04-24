@@ -1004,11 +1004,11 @@ If you wish to customize the docker builds that are used, the easiest way is to 
 
 [NOTE]
 ====
-`dockerBuildNative` keeps the Micronaut-managed native-image wiring together. Current Micronaut-managed native builds also auto-add `io.micronaut:micronaut-graal` to the relevant processing configuration, including Java/Groovy `annotationProcessor`, Kotlin `kapt`, and Kotlin `ksp`, so the normal `dockerfileNative` and copied `DockerfileNative` workflows do not require an extra manual dependency declaration.
+`dockerBuildNative` keeps the Micronaut Gradle plugins' managed native-image wiring together. When you use those managed native build tasks on this supported compatibility line, the plugin also auto-adds `io.micronaut:micronaut-graal` to the relevant processing configuration, including Java/Groovy `annotationProcessor`, Kotlin `kapt`, and Kotlin `ksp`, so the normal `dockerfileNative` and copied `DockerfileNative` workflows do not require an extra manual dependency declaration.
 
 You only need to wire `io.micronaut:micronaut-graal` yourself if you intentionally opt out of automatic dependencies, for example via `ignoredAutomaticDependencies` as described in <<sec:suppress-automatic-dependencies,Suppressing automatic dependencies>>, or if a non-standard build replaces the configured annotation processor path after Micronaut sets it up.
 
-After customizing the Dockerfile, rerun `./gradlew classes dockerfileNative` and verify your external native Docker build still consumes the jar produced by Gradle rather than recompiling without Micronaut's generated `META-INF/native-image` metadata.
+After customizing the Dockerfile, rerun `./gradlew classes dockerfileNative` and verify that your external native Docker build still consumes the jar produced by Gradle rather than recompiling sources in Docker. For example, check that the customized Dockerfile still copies the Gradle output under `build/libs/`, and inspect the jar to confirm it contains Micronaut's generated `META-INF/native-image` entries.
 ====
 
 To customize the JVM arguments or native executable arguments, use the `args` method of the `dockerfile` and `dockerfileNative` tasks:
