@@ -1669,6 +1669,7 @@ micronaut {
         explicitPort = 15471 // by default, uses a random port
         inferClasspath = true // true by default
         additionalModules.add(JDBC_MYSQL) // empty by default
+        testTasks.add("integrationTest") // empty by default, applies to all Test tasks when unset
         clientTimeout = 60 // in seconds, maximum time to wait for resources to be available, 60s by default
         serverIdleTimeoutMinutes = 60 // if the server doesn't receive any request for this amount of time, it will be shut down
         sharedServer = true // false by default
@@ -1688,6 +1689,7 @@ micronaut {
         explicitPort.set(15471) // by default, uses a random port
         inferClasspath.set(true) // true by default
         additionalModules.add(JDBC_MYSQL) // empty by default
+        testTasks.add("integrationTest") // empty by default, applies to all Test tasks when unset
         clientTimeout.set(60) // in seconds, maximum time to wait for resources to be available, 60s by default
         sharedServer.set(true) // false by default
         sharedServerNamespace.set("custom") // unset by default
@@ -1702,8 +1704,14 @@ micronaut {
 - by default, a test resources server will be started. This server uses a randomly available port, but you can override this by setting the `explicitPort` property instead.
 - by default, the plugin will automatically determine which modules to add to the test resources support, by inspecting the dependencies declared in the project. For example, if you use both `micronaut-data-jdbc` and `mysql-connector-java`, it will automatically add support for MySQL provisioning. Under some circumstances, you might want to disable this behavior by setting the `inferClasspath` property to `false`.
 - the `additionalModules` property can be used to explicitly declare test resources modules to be loaded. This is useful if inference failed to detect a module, or if you want to use <<sec:standalone-test-resources,a standalone test resources service>>.
+- by default, test resources support is wired into all Gradle `Test` tasks. Set the `testTasks` property to a non-empty list of task names, such as `integrationTest`, to restrict wiring to those specific `Test` tasks.
 - if set to `true`, then the test server which is used by the project can be shared between independent builds (e.g. different Git repositories): this can be useful in conjunction with <<sec:standalone-test-resources,a standalone test resources service>>, where for example a producer is used in one project, and a consumer is defined in another, but both need to use the same messaging server.
 - if set, the `sharedServerNamespace` property will let you declare that the shared test resources service but be executed in a particular namespace. This can be useful if you need multiple shared servers (the default assumes a single shared server)
+
+[NOTE]
+====
+This task selection only narrows Gradle `Test` task wiring. `JavaExec` task wiring is unchanged.
+====
 
 [NOTE]
 ====

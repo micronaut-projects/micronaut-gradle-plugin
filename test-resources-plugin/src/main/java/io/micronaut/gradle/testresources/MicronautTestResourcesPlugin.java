@@ -54,6 +54,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -164,7 +165,11 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
         pluginManager.withPlugin("io.micronaut.aot", unused -> TestResourcesAOT.configure(project, client));
         configureServiceReset((ProjectInternal) project, settingsDirectory, stopAtEndFile);
 
-        tasks.withType(Test.class).configureEach(task -> configureServerConnection(internalStart, task, config, testResourcesSourceSet));
+        tasks.withType(Test.class).configureEach(task -> {
+            if (shouldConfigureTestTask(task, config)) {
+                configureServerConnection(internalStart, task, config, testResourcesSourceSet);
+            }
+        });
         tasks.withType(JavaExec.class).configureEach(task -> configureServerConnection(internalStart, task, config, testResourcesSourceSet));
 
         workaroundForIntellij(project);
@@ -187,6 +192,11 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
         if (task instanceof JavaForkOptions jfo) {
             jfo.getJvmArgumentProviders().add(new ServerConnectionParametersProvider(settingsDirectory));
         }
+    }
+
+    private static boolean shouldConfigureTestTask(Test task, TestResourcesConfiguration configuration) {
+        Set<String> selectedTestTasks = configuration.getTestTasks().getOrElse(Collections.emptySet());
+        return selectedTestTasks.isEmpty() || selectedTestTasks.contains(task.getName());
     }
 
     private static void workaroundForIntellij(Project project) {
@@ -284,6 +294,7 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
         testResources.getVersion().convention(VersionInfo.getVersion());
         testResources.getExplicitPort().convention(explicitPort);
         testResources.getInferClasspath().convention(true);
+        testResources.getTestTasks().convention(Collections.emptySet());
         testResources.getClientTimeout().convention(DEFAULT_CLIENT_TIMEOUT_SECONDS);
         testResources.getSharedServer().convention(
                 providers.gradleProperty("shared.test.resources")
