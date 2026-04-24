@@ -1113,7 +1113,7 @@ There is no dedicated Gradle DSL property for `dnf --releasever`. If you need to
 
 The `editDockerfile` matchers are exact string replacements. Generate `DockerfileNative` first and copy the current `RUN dnf ...` lines from `build/docker/DockerfileNative` into `replace(...)` so the recipe stays aligned with the Dockerfile produced by your plugin version and chosen base image.
 
-For example, the following recipe opts into `--releasever=latest` for the DNF-based native-image stages. A concrete release value such as `2023.6.20241031` may be safer than `latest` when your target distribution requires deterministic upgrades.
+For example, the following recipe uses a placeholder release value for the DNF-based native-image stages. Replace `<releasever>` with the exact release value you want for your target distribution. If you intentionally want a moving target such as `latest`, treat that as a separate opt-in choice with less deterministic rebuild behavior.
 
 [source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
 ----
@@ -1122,13 +1122,13 @@ tasks.named("dockerfileNative") {
         before("FROM graalvm AS builder") {
             replace(
                 "RUN dnf update -y && dnf install -y gcc glibc-devel zlib-devel libstdc++-static tar && dnf clean all && rm -rf /var/cache/dnf",
-                "RUN dnf --releasever=latest update -y && dnf --releasever=latest install -y gcc glibc-devel zlib-devel libstdc++-static tar && dnf clean all && rm -rf /var/cache/dnf"
+                "RUN dnf --releasever=<releasever> update -y && dnf --releasever=<releasever> install -y gcc glibc-devel zlib-devel libstdc++-static tar && dnf clean all && rm -rf /var/cache/dnf"
             )
         }
         after("FROM graalvm AS builder") {
             replace(
                 "RUN dnf update -y && dnf install -y zip && dnf clean all",
-                "RUN dnf --releasever=latest update -y && dnf --releasever=latest install -y zip && dnf clean all"
+                "RUN dnf --releasever=<releasever> update -y && dnf --releasever=<releasever> install -y zip && dnf clean all"
             )
         }
     }
@@ -1142,13 +1142,13 @@ tasks.named<io.micronaut.gradle.docker.NativeImageDockerfile>("dockerfileNative"
         before("FROM graalvm AS builder") {
             replace(
                 "RUN dnf update -y && dnf install -y gcc glibc-devel zlib-devel libstdc++-static tar && dnf clean all && rm -rf /var/cache/dnf",
-                "RUN dnf --releasever=latest update -y && dnf --releasever=latest install -y gcc glibc-devel zlib-devel libstdc++-static tar && dnf clean all && rm -rf /var/cache/dnf"
+                "RUN dnf --releasever=<releasever> update -y && dnf --releasever=<releasever> install -y gcc glibc-devel zlib-devel libstdc++-static tar && dnf clean all && rm -rf /var/cache/dnf"
             )
         }
         after("FROM graalvm AS builder") {
             replace(
                 "RUN dnf update -y && dnf install -y zip && dnf clean all",
-                "RUN dnf --releasever=latest update -y && dnf --releasever=latest install -y zip && dnf clean all"
+                "RUN dnf --releasever=<releasever> update -y && dnf --releasever=<releasever> install -y zip && dnf clean all"
             )
         }
     }
