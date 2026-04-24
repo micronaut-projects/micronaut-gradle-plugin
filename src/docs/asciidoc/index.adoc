@@ -2169,7 +2169,49 @@ micronaut {
 }
 ----
 
-Please refer to link:api/io/micronaut/gradle/openapi/OpenApiClientSpec.html[OpenApiClientSpec] for the whole list of client configuration options.
+The reference API documentation lists every property on link:api/io/micronaut/gradle/openapi/OpenApiClientSpec.html[OpenApiClientSpec]. The options below are the ones most commonly needed when you are deciding what the generated client should look like and which runtime support it needs.
+
+[cols="1,3"]
+|===
+|Option
+|What it changes
+
+|`lang`
+|Chooses the generator language. The default is Java; set it to `kotlin` when you want Kotlin sources.
+
+|`clientId`
+|Sets the Micronaut `@Client` identifier used by the generated client beans.
+
+|`clientPath`
+|Adds a configurable base-path expression to the generated `@Client` declaration so the target URL can be externalized from code.
+
+|`useAuth`
+|Enables auth-related generation for the security requirements declared in the OpenAPI definition.
+
+|`generateAuthClasses`
+|Generates the auth support classes under `org.openapitools.auth`.
+
+|`authFilter`
+|Generates an `AuthorizationFilter` for the client code. Use the filter-specific properties to scope where it applies.
+
+|`useOauth`, `useBasicAuth`, `useApiKeyAuth`
+|Restrict the generated auth support to the auth styles you actually want emitted.
+
+|`authorizationFilterPattern`, `authorizationFilterPatternStyle`, `authFilterClientIds`, `authFilterExcludedClientIds`, `authConfigName`
+|Refine how the generated `AuthorizationFilter` is matched and which client configuration it uses.
+|===
+
+==== Dependency expectations for generated code
+
+The Gradle plugin configures code generation, but it does not add the Micronaut Security or other application dependencies required by the generated sources. Treat the generated client like application code: after you enable an option such as `useAuth`, add the Micronaut modules that the emitted classes import and compile against.
+
+The exact dependency set depends on the auth features present in your OpenAPI definition and on the generator version you select. For example, the auth-enabled OpenAPI client tests in this repository compile with `io.micronaut.security:micronaut-security-oauth2` and `io.micronaut.reactor:micronaut-reactor` on the application classpath. If you generate auth support, regenerate the client and run your normal compile task to confirm that the required Micronaut Security modules are present.
+
+==== Ownership boundary for generated guides and READMEs
+
+This guide owns the Gradle plugin DSL and how to wire generation into your build. Generated files such as `README.md`, `api-guide.md`, or `auth-guide.md` come from the Micronaut OpenAPI generator templates, not from this documentation page.
+
+If those generated files are missing or incomplete, fix that in `micronaut-openapi` or select a newer generator release with the `openapi.version` setting described below. Use this repository guide to document the Gradle-side integration and dependency expectations; use the generator project to change generated content.
 
 === Generating a server
 
@@ -2253,7 +2295,7 @@ micronaut {
 
 NOTE: Server generation will generate interfaces that you have to implement in order to write your server code.
 
-Please refer to link:api/io/micronaut/gradle/openapi/OpenApiServerSpec.html[OpenApiServerSpec] for the whole list of client configuration options.
+Please refer to link:api/io/micronaut/gradle/openapi/OpenApiServerSpec.html[OpenApiServerSpec] for the whole list of server configuration options.
 
 === Advanced configuration
 
