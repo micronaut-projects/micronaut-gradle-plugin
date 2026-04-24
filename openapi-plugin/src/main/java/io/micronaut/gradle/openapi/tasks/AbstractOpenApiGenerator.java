@@ -18,8 +18,10 @@ package io.micronaut.gradle.openapi.tasks;
 import io.micronaut.gradle.openapi.ParameterMappingModel;
 import io.micronaut.gradle.openapi.ResponseBodyMappingModel;
 import org.gradle.api.DefaultTask;
+import org.gradle.api.GradleException;
 import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.file.DirectoryProperty;
+import org.gradle.api.file.FileSystemOperations;
 import org.gradle.api.file.RegularFileProperty;
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.MapProperty;
@@ -34,6 +36,11 @@ import org.gradle.api.tasks.PathSensitive;
 import org.gradle.api.tasks.PathSensitivity;
 import org.gradle.api.tasks.TaskAction;
 import org.gradle.workers.WorkerExecutor;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.file.Files;
 
 import javax.inject.Inject;
 
@@ -308,6 +315,9 @@ public abstract class AbstractOpenApiGenerator<W extends AbstractOpenApiWorkActi
     @Inject
     protected abstract WorkerExecutor getWorkerExecutor();
 
+    @Inject
+    protected abstract FileSystemOperations getFileSystemOperations();
+
     @Internal
     protected abstract Class<W> getWorkerAction();
 
@@ -315,9 +325,7 @@ public abstract class AbstractOpenApiGenerator<W extends AbstractOpenApiWorkActi
 
     @TaskAction
     public final void execute() {
-        var outputDirectory = getOutputDirectory().getAsFile().get();
-        getProject().delete(outputDirectory);
-        outputDirectory.mkdirs();
+        recreateOutputDirectory();
 
         getWorkerExecutor().classLoaderIsolation(spec -> spec.getClasspath().from(getClasspath()))
             .submit(getWorkerAction(), params -> {
@@ -397,5 +405,31 @@ public abstract class AbstractOpenApiGenerator<W extends AbstractOpenApiWorkActi
 
                 configureWorkerParameters(params);
             });
+    }
+
+    private void recreateOutputDirectory() {
+        File outputDirectory = getOutputDirectory().getAsFile().get();
+        assertSafeOutputDirectory(outputDirectory);
+        getFileSystemOperations().delete(spec -> spec.delete(outputDirectory));
+        try {
+            Files.createDirectories(outputDirectory.toPath());
+        } catch (IOException e) {
+            throw new UncheckedIOException("Unable to recreate OpenAPI output directory: " + outputDirectory, e);
+        }
+    }
+
+    private void assertSafeOutputDirectory(File outputDirectory) {
+        try {
+            File canonicalOutputDirectory = outputDirectory.getCanonicalFile();
+            File canonicalProjectDirectory = getProject().getProjectDir().getCanonicalFile();
+            File canonicalBuildDirectory = getProject().getLayout().getBuildDirectory().getAsFile().get().getCanonicalFile();
+            if (canonicalOutputDirectory.toPath().getParent() == null
+                || canonicalOutputDirectory.equals(canonicalProjectDirectory)
+                || canonicalOutputDirectory.equals(canonicalBuildDirectory)) {
+                throw new GradleException("Refusing to prune unsafe OpenAPI output directory: " + canonicalOutputDirectory);
+            }
+        } catch (IOException e) {
+            throw new UncheckedIOException("Unable to validate OpenAPI output directory: " + outputDirectory, e);
+        }
     }
 }

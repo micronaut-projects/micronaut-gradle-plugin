@@ -335,7 +335,7 @@ class OpenApiServerGeneratorSpec extends AbstractOpenApiGeneratorSpec {
         def firstResult = build("generateServerOpenApiModels")
 
         then:
-        firstResult.task(":generateServerOpenApiModels").outcome == TaskOutcome.SUCCESS
+        firstResult.task(":generateServerOpenApiModels").outcome in [TaskOutcome.SUCCESS, TaskOutcome.FROM_CACHE]
         file("build/generated/openapi/generateServerOpenApiModels/src/main/java/io/micronaut/openapi/model/Example.java").exists()
 
         when:
@@ -343,9 +343,48 @@ class OpenApiServerGeneratorSpec extends AbstractOpenApiGeneratorSpec {
         def secondResult = build("generateServerOpenApiModels")
 
         then:
-        secondResult.task(":generateServerOpenApiModels").outcome == TaskOutcome.SUCCESS
+        secondResult.task(":generateServerOpenApiModels").outcome in [TaskOutcome.SUCCESS, TaskOutcome.FROM_CACHE]
         !file("build/generated/openapi/generateServerOpenApiModels/src/main/java/io/micronaut/openapi/model/Example.java").exists()
         file("build/generated/openapi/generateServerOpenApiModels/src/main/java/io/micronaut/openapi/model/OtherExample.java").exists()
+    }
+
+    def "rejects pruning the build directory root"() {
+        given:
+        settingsFile << "rootProject.name = 'openapi-server'"
+        buildFile << """
+            plugins {
+                id "io.micronaut.minimal.application"
+                id "io.micronaut.openapi"
+            }
+
+            micronaut {
+                version "$micronautVersion"
+                runtime "netty"
+                testRuntime "junit5"
+                openapi {
+                    server(file("petstore.json")) {
+                        generateApis = false
+                    }
+                }
+            }
+
+            $repositoriesBlock
+
+            dependencies {
+                implementation "io.micronaut.serde:micronaut-serde-jackson"
+            }
+
+            tasks.named("generateServerOpenApiModels") {
+                outputDirectory = layout.buildDirectory
+            }
+        """
+        file("petstore.json").text = EXAMPLE_SPEC
+
+        when:
+        def result = fails("generateServerOpenApiModels")
+
+        then:
+        result.output.contains("Refusing to prune unsafe OpenAPI output directory")
     }
 
     def "check properties for micronaut-openapi 6.14.0"() {
