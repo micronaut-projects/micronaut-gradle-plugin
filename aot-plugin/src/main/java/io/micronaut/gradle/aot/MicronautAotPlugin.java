@@ -347,7 +347,6 @@ public abstract class MicronautAotPlugin implements Plugin<Project> {
                 });
             });
 
-            SourceSet mainSourceSet = PluginsHelper.findSourceSets(project).getByName(SourceSet.MAIN_SOURCE_SET_NAME);
             SourceSet testSourceSet = PluginsHelper.findSourceSets(project).findByName(SourceSet.TEST_SOURCE_SET_NAME);
             if (testSourceSet != null) {
                 Configuration optimizedTestRuntimeClasspath = configurations.create(OPTIMIZED_TEST_RUNTIME_CLASSPATH_CONFIGURATION_NAME, conf -> {
@@ -365,8 +364,7 @@ public abstract class MicronautAotPlugin implements Plugin<Project> {
                     task.setClasspath(project.files(
                             testSourceSet.getOutput(),
                             jarTask,
-                            optimizedTestRuntimeClasspath,
-                            testSourceSet.getRuntimeClasspath().minus(mainSourceSet.getOutput())
+                            optimizedTestRuntimeClasspath
                     ));
                 });
             }

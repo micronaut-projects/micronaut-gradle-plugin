@@ -4,6 +4,7 @@ import io.micronaut.gradle.MicronautComponentPlugin
 import org.gradle.api.plugins.JavaPlugin
 import org.gradle.api.plugins.JavaPluginExtension
 import org.gradle.api.plugins.ApplicationPlugin
+import org.gradle.api.tasks.SourceSet
 import org.gradle.jvm.toolchain.JavaLanguageVersion
 import org.gradle.jvm.toolchain.JavaToolchainService
 import org.gradle.api.tasks.testing.Test
@@ -126,5 +127,14 @@ class AotOptimizerConfigurationSpec extends Specification {
         then:
         project.configurations.findByName(MicronautAotPlugin.OPTIMIZED_TEST_RUNTIME_CLASSPATH_CONFIGURATION_NAME) != null
         project.tasks.findByName("optimizedTest") instanceof Test
+
+        and:
+        def optimizedTest = project.tasks.getByName("optimizedTest") as Test
+        def sourceSets = project.extensions.getByType(JavaPluginExtension).sourceSets
+        def mainSourceSet = sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME)
+        def testSourceSet = sourceSets.getByName(SourceSet.TEST_SOURCE_SET_NAME)
+
+        optimizedTest.classpath.files.containsAll(testSourceSet.output.files)
+        !optimizedTest.classpath.files.containsAll(mainSourceSet.output.files)
     }
 }
