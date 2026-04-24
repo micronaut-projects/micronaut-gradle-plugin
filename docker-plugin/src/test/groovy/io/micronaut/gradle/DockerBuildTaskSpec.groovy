@@ -569,6 +569,94 @@ printf '%s\\n' "\$@" > "\$PWD/build/buildx-args.txt"
         ]
     }
 
+    def "docker buildx fails with a clear error when platforms contain null"() {
+        given:
+        settingsFile << "rootProject.name = 'hello-world'"
+        buildFile << """import io.micronaut.gradle.docker.DockerBuildx
+
+            plugins {
+                id "io.micronaut.minimal.application"
+                id "io.micronaut.docker"
+            }
+
+            version = "0.1"
+
+            micronaut {
+                version "$micronautVersion"
+            }
+
+            $repositoriesBlock
+
+            application { mainClass = "example.Application" }
+
+            tasks.named("dockerBuildx", DockerBuildx) {
+                platforms = ["linux/amd64", null]
+                images = ["example.com/demo/app:0.1"]
+            }
+        """
+        testProjectDir.newFolder("src", "main", "java", "example")
+        def javaFile = testProjectDir.newFile("src/main/java/example/Application.java")
+        javaFile.parentFile.mkdirs()
+        javaFile << """
+package example;
+
+class Application {
+    public static void main(String... args) {
+    }
+}
+"""
+
+        when:
+        def result = fails('dockerBuildx')
+
+        then:
+        result.output.contains("Property 'platforms' must not contain null values.")
+    }
+
+    def "docker buildx fails with a clear error when images contain null"() {
+        given:
+        settingsFile << "rootProject.name = 'hello-world'"
+        buildFile << """import io.micronaut.gradle.docker.DockerBuildx
+
+            plugins {
+                id "io.micronaut.minimal.application"
+                id "io.micronaut.docker"
+            }
+
+            version = "0.1"
+
+            micronaut {
+                version "$micronautVersion"
+            }
+
+            $repositoriesBlock
+
+            application { mainClass = "example.Application" }
+
+            tasks.named("dockerBuildx", DockerBuildx) {
+                platforms = ["linux/amd64", "linux/arm64"]
+                images = ["example.com/demo/app:0.1", null]
+            }
+        """
+        testProjectDir.newFolder("src", "main", "java", "example")
+        def javaFile = testProjectDir.newFile("src/main/java/example/Application.java")
+        javaFile.parentFile.mkdirs()
+        javaFile << """
+package example;
+
+class Application {
+    public static void main(String... args) {
+    }
+}
+"""
+
+        when:
+        def result = fails('dockerBuildx')
+
+        then:
+        result.output.contains("Property 'images' must not contain null values.")
+    }
+
     private static String getSnapshotMetadata() {
         DockerBuildTaskSpec.getResourceAsStream("/dummy-metadata.xml").text
     }

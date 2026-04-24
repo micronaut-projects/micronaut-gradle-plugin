@@ -3,7 +3,9 @@ package io.micronaut.gradle.docker;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.GradleException;
 import org.gradle.api.file.DirectoryProperty;
+import org.gradle.api.file.RegularFile;
 import org.gradle.api.file.RegularFileProperty;
+import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.plugins.BasePlugin;
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Property;
@@ -27,34 +29,68 @@ import java.util.List;
  * @since 5.0.0
  */
 public abstract class DockerBuildx extends DefaultTask {
+    private final ListProperty<String> platforms;
+    private final ListProperty<String> images;
+    private final Property<String> builder;
+    private final RegularFileProperty dockerFile;
+    private final DirectoryProperty inputDir;
+    private final Property<String> dockerExecutable;
 
     public DockerBuildx() {
         setGroup(BasePlugin.BUILD_GROUP);
-        getDockerExecutable().convention("docker");
-        getPlatforms().convention(List.of());
-        getImages().convention(List.of());
+        ObjectFactory objects = getProject().getObjects();
+        this.platforms = objects.listProperty(String.class).convention(List.of());
+        this.images = objects.listProperty(String.class).convention(List.of());
+        this.builder = objects.property(String.class);
+        this.dockerFile = objects.fileProperty();
+        this.inputDir = objects.directoryProperty();
+        this.dockerExecutable = objects.property(String.class).convention("docker");
     }
 
     @Input
-    public abstract ListProperty<String> getPlatforms();
+    public ListProperty<String> getPlatforms() {
+        return platforms;
+    }
+
+    public void setPlatforms(List<String> platforms) {
+        getPlatforms().set(requireNoNullValues("platforms", platforms));
+    }
 
     @Input
-    public abstract ListProperty<String> getImages();
+    public ListProperty<String> getImages() {
+        return images;
+    }
+
+    public void setImages(List<String> images) {
+        getImages().set(requireNoNullValues("images", images));
+    }
 
     @Input
     @Optional
-    public abstract Property<String> getBuilder();
+    public Property<String> getBuilder() {
+        return builder;
+    }
 
     @InputFile
     @PathSensitive(PathSensitivity.RELATIVE)
-    public abstract RegularFileProperty getDockerFile();
+    public RegularFileProperty getDockerFile() {
+        return dockerFile;
+    }
+
+    public void setDockerFile(RegularFile dockerFile) {
+        getDockerFile().set(dockerFile);
+    }
 
     @InputDirectory
     @PathSensitive(PathSensitivity.RELATIVE)
-    public abstract DirectoryProperty getInputDir();
+    public DirectoryProperty getInputDir() {
+        return inputDir;
+    }
 
     @Internal
-    public abstract Property<String> getDockerExecutable();
+    public Property<String> getDockerExecutable() {
+        return dockerExecutable;
+    }
 
     @Inject
     protected abstract ExecOperations getExecOperations();
@@ -91,12 +127,16 @@ public abstract class DockerBuildx extends DefaultTask {
     }
 
     private static void validate(String propertyName, List<String> values) {
-        List<String> trimmedValues = trimmedValuesOf(values);
-        if (trimmedValues.isEmpty()) {
+        if (values.isEmpty()) {
             throw new GradleException("Property '" + propertyName + "' must not be empty.");
         }
-        if (trimmedValues.size() != values.size()) {
-            throw new GradleException("Property '" + propertyName + "' must not contain blank values.");
+        for (String value : values) {
+            if (value == null) {
+                throw new GradleException("Property '" + propertyName + "' must not contain null values.");
+            }
+            if (value.trim().isEmpty()) {
+                throw new GradleException("Property '" + propertyName + "' must not contain blank values.");
+            }
         }
     }
 
@@ -105,5 +145,17 @@ public abstract class DockerBuildx extends DefaultTask {
             .map(String::trim)
             .filter(value -> !value.isEmpty())
             .toList();
+    }
+
+    private static List<String> requireNoNullValues(String propertyName, List<String> values) {
+        if (values == null) {
+            return null;
+        }
+        for (String value : values) {
+            if (value == null) {
+                throw new GradleException("Property '" + propertyName + "' must not contain null values.");
+            }
+        }
+        return values;
     }
 }
