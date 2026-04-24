@@ -103,8 +103,22 @@ public final class MicronautRuntimeDependencies {
      * @return The dependencies and scopes
      */
     public static Dependencies findApplicationPluginDependenciesByRuntime(MicronautRuntime runtime, MicronautSerialization serialization) {
+        return findApplicationPluginDependenciesByRuntime(runtime, serialization, true);
+    }
+
+    /**
+     * @param runtime Micronaut runtime
+     * @param serialization Micronaut runtime serialization
+     * @param addSerializationDependency Whether the automatic runtime serialization dependency should be added
+     * @return The dependencies and scopes
+     */
+    public static Dependencies findApplicationPluginDependenciesByRuntime(MicronautRuntime runtime,
+                                                                          MicronautSerialization serialization,
+                                                                          boolean addSerializationDependency) {
         Dependencies.Builder builder = builderForRuntime(runtime);
-        addSerializationDependency(builder, serialization);
+        if (addSerializationDependency) {
+            addSerializationDependency(builder, serialization);
+        }
         return builder.build();
     }
 
