@@ -86,7 +86,11 @@ class MicronautMixedTestRuntimeSpec extends AbstractGradleBuildSpec {
             ${getRepositoriesBlock('kotlin')}
         """
 
-        expect:
+        when:
+        def result = build('dependencies', '--configuration', 'testRuntimeClasspath')
+
+        then:
+        result.task(":dependencies").outcome == TaskOutcome.SUCCESS
         containsDependency("io.micronaut.test:micronaut-test-junit5", "testImplementation")
         containsDependency("org.spockframework:spock-core", "testImplementation")
         containsDependency("org.junit.jupiter:junit-jupiter-engine", "testRuntimeOnly")
