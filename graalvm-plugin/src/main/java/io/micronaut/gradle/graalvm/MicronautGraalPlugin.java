@@ -11,6 +11,7 @@ import org.graalvm.buildtools.gradle.NativeImagePlugin;
 import org.graalvm.buildtools.gradle.dsl.GraalVMExtension;
 import org.graalvm.buildtools.gradle.dsl.NativeImageOptions;
 import org.graalvm.buildtools.gradle.tasks.BuildNativeImageTask;
+import org.gradle.api.JavaVersion;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.ConfigurationContainer;
@@ -78,7 +79,12 @@ public class MicronautGraalPlugin implements Plugin<Project> {
                         inf.getIgnoreExistingResourcesConfigFile().convention(true);
                         inf.getRestrictToProjectDependencies().convention(true);
                     }));
-                    options.buildArgs(SHARED_ARENA_SUPPORT);
+                    int javaVersion = options.getJavaLauncher()
+                            .map(javaLauncher -> javaLauncher.getMetadata().getLanguageVersion().asInt())
+                            .getOrElse(Integer.parseInt(JavaVersion.current().getMajorVersion()));
+                    if (GraalUtil.supportsSharedArenaSupport(javaVersion)) {
+                        options.buildArgs(SHARED_ARENA_SUPPORT);
+                    }
                     Provider<String> richOutput = project.getProviders().systemProperty(RICH_OUTPUT_PROPERTY);
                     if (richOutput.isPresent()) {
                         options.getRichOutput().convention(richOutput.map(Boolean::parseBoolean));

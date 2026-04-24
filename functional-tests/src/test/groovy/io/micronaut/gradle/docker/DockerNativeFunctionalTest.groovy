@@ -99,14 +99,15 @@ micronaut:
         and:
         result.output.contains("Successfully tagged hello-world:latest")
         result.output.contains("Resources configuration written into")
+        dockerFile.find { s -> s.startsWith('RUN native-image ') }.contains('-H:+SharedArenaSupport') == sharedArenaSupportEnabled
         task.outcome == TaskOutcome.SUCCESS
 
         where:
-        runtime           | jdk | nativeImage
-        "netty"           | 25  | "FROM ghcr.io/graalvm/native-image-community:25-ol${DefaultVersions.ORACLELINUX}"
-        "lambda_provided" | 25  | "FROM public.ecr.aws/amazonlinux/amazonlinux:${DefaultVersions.AMAZONLINUX} AS graalvm"
-        "lambda_provided" | 21  | "FROM public.ecr.aws/amazonlinux/amazonlinux:${DefaultVersions.AMAZONLINUX} AS graalvm"
-        "jetty"           | 25  | "FROM ghcr.io/graalvm/native-image-community:25-ol${DefaultVersions.ORACLELINUX}"
+        runtime           | jdk | nativeImage                                                                    | sharedArenaSupportEnabled
+        "netty"           | 25  | "FROM ghcr.io/graalvm/native-image-community:25-ol${DefaultVersions.ORACLELINUX}" | true
+        "lambda_provided" | 25  | "FROM public.ecr.aws/amazonlinux/amazonlinux:${DefaultVersions.AMAZONLINUX} AS graalvm" | true
+        "lambda_provided" | 21  | "FROM public.ecr.aws/amazonlinux/amazonlinux:${DefaultVersions.AMAZONLINUX} AS graalvm" | false
+        "jetty"           | 25  | "FROM ghcr.io/graalvm/native-image-community:25-ol${DefaultVersions.ORACLELINUX}" | true
     }
 
     void 'build mostly static native images when using distroless docker image for runtime=#runtime'() {
@@ -788,7 +789,7 @@ COPY --link layers/resources /home/app/resources
 RUN mkdir /home/app/config-dirs
 RUN mkdir -p /home/app/config-dirs/generateResourcesConfigFile
 COPY --link config-dirs/generateResourcesConfigFile /home/app/config-dirs/generateResourcesConfigFile
-RUN native-image -cp /home/app/libs/*.jar:/home/app/resources:/home/app/application.jar --no-fallback -o application -H:+SharedArenaSupport -H:ConfigurationFileDirectories=/home/app/config-dirs/generateResourcesConfigFile example.Application
+RUN native-image -cp /home/app/libs/*.jar:/home/app/resources:/home/app/application.jar --no-fallback -o application -H:ConfigurationFileDirectories=/home/app/config-dirs/generateResourcesConfigFile -H:+SharedArenaSupport example.Application
 ${defaultDockerFrom}
 EXPOSE 8080
 COPY --link --from=graalvm /home/app/application /app/application

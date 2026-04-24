@@ -248,7 +248,7 @@ abstract class AbstractGradleBuildSpec extends Specification {
 
     static String argFileContentsOf(BuildResult result) {
         result.output.lines().filter {
-            it.contains('Starting process') && it.contains('bin/native-image') && !it.contains('--version')
+            it.contains('Starting process') && it.contains('native-image') && !it.contains('--version')
         }.map {
             int workingDirIdx = it.indexOf('Working directory: ')
             int commandIdx = it.indexOf('Command: ')

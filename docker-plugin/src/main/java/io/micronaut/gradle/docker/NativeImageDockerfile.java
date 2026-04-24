@@ -61,6 +61,7 @@ import static io.micronaut.gradle.docker.MicronautDockerfile.applyStandardTransf
 public abstract class NativeImageDockerfile extends Dockerfile implements DockerBuildOptions {
 
     public static final String AMAZON_LINUX_BASE_IMAGE = "public.ecr.aws/amazonlinux/amazonlinux:" + DefaultVersions.AMAZONLINUX;
+    private static final String SHARED_ARENA_SUPPORT = "-H:+SharedArenaSupport";
 
     private static final List<Integer> SUPPORTED_JAVA_VERSIONS = List.of(
             // keep those in descending order
@@ -662,6 +663,10 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
         return args;
     }
 
+    private static boolean supportsSharedArenaSupport(String version) {
+        return toMajorVersion(version) >= 25;
+    }
+
     private static Integer toMajorVersion(String version) {
         if (version.contains(".")) {
             return Integer.parseInt(version.substring(0, version.indexOf('.')));
@@ -676,7 +681,14 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
      */
     private void prepareNativeImageOptions(NativeImageOptions options) {
         Property<NativeImageOptions> originalOptions = getNativeImageOptions();
-        options.getBuildArgs().set(originalOptions.flatMap(NativeImageOptions::getBuildArgs));
+        options.getBuildArgs().set(originalOptions.flatMap(NativeImageOptions::getBuildArgs).map(buildArgs -> {
+            if (supportsSharedArenaSupport(getJdkVersion().get())) {
+                return buildArgs;
+            }
+            return buildArgs.stream()
+                    .filter(buildArg -> !SHARED_ARENA_SUPPORT.equals(buildArg))
+                    .toList();
+        }));
         options.getJvmArgs().set(originalOptions.flatMap(NativeImageOptions::getJvmArgs));
         options.getMainClass().set(originalOptions.flatMap(NativeImageOptions::getMainClass));
         options.getVerbose().set(originalOptions.flatMap(NativeImageOptions::getVerbose));
