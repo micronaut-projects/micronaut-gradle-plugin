@@ -4,6 +4,9 @@ import io.micronaut.gradle.fixtures.AbstractEagerConfiguringFunctionalTest
 import org.gradle.testkit.runner.TaskOutcome
 import spock.lang.Shared
 
+import java.lang.reflect.Modifier
+import java.net.URLClassLoader
+
 class KotlinLibraryFunctionalTest extends AbstractEagerConfiguringFunctionalTest {
 
     @Shared
@@ -165,5 +168,68 @@ class Foo {}
         plugin            | kotlin
         'library'         | kotlin2Version
         'minimal.library' | kotlin2Version
+    }
+
+    def "test all-open support keeps Around meta-annotations and opens CacheConfig classes"() {
+        given:
+        settingsFile << "rootProject.name = 'hello-world'"
+        buildFile.delete()
+        kotlinBuildFile << """
+            plugins {
+                id("org.jetbrains.kotlin.jvm") version("$kotlin2Version")
+                id("org.jetbrains.kotlin.kapt") version("$kotlin2Version")
+                id("org.jetbrains.kotlin.plugin.allopen") version("$kotlin2Version")
+                id("io.micronaut.minimal.library")
+            }
+
+            micronaut {
+                version("$micronautVersion")
+                processing {
+                    incremental(true)
+                }
+            }
+
+            ${getRepositoriesBlock('kotlin')}
+
+            dependencies {
+                implementation("io.micronaut:micronaut-aop")
+                implementation("io.micronaut.cache:micronaut-cache-core")
+            }
+        """
+        testProjectDir.newFolder("src", "main", "kotlin", "example")
+        def kotlinSource = testProjectDir.newFile("src/main/kotlin/example/Services.kt")
+        kotlinSource.parentFile.mkdirs()
+        kotlinSource << """
+package example
+
+import io.micronaut.aop.Around
+import io.micronaut.cache.annotation.CacheConfig
+
+@Around
+@Retention(AnnotationRetention.RUNTIME)
+@Target(AnnotationTarget.CLASS)
+annotation class OpenAround
+
+@OpenAround
+class AroundService
+
+@CacheConfig("books")
+class CachedService
+"""
+
+        when:
+        def result = build('compileKotlin')
+
+        then:
+        result.task(":compileKotlin").outcome == TaskOutcome.SUCCESS
+        def classesDir = file("build/classes/kotlin/main")
+        classesDir.directory
+        URLClassLoader classLoader = new URLClassLoader([classesDir.toURI().toURL()] as URL[], (ClassLoader) this.class.classLoader)
+        try {
+            !Modifier.isFinal(classLoader.loadClass("example.AroundService").modifiers)
+            !Modifier.isFinal(classLoader.loadClass("example.CachedService").modifiers)
+        } finally {
+            classLoader.close()
+        }
     }
 }
