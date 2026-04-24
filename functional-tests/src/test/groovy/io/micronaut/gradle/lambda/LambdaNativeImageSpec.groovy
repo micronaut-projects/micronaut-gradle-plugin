@@ -412,7 +412,7 @@ class LambdaNativeImageSpec extends AbstractFunctionalTest {
     }
 
     @Issue("https://github.com/micronaut-projects/micronaut-gradle-plugin/issues/820")
-    void 'function plugin preserves the configured mainclass for lambda provided native builds'() {
+    void 'function plugin preserves the configured mainClass for lambda provided native builds'() {
         given:
         settingsFile << "rootProject.name = 'hello-world'"
         buildFile << """
