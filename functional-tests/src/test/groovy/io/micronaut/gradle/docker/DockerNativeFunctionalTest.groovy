@@ -99,7 +99,7 @@ micronaut:
         and:
         result.output.contains("Successfully tagged hello-world:latest")
         result.output.contains("Resources configuration written into")
-        dockerFile.find { s -> s.startsWith('RUN native-image ') }.contains('-H:+SharedArenaSupport') == sharedArenaSupportEnabled
+        dockerFile.find { s -> s.startsWith('RUN native-image ') }.contains(SHARED_ARENA_SUPPORT) == sharedArenaSupportEnabled
         task.outcome == TaskOutcome.SUCCESS
 
         where:
@@ -789,7 +789,7 @@ COPY --link layers/resources /home/app/resources
 RUN mkdir /home/app/config-dirs
 RUN mkdir -p /home/app/config-dirs/generateResourcesConfigFile
 COPY --link config-dirs/generateResourcesConfigFile /home/app/config-dirs/generateResourcesConfigFile
-RUN native-image -cp /home/app/libs/*.jar:/home/app/resources:/home/app/application.jar --no-fallback -o application -H:ConfigurationFileDirectories=/home/app/config-dirs/generateResourcesConfigFile -H:+SharedArenaSupport example.Application
+RUN native-image -cp /home/app/libs/*.jar:/home/app/resources:/home/app/application.jar --no-fallback -o application -H:ConfigurationFileDirectories=/home/app/config-dirs/generateResourcesConfigFile ${SHARED_ARENA_SUPPORT} example.Application
 ${defaultDockerFrom}
 EXPOSE 8080
 COPY --link --from=graalvm /home/app/application /app/application

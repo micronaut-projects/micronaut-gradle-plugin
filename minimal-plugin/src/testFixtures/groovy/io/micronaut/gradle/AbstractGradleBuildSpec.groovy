@@ -16,6 +16,8 @@ import java.nio.file.Paths
 import java.nio.file.StandardCopyOption
 
 abstract class AbstractGradleBuildSpec extends Specification {
+    protected static final String SHARED_ARENA_SUPPORT = "-H:+SharedArenaSupport"
+
     static boolean isGraalVmAvailable() {
         if (GraalUtil.isGraalJVM()) {
             return true

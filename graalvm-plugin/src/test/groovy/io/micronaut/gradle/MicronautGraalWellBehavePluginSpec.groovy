@@ -32,7 +32,7 @@ class MicronautGraalWellBehavePluginSpec extends Specification {
         def graal = project.extensions.getByType(GraalVMExtension)
 
         then:
-        graal.binaries.getByName("main").buildArgs.get().contains("-H:+SharedArenaSupport") == GraalUtil.supportsSharedArenaSupport(GraalUtil.currentJavaMajorVersion())
+        graal.binaries.getByName("main").buildArgs.get().contains(AbstractGradleBuildSpec.SHARED_ARENA_SUPPORT) == GraalUtil.supportsSharedArenaSupport(GraalUtil.currentJavaMajorVersion())
     }
 
     def "shared arena support utility tracks supported Java versions"() {
