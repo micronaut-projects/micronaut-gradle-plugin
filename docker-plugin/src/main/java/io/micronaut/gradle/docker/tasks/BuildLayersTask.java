@@ -69,9 +69,17 @@ public abstract class BuildLayersTask extends DefaultTask {
             configureDuplicatesStrategy(copy);
             copy.from(layer.getFiles()).into(destination);
             customizer.execute(copy);
-            copy.eachFile(details -> copiedFiles.put(destinationPath.resolve(relativePathOf(details)), details.getFile().toPath()));
+            copy.eachFile(details -> recordCopiedFile(copiedFiles, destinationPath.resolve(relativePathOf(details)), details.getFile().toPath()));
         });
         restoreLastModifiedTimes(copiedFiles);
+    }
+
+    private void recordCopiedFile(Map<Path, Path> copiedFiles, Path target, Path source) {
+        if (getDuplicatesStrategy().isPresent() && getDuplicatesStrategy().get() == DuplicatesStrategy.EXCLUDE) {
+            copiedFiles.putIfAbsent(target, source);
+        } else {
+            copiedFiles.put(target, source);
+        }
     }
 
     private Path relativePathOf(org.gradle.api.file.FileCopyDetails details) {
