@@ -18,6 +18,8 @@ class ApplicationTestResourcesPluginSpec extends AbstractGradleBuildSpec {
         result.output.contains "Loaded 2 test resources resolvers"
         result.output.contains "io.micronaut.testresources.mysql.MySQLTestResourceProvider"
         result.output.contains "io.micronaut.testresources.testcontainers.GenericTestContainerProvider"
+        !result.output.contains("io.micronaut.testresources.hivemq.HiveMQTestResourceProvider")
+        !result.output.contains("io.micronaut.testresources.neo4j.Neo4jTestResourceProvider")
 
         when:
         result = build 'test'
