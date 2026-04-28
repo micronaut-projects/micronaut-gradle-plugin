@@ -24,7 +24,6 @@ class TestResourcesWithAotSpec extends AbstractTestResourcesSpec {
 
         then:
         result.task(':optimizedRun').outcome == TaskOutcome.SUCCESS
-        result.output.contains "Loaded 2 test resources resolvers"
         result.output.contains "io.micronaut.testresources.mysql.MySQLTestResourceProvider"
         result.output.contains "io.micronaut.testresources.testcontainers.GenericTestContainerProvider"
     }

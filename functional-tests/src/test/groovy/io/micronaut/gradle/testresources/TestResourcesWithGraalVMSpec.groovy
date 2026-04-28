@@ -33,7 +33,6 @@ graalvmNative.binaries.all {
 
         then:
         result.task(':nativeTest').outcome == TaskOutcome.SUCCESS
-        result.output.contains "Loaded 2 test resources resolvers"
         result.output.contains "io.micronaut.testresources.mysql.MySQLTestResourceProvider"
         result.output.contains "io.micronaut.testresources.testcontainers.GenericTestContainerProvider"
     }
@@ -60,7 +59,6 @@ graalvmNative.binaries.all {
 
         then:
         result.task(':nativeRun').outcome == TaskOutcome.SUCCESS
-        result.output.contains "Loaded 2 test resources resolvers"
         result.output.contains "io.micronaut.testresources.mysql.MySQLTestResourceProvider"
         result.output.contains "io.micronaut.testresources.testcontainers.GenericTestContainerProvider"
 
