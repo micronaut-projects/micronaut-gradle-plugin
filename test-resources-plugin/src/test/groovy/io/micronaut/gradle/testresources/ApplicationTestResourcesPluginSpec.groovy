@@ -15,8 +15,11 @@ class ApplicationTestResourcesPluginSpec extends AbstractGradleBuildSpec {
 
         then:
         result.task(':test').outcome == TaskOutcome.SUCCESS
+        result.output.contains "Loaded 2 test resources resolvers"
         result.output.contains "io.micronaut.testresources.mysql.MySQLTestResourceProvider"
         result.output.contains "io.micronaut.testresources.testcontainers.GenericTestContainerProvider"
+        !result.output.contains("io.micronaut.testresources.hivemq.HiveMQTestResourceProvider")
+        !result.output.contains("io.micronaut.testresources.neo4j.Neo4jTestResourceProvider")
 
         when:
         result = build 'test'
@@ -35,6 +38,7 @@ class ApplicationTestResourcesPluginSpec extends AbstractGradleBuildSpec {
 
         then:
         result.task(':test').outcome == TaskOutcome.SUCCESS
+        result.output.contains "Loaded 2 test resources resolvers"
         result.output.contains "io.micronaut.testresources.mysql.MySQLTestResourceProvider"
         result.output.contains "io.micronaut.testresources.testcontainers.GenericTestContainerProvider"
     }
@@ -99,6 +103,7 @@ class ApplicationTestResourcesPluginSpec extends AbstractGradleBuildSpec {
 
         then:
         result.task(':run').outcome == TaskOutcome.SUCCESS
+        result.output.contains "Loaded 2 test resources resolvers"
         result.output.contains "io.micronaut.testresources.mysql.MySQLTestResourceProvider"
         result.output.contains "io.micronaut.testresources.testcontainers.GenericTestContainerProvider"
     }

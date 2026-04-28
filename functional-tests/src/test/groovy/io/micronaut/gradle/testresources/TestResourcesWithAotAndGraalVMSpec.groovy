@@ -35,6 +35,7 @@ micronaut {
 
         then:
         result.task(':nativeOptimizedRun').outcome == TaskOutcome.SUCCESS
+        result.output.contains "Loaded 2 test resources resolvers"
         result.output.contains "io.micronaut.testresources.mysql.MySQLTestResourceProvider"
         result.output.contains "io.micronaut.testresources.testcontainers.GenericTestContainerProvider"
     }

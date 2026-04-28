@@ -16,6 +16,7 @@ class CustomTestResourcePluginSpec extends AbstractGradleBuildSpec {
 
         then:
         result.task(':test').outcome == TaskOutcome.SUCCESS
+        result.output.contains "Loaded 2 test resources resolvers"
         result.output.contains "demo.GreetingTestResource"
         result.output.contains "io.micronaut.testresources.testcontainers.GenericTestContainerProvider"
     }
@@ -29,6 +30,7 @@ class CustomTestResourcePluginSpec extends AbstractGradleBuildSpec {
 
         then:
         result.task(':test').outcome == TaskOutcome.SUCCESS
+        result.output.contains "Loaded 2 test resources resolvers"
         result.output.contains "demo.GreetingTestResource"
         result.output.contains "io.micronaut.testresources.testcontainers.GenericTestContainerProvider"
 

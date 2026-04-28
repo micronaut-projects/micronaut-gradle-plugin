@@ -351,7 +351,7 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
             return Stream.empty();
         }
         Stream<MavenDependency> currentDependency = Stream.empty();
-        if (component.getId() instanceof ModuleComponentIdentifier moduleComponentIdentifier) {
+        if (component.getId() instanceof ModuleComponentIdentifier moduleComponentIdentifier && !isBom(moduleComponentIdentifier)) {
             currentDependency = Stream.of(new MavenDependency(
                     moduleComponentIdentifier.getGroup(),
                     moduleComponentIdentifier.getModule(),
@@ -365,6 +365,10 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
                 .map(ResolvedDependencyResult::getSelected)
                 .flatMap(selected -> collectResolvedModuleDependencies(selected, seenComponents));
         return concat(currentDependency, transitiveDependencies);
+    }
+
+    private static boolean isBom(ModuleComponentIdentifier moduleComponentIdentifier) {
+        return moduleComponentIdentifier.getModule().endsWith("-bom");
     }
 
     private static void assertMinimalVersion(String testedVersion) {
