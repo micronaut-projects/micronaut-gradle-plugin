@@ -21,10 +21,8 @@ import org.gradle.api.Task;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.ConfigurationContainer;
 import org.gradle.api.artifacts.Dependency;
-import org.gradle.api.artifacts.ModuleDependency;
 import org.gradle.api.artifacts.component.ComponentIdentifier;
 import org.gradle.api.artifacts.component.ModuleComponentIdentifier;
-import org.gradle.api.artifacts.component.ProjectComponentIdentifier;
 import org.gradle.api.artifacts.dsl.DependencyHandler;
 import org.gradle.api.artifacts.result.ResolvedComponentResult;
 import org.gradle.api.artifacts.result.ResolvedDependencyResult;
@@ -325,23 +323,10 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
             List<MavenDependency> mavenDependencies = Collections.emptyList();
             if (Boolean.TRUE.equals(infer)) {
                 Configuration runtimeClasspath = project.getConfigurations().getByName("runtimeClasspath");
-                Stream<MavenDependency> directDependencies = runtimeClasspath.getAllDependencies()
-                        .stream()
-                        .filter(ModuleDependency.class::isInstance)
-                        .map(ModuleDependency.class::cast)
-                        .map(d -> new MavenDependency(d.getGroup(), d.getName(), d.getVersion()));
-                Stream<MavenDependency> projectDependencies = runtimeClasspath.getIncoming()
+                mavenDependencies = collectResolvedModuleDependencies(runtimeClasspath.getIncoming()
                         .getResolutionResult()
                         .getRootComponent()
-                        .get()
-                        .getDependencies()
-                        .stream()
-                        .filter(ResolvedDependencyResult.class::isInstance)
-                        .map(ResolvedDependencyResult.class::cast)
-                        .map(ResolvedDependencyResult::getSelected)
-                        .filter(component -> component.getId() instanceof ProjectComponentIdentifier)
-                        .flatMap(component -> collectResolvedModuleDependencies(component, new HashSet<>()));
-                mavenDependencies = concat(directDependencies, projectDependencies)
+                        .get(), new HashSet<>())
                         .distinct()
                         .toList();
             }
@@ -365,21 +350,21 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
         if (!seenComponents.add(component.getId())) {
             return Stream.empty();
         }
-        return component.getDependencies()
+        Stream<MavenDependency> currentDependency = Stream.empty();
+        if (component.getId() instanceof ModuleComponentIdentifier moduleComponentIdentifier) {
+            currentDependency = Stream.of(new MavenDependency(
+                    moduleComponentIdentifier.getGroup(),
+                    moduleComponentIdentifier.getModule(),
+                    moduleComponentIdentifier.getVersion()
+            ));
+        }
+        Stream<MavenDependency> transitiveDependencies = component.getDependencies()
                 .stream()
                 .filter(ResolvedDependencyResult.class::isInstance)
                 .map(ResolvedDependencyResult.class::cast)
                 .map(ResolvedDependencyResult::getSelected)
-                .flatMap(selected -> {
-                    if (selected.getId() instanceof ModuleComponentIdentifier moduleComponentIdentifier) {
-                        return Stream.of(new MavenDependency(
-                                moduleComponentIdentifier.getGroup(),
-                                moduleComponentIdentifier.getModule(),
-                                moduleComponentIdentifier.getVersion()
-                        ));
-                    }
-                    return collectResolvedModuleDependencies(selected, seenComponents);
-                });
+                .flatMap(selected -> collectResolvedModuleDependencies(selected, seenComponents));
+        return concat(currentDependency, transitiveDependencies);
     }
 
     private static void assertMinimalVersion(String testedVersion) {
