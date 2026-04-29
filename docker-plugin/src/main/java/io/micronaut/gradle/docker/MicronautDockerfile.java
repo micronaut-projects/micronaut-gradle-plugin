@@ -152,8 +152,7 @@ public abstract class MicronautDockerfile extends Dockerfile implements DockerBu
                 );
                 break;
             case LAMBDA:
-                // Lambda JVM images use the standard runner JAR entrypoint.
-                // Native lambda main-class handling stays task-local in NativeImageDockerfile.
+                // JVM Lambda images share the standard layer layout; the entrypoint is specialized below.
             default:
                 from(new Dockerfile.From(from != null ? from : DEFAULT_BASE_IMAGE + getDockerDefaultImageJavaTag()));
                 setupResources(this, getLayers().get(), null);
@@ -161,11 +160,17 @@ public abstract class MicronautDockerfile extends Dockerfile implements DockerBu
                 getInstructions().addAll(additionalInstructions);
                 if (getInstructions().get().stream().noneMatch(instruction -> instruction.getKeyword().equals(EntryPointInstruction.KEYWORD))) {
                     entryPoint(getArgs().map(strings -> {
-                        var newList = new ArrayList<String>(strings.size() + 3);
+                        var newList = new ArrayList<String>(strings.size() + 4);
                         newList.add("java");
                         newList.addAll(strings);
-                        newList.add("-jar");
-                        newList.add(workDir + "/application.jar");
+                        if (buildStrategy == DockerBuildStrategy.LAMBDA) {
+                            newList.add("-cp");
+                            newList.add(workDir + "/libs/*:" + workDir + "/resources:" + workDir + "/application.jar");
+                            newList.add("io.micronaut.function.aws.runtime.MicronautLambdaRuntime");
+                        } else {
+                            newList.add("-jar");
+                            newList.add(workDir + "/application.jar");
+                        }
                         return newList;
                     }));
                 }
