@@ -382,7 +382,10 @@ class Foo {
 
     def "test custom sourceSets for micronaut-library and groovy"() {
         given:
-        settingsFile << "rootProject.name = 'hello-world'"
+        settingsFile << """
+            rootProject.name = 'hello-world'
+            enableFeaturePreview('GROOVY_COMPILATION_AVOIDANCE')
+        """
         buildFile << """
             plugins {
                 id "io.micronaut.minimal.library"
@@ -411,6 +414,16 @@ class Foo {
             dependencies {
                 customImplementation("org.apache.groovy:groovy")
             }
+            tasks.register("verifyCustomGroovyAstTransformationClasspath") {
+                dependsOn("compileCustomGroovy")
+                doLast {
+                    def astClasspath = tasks.named("compileCustomGroovy").get().astTransformationClasspath.files*.name
+                    assert astClasspath.any { it.startsWith("micronaut-inject-groovy-") }
+                    assert !configurations.customCompileOnly.incoming.dependencies.any {
+                        it.group == "io.micronaut" && it.name == "micronaut-inject-groovy"
+                    }
+                }
+            }
             $withSerde
         """
         testProjectDir.newFolder("src", "custom", "groovy", "example")
@@ -424,10 +437,11 @@ class Foo {}
 """
 
         when:
-        def result = build('compileCustomGroovy')
+        def result = build('verifyCustomGroovyAstTransformationClasspath')
 
         then:
         result.task(":compileCustomGroovy").outcome == TaskOutcome.SUCCESS
+        result.task(":verifyCustomGroovyAstTransformationClasspath").outcome == TaskOutcome.SUCCESS
         new File(
                 testProjectDir.getRoot(),
                 'build/classes/groovy/custom/example/Foo.class'
@@ -440,7 +454,10 @@ class Foo {}
 
     def "test apply defaults for micronaut-library and groovy"() {
         given:
-        settingsFile << "rootProject.name = 'hello-world'"
+        settingsFile << """
+            rootProject.name = 'hello-world'
+            enableFeaturePreview('GROOVY_COMPILATION_AVOIDANCE')
+        """
         buildFile << """
             plugins {
                 id "io.micronaut.minimal.library"
@@ -452,7 +469,21 @@ class Foo {}
             }
             
             $repositoriesBlock
+
+            dependencies {
+                implementation("org.apache.groovy:groovy")
+            }
             
+            tasks.register("verifyGroovyAstTransformationClasspath") {
+                dependsOn("compileGroovy")
+                doLast {
+                    def astClasspath = tasks.named("compileGroovy").get().astTransformationClasspath.files*.name
+                    assert astClasspath.any { it.startsWith("micronaut-inject-groovy-") }
+                    assert !configurations.compileOnly.incoming.dependencies.any {
+                        it.group == "io.micronaut" && it.name == "micronaut-inject-groovy"
+                    }
+                }
+            }
         """
         testProjectDir.newFolder("src", "main", "groovy", "example")
         def javaFile = testProjectDir.newFile("src/main/groovy/example/Foo.groovy")
@@ -465,10 +496,11 @@ class Foo {}
 """
 
         when:
-        def result = build('assemble')
+        def result = build('verifyGroovyAstTransformationClasspath')
 
         then:
-        result.task(":assemble").outcome == TaskOutcome.SUCCESS
+        result.task(":compileGroovy").outcome == TaskOutcome.SUCCESS
+        result.task(":verifyGroovyAstTransformationClasspath").outcome == TaskOutcome.SUCCESS
         new File(
                 testProjectDir.getRoot(),
                 'build/classes/groovy/main/example/$Foo$Definition.class'
@@ -477,7 +509,10 @@ class Foo {}
 
     def "test add openapi processing - groovy"() {
         given:
-        settingsFile << "rootProject.name = 'hello-world'"
+        settingsFile << """
+            rootProject.name = 'hello-world'
+            enableFeaturePreview('GROOVY_COMPILATION_AVOIDANCE')
+        """
         buildFile << """
             plugins {
                 id "groovy"
@@ -491,11 +526,26 @@ class Foo {}
             $repositoriesBlock
             
             dependencies {
+                implementation "org.apache.groovy:groovy"
                 compileOnly "io.micronaut.openapi:micronaut-openapi"
                 compileOnly("io.micronaut:micronaut-http") {
                     because "The Micronaut OpenAPI processor needs Micronaut HTTP at compile time"
                 }
                 compileOnly "io.swagger.core.v3:swagger-annotations"
+            }
+            tasks.register("verifyOpenApiGroovyAstTransformationClasspath") {
+                dependsOn("compileGroovy")
+                doLast {
+                    def astClasspath = tasks.named("compileGroovy").get().astTransformationClasspath.files*.name
+                    assert astClasspath.any { it.startsWith("micronaut-inject-groovy-") }
+                    assert astClasspath.any { it.startsWith("micronaut-openapi-") }
+                    assert configurations.compileOnly.incoming.dependencies.any {
+                        it.group == "io.swagger.core.v3" && it.name == "swagger-annotations"
+                    }
+                    assert configurations.compileOnly.incoming.dependencies.any {
+                        it.group == "io.micronaut.openapi" && it.name == "micronaut-openapi"
+                    }
+                }
             }
             
         """
@@ -519,10 +569,11 @@ class Foo {}
 """
 
         when:
-        def result = build('assemble')
+        def result = build('verifyOpenApiGroovyAstTransformationClasspath')
 
         then:
-        result.task(":assemble").outcome == TaskOutcome.SUCCESS
+        result.task(":compileGroovy").outcome == TaskOutcome.SUCCESS
+        result.task(":verifyOpenApiGroovyAstTransformationClasspath").outcome == TaskOutcome.SUCCESS
         new File(
                 testProjectDir.getRoot(),
                 'build/classes/groovy/main/example/$Foo$Definition.class'
