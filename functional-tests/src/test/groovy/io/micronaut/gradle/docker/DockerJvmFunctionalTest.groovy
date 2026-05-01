@@ -95,6 +95,7 @@ public class Application {
         when:
         def result = build("dockerfile", "assemble")
         def dockerFile = new File(testProjectDir.root, "build/docker/main/Dockerfile").readLines("UTF-8")
+        def imageLibraries = new File(testProjectDir.root, "build/docker/main/layers/libs").list()
         def runnerJar = new File(testProjectDir.root, "build/libs/hello-world-runner.jar")
         def manifestMainClass
         new JarFile(runnerJar).withCloseable { jar ->
@@ -106,5 +107,6 @@ public class Application {
         result.task(":assemble").outcome == TaskOutcome.SUCCESS
         manifestMainClass == "example.Application"
         dockerFile.find { s -> s == 'ENTRYPOINT ["java", "-cp", "/home/app/libs/*:/home/app/resources:/home/app/application.jar", "io.micronaut.function.aws.runtime.MicronautLambdaRuntime"]' }
+        imageLibraries.any { it.startsWith("micronaut-function-aws-custom-runtime-") }
     }
 }
