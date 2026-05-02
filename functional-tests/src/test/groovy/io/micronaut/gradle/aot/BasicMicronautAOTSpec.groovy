@@ -139,6 +139,55 @@ class BasicMicronautAOTSpec extends AbstractAOTPluginSpec {
 
     }
 
+    def "can run Micronaut tests against the optimized application classpath"() {
+        withSample("aot/basic-app")
+        withPlugins(Plugins.APPLICATION)
+        def optimizedTest = file("src/test/java/demo/app/OptimizedApplicationTest.java")
+        optimizedTest.parentFile.mkdirs()
+        optimizedTest.text = """
+package demo.app;
+
+import io.micronaut.context.ApplicationContext;
+import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
+import jakarta.inject.Inject;
+import org.junit.jupiter.api.Test;
+
+import java.lang.reflect.Field;
+import java.util.Map;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+@MicronautTest
+class OptimizedApplicationTest {
+    @Inject
+    ApplicationContext context;
+
+    @Test
+    void loadsStaticOptimizationsFromOptimizedClasspath() throws Exception {
+        assertNotNull(context);
+
+        Class<?> clazz = Class.forName("io.micronaut.core.optim.StaticOptimizations");
+        Field field = clazz.getDeclaredField("OPTIMIZATIONS");
+        field.setAccessible(true);
+        Map<Class<?>, Object> optimizations = (Map<Class<?>, Object>) field.get(null);
+
+        assertTrue(optimizations.keySet().stream()
+                .map(Class::getName)
+                .anyMatch("io.micronaut.core.util.EnvironmentProperties"::equals));
+    }
+}
+"""
+
+        when:
+        def result = build "optimizedTest"
+
+        then:
+        result.task(":optimizedTest").outcome == TaskOutcome.SUCCESS
+        result.task(":prepareJitOptimizations").outcome == TaskOutcome.SUCCESS
+        result.task(":optimizedJitJar").outcome == TaskOutcome.SUCCESS
+    }
+
     @Issue("https://github.com/micronaut-projects/micronaut-gradle-plugin/issues/401")
     def "supports spaces in file names"() {
         withSpacesInTestDir()

@@ -46,6 +46,7 @@ import org.gradle.api.file.RelativePath;
 import org.gradle.api.java.archives.Attributes;
 import org.gradle.api.logging.Logger;
 import org.gradle.api.plugins.ApplicationPlugin;
+import org.gradle.api.plugins.JavaBasePlugin;
 import org.gradle.api.plugins.JavaApplication;
 import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.provider.Provider;
@@ -56,6 +57,7 @@ import org.gradle.api.tasks.TaskContainer;
 import org.gradle.api.tasks.TaskProvider;
 import org.gradle.api.tasks.application.CreateStartScripts;
 import org.gradle.api.tasks.bundling.Jar;
+import org.gradle.api.tasks.testing.Test;
 
 import javax.inject.Inject;
 import java.io.File;
@@ -110,6 +112,7 @@ public abstract class MicronautAotPlugin implements Plugin<Project> {
     );
     public static final String AOT_APPLICATION_CLASSPATH = "aotApplicationClasspath";
     public static final String OPTIMIZED_RUNTIME_CLASSPATH_CONFIGURATION_NAME = "optimizedRuntimeClasspath";
+    public static final String OPTIMIZED_TEST_RUNTIME_CLASSPATH_CONFIGURATION_NAME = "optimizedTestRuntimeClasspath";
     public static final String DEFAULT_GENERATED_PACKAGE = "io.micronaut.aot.generated";
 
     @Inject
@@ -316,7 +319,7 @@ public abstract class MicronautAotPlugin implements Plugin<Project> {
                 Configuration runtimeClasspath = configurations.getByName("runtimeClasspath");
                 conf.extendsFrom(runtimeClasspath);
                 conf.setCanBeConsumed(false);
-                conf.setCanBeConsumed(true);
+                conf.setCanBeResolved(true);
                 // Use the same attributes as runtimeClasspath for resolution
                 AttributeUtils.copyAttributes(project.getProviders(), runtimeClasspath, conf);
             });
@@ -343,6 +346,28 @@ public abstract class MicronautAotPlugin implements Plugin<Project> {
                     }
                 });
             });
+
+            SourceSet testSourceSet = PluginsHelper.findSourceSets(project).findByName(SourceSet.TEST_SOURCE_SET_NAME);
+            if (testSourceSet != null) {
+                Configuration optimizedTestRuntimeClasspath = configurations.create(OPTIMIZED_TEST_RUNTIME_CLASSPATH_CONFIGURATION_NAME, conf -> {
+                    Configuration testRuntimeClasspath = configurations.getByName(testSourceSet.getRuntimeClasspathConfigurationName());
+                    conf.extendsFrom(testRuntimeClasspath);
+                    conf.setCanBeConsumed(false);
+                    conf.setCanBeResolved(true);
+                    AttributeUtils.copyAttributes(project.getProviders(), testRuntimeClasspath, conf);
+                });
+                tasks.register("optimizedTest", Test.class, task -> {
+                    task.setDescription("Executes the Micronaut tests with AOT optimizations");
+                    task.setGroup(JavaBasePlugin.VERIFICATION_GROUP);
+                    task.dependsOn(prepareJit);
+                    task.setTestClassesDirs(testSourceSet.getOutput().getClassesDirs());
+                    task.setClasspath(project.files(
+                            testSourceSet.getOutput(),
+                            jarTask,
+                            optimizedTestRuntimeClasspath
+                    ));
+                });
+            }
         });
     }
 

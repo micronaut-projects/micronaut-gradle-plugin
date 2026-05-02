@@ -1550,6 +1550,7 @@ Therefore, some optimizations like conversion of YAML files to Java configuratio
 The plugin provides a couple of tasks aimed at running an optimized application.
 The first one, `optimizedJar`, will simply run the AOT compiler and produce an "optimized" jar.
 If you want to run the application with the resulting jar, you will need to call the `optimizedRun` task instead, which will create the jar and then start the application.
+For JVM test execution, the plugin also provides an additive `optimizedTest` task, which runs the test source set against the optimized JIT application jar while leaving the standard `test` task unchanged.
 
 If you also have the `distribution` plugin applied, the optimized jar will be used to create optimized distributions, in which case you can call the `optimizedDistZip` task to create a distribution zip, the `optimizedDistTar` to create an optimized distribution tar file, or `installOptimizedDist` to install the optimized application to the `build/install` directory.
 
