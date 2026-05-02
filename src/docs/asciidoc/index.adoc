@@ -649,6 +649,8 @@ To run an application with continuous build use the `run` task with the `-t` par
 $ ./gradlew run -t
 ----
 
+The `run` task honors Gradle `application.applicationDefaultJvmArgs`. Micronaut-specific JVM arguments are added in addition to those defaults.
+
 === Development-only Dependencies
 
 The application plugin creates a `developmentOnly` configuration for dependencies that are needed only while running the application locally.
@@ -1070,6 +1072,7 @@ tasks.named<io.micronaut.gradle.docker.NativeImageDockerfile>("dockerfileNative"
 ----
 
 The above configuration uses a max heap setting of `128m` for Java and `64m` for native executable for the application.
+For the JVM docker image, `dockerfile` uses `application.applicationDefaultJvmArgs` by default. Configuring `dockerfile.args(...)` replaces those defaults for that task.
 
 ==== GraalVM JDK version
 
@@ -1550,6 +1553,7 @@ Therefore, some optimizations like conversion of YAML files to Java configuratio
 The plugin provides a couple of tasks aimed at running an optimized application.
 The first one, `optimizedJar`, will simply run the AOT compiler and produce an "optimized" jar.
 If you want to run the application with the resulting jar, you will need to call the `optimizedRun` task instead, which will create the jar and then start the application.
+Like the standard `run` task, `optimizedRun` honors `application.applicationDefaultJvmArgs` unless you configure task-specific JVM arguments.
 
 If you also have the `distribution` plugin applied, the optimized jar will be used to create optimized distributions, in which case you can call the `optimizedDistZip` task to create a distribution zip, the `optimizedDistTar` to create an optimized distribution tar file, or `installOptimizedDist` to install the optimized application to the `build/install` directory.
 

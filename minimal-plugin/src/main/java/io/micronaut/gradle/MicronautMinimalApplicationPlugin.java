@@ -88,13 +88,7 @@ public class MicronautMinimalApplicationPlugin implements Plugin<Project> {
             var sourceSets = PluginsHelper.findSourceSets(project);
             if (javaExec.getName().equals("run")) {
                 javaExec.dependsOn(tasks.named(MicronautComponentPlugin.INSPECT_RUNTIME_CLASSPATH_TASK_NAME));
-                javaExec.jvmArgs(
-                        "-Dcom.sun.management.jmxremote"
-                );
-                if (!GraalUtil.isGraalJVM()) {
-                    // graal doesn't support this
-                    javaExec.jvmArgs("-XX:TieredStopAtLevel=1");
-                }
+                javaExec.getJvmArgumentProviders().add(new MicronautRunJvmArgumentsProvider(GraalUtil.isGraalJVM()));
                 // https://github.com/micronaut-projects/micronaut-gradle-plugin/issues/385
                 javaExec.getOutputs().upToDateWhen(t -> false);
                 FileCollection classpath = javaExec.getClasspath();
