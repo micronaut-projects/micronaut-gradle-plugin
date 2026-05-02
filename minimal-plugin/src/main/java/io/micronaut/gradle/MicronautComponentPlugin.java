@@ -49,7 +49,6 @@ import static org.gradle.api.plugins.JavaPlugin.API_CONFIGURATION_NAME;
 import static org.gradle.api.plugins.JavaPlugin.COMPILE_ONLY_CONFIGURATION_NAME;
 import static org.gradle.api.plugins.JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME;
 import static org.gradle.api.plugins.JavaPlugin.TEST_ANNOTATION_PROCESSOR_CONFIGURATION_NAME;
-import static org.gradle.api.plugins.JavaPlugin.TEST_COMPILE_ONLY_CONFIGURATION_NAME;
 
 /**
  * A base plugin which configures Micronaut components, which are either a Micronaut
@@ -286,13 +285,11 @@ public class MicronautComponentPlugin implements Plugin<Project> {
             configureDefaultGroovySourceSet(
                     project,
                     javaPluginExtension,
-                    COMPILE_ONLY_CONFIGURATION_NAME,
                     "main"
             );
             configureDefaultGroovySourceSet(
                     project,
                     javaPluginExtension,
-                    TEST_COMPILE_ONLY_CONFIGURATION_NAME,
                     "test"
             );
             project.afterEvaluate(p -> {
@@ -301,11 +298,11 @@ public class MicronautComponentPlugin implements Plugin<Project> {
                 for (String defaultSourceSetName : SOURCESETS) {
                     var sourceSet = PluginsHelper.findSourceSets(p).findByName(defaultSourceSetName);
                     if (sourceSet != null) {
-                        String configName = sourceSet.getCompileOnlyConfigurationName();
                         Optional<File> groovySrcDir = findGroovySrcDir(sourceSet);
                         if (groovySrcDir.isPresent()) {
+                            Configuration astTransformationClasspath = configureGroovyAstTransformationClasspath(project, tasks, sourceSet);
                             dependencyHandler.add(
-                                    configName,
+                                    astTransformationClasspath.getName(),
                                     "io.micronaut:micronaut-inject-groovy"
                             );
                         }
@@ -316,14 +313,14 @@ public class MicronautComponentPlugin implements Plugin<Project> {
                 if (additionalSourceSets.isPresent()) {
                     List<SourceSet> sourceSets = additionalSourceSets.get();
                     for (SourceSet sourceSet : sourceSets) {
-                        String configName = sourceSet.getCompileOnlyConfigurationName();
                         Optional<File> groovySrcDir = findGroovySrcDir(sourceSet);
                         if (groovySrcDir.isPresent()) {
+                            Configuration astTransformationClasspath = configureGroovyAstTransformationClasspath(project, tasks, sourceSet);
                             dependencyHandler.add(
-                                    configName,
+                                    astTransformationClasspath.getName(),
                                     "io.micronaut:micronaut-inject-groovy"
                             );
-                            PluginsHelper.applyAdditionalProcessors(project, configName);
+                            PluginsHelper.applyAdditionalProcessorsNow(project, sourceSet, astTransformationClasspath.getName());
                         }
                     }
                 }
@@ -336,13 +333,36 @@ public class MicronautComponentPlugin implements Plugin<Project> {
 
     private void configureDefaultGroovySourceSet(Project p,
                                                  JavaPluginExtension javaPluginExtension,
-                                                 String scope,
                                                  String sourceSetName) {
         SourceSet groovySourceSet = javaPluginExtension.getSourceSets().findByName(sourceSetName);
         if (groovySourceSet != null) {
             Optional<File> groovySrc = findGroovySrcDir(groovySourceSet);
-            groovySrc.ifPresent((f -> applyAdditionalProcessors(p, scope)));
+            groovySrc.ifPresent((f -> {
+                Configuration astTransformationClasspath = configureGroovyAstTransformationClasspath(p, p.getTasks(), groovySourceSet);
+                applyAdditionalProcessors(p, groovySourceSet, astTransformationClasspath.getName());
+            }));
         }
+    }
+
+    private Configuration configureGroovyAstTransformationClasspath(Project project, TaskContainer tasks, SourceSet sourceSet) {
+        String configurationName = sourceSet.getTaskName("micronaut", "AstTransformationClasspath");
+        Configuration configuration = project.getConfigurations().findByName(configurationName);
+        if (configuration == null) {
+            configuration = project.getConfigurations().create(configurationName, conf -> {
+                conf.setCanBeConsumed(false);
+                conf.setCanBeResolved(true);
+                conf.setDescription("Micronaut AST transformation classpath for the " + sourceSet.getName() + " Groovy source set.");
+                conf.extendsFrom(project.getConfigurations().getByName(MICRONAUT_BOMS_CONFIGURATION));
+            });
+        }
+        Configuration astTransformationClasspath = configuration;
+        String compileTaskName = sourceSet.getCompileTaskName("groovy");
+        tasks.withType(GroovyCompile.class).configureEach(groovyCompile -> {
+            if (compileTaskName.equals(groovyCompile.getName())) {
+                groovyCompile.getAstTransformationClasspath().from(astTransformationClasspath);
+            }
+        });
+        return configuration;
     }
 
     private static TaskProvider<ApplicationClasspathInspector> registerInspectRuntimeClasspath(Project project, TaskContainer tasks) {
