@@ -491,7 +491,7 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
             String fileName = "graalvm-jdk-" + jdkVersion + "_linux-" + graalArch + "_bin.tar.gz";
             String graalvmDistributionUrl = getGraalVMDistributionUrl().get();
             runCommand("curl -4 -L " + graalvmDistributionUrl + " -o /tmp/" + fileName);
-            runCommand("tar -zxf /tmp/" + fileName + " -C /tmp && ls -d /tmp/graalvm-jdk-"+ jdkVersion + "* | grep -v \"tar.gz\" | xargs -I_ mv _ /usr/lib/graalvm");
+            runCommand("archive_dir=\"$(tar -tzf /tmp/" + fileName + " | sed -n 's#^\\\\./##;s#/.*##;/^$/d;p;q')\" && test -n \"$archive_dir\" && tar -zxf /tmp/" + fileName + " -C /tmp && test -d \"/tmp/${archive_dir}\" && mv \"/tmp/${archive_dir}\" /usr/lib/graalvm");
             runCommand("rm -rf /tmp/*");
             if (toMajorVersion(jdkVersion) < 21) {
                 // The GraalVM Updater was removed in GraalVM for JDK 21
