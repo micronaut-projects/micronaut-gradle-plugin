@@ -24,6 +24,7 @@ import org.gradle.api.Project;
 import org.gradle.api.Task;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.ConfigurationContainer;
+import org.gradle.api.artifacts.Dependency;
 import org.gradle.api.artifacts.dsl.DependencyHandler;
 import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.file.FileCollection;
@@ -176,10 +177,15 @@ public class MicronautMinimalApplicationPlugin implements Plugin<Project> {
         project.afterEvaluate(p -> {
             MicronautRuntime micronautRuntime = resolveRuntime(p);
             DependencyHandler dependencyHandler = p.getDependencies();
+            boolean hasExplicitAwsFunctionRuntimeDependency = micronautRuntime.isLambda() && hasExplicitAwsFunctionRuntimeDependency(project);
             MicronautRuntimeDependencies.findApplicationPluginDependenciesByRuntime(micronautRuntime)
                     .toMap()
                     .forEach((scope, dependencies) -> {
                 for (AutomaticDependency dependency : dependencies) {
+                    if (hasExplicitAwsFunctionRuntimeDependency
+                            && MicronautRuntimeDependencies.isAutomaticAwsApiProxyDependency(dependency.coordinates())) {
+                        continue;
+                    }
                     dependency.applyTo(project);
                 }
             });
@@ -189,6 +195,28 @@ public class MicronautMinimalApplicationPlugin implements Plugin<Project> {
             ShadowPluginSupport.withShadowPlugin(project, () -> ShadowPluginSupport.configureDefaults(project));
 
         });
+    }
+
+    private boolean hasExplicitAwsFunctionRuntimeDependency(Project project) {
+        SourceSetContainer sourceSets = PluginsHelper.findSourceSets(project);
+        SourceSet sourceSet = sourceSets == null ? null : sourceSets.findByName(SourceSet.MAIN_SOURCE_SET_NAME);
+        if (sourceSet == null) {
+            return false;
+        }
+        return hasExplicitAwsFunctionRuntimeDependency(project.getConfigurations().findByName(sourceSet.getImplementationConfigurationName()))
+                || hasExplicitAwsFunctionRuntimeDependency(project.getConfigurations().findByName(sourceSet.getRuntimeOnlyConfigurationName()));
+    }
+
+    private boolean hasExplicitAwsFunctionRuntimeDependency(Configuration configuration) {
+        if (configuration == null) {
+            return false;
+        }
+        for (Dependency dependency : configuration.getDependencies()) {
+            if (MicronautRuntimeDependencies.isExplicitAwsFunctionRuntimeDependency(dependency.getGroup(), dependency.getName())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void configureGoogleCloudFunctionRuntime(Project project, Project p, DependencyHandler dependencyHandler) {

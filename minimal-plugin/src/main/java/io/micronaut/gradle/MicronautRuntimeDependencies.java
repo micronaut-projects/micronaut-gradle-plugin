@@ -56,6 +56,7 @@ public final class MicronautRuntimeDependencies {
     private static final String ARTIFACT_ID_MICRONAUT_AZURE_FUNCTION_HTTP = "micronaut-azure-function-http";
     private static final String ARTIFACT_ID_MICRONAUT_AZURE_FUNCTION_HTTP_TEST = "micronaut-azure-function-http-test";
 
+    private static final String ARTIFACT_ID_MICRONAUT_AWS_FUNCTION = "micronaut-function-aws";
     private static final String ARTIFACT_ID_MICRONAUT_AWS_CUSTOM_RUNTIME = "micronaut-function-aws-custom-runtime";
     private static final String ARTIFACT_ID_MICRONAUT_AWS_API_PROXY = "micronaut-function-aws-api-proxy";
     private static final String ARTIFACT_ID_MICRONAUT_AWS_API_PROXY_TEST = "micronaut-function-aws-api-proxy-test";
@@ -160,6 +161,15 @@ public final class MicronautRuntimeDependencies {
 
     private static String micronautAwsDependency(String artifactId) {
         return dependency(GROUP_MICRONAUT_AWS, artifactId);
+    }
+
+    static boolean isExplicitAwsFunctionRuntimeDependency(String groupId, String artifactId) {
+        return GROUP_MICRONAUT_AWS.equals(groupId) && ARTIFACT_ID_MICRONAUT_AWS_FUNCTION.equals(artifactId);
+    }
+
+    static boolean isAutomaticAwsApiProxyDependency(String coordinates) {
+        return micronautAwsDependency(ARTIFACT_ID_MICRONAUT_AWS_API_PROXY).equals(coordinates)
+                || micronautAwsDependency(ARTIFACT_ID_MICRONAUT_AWS_API_PROXY_TEST).equals(coordinates);
     }
 
     private static String micronautGcpDependency(String artifactId) {
