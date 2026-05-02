@@ -21,7 +21,7 @@ micronaut-platform = "4.10.10" # This is the platform version, used in our tests
 micronaut-aot = "3.0.0-M2"
 micronaut-openapi = "6.20.0"
 micronaut-testresources = "4.0.0-M1"
-micronaut-jsonschema = "2.0.0-M7"
+micronaut-jsonschema = "2.0.0-M12"
 
 [libraries]
 # Core
