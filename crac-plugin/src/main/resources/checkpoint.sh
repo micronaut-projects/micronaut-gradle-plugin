@@ -13,12 +13,27 @@ echo "Starting application"
 GLIBC_TUNABLES=glibc.pthread.rseq=0
 
 # Run the app in the background
-/azul-crac-jdk/bin/java \
-  -XX:CRaCCheckpointTo=cr \
-  -XX:+UnlockDiagnosticVMOptions \
-  -XX:+CRTraceStartupTime \
-  -Djdk.crac.trace-startup-time=true \
-  -jar application.jar &
+JAVA_CMD=(
+  /azul-crac-jdk/bin/java
+  -XX:CRaCCheckpointTo=cr
+  -XX:+UnlockDiagnosticVMOptions
+  -XX:+CRTraceStartupTime
+  -Djdk.crac.trace-startup-time=true
+)
+
+if [ -f application.jar ]; then
+  JAVA_CMD+=(-jar application.jar)
+else
+  MAIN_CLASS=$1
+  shift
+  if [ -z "$MAIN_CLASS" ]; then
+    echo "Main class argument is required when application.jar is not present"
+    exit 1
+  fi
+  JAVA_CMD+=(-cp "/home/app/resources:/home/app/classes:/home/app/libs/*" "$MAIN_CLASS" "$@")
+fi
+
+"${JAVA_CMD[@]}" &
 PROCESS=$!
 echo "Started application as process $PROCESS"
 

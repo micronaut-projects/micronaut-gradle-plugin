@@ -94,6 +94,7 @@ class CracCustomizationSpec extends BaseCracGradleBuildSpec {
         result.output.contains("BUILD SUCCESSFUL")
         fileTextContents("build/docker/main/Dockerfile").readLines().head() == "FROM $MicronautCRaCPlugin.CRAC_DEFAULT_BASE_IMAGE"
         fileTextContents("build/docker/main/Dockerfile.CRaCCheckpoint").readLines().head() == "FROM $MicronautCRaCPlugin.CRAC_DEFAULT_BASE_IMAGE"
+        fileTextContents("build/docker/main/Dockerfile.CRaCCheckpoint").contains('ENTRYPOINT ["/home/app/checkpoint.sh", "example.Application"]')
     }
 
     void "base image is customizable"() {

@@ -771,7 +771,7 @@ COPY --link server.iprof /home/app/server.iprof
 COPY --link layers/app /home/app/
 COPY --link layers/resources /home/app/resources
 EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "/home/app/application.jar"]
+ENTRYPOINT ["java", "-cp", "/home/app/resources:/home/app/classes:/home/app/libs/*", "example.Application"]
 """
 
         when:
@@ -849,7 +849,7 @@ COPY --link server.iprof /home/app/server.iprof
 COPY --link layers/app /home/app/
 COPY --link layers/resources /home/app/resources
 EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "/home/app/application.jar"]
+ENTRYPOINT ["java", "-cp", "/home/app/resources:/home/app/classes:/home/app/libs/*", "example.Application"]
 """
 
         when:
