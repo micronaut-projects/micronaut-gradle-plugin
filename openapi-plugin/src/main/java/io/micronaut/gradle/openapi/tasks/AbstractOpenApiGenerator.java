@@ -20,6 +20,7 @@ import io.micronaut.gradle.openapi.ResponseBodyMappingModel;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.file.DirectoryProperty;
+import org.gradle.api.file.RegularFile;
 import org.gradle.api.file.RegularFileProperty;
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.MapProperty;
@@ -27,6 +28,7 @@ import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.Classpath;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.InputFile;
+import org.gradle.api.tasks.InputFiles;
 import org.gradle.api.tasks.Internal;
 import org.gradle.api.tasks.Optional;
 import org.gradle.api.tasks.OutputDirectory;
@@ -35,9 +37,18 @@ import org.gradle.api.tasks.PathSensitivity;
 import org.gradle.api.tasks.TaskAction;
 import org.gradle.workers.WorkerExecutor;
 
+import java.io.File;
+import java.util.List;
+import java.util.concurrent.Callable;
 import javax.inject.Inject;
 
 public abstract class AbstractOpenApiGenerator<W extends AbstractOpenApiWorkAction<P>, P extends AbstractOpenApiWorkAction.OpenApiParameters> extends DefaultTask {
+
+    private final ConfigurableFileCollection referencedDefinitionFiles;
+
+    protected AbstractOpenApiGenerator() {
+        referencedDefinitionFiles = getProject().files((Callable<List<File>>) this::resolveReferencedDefinitionFiles);
+    }
 
     @Classpath
     public abstract ConfigurableFileCollection getClasspath();
@@ -45,6 +56,12 @@ public abstract class AbstractOpenApiGenerator<W extends AbstractOpenApiWorkActi
     @InputFile
     @PathSensitive(PathSensitivity.NONE)
     public abstract RegularFileProperty getDefinitionFile();
+
+    @InputFiles
+    @PathSensitive(PathSensitivity.NONE)
+    public ConfigurableFileCollection getReferencedDefinitionFiles() {
+        return referencedDefinitionFiles;
+    }
 
     @Optional
     @Input
@@ -312,6 +329,14 @@ public abstract class AbstractOpenApiGenerator<W extends AbstractOpenApiWorkActi
     protected abstract Class<W> getWorkerAction();
 
     protected abstract void configureWorkerParameters(P params);
+
+    private List<File> resolveReferencedDefinitionFiles() {
+        RegularFile definitionFile = getDefinitionFile().getOrNull();
+        if (definitionFile == null) {
+            return List.of();
+        }
+        return OpenApiReferenceResolver.referencedFiles(definitionFile.getAsFile());
+    }
 
     @TaskAction
     public final void execute() {

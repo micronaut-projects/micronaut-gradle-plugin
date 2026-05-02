@@ -11,5 +11,6 @@ micronautPlugins {
 dependencies {
     compileOnly libs.micronaut.openapi.generator
     implementation projects.micronautMinimalPlugin
+    implementation libs.snakeyaml
     testImplementation testFixtures(projects.micronautMinimalPlugin)
 }
