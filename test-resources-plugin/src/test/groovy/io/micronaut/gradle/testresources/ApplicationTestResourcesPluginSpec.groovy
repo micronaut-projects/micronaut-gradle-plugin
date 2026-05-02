@@ -95,6 +95,33 @@ class ApplicationTestResourcesPluginSpec extends AbstractGradleBuildSpec {
         result.output.contains "io.micronaut.testresources.testcontainers.GenericTestContainerProvider"
     }
 
+    def "wires test resources into all test tasks by default"() {
+        withSample("test-resources/data-mysql")
+        withJvmTestSuite()
+        withTaskSelectionVerification(true, true)
+
+        when:
+        def result = build 'verifyTestResourcesTaskSelection'
+
+        then:
+        result.task(':verifyTestResourcesTaskSelection').outcome == TaskOutcome.SUCCESS
+    }
+
+    def "wires test resources only into selected test tasks"() {
+        withSample("test-resources/data-mysql")
+        withTestResourcesConfiguration '''
+            testTasks.add("integrationTest")
+        '''
+        withJvmTestSuite()
+        withTaskSelectionVerification(false, true)
+
+        when:
+        def result = build 'verifyTestResourcesTaskSelection'
+
+        then:
+        result.task(':verifyTestResourcesTaskSelection').outcome == TaskOutcome.SUCCESS
+    }
+
     def "runs the application with test resources support"() {
         withSample("test-resources/data-mysql")
 
@@ -114,6 +141,44 @@ class ApplicationTestResourcesPluginSpec extends AbstractGradleBuildSpec {
 
     private void withDependencies(String dependencies) {
         updateBuildFile("TEST_DEPENDENCIES_MARKER", dependencies)
+    }
+
+    private void withJvmTestSuite() {
+        buildFile << '''
+
+testing {
+    suites {
+        integrationTest(org.gradle.api.plugins.jvm.JvmTestSuite) {
+            useJUnitJupiter()
+            dependencies {
+                implementation project()
+            }
+        }
+    }
+}
+'''
+    }
+
+    private void withTaskSelectionVerification(boolean testTaskEnabled, boolean integrationTestEnabled) {
+        buildFile << """
+
+def assertTestResourcesTaskConfiguration = { org.gradle.api.tasks.testing.Test task, boolean expected ->
+    def dependencyPaths = task.taskDependencies.getDependencies(task)*.path as Set
+    def hasStartDependency = dependencyPaths.contains(":internalStartTestResourcesService")
+    def hasServerConnectionProvider = task.jvmArgumentProviders.any {
+        it.class.name == "io.micronaut.gradle.testresources.ServerConnectionParametersProvider"
+    }
+    assert hasStartDependency == expected : "Expected \$task.name start dependency to be \$expected but was \$hasStartDependency"
+    assert hasServerConnectionProvider == expected : "Expected \$task.name server connection provider to be \$expected but was \$hasServerConnectionProvider"
+}
+
+tasks.register("verifyTestResourcesTaskSelection") {
+    doLast {
+        assertTestResourcesTaskConfiguration(tasks.named("test").get(), ${testTaskEnabled})
+        assertTestResourcesTaskConfiguration(tasks.named("integrationTest").get(), ${integrationTestEnabled})
+    }
+}
+"""
     }
 
     private void updateBuildFile(String marker, String configuration) {
