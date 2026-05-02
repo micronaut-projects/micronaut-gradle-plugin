@@ -1,10 +1,21 @@
 package io.micronaut.gradle
 
 
+import io.micronaut.gradle.internal.ContinuousRunSupport
+import org.gradle.api.GradleException
+import org.gradle.api.logging.Logger
+import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.TaskOutcome
 import spock.lang.Issue
 
+import java.nio.charset.StandardCharsets
+import java.util.Properties
+import java.util.UUID
+import java.util.concurrent.TimeUnit
+
 class MicronautMinimalApplicationPluginSpec extends AbstractGradleBuildSpec {
+    private static final String INTERNAL_CONTINUOUS_OWNER_PROPERTY = "io.micronaut.internal.gradle.continuous.owner"
+    private static final String INTERNAL_CONTINUOUS_STARTUP_TIMEOUT_PROPERTY = "io.micronaut.internal.gradle.continuous.startup.timeout"
 
     def "test junit 5 test runtime"() {
         given:
@@ -83,6 +94,150 @@ class MicronautMinimalApplicationPluginSpec extends AbstractGradleBuildSpec {
         then:
         task.outcome == TaskOutcome.SUCCESS
         watchLine.contains 'src/main/groovy'
+    }
+
+    def "continuous run can launch in the background for tests"() {
+        given:
+        settingsFile << "rootProject.name = 'hello-world'"
+        buildFile << """
+            plugins {
+                id "io.micronaut.minimal.application"
+            }
+
+            micronaut {
+                version "$micronautVersion"
+                runtime "netty"
+            }
+
+            $repositoriesBlock
+            application { mainClass = "example.Application" }
+        """
+
+        def pidFile = file("build/background.pid")
+        testProjectDir.newFolder("src", "main", "java", "example")
+        testProjectDir.newFile("src/main/java/example/Application.java") << """
+package example;
+
+import java.nio.file.Files;
+import java.nio.file.Path;
+
+public class Application {
+    public static void main(String[] args) throws Exception {
+        Path pidFile = Path.of("${pidFile.absolutePath.replace("\\", "\\\\")}");
+        Files.createDirectories(pidFile.getParent());
+        Files.writeString(pidFile, Long.toString(ProcessHandle.current().pid()));
+        Thread.sleep(300000);
+    }
+}
+"""
+
+        def elapsedMillis
+        def result
+        def backgroundProcess
+
+        when:
+        long started = System.nanoTime()
+        result = build(
+            'run',
+            "-D${MicronautMinimalApplicationPlugin.INTERNAL_CONTINUOUS_BACKGROUND_FLAG}=true",
+            "-D${INTERNAL_CONTINUOUS_STARTUP_TIMEOUT_PROPERTY}=100"
+        )
+        elapsedMillis = java.util.concurrent.TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - started)
+        backgroundProcess = waitForProcess(pidFile)
+
+        then:
+        result.task(":run").outcome == TaskOutcome.SUCCESS
+        backgroundProcess != null
+        backgroundProcess.alive
+        elapsedMillis < java.util.concurrent.TimeUnit.SECONDS.toMillis(120)
+
+        cleanup:
+        stopBackgroundProcess(backgroundProcess)
+    }
+
+    def "continuous run fails when background startup exits non-zero after 500ms"() {
+        given:
+        settingsFile << "rootProject.name = 'hello-world'"
+        buildFile << """
+            plugins {
+                id "io.micronaut.minimal.application"
+            }
+
+            micronaut {
+                version "$micronautVersion"
+                runtime "netty"
+            }
+
+            $repositoriesBlock
+            application { mainClass = "example.Application" }
+        """
+
+        testProjectDir.newFolder("src", "main", "java", "example")
+        testProjectDir.newFile("src/main/java/example/Application.java") << """
+package example;
+
+public class Application {
+    public static void main(String[] args) throws Exception {
+        Thread.sleep(1500);
+        System.exit(1);
+    }
+}
+"""
+
+        when:
+        BuildResult result = fails(
+            'run',
+            "-D${MicronautMinimalApplicationPlugin.INTERNAL_CONTINUOUS_BACKGROUND_FLAG}=true",
+            "-D${INTERNAL_CONTINUOUS_STARTUP_TIMEOUT_PROPERTY}=3000"
+        )
+
+        then:
+        result.output.contains("Continuous run process exited during startup with code 1.")
+    }
+
+    def "continuous run can stop a persisted background process without in-memory state"() {
+        given:
+        File stateFile = file("build/micronaut/continuous-run.properties")
+        stateFile.parentFile.mkdirs()
+        String ownerToken = ownerToken(stateFile.toPath())
+        Process backgroundProcess = startOwnedProcess(ownerToken)
+        Logger logger = Mock()
+
+        when:
+        writeState(stateFile.toPath(), javaExecutable(), ownerToken, backgroundProcess.toHandle())
+        stopPreviousProcess(stateFile.toPath(), ownerToken, logger)
+
+        then:
+        waitForExit(backgroundProcess, 10)
+        !stateFile.exists()
+
+        cleanup:
+        stopBackgroundProcess(backgroundProcess?.toHandle())
+    }
+
+    def "continuous run preserves persisted state when ownership cannot be verified"() {
+        given:
+        File stateFile = file("build/micronaut/continuous-run.properties")
+        stateFile.parentFile.mkdirs()
+        Process backgroundProcess = startUnownedProcess()
+        Logger logger = Mock()
+        Properties properties = new Properties()
+        properties.setProperty("pid", Long.toString(backgroundProcess.pid()))
+        properties.setProperty("command", javaExecutable())
+        stateFile.withOutputStream { properties.store(it, "Micronaut continuous run state") }
+
+        when:
+        stopPreviousProcess(stateFile.toPath(), ownerToken(stateFile.toPath()), logger)
+
+        then:
+        GradleException e = thrown()
+        e.message.contains("state file was preserved for manual recovery")
+        stateFile.exists()
+        backgroundProcess.toHandle().alive
+
+        cleanup:
+        stopBackgroundProcess(backgroundProcess?.toHandle())
+        stateFile.delete()
     }
 
     @Issue("https://github.com/micronaut-projects/micronaut-gradle-plugin/issues/594")
@@ -183,6 +338,98 @@ public class ExampleTest {
         then:
         result.output.contains('Could not find io.micronaut:micronaut-inject:2048')
 
+    }
+
+    private static ProcessHandle waitForProcess(File pidFile) {
+        long deadline = System.nanoTime() + java.util.concurrent.TimeUnit.SECONDS.toNanos(10)
+        while (System.nanoTime() < deadline) {
+            if (pidFile.exists()) {
+                try {
+                    long pid = pidFile.text.trim() as long
+                    def handle = ProcessHandle.of(pid).orElse(null)
+                    if (handle?.alive) {
+                        return handle
+                    }
+                } catch (NumberFormatException ignored) {
+                    // Continue polling while the background process writes the PID file.
+                }
+            }
+            Thread.sleep(200)
+        }
+        null
+    }
+
+    private static void stopBackgroundProcess(ProcessHandle backgroundProcess) {
+        if (backgroundProcess == null) {
+            return
+        }
+        backgroundProcess.destroyForcibly()
+        try {
+            backgroundProcess.onExit().get(5, java.util.concurrent.TimeUnit.SECONDS)
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt()
+        } catch (java.util.concurrent.ExecutionException | java.util.concurrent.TimeoutException ignored) {
+            // Ignore cleanup failures to avoid cascading unrelated test failures.
+        }
+    }
+
+    private static Process startOwnedProcess(String ownerToken) {
+        startProcess([ownerArgument(ownerToken)])
+    }
+
+    private static Process startUnownedProcess() {
+        startProcess([])
+    }
+
+    private static Process startProcess(List<String> jvmArgs) {
+        new ProcessBuilder([
+            javaExecutable(),
+            *jvmArgs,
+            "-cp",
+            System.getProperty("java.class.path"),
+            BackgroundProcessMain.name
+        ]).redirectErrorStream(true).start()
+    }
+
+    private static boolean waitForExit(Process process, long timeoutSeconds) {
+        process.waitFor(timeoutSeconds, TimeUnit.SECONDS)
+    }
+
+    private static String javaExecutable() {
+        String executable = System.getProperty("os.name", "").toLowerCase().contains("win") ? "java.exe" : "java"
+        new File(new File(System.getProperty("java.home"), "bin"), executable).absolutePath
+    }
+
+    private static String ownerToken(java.nio.file.Path statePath) {
+        UUID.nameUUIDFromBytes(statePath.toString().getBytes(StandardCharsets.UTF_8)).toString()
+    }
+
+    private static String ownerArgument(String ownerToken) {
+        "-D${INTERNAL_CONTINUOUS_OWNER_PROPERTY}=${ownerToken}"
+    }
+
+    private static void writeState(java.nio.file.Path statePath, String command, String ownerToken, ProcessHandle handle) {
+        invokeContinuousRunSupport("writeState", [java.nio.file.Path, String, String, ProcessHandle] as Class[], statePath, command, ownerToken, handle)
+    }
+
+    private static void stopPreviousProcess(java.nio.file.Path statePath, String ownerToken, Logger logger) {
+        invokeContinuousRunSupport("stopPreviousProcess", [java.nio.file.Path, String, Logger] as Class[], statePath, ownerToken, logger)
+    }
+
+    private static Object invokeContinuousRunSupport(String name, Class<?>[] parameterTypes, Object... arguments) {
+        def method = ContinuousRunSupport.getDeclaredMethod(name, parameterTypes)
+        method.accessible = true
+        try {
+            method.invoke(null, arguments)
+        } catch (java.lang.reflect.InvocationTargetException e) {
+            throw e.cause
+        }
+    }
+
+    static final class BackgroundProcessMain {
+        static void main(String[] args) throws Exception {
+            Thread.sleep(300000)
+        }
     }
 
     def "can override the default Micronaut core version via the Micronaut version catalog"() {
