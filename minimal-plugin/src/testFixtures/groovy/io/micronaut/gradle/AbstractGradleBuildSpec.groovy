@@ -108,15 +108,26 @@ abstract class AbstractGradleBuildSpec extends Specification {
         }
         File gradleProperties = file("gradle.properties")
         if (gradleProperties.exists() && micronautVersion != null) {
-            def writer = new StringWriter()
-            gradleProperties.newReader().transformLine(writer) { line ->
-                if (line.startsWith("micronautVersion=")) {
-                    return "micronautVersion=$micronautVersion"
-                }
-                return line
-            }
-            gradleProperties.text = writer.toString()
+            rewriteMicronautVersion(gradleProperties, micronautVersion)
         }
+    }
+
+    protected void overrideMicronautVersion(String version) {
+        File gradleProperties = file("gradle.properties")
+        if (gradleProperties.exists()) {
+            rewriteMicronautVersion(gradleProperties, version)
+        }
+    }
+
+    private static void rewriteMicronautVersion(File gradleProperties, String version) {
+        def writer = new StringWriter()
+        gradleProperties.newReader().transformLine(writer) { line ->
+            if (line.startsWith("micronautVersion=")) {
+                return "micronautVersion=$version"
+            }
+            return line
+        }
+        gradleProperties.text = writer.toString()
     }
 
     private static void copySample(Path from, Path into) {

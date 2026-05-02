@@ -6,6 +6,13 @@ import spock.lang.IgnoreIf
 
 @IgnoreIf({ os.windows })
 class ApplicationTestResourcesPluginSpec extends AbstractGradleBuildSpec {
+    private static final String TEST_RESOURCES_MICRONAUT_VERSION = "4.10.10"
+
+    @Override
+    protected void withSample(String name) {
+        super.withSample(name)
+        overrideMicronautVersion(TEST_RESOURCES_MICRONAUT_VERSION)
+    }
 
     def "integrates with test resources without further configuration"() {
         withSample("test-resources/data-mysql")

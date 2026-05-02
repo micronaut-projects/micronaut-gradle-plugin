@@ -19,7 +19,7 @@ class VersionOverrideFunctionalTest extends AbstractFunctionalTest {
             
             micronaut {                
                 runtime "netty"
-                testRuntime "junit5"
+                testRuntime "junit"
             }
             
             $repositoriesBlock
@@ -80,7 +80,7 @@ foo = { module = "com.group:foo", version.ref = "foo" }
             
             micronaut {                
                 runtime "netty"
-                testRuntime "junit5"
+                testRuntime "junit"
             }
             
             $repositoriesBlock
