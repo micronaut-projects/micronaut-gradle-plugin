@@ -2,7 +2,7 @@
 kotlin = "1.9.25"
 kotlin2 = "2.3.10"
 ksp = "1.9.25-1.0.20"
-ksp2 = "2.3.6"
+ksp2 = "2.3.7"
 docker = "10.0.0"
 diffplug = "4.4.1"
 shadow = "9.4.0"
