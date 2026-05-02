@@ -1,6 +1,7 @@
 package io.micronaut.gradle.graalvm;
 
 import io.micronaut.gradle.AnnotationProcessing;
+import io.micronaut.gradle.FunctionPluginSupport;
 import io.micronaut.gradle.MicronautComponentPlugin;
 import io.micronaut.gradle.MicronautExtension;
 import io.micronaut.gradle.MicronautRuntime;
@@ -15,6 +16,7 @@ import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.ConfigurationContainer;
 import org.gradle.api.artifacts.DependencySet;
+import org.gradle.api.plugins.JavaApplication;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.TaskContainer;
@@ -63,6 +65,11 @@ public class MicronautGraalPlugin implements Plugin<Project> {
             configureAnnotationProcessing(project, extension);
             configureExperimentalGraalvmFeatures(project, extension);
         });
+        project.getPluginManager().withPlugin(FunctionPluginSupport.MINIMAL_FUNCTION_PLUGIN_ID, plugin -> {
+            MicronautExtension extension = PluginsHelper.findMicronautExtension(project);
+            configureAnnotationProcessing(project, extension);
+            configureExperimentalGraalvmFeatures(project, extension);
+        });
         project.getPlugins().withType(MicronautComponentPlugin.class, unused -> {
             var extension = PluginsHelper.findMicronautExtension(project);
             var nativeLambdaExtension = extension.getExtensions().create("nativeLambda", NativeLambdaExtension.class);
@@ -87,12 +94,17 @@ public class MicronautGraalPlugin implements Plugin<Project> {
         project.getPluginManager().withPlugin("application", plugin ->
             tasks.withType(BuildNativeImageTask.class).named("nativeCompile", nativeImageTask -> {
                 MicronautRuntime mr = PluginsHelper.resolveRuntime(project);
-                if (mr.isLambdaProvided()) {
+                if (mr.isLambdaProvided() && FunctionPluginSupport.usesApplicationLambdaRuntime(project)) {
                     DependencySet implementation = project.getConfigurations().getByName("implementation").getDependencies();
                     boolean isAwsApp = implementation.stream()
                             .noneMatch(dependency -> Objects.equals(dependency.getGroup(), "io.micronaut.aws") && dependency.getName().equals("micronaut-function-aws"));
+                    JavaApplication javaApplication = project.getExtensions().findByType(JavaApplication.class);
+                    boolean explicitMainClass = javaApplication != null && javaApplication.getMainClass().isPresent();
 
-                    if (isAwsApp) {
+                    if (isAwsApp && !FunctionPluginSupport.preservesApplicationMainClass(project)) {
+                        var nativeLambdaExtension = findMicronautExtension(project).getExtensions().getByType(NativeLambdaExtension.class);
+                        nativeImageTask.getOptions().get().getMainClass().set(nativeLambdaExtension.getLambdaRuntimeClassName());
+                    } else if (isAwsApp && !explicitMainClass && !nativeImageTask.getOptions().get().getMainClass().isPresent()) {
                         var nativeLambdaExtension = findMicronautExtension(project).getExtensions().getByType(NativeLambdaExtension.class);
                         nativeImageTask.getOptions().get().getMainClass().set(nativeLambdaExtension.getLambdaRuntimeClassName());
                     }
