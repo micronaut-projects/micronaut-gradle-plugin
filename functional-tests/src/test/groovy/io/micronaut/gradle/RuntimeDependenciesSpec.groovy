@@ -37,11 +37,11 @@ class RuntimeDependenciesSpec extends AbstractEagerConfiguringFunctionalTest {
 
         where:
         runtime                | configuration          || coordinates
-        'netty'                | 'compileClasspath'     || ['io.micronaut:micronaut-http-server-netty']
-        'jetty'                | 'compileClasspath'     || ['io.micronaut.servlet:micronaut-http-server-jetty']
-        'http_server_jdk'      | 'compileClasspath'     || ['io.micronaut.servlet:micronaut-http-server-jdk']
-        'tomcat'               | 'compileClasspath'     || ['io.micronaut.servlet:micronaut-http-server-tomcat']
-        'undertow'             | 'compileClasspath'     || ['io.micronaut.servlet:micronaut-http-server-undertow']
+        'netty'                | 'runtimeClasspath'     || ['io.micronaut:micronaut-http-server-netty']
+        'jetty'                | 'runtimeClasspath'     || ['io.micronaut.servlet:micronaut-http-server-jetty']
+        'http_server_jdk'      | 'runtimeClasspath'     || ['io.micronaut.servlet:micronaut-http-server-jdk']
+        'tomcat'               | 'runtimeClasspath'     || ['io.micronaut.servlet:micronaut-http-server-tomcat']
+        'undertow'             | 'runtimeClasspath'     || ['io.micronaut.servlet:micronaut-http-server-undertow']
         'google_function'      | 'compileClasspath'     || ['io.micronaut.gcp:micronaut-gcp-function-http']
         'google_function'      | 'developmentOnly'      || ['com.google.cloud.functions:functions-framework-api', 'io.micronaut.gcp:micronaut-gcp-function-http-test']
         'google_function'      | 'compileOnly'          || ['com.google.cloud.functions:functions-framework-api']
@@ -59,7 +59,7 @@ class RuntimeDependenciesSpec extends AbstractEagerConfiguringFunctionalTest {
         'lambda_provided'      | 'compileClasspath'     || ["io.micronaut.aws:micronaut-function-aws-api-proxy", "io.micronaut.aws:micronaut-function-aws-custom-runtime"]
         'lambda_provided'      | 'developmentOnly'      || ["io.micronaut.aws:micronaut-function-aws-api-proxy-test"]
         'lambda_provided'      | 'testRuntimeClasspath' || ["io.micronaut.aws:micronaut-function-aws-api-proxy-test"]
-        'http_poja'            | 'compileClasspath'     || ['io.micronaut.servlet:micronaut-http-poja-apache']
+        'http_poja'            | 'runtimeClasspath'     || ['io.micronaut.servlet:micronaut-http-poja-apache']
         'http_poja'            | 'testRuntimeClasspath' || ['io.micronaut.servlet:micronaut-http-poja-apache', 'io.micronaut.servlet:micronaut-http-poja-test']
 
         description =  String.join(",", coordinates)

@@ -129,23 +129,23 @@ public final class MicronautRuntimeDependencies {
                     .build();
 
         } else if (runtime == NETTY) {
-            return Dependencies.builder().implementation(dependency(GROUP_MICRONAUT, ARTIFACT_ID_MICRONAUT_SERVER_NETTY), HTTP_NETTY_VERSION_PROPERTY).build();
+            return Dependencies.builder().runtimeOnly(dependency(GROUP_MICRONAUT, ARTIFACT_ID_MICRONAUT_SERVER_NETTY), HTTP_NETTY_VERSION_PROPERTY).build();
 
         } else if (runtime == TOMCAT) {
-            return Dependencies.builder().implementation(micronautServletDependency(ARTIFACT_ID_MICRONAUT_SERVLET_TOMCAT), SERVLET_VERSION_PROPERTY).build();
+            return Dependencies.builder().runtimeOnly(micronautServletDependency(ARTIFACT_ID_MICRONAUT_SERVLET_TOMCAT), SERVLET_VERSION_PROPERTY).build();
 
         } else if (runtime == JETTY) {
-            return Dependencies.builder().implementation(micronautServletDependency(ARTIFACT_ID_MICRONAUT_SERVLET_JETTY), SERVLET_VERSION_PROPERTY).build();
+            return Dependencies.builder().runtimeOnly(micronautServletDependency(ARTIFACT_ID_MICRONAUT_SERVLET_JETTY), SERVLET_VERSION_PROPERTY).build();
 
         } else if (runtime == UNDERTOW) {
-            return Dependencies.builder().implementation(micronautServletDependency(ARTIFACT_ID_MICRONAUT_SERVLET_UNDERTOW), SERVLET_VERSION_PROPERTY).build();
+            return Dependencies.builder().runtimeOnly(micronautServletDependency(ARTIFACT_ID_MICRONAUT_SERVLET_UNDERTOW), SERVLET_VERSION_PROPERTY).build();
         } else if (runtime == HTTP_POJA) {
-            return Dependencies.builder().implementation(micronautServletDependency(ARTIFACT_ID_MICRONAUT_SERVLET_POJA_APACHE), SERVLET_VERSION_PROPERTY)
-                    .testImplementation(micronautServletDependency(ARTIFACT_ID_MICRONAUT_SERVLET_POJA_TEST), SERVLET_VERSION_PROPERTY)
+            return Dependencies.builder().runtimeOnly(micronautServletDependency(ARTIFACT_ID_MICRONAUT_SERVLET_POJA_APACHE), SERVLET_VERSION_PROPERTY)
+                    .testRuntimeOnly(micronautServletDependency(ARTIFACT_ID_MICRONAUT_SERVLET_POJA_TEST), SERVLET_VERSION_PROPERTY)
                     .build();
         } else if (runtime == HTTP_SERVER_JDK) {
             return Dependencies.builder()
-                    .implementation(micronautServletDependency(ARTIFACT_ID_MICRONAUT_HTTP_SERVER_JDK), SERVLET_VERSION_PROPERTY)
+                    .runtimeOnly(micronautServletDependency(ARTIFACT_ID_MICRONAUT_HTTP_SERVER_JDK), SERVLET_VERSION_PROPERTY)
                     .build();
 
         } else if (runtime != NONE) {

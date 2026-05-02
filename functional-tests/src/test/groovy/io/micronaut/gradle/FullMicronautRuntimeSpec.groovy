@@ -25,6 +25,7 @@ class FullMicronautRuntimeSpec extends AbstractEagerConfiguringFunctionalTest {
             $repositoriesBlock
             
             dependencies {
+                implementation("io.micronaut:micronaut-http")
                 runtimeOnly("ch.qos.logback:logback-classic")
                 testImplementation("io.micronaut:micronaut-http-client")
             }
