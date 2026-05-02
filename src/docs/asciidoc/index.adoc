@@ -828,6 +828,8 @@ application {
 }
 ----
 
+If a build applies both `com.google.devtools.ksp` and `org.jetbrains.kotlin.kapt`, Micronaut processing uses KSP and does not also configure Micronaut-managed annotation processors on KAPT. This keeps `kapt` available for unrelated third-party processors without generating duplicate Micronaut bean definitions.
+
 [[native-image]]
 === GraalVM Native Image
 

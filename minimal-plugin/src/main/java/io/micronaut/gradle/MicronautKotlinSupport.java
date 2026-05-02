@@ -7,6 +7,7 @@ import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.Dependency;
 import org.gradle.api.artifacts.dsl.DependencyHandler;
 import org.gradle.api.plugins.ExtensionContainer;
+import org.gradle.api.plugins.ExtraPropertiesExtension;
 import org.gradle.api.plugins.PluginManager;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.SourceSet;
@@ -24,6 +25,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 
 import static io.micronaut.gradle.PluginsHelper.CORE_VERSION_PROPERTY;
@@ -37,6 +39,9 @@ import static io.micronaut.gradle.PluginsHelper.resolveMicronautPlatform;
  * @since 1.0.0
  */
 public class MicronautKotlinSupport {
+    private static final String KAPT_PLUGIN_ID = "org.jetbrains.kotlin.kapt";
+    private static final String KSP_PLUGIN_ID = "com.google.devtools.ksp";
+    private static final String BOTH_KAPT_AND_KSP_WARNING_EMITTED = "io.micronaut.gradle.kotlin.kaptAndKspWarningEmitted";
     private static final String[] KAPT_CONFIGURATIONS = {
         "kapt",
         "kaptTest"
@@ -85,11 +90,12 @@ public class MicronautKotlinSupport {
             kotlinOptions.setJavaParameters(true);
         });
         pluginManager.withPlugin("org.jetbrains.kotlin.plugin.allopen", unused -> configureAllOpen(project));
-        pluginManager.withPlugin("org.jetbrains.kotlin.kapt", unused -> configureKapt(project));
-        pluginManager.withPlugin("com.google.devtools.ksp", unused -> configureKsp(project));
+        pluginManager.withPlugin(KAPT_PLUGIN_ID, unused -> configureKapt(project));
+        pluginManager.withPlugin(KSP_PLUGIN_ID, unused -> configureKsp(project));
     }
 
     private static void configureKsp(Project project) {
+        warnAboutKspTakingPrecedence(project);
         configureKotlinCompilerPlugin(project, KSP_CONFIGURATIONS, "ksp", KSP_ANNOTATION_PROCESSOR_MODULES);
 
         final ExtensionContainer extensions = project.getExtensions();
@@ -110,7 +116,8 @@ public class MicronautKotlinSupport {
     }
 
     private static void configureKapt(Project project) {
-        configureKotlinCompilerPlugin(project, KAPT_CONFIGURATIONS, "kapt", PluginsHelper.ANNOTATION_PROCESSOR_MODULES);
+        warnAboutKspTakingPrecedence(project);
+        configureKotlinCompilerPlugin(project, KAPT_CONFIGURATIONS, "kapt", PluginsHelper.ANNOTATION_PROCESSOR_MODULES, () -> !isMicronautKaptDisabledByKsp(project));
 
         // Need to identify KAPT version. We can't configure KAPT 2.x for incremental processing
         // Remove this block after the end of support for KAPT 1.9
@@ -122,6 +129,9 @@ public class MicronautKotlinSupport {
             var processingConfig = micronautExtension.getProcessing();
             project.afterEvaluate(unused -> {
                 // need to use afterEvaluate because lazy APIs are not available on the Kotlin 1.9 plugin
+                if (isMicronautKaptDisabledByKsp(project)) {
+                    return;
+                }
                 var isIncremental = processingConfig.getIncremental().getOrElse(true);
                 var group = processingConfig.getGroup().getOrElse(project.getGroup().toString());
                 var module = processingConfig.getModule().getOrElse(project.getName());
@@ -180,9 +190,17 @@ public class MicronautKotlinSupport {
     }
 
     private static void configureKotlinCompilerPlugin(Project project, String[] compilerConfigurations, String compilerType, List<String> annotationProcessorModules) {
+        configureKotlinCompilerPlugin(project, compilerConfigurations, compilerType, annotationProcessorModules, () -> true);
+    }
+
+    private static void configureKotlinCompilerPlugin(Project project,
+                                                      String[] compilerConfigurations,
+                                                      String compilerType,
+                                                      List<String> annotationProcessorModules,
+                                                      BooleanSupplier condition) {
         // add inject-java to kapt scopes
-        PluginsHelper.registerAnnotationProcessors(project, annotationProcessorModules, compilerConfigurations);
-        addGraalVmDependencies(compilerConfigurations, project);
+        PluginsHelper.registerAnnotationProcessors(project, annotationProcessorModules, condition, compilerConfigurations);
+        addGraalVmDependencies(compilerConfigurations, project, condition);
 
         Configuration kotlinProcessors = project.getConfigurations().getByName(KOTLIN_PROCESSORS);
         for (String compilerConfiguration : compilerConfigurations) {
@@ -190,6 +208,7 @@ public class MicronautKotlinSupport {
         }
         PluginsHelper.applyAdditionalProcessors(
             project,
+            condition,
             compilerConfigurations
         );
         var registry = project.
@@ -199,7 +218,7 @@ public class MicronautKotlinSupport {
         var platform = PluginsHelper.findMicronautVersion(project).map(micronautVersion -> resolveMicronautPlatform(dependencyHandler, micronautVersion));
         var knownSourceSets = new HashSet<SourceSet>();
         registry.register(sourceSet -> {
-            configureAdditionalSourceSet(compilerType, project, dependencyHandler, platform, sourceSet);
+            configureAdditionalSourceSet(compilerType, project, dependencyHandler, platform, sourceSet, condition);
             knownSourceSets.add(sourceSet);
         });
         for (String compileConfiguration : compilerConfigurations) {
@@ -211,14 +230,20 @@ public class MicronautKotlinSupport {
         project.afterEvaluate(p -> {
             PluginsHelper.applyAdditionalProcessors(
                 p,
+                condition,
                 compilerConfigurations
             );
-            configureExtraSourceSetsUsingDeprecatedBehavior(compilerType, p, knownSourceSets, dependencyHandler, platform);
+            configureExtraSourceSetsUsingDeprecatedBehavior(compilerType, p, knownSourceSets, dependencyHandler, platform, condition);
         });
 
     }
 
-    private static void configureExtraSourceSetsUsingDeprecatedBehavior(String compilerType, Project p, HashSet<SourceSet> knownSourceSets, DependencyHandler dependencyHandler, Provider<Dependency> platform) {
+    private static void configureExtraSourceSetsUsingDeprecatedBehavior(String compilerType,
+                                                                        Project p,
+                                                                        HashSet<SourceSet> knownSourceSets,
+                                                                        DependencyHandler dependencyHandler,
+                                                                        Provider<Dependency> platform,
+                                                                        BooleanSupplier condition) {
         var micronautExtension = p
             .getExtensions()
             .getByType(MicronautExtension.class);
@@ -232,7 +257,7 @@ public class MicronautKotlinSupport {
                 for (SourceSet sourceSet : configurations) {
                     if (!knownSourceSets.contains(sourceSet)) {
                         AnnotationProcessing.showAdditionalSourceSetDeprecationWarning(sourceSet);
-                        configureAdditionalSourceSet(compilerType, p, dependencyHandler, platform, sourceSet);
+                        configureAdditionalSourceSet(compilerType, p, dependencyHandler, platform, sourceSet, condition);
                     }
                 }
             }
@@ -243,7 +268,8 @@ public class MicronautKotlinSupport {
                                                      Project p,
                                                      DependencyHandler dependencyHandler,
                                                      Provider<Dependency> platform,
-                                                     SourceSet sourceSet) {
+                                                     SourceSet sourceSet,
+                                                     BooleanSupplier condition) {
         String annotationProcessorConfigurationName = compilerType + Strings.capitalize(sourceSet.getName());
         String implementationConfigurationName = sourceSet
             .getImplementationConfigurationName();
@@ -259,22 +285,37 @@ public class MicronautKotlinSupport {
         }
         configureAnnotationProcessors(p,
             implementationConfigurationName,
-            annotationProcessorConfigurationName);
+            annotationProcessorConfigurationName,
+            condition);
         p.getPluginManager().withPlugin("io.micronaut.graalvm", unused ->
             new AutomaticDependency(annotationProcessorConfigurationName,
                 "io.micronaut:micronaut-graal",
-                Optional.of(CORE_VERSION_PROPERTY)).applyTo(p)
+                Optional.of(CORE_VERSION_PROPERTY)).applyTo(p, condition)
         );
     }
 
-    private static void addGraalVmDependencies(String[] compilerConfigurations, Project project) {
+    private static void addGraalVmDependencies(String[] compilerConfigurations, Project project, BooleanSupplier condition) {
         project.getPluginManager().withPlugin("io.micronaut.graalvm", unused -> {
             for (String configuration : compilerConfigurations) {
                 new AutomaticDependency(configuration,
                     "io.micronaut:micronaut-graal",
-                    Optional.of(CORE_VERSION_PROPERTY)).applyTo(project);
+                    Optional.of(CORE_VERSION_PROPERTY)).applyTo(project, condition);
             }
         });
+    }
+
+    private static boolean isMicronautKaptDisabledByKsp(Project project) {
+        return project.getPluginManager().hasPlugin(KAPT_PLUGIN_ID) && project.getPluginManager().hasPlugin(KSP_PLUGIN_ID);
+    }
+
+    private static void warnAboutKspTakingPrecedence(Project project) {
+        if (isMicronautKaptDisabledByKsp(project)) {
+            ExtraPropertiesExtension extraProperties = project.getExtensions().getExtraProperties();
+            if (!extraProperties.has(BOTH_KAPT_AND_KSP_WARNING_EMITTED)) {
+                extraProperties.set(BOTH_KAPT_AND_KSP_WARNING_EMITTED, true);
+                LOGGER.warn("Both KSP and KAPT plugins were detected. Micronaut processing will use KSP, and Micronaut-managed KAPT wiring is disabled. KAPT remains available for non-Micronaut processors.");
+            }
+        }
     }
 
     private static void configureAllOpen(Project project) {
