@@ -1174,6 +1174,24 @@ tasks.withType(io.micronaut.gradle.docker.tasks.BuildLayersTask) {
 }
 ----
 
+==== Excluding files from layers
+
+If you need to keep specific files out of the generated Docker layers, configure exclude patterns on the task:
+
+[source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
+----
+tasks.withType(io.micronaut.gradle.docker.tasks.BuildLayersTask).configureEach {
+    excludes.add("**/application-dev.properties")
+}
+----
+
+[source, kotlin, subs="verbatim,attributes", role="multi-language-sample"]
+----
+tasks.withType<io.micronaut.gradle.docker.tasks.BuildLayersTask>().configureEach {
+    excludes.add("**/application-dev.properties")
+}
+----
+
 ==== Docker build layers
 
 The `buildLayers` task creates files under `build/docker/main/layers` for the generated Docker image.
