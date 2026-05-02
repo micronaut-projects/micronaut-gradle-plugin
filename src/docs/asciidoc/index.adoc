@@ -886,6 +886,8 @@ $ ./gradlew nativeRun
 
 You can tweak the native executable options by configuring the `graalvmNative` extension as explained in the {native-gradle-plugin}[plugin documentation].
 
+Micronaut adds `-H:+SharedArenaSupport` to GraalVM 25+ native image builds by default so Netty-based applications continue to work with current GraalVM releases. The plugin skips that flag for older GraalVM JDK lines that do not support it. You can still override the generated build arguments through the standard `graalvmNative` configuration if you need different behavior.
+
 For example, you can add options to the main executable by doing:
 
 [source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
