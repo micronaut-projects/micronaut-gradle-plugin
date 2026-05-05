@@ -99,14 +99,15 @@ micronaut:
         and:
         result.output.contains("Successfully tagged hello-world:latest")
         result.output.contains("Resources configuration written into")
+        dockerFile.find { s -> s.startsWith('RUN native-image ') }.contains(SHARED_ARENA_SUPPORT) == sharedArenaSupportEnabled
         task.outcome == TaskOutcome.SUCCESS
 
         where:
-        runtime           | jdk | nativeImage
-        "netty"           | 25  | "FROM ghcr.io/graalvm/native-image-community:25-ol${DefaultVersions.ORACLELINUX}"
-        "lambda_provided" | 25  | "FROM public.ecr.aws/amazonlinux/amazonlinux:${DefaultVersions.AMAZONLINUX} AS graalvm"
-        "lambda_provided" | 21  | "FROM public.ecr.aws/amazonlinux/amazonlinux:${DefaultVersions.AMAZONLINUX} AS graalvm"
-        "jetty"           | 25  | "FROM ghcr.io/graalvm/native-image-community:25-ol${DefaultVersions.ORACLELINUX}"
+        runtime           | jdk | nativeImage                                                                    | sharedArenaSupportEnabled
+        "netty"           | 25  | "FROM ghcr.io/graalvm/native-image-community:25-ol${DefaultVersions.ORACLELINUX}" | true
+        "lambda_provided" | 25  | "FROM public.ecr.aws/amazonlinux/amazonlinux:${DefaultVersions.AMAZONLINUX} AS graalvm" | true
+        "lambda_provided" | 21  | "FROM public.ecr.aws/amazonlinux/amazonlinux:${DefaultVersions.AMAZONLINUX} AS graalvm" | false
+        "jetty"           | 25  | "FROM ghcr.io/graalvm/native-image-community:25-ol${DefaultVersions.ORACLELINUX}" | true
     }
 
     void 'build mostly static native images when using distroless docker image for runtime=#runtime'() {
@@ -788,12 +789,66 @@ COPY --link layers/resources /home/app/resources
 RUN mkdir /home/app/config-dirs
 RUN mkdir -p /home/app/config-dirs/generateResourcesConfigFile
 COPY --link config-dirs/generateResourcesConfigFile /home/app/config-dirs/generateResourcesConfigFile
-RUN native-image -cp /home/app/libs/*.jar:/home/app/resources:/home/app/application.jar --no-fallback -o application -H:ConfigurationFileDirectories=/home/app/config-dirs/generateResourcesConfigFile example.Application
+RUN native-image -cp '/home/app/libs/*.jar:/home/app/resources:/home/app/application.jar' --no-fallback -o application -H:ConfigurationFileDirectories=/home/app/config-dirs/generateResourcesConfigFile ${SHARED_ARENA_SUPPORT} example.Application
 ${defaultDockerFrom}
 EXPOSE 8080
 COPY --link --from=graalvm /home/app/application /app/application
 ENTRYPOINT ["/app/application"]
 """
+    }
+
+    @Issue("https://github.com/micronaut-projects/micronaut-gradle-plugin/issues/1198")
+    def "dockerfile native escapes shell metacharacters in build args"() {
+        given:
+        settingsFile << "rootProject.name = 'hello-world'"
+        buildFile << """
+            plugins {
+                id "io.micronaut.minimal.application"
+                id "io.micronaut.docker"
+                id "io.micronaut.graalvm"
+            }
+
+            micronaut {
+                version "$micronautVersion"
+                runtime "netty"
+            }
+
+            $repositoriesBlock
+
+            application { mainClass = "example.Application" }
+
+            graalvmNative {
+                binaries.all {
+                    buildArgs.add('--initialize-at-build-time=io.micronaut.flyway.StaticResourceProvider\$StaticLoadableResource')
+                    buildArgs.add('-H:IncludeResources=application(-|.)(foo|bar)?[.]properties')
+                }
+            }
+        """
+        testProjectDir.newFolder("src", "main", "java", "example")
+        def javaFile = testProjectDir.newFile("src/main/java/example/Application.java")
+        javaFile.parentFile.mkdirs()
+        javaFile << """
+package example;
+
+class Application {
+    public static void main(String... args) {
+
+    }
+}
+"""
+
+        when:
+        def result = build('dockerfileNative')
+        def dockerfileNativeTask = result.task(':dockerfileNative')
+        def dockerFileNative = new File(testProjectDir.root, 'build/docker/native-main/DockerfileNative').text
+
+        then:
+        dockerfileNativeTask.outcome == TaskOutcome.SUCCESS
+        dockerFileNative.contains("RUN native-image")
+        dockerFileNative.contains("'-H:IncludeResources=application(-|.)(foo|bar)?[.]properties'")
+        dockerFileNative.contains("'--initialize-at-build-time=io.micronaut.flyway.StaticResourceProvider\$StaticLoadableResource'")
+        !dockerFileNative.contains(' --initialize-at-build-time=io.micronaut.flyway.StaticResourceProvider$StaticLoadableResource ')
+        !dockerFileNative.contains(' -H:IncludeResources=application(-|.)(foo|bar)?[.]properties ')
     }
 
     @Issue("https://github.com/micronaut-projects/micronaut-gradle-plugin/issues/667")

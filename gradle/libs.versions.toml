@@ -1,27 +1,27 @@
 [versions]
 kotlin = "1.9.25"
-kotlin2 = "2.3.10"
+kotlin2 = "2.3.21"
 ksp = "1.9.25-1.0.20"
-ksp2 = "2.3.6"
+ksp2 = "2.3.7"
 docker = "10.0.0"
 diffplug = "4.4.1"
 shadow = "9.4.0"
-groovy = "5.0.4"
+groovy = "5.0.5"
 spock = "2.4-groovy-4.0"
 junit-platform = "6.0.3"
 oraclelinux = "9"
 amazonlinux = "2023-minimal"
-graalvmPlugin = "0.11.5"
+graalvmPlugin = "1.1.0"
 mockserver = "5.15.0"
-log4j2 = "2.25.3"
+log4j2 = "2.25.4"
 tomlj = "1.1.1"
-openrewrite = "7.26.0"
+openrewrite = "7.32.1"
 
 micronaut-platform = "5.0.0-M1" # This is the platform version, used in our tests
 micronaut-aot = "3.0.0-M2"
 micronaut-openapi = "6.20.0"
 micronaut-testresources = "4.0.0-M1"
-micronaut-jsonschema = "2.0.0-M7"
+micronaut-jsonschema = "2.0.0-M12"
 
 [libraries]
 # Core
