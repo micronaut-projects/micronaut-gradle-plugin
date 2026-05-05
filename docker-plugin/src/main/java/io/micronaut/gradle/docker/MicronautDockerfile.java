@@ -166,7 +166,9 @@ public abstract class MicronautDockerfile extends Dockerfile implements DockerBu
                         newList.addAll(strings);
                         newList.add("-cp");
                         newList.add(workDir + "/resources:" + workDir + "/classes:" + workDir + "/libs/*");
-                        newList.add(javaApplication.getMainClass().get());
+                        newList.add(buildStrategy == DockerBuildStrategy.LAMBDA
+                            ? "io.micronaut.function.aws.runtime.MicronautLambdaRuntime"
+                            : javaApplication.getMainClass().get());
                         return newList;
                     }));
                 }
