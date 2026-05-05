@@ -2219,37 +2219,7 @@ micronaut {
 }
 ----
 
-The reference API documentation lists every property on link:api/io/micronaut/gradle/openapi/OpenApiClientSpec.html[OpenApiClientSpec]. The options below are the ones most commonly needed when you are deciding what the generated client should look like and which runtime support it needs.
-
-[cols="1,3"]
-|===
-|Option
-|What it changes
-
-|`lang`
-|Chooses the generator language. The default is Java; set it to `kotlin` when you want Kotlin sources.
-
-|`clientId`
-|Sets the Micronaut `@Client` identifier used by the generated client beans.
-
-|`clientPath`
-|Adds a configurable base-path expression to the generated `@Client` declaration so the target URL can be externalized from code.
-
-|`useAuth`
-|Enables auth-related generation for the security requirements declared in the OpenAPI definition.
-
-|`generateAuthClasses`
-|Generates the auth support classes under `org.openapitools.auth`.
-
-|`authFilter`
-|Generates an `AuthorizationFilter` for the client code. Use the filter-specific properties to scope where it applies.
-
-|`useOauth`, `useBasicAuth`, `useApiKeyAuth`
-|Restrict the generated auth support to the auth styles you actually want emitted.
-
-|`authorizationFilterPattern`, `authorizationFilterPatternStyle`, `authFilterClientIds`, `authFilterExcludedClientIds`, `authConfigName`
-|Refine how the generated `AuthorizationFilter` is matched and which client configuration it uses.
-|===
+The reference API documentation lists every property on link:api/io/micronaut/gradle/openapi/OpenApiClientSpec.html[OpenApiClientSpec] and its parent link:api/io/micronaut/gradle/openapi/OpenApiSpec.html[OpenApiSpec], including option defaults and generated-code effects.
 
 ==== Dependency expectations for generated code
 
@@ -2345,7 +2315,7 @@ micronaut {
 
 NOTE: Server generation will generate interfaces that you have to implement in order to write your server code.
 
-Please refer to link:api/io/micronaut/gradle/openapi/OpenApiServerSpec.html[OpenApiServerSpec] for the whole list of server configuration options.
+Please refer to link:api/io/micronaut/gradle/openapi/OpenApiServerSpec.html[OpenApiServerSpec] and its parent link:api/io/micronaut/gradle/openapi/OpenApiSpec.html[OpenApiSpec] for the full list of server configuration options, including option defaults and generated-code effects.
 
 === Advanced configuration
 
