@@ -653,6 +653,7 @@ micronaut:
         def dockerFile = normalizeLineEndings(file("build/docker/native-main/DockerfileNative").text)
         dockerFile = dockerFile.replaceAll("[0-9]\\.[0-9]+\\.[0-9]+", "4.0.0")
                 .replaceAll("RUN native-image .*", "RUN native-image")
+        dockerFile = normalizeGeneratedNativeConfigDirectories(dockerFile, "/home/alternate")
                 .trim()
 
         then:
@@ -664,11 +665,7 @@ micronaut:
             COPY --link layers/resources /home/alternate/resources
             RUN mkdir /home/alternate/config-dirs
             RUN mkdir -p /home/alternate/config-dirs/generateResourcesConfigFile
-            RUN mkdir -p /home/alternate/config-dirs/io.netty/netty-common/4.0.0.Final
-            RUN mkdir -p /home/alternate/config-dirs/io.netty/netty-transport/4.0.0.Final
             COPY --link config-dirs/generateResourcesConfigFile /home/alternate/config-dirs/generateResourcesConfigFile
-            COPY --link config-dirs/io.netty/netty-common/4.0.0.Final /home/alternate/config-dirs/io.netty/netty-common/4.0.0.Final
-            COPY --link config-dirs/io.netty/netty-transport/4.0.0.Final /home/alternate/config-dirs/io.netty/netty-transport/4.0.0.Final
             RUN native-image
             FROM cgr.dev/chainguard/wolfi-base:latest
             EXPOSE 8080
@@ -779,7 +776,10 @@ ENTRYPOINT ["java", "-jar", "/home/app/application.jar"]
         result = build('dockerfileNative', '-s')
 
         then:
-        def dockerfileNative = new File(testProjectDir.root, 'build/docker/native-main/DockerfileNative').text
+        def dockerfileNative = normalizeGeneratedNativeConfigDirectories(
+                new File(testProjectDir.root, 'build/docker/native-main/DockerfileNative').text,
+                "/home/app"
+        )
         dockerfileNative == """FROM ghcr.io/graalvm/native-image-community:25-ol${DefaultVersions.ORACLELINUX} AS graalvm
 WORKDIR /home/app
 COPY --link layers/libs /home/app/libs

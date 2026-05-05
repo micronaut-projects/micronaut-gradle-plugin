@@ -254,6 +254,34 @@ abstract class AbstractGradleBuildSpec extends Specification {
         s.replaceAll("\\r\\n?", "\n")
     }
 
+    protected static String normalizeGeneratedNativeConfigDirectories(String dockerFile, String workDir) {
+        String generatedResourcesConfigDir = "${workDir}/config-dirs/generateResourcesConfigFile"
+        String configurationFileDirectoriesArg = "-H:ConfigurationFileDirectories=${generatedResourcesConfigDir}"
+        String normalized = dockerFile.readLines()
+                .findAll { line ->
+                    if (line.startsWith("RUN mkdir -p ${workDir}/config-dirs/")) {
+                        return line == "RUN mkdir -p ${generatedResourcesConfigDir}"
+                    }
+                    if (line.startsWith("COPY --link config-dirs/")) {
+                        return line.startsWith("COPY --link config-dirs/generateResourcesConfigFile ")
+                    }
+                    true
+                }
+                .collect { line ->
+                    int start = line.indexOf(configurationFileDirectoriesArg)
+                    if (start < 0) {
+                        return line
+                    }
+                    int end = line.indexOf(" ", start)
+                    if (end < 0) {
+                        return line.substring(0, start) + configurationFileDirectoriesArg
+                    }
+                    line.substring(0, start) + configurationFileDirectoriesArg + line.substring(end)
+                }
+                .join("\n")
+        dockerFile.endsWith("\n") ? normalized + "\n" : normalized
+    }
+
     private static determineArgFileName(String lookupString) {
         String name = lookupString.substring(lookupString.lastIndexOf('@') + 1)
         return name.substring(0, name.indexOf(".args") + 5)

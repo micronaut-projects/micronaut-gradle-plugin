@@ -66,6 +66,7 @@ ENTRYPOINT ["java", "-jar", "/home/app/application.jar"]
         def dockerFile = normalizeLineEndings(file("build/docker/native-optimized/DockerfileNative").text)
         dockerFile = dockerFile.replaceAll("[0-9]\\.[0-9]+\\.[0-9]+", "4.0.0")
             .replaceAll("RUN native-image .*", "RUN native-image")
+        dockerFile = normalizeGeneratedNativeConfigDirectories(dockerFile, "/home/app")
                 .trim()
 
         then:
@@ -76,13 +77,7 @@ ENTRYPOINT ["java", "-jar", "/home/app/application.jar"]
             COPY --link layers/app /home/app/
             RUN mkdir /home/app/config-dirs
             RUN mkdir -p /home/app/config-dirs/generateResourcesConfigFile
-            RUN mkdir -p /home/app/config-dirs/io.netty/netty-common/4.0.0.Final
-            RUN mkdir -p /home/app/config-dirs/io.netty/netty-transport/4.0.0.Final
-            RUN mkdir -p /home/app/config-dirs/ch.qos.logback/logback-classic/4.0.0
             COPY --link config-dirs/generateResourcesConfigFile /home/app/config-dirs/generateResourcesConfigFile
-            COPY --link config-dirs/io.netty/netty-common/4.0.0.Final /home/app/config-dirs/io.netty/netty-common/4.0.0.Final
-            COPY --link config-dirs/io.netty/netty-transport/4.0.0.Final /home/app/config-dirs/io.netty/netty-transport/4.0.0.Final
-            COPY --link config-dirs/ch.qos.logback/logback-classic/4.0.0 /home/app/config-dirs/ch.qos.logback/logback-classic/4.0.0
             RUN native-image
             FROM cgr.dev/chainguard/wolfi-base:latest
             EXPOSE 8080
