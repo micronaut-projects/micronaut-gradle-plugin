@@ -1,6 +1,7 @@
 package io.micronaut.gradle.docker;
 
 import com.bmuschko.gradle.docker.tasks.image.Dockerfile;
+import io.micronaut.gradle.ApplicationPluginUtils;
 import io.micronaut.gradle.PluginsHelper;
 import io.micronaut.gradle.docker.model.Layer;
 import org.gradle.api.JavaVersion;
@@ -72,7 +73,7 @@ public abstract class MicronautDockerfile extends Dockerfile implements DockerBu
                                     .convention(DockerBuildStrategy.DEFAULT);
         this.baseImage = objects.property(String.class).convention("none");
         this.defaultCommand = objects.property(String.class).convention("none");
-        this.args = objects.listProperty(String.class);
+        this.args = objects.listProperty(String.class).convention(ApplicationPluginUtils.applicationDefaultJvmArgsProvider(project));
         this.exposedPorts = objects.listProperty(Integer.class)
                     .convention(Collections.singletonList(8080));
         this.targetWorkingDirectory = objects.property(String.class).convention(DEFAULT_WORKING_DIR);
@@ -152,7 +153,7 @@ public abstract class MicronautDockerfile extends Dockerfile implements DockerBu
                 );
                 break;
             case LAMBDA:
-                javaApplication.getMainClass().set("io.micronaut.function.aws.runtime.MicronautLambdaRuntime");
+                // JVM Lambda images share the standard layer layout; the entrypoint is specialized below.
             default:
                 from(new Dockerfile.From(from != null ? from : DEFAULT_BASE_IMAGE + getDockerDefaultImageJavaTag()));
                 setupResources(this, getLayers().get(), null);
@@ -160,11 +161,17 @@ public abstract class MicronautDockerfile extends Dockerfile implements DockerBu
                 getInstructions().addAll(additionalInstructions);
                 if (getInstructions().get().stream().noneMatch(instruction -> instruction.getKeyword().equals(EntryPointInstruction.KEYWORD))) {
                     entryPoint(getArgs().map(strings -> {
-                        var newList = new ArrayList<String>(strings.size() + 3);
+                        var newList = new ArrayList<String>(strings.size() + 4);
                         newList.add("java");
                         newList.addAll(strings);
-                        newList.add("-jar");
-                        newList.add(workDir + "/application.jar");
+                        if (buildStrategy == DockerBuildStrategy.LAMBDA) {
+                            newList.add("-cp");
+                            newList.add(workDir + "/libs/*:" + workDir + "/resources:" + workDir + "/application.jar");
+                            newList.add("io.micronaut.function.aws.runtime.MicronautLambdaRuntime");
+                        } else {
+                            newList.add("-jar");
+                            newList.add(workDir + "/application.jar");
+                        }
                         return newList;
                     }));
                 }

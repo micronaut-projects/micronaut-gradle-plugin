@@ -16,6 +16,8 @@ import java.nio.file.Paths
 import java.nio.file.StandardCopyOption
 
 abstract class AbstractGradleBuildSpec extends Specification {
+    protected static final String SHARED_ARENA_SUPPORT = "-H:+SharedArenaSupport"
+
     static boolean isGraalVmAvailable() {
         if (GraalUtil.isGraalJVM()) {
             return true
@@ -248,7 +250,7 @@ abstract class AbstractGradleBuildSpec extends Specification {
 
     static String argFileContentsOf(BuildResult result) {
         result.output.lines().filter {
-            it.contains('Starting process') && it.contains('bin/native-image') && !it.contains('--version')
+            it.contains('Starting process') && it.contains('native-image') && !it.contains('--version')
         }.map {
             int workingDirIdx = it.indexOf('Working directory: ')
             int commandIdx = it.indexOf('Command: ')
