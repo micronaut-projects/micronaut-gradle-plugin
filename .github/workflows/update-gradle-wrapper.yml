@@ -12,23 +12,23 @@ jobs:
     if: github.repository == 'micronaut-projects/micronaut-project-template'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           token: ${{ secrets.GH_TOKEN }}
       - name: "Update Gradle Wrapper"
         id: update
         env:
-          GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GRADLE_ENTERPRISE_ACCESS_KEY }}
-          GRADLE_ENTERPRISE_CACHE_USERNAME: ${{ secrets.GRADLE_ENTERPRISE_CACHE_USERNAME }}
-          GRADLE_ENTERPRISE_CACHE_PASSWORD: ${{ secrets.GRADLE_ENTERPRISE_CACHE_PASSWORD }}
+          DEVELOCITY_ACCESS_KEY: ${{ secrets.GRADLE_ENTERPRISE_ACCESS_KEY }}
+          DEVELOCITY_CACHE_USERNAME: ${{ secrets.GRADLE_ENTERPRISE_CACHE_USERNAME }}
+          DEVELOCITY_CACHE_PASSWORD: ${{ secrets.GRADLE_ENTERPRISE_CACHE_PASSWORD }}
         run: |
           latest=`curl -s https://services.gradle.org/versions/current | jq -cr ".version"`
-          echo ::set-output name=latest_version::${latest}
+          echo "latest_version=${latest}" >> $GITHUB_OUTPUT
           ./gradlew wrapper --gradle-version $latest
-      - uses: gradle/actions/wrapper-validation@v6
-      - uses: stefanzweifel/git-auto-commit-action@v7.1.0
+      - uses: gradle/actions/wrapper-validation@50e97c2cd7a37755bbfafc9c5b7cafaece252f6e # v6
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8
         with:
           commit_message: Upgrade Gradle Wrapper to ${{ steps.update.outputs.latest_version }}
-          commit_user_name: micronaut-build
-          commit_user_email: ${{ secrets.MICRONAUT_BUILD_EMAIL }}
-          commit_author: micronaut-build <${{ secrets.MICRONAUT_BUILD_EMAIL }}>
+          committer: micronaut-build <${{ secrets.MICRONAUT_BUILD_EMAIL }}>
+          author: micronaut-build <${{ secrets.MICRONAUT_BUILD_EMAIL }}>
