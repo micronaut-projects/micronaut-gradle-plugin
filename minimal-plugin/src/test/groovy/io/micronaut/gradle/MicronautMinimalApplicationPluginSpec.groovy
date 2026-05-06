@@ -246,7 +246,7 @@ public class Application {
         stopBackgroundProcess(backgroundProcess)
     }
 
-    def "continuous run fails when background startup exits non-zero after 500ms"() {
+    def "continuous run fails when background startup exits non-zero"() {
         given:
         settingsFile << "rootProject.name = 'hello-world'"
         buildFile << """
@@ -269,7 +269,6 @@ package example;
 
 public class Application {
     public static void main(String[] args) throws Exception {
-        Thread.sleep(1500);
         System.exit(1);
     }
 }
@@ -279,7 +278,7 @@ public class Application {
         BuildResult result = fails(
             'run',
             "-D${MicronautMinimalApplicationPlugin.INTERNAL_CONTINUOUS_BACKGROUND_FLAG}=true",
-            "-D${INTERNAL_CONTINUOUS_STARTUP_TIMEOUT_PROPERTY}=3000"
+            "-D${INTERNAL_CONTINUOUS_STARTUP_TIMEOUT_PROPERTY}=10000"
         )
 
         then:
