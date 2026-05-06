@@ -1,7 +1,6 @@
 package io.micronaut.gradle.docker;
 
 import com.bmuschko.gradle.docker.tasks.image.Dockerfile;
-import io.micronaut.gradle.FunctionPluginSupport;
 import io.micronaut.gradle.PluginsHelper;
 import io.micronaut.gradle.docker.model.Layer;
 import org.gradle.api.JavaVersion;
@@ -122,13 +121,13 @@ public abstract class MicronautDockerfile extends Dockerfile implements DockerBu
     protected void setupInstructions(List<Instruction> additionalInstructions) {
         String workDir = getTargetWorkingDirectory().get();
         DockerBuildStrategy buildStrategy = this.buildStrategy.getOrElse(DockerBuildStrategy.DEFAULT);
-        JavaApplication javaApplication = getProject().getExtensions().findByType(JavaApplication.class);
         String from = getBaseImage().getOrNull();
         if ("none".equalsIgnoreCase(from)) {
             from = null;
         }
         switch (buildStrategy) {
             case ORACLE_FUNCTION:
+                JavaApplication javaApplication = getProject().getExtensions().findByType(JavaApplication.class);
                 if (javaApplication != null) {
                     javaApplication.getMainClass().set("com.fnproject.fn.runtime.EntryPoint");
                 }
@@ -155,13 +154,7 @@ public abstract class MicronautDockerfile extends Dockerfile implements DockerBu
                 );
                 break;
             case LAMBDA:
-                if (javaApplication != null) {
-                    if (!FunctionPluginSupport.preservesApplicationMainClass(getProject())) {
-                        javaApplication.getMainClass().set("io.micronaut.function.aws.runtime.MicronautLambdaRuntime");
-                    } else if (!javaApplication.getMainClass().isPresent()) {
-                        javaApplication.getMainClass().set("io.micronaut.function.aws.runtime.MicronautLambdaRuntime");
-                    }
-                }
+                // JVM Lambda images share the standard layer layout; the entrypoint is specialized below.
             default:
                 from(new Dockerfile.From(from != null ? from : DEFAULT_BASE_IMAGE + getDockerDefaultImageJavaTag()));
                 setupResources(this, getLayers().get(), null);
