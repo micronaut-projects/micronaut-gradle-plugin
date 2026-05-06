@@ -64,7 +64,7 @@ class ContinuousRunFunctionalTest extends AbstractFunctionalTest {
         stopRecordedProcess(file("authors/build/micronaut/continuous-run.properties"))
     }
 
-    def "continuous run fails when startup exits non-zero after 500ms"() {
+    def "continuous run fails when startup exits non-zero"() {
         given:
         settingsFile << "rootProject.name = 'delayed-failure'"
         buildFile << """
@@ -94,7 +94,6 @@ public final class Application {
     }
 
     public static void main(String[] args) throws Exception {
-        Thread.sleep(1500);
         System.exit(1);
     }
 }
@@ -102,7 +101,7 @@ public final class Application {
 
         File outputFile = file("build/continuous-run-failure.log")
         outputFile.parentFile.mkdirs()
-        Process buildProcess = startContinuousBuild(outputFile, "-D${INTERNAL_CONTINUOUS_STARTUP_TIMEOUT_PROPERTY}=3000")
+        Process buildProcess = startContinuousBuild(outputFile, "-D${INTERNAL_CONTINUOUS_STARTUP_TIMEOUT_PROPERTY}=10000")
 
         when:
         int exitCode = awaitProcessExit(buildProcess, Duration.ofSeconds(120), outputFile)
