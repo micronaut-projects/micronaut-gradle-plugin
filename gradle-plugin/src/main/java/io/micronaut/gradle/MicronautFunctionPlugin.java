@@ -25,7 +25,6 @@ import org.gradle.api.plugins.PluginManager;
 /**
  * A plugin for a Micronaut function.
  *
- * @author graemerocher
  * @since 5.0.0
  */
 public class MicronautFunctionPlugin implements Plugin<Project> {
