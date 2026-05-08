@@ -56,6 +56,10 @@ For example, the `minimal` plugins can be used to reduce the number of tasks, fo
 |Adds support for building Docker images
 |
 
+|https://plugins.gradle.org/plugin/io.micronaut.buildpacks[`io.micronaut.buildpacks`]
+|Adds support for building Cloud Native Buildpacks images with the `pack` CLI
+|
+
 |https://plugins.gradle.org/plugin/io.micronaut.aot[`io.micronaut.aot`]
 |Adds support for Micronaut AOT
 |
@@ -953,6 +957,160 @@ tasks.named<io.micronaut.gradle.docker.NativeImageDockerfile>("dockerfileNative"
     baseImage(...)
     args("-H:+StaticExecutableWithDynamicLibC")
 }
+----
+
+=== Cloud Native Buildpacks Support
+
+The `io.micronaut.buildpacks` plugin adds opt-in tasks for building OCI images with https://buildpacks.io/[Cloud Native Buildpacks] through the `pack` CLI.
+It does not generate a Dockerfile and does not change the Docker tasks provided by `io.micronaut.docker`.
+Use this plugin when your build platform standardizes on trusted builders such as Paketo builders and you want the builder to control image construction, layers, metadata, and any SBOM output it supports.
+
+The `pack` CLI and a compatible Docker or Podman runtime must be available when you run the buildpack image tasks.
+
+[source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
+----
+plugins {
+    id "io.micronaut.application" version "{gradle-project-version}"
+    id "io.micronaut.buildpacks" version "{gradle-project-version}"
+}
+
+micronaut {
+    buildpacks {
+        imageName.set("ghcr.io/acme/orders:${project.version}")
+        tags.add("ghcr.io/acme/orders:latest")
+        builder.set("paketobuildpacks/builder-jammy-base")
+        environment.put("BP_JVM_VERSION", "25")
+    }
+}
+----
+
+[source, kotlin, subs="verbatim,attributes", role="multi-language-sample"]
+----
+import io.micronaut.gradle.buildpacks.BuildpacksExtension
+
+plugins {
+    id("io.micronaut.application") version "{gradle-project-version}"
+    id("io.micronaut.buildpacks") version "{gradle-project-version}"
+}
+
+micronaut {
+    extensions.configure<BuildpacksExtension>("buildpacks") {
+        imageName.set("ghcr.io/acme/orders:${project.version}")
+        tags.add("ghcr.io/acme/orders:latest")
+        builder.set("paketobuildpacks/builder-jammy-base")
+        environment.put("BP_JVM_VERSION", "25")
+    }
+}
+----
+
+To build the JVM application image:
+
+[source,bash]
+----
+$ ./gradlew buildBuildpackImage
+----
+
+To build and publish in one `pack build --publish` invocation:
+
+[source,bash]
+----
+$ ./gradlew publishBuildpackImage
+----
+
+Publishing uses the registry credentials already available to Docker or `pack`.
+Run `docker login` or configure the Docker credential store before publishing.
+If you need to use a specific Docker configuration directory, set `dockerConfigDirectory`:
+
+[source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
+----
+micronaut {
+    buildpacks {
+        dockerConfigDirectory.set(layout.projectDirectory.dir(".docker").asFile.absolutePath)
+    }
+}
+----
+
+[source, kotlin, subs="verbatim,attributes", role="multi-language-sample"]
+----
+import io.micronaut.gradle.buildpacks.BuildpacksExtension
+
+micronaut {
+    extensions.configure<BuildpacksExtension>("buildpacks") {
+        dockerConfigDirectory.set(layout.projectDirectory.dir(".docker").asFile.absolutePath)
+    }
+}
+----
+
+Native-image buildpack tasks use the same application packaging and add `BP_NATIVE_IMAGE=true` by convention.
+You can pass additional native buildpack settings through the same lazy environment map:
+
+[source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
+----
+micronaut {
+    buildpacks {
+        imageName.set("ghcr.io/acme/orders-native:${project.version}")
+        environment.put("BP_NATIVE_IMAGE_BUILD_ARGUMENTS", "--verbose")
+    }
+}
+----
+
+[source, kotlin, subs="verbatim,attributes", role="multi-language-sample"]
+----
+import io.micronaut.gradle.buildpacks.BuildpacksExtension
+
+micronaut {
+    extensions.configure<BuildpacksExtension>("buildpacks") {
+        imageName.set("ghcr.io/acme/orders-native:${project.version}")
+        environment.put("BP_NATIVE_IMAGE_BUILD_ARGUMENTS", "--verbose")
+    }
+}
+----
+
+To build or publish the native image:
+
+[source,bash]
+----
+$ ./gradlew buildNativeBuildpackImage
+$ ./gradlew publishNativeBuildpackImage
+----
+
+The buildpack extension exposes lazy properties for the common `pack build` settings:
+
+* `imageName` - primary image name, defaulting to `${project.name}:latest`
+* `tags` - additional tags passed with `--tag`
+* `builder` - builder image, defaulting to `paketobuildpacks/builder-jammy-base`
+* `runImage` - optional run image
+* `buildpacks` - explicit buildpacks passed with `--buildpack`
+* `environment` - buildpack environment entries passed with `--env`
+* `publish` - publish by default for build tasks when set to `true`
+* `packExecutable` - `pack` executable path, defaulting to `pack`
+* `pullPolicy`, `network`, and `trustBuilder` - optional `pack build` settings
+* `dockerHost` and `dockerConfigDirectory` - passed as `DOCKER_HOST` and `DOCKER_CONFIG` to the `pack` process
+
+Buildpacks and Dockerfile tasks are different image construction paths.
+Docker tasks generate and use Dockerfiles that you can customize through `dockerfile` and `dockerfileNative`.
+Buildpack tasks do not expose Dockerfile customization; the selected builder controls the build and runtime image layers.
+Existing Docker tasks such as `dockerBuild`, `dockerBuildNative`, `optimizedDockerBuild`, and `dockerBuildCrac` remain available and unchanged.
+
+Choose builders from trusted sources and pin builder image digests where your environment requires reproducibility or supply-chain review.
+Do not put secrets in buildpack environment variables because they may appear in build logs or image metadata.
+SBOM and metadata formats depend on the selected builder; inspect image labels with `docker inspect` and use the builder's documented SBOM inspection workflow when it emits SBOM data.
+
+For a local smoke test with Docker and `pack` installed:
+
+[source,bash]
+----
+$ pack --version
+$ ./gradlew buildBuildpackImage
+$ docker run --rm -p 8080:8080 ghcr.io/acme/orders:latest
+----
+
+For native images, use the native task and then run the configured native image tag:
+
+[source,bash]
+----
+$ ./gradlew buildNativeBuildpackImage
+$ docker run --rm -p 8080:8080 ghcr.io/acme/orders-native:latest
 ----
 
 === Docker Support
