@@ -15,8 +15,10 @@ import org.gradle.api.tasks.TaskAction;
 import org.gradle.process.ExecOperations;
 
 import javax.inject.Inject;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Builds an OCI image using the Cloud Native Buildpacks pack CLI.
@@ -89,7 +91,10 @@ public abstract class BuildpackImageTask extends DefaultTask {
                 }
             });
         } catch (RuntimeException ex) {
-            throw new GradleException("Unable to run the Cloud Native Buildpacks pack CLI. Install pack or configure micronaut.buildpacks.packExecutable.", ex);
+            if (isProcessStartFailure(ex)) {
+                throw new GradleException("Unable to start the Cloud Native Buildpacks pack CLI. Install pack or configure micronaut.buildpacks.packExecutable.", ex);
+            }
+            throw new GradleException("Cloud Native Buildpacks pack build failed. Inspect the pack output for details.", ex);
         }
     }
 
@@ -109,9 +114,9 @@ public abstract class BuildpackImageTask extends DefaultTask {
             args.add("--buildpack");
             args.add(buildpack);
         });
-        getEnvironment().get().forEach((key, value) -> {
+        getEnvironment().get().entrySet().stream().sorted(Map.Entry.comparingByKey()).forEach(entry -> {
             args.add("--env");
-            args.add(key + "=" + value);
+            args.add(entry.getKey() + "=" + entry.getValue());
         });
         getTags().get().forEach(tag -> {
             args.add("--tag");
@@ -132,5 +137,16 @@ public abstract class BuildpackImageTask extends DefaultTask {
             args.add("--publish");
         }
         return args;
+    }
+
+    private boolean isProcessStartFailure(Throwable throwable) {
+        Throwable current = throwable;
+        while (current != null) {
+            if (current instanceof IOException) {
+                return true;
+            }
+            current = current.getCause();
+        }
+        return false;
     }
 }

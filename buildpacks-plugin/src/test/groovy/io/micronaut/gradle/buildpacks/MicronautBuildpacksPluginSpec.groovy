@@ -100,6 +100,55 @@ class MicronautBuildpacksPluginSpec extends AbstractGradleBuildSpec {
         args.contains("--env BP_NATIVE_IMAGE_BUILD_ARGUMENTS=--verbose")
     }
 
+    def "native image default can be overridden through buildpack environment"() {
+        given:
+        File pack = writeFakePack()
+        writeBasicProject()
+        buildFile << """
+            micronaut {
+                buildpacks {
+                    imageName.set("ghcr.io/acme/orders:native")
+                    environment.put("BP_NATIVE_IMAGE", "false")
+                    packExecutable.set("${pack.absolutePath}")
+                }
+            }
+        """
+
+        when:
+        def result = build("buildNativeBuildpackImage")
+        String args = file("pack-args.txt").text
+
+        then:
+        result.task(":buildNativeBuildpackImage").outcome == TaskOutcome.SUCCESS
+        args.contains("--env BP_NATIVE_IMAGE=false")
+        !args.contains("--env BP_NATIVE_IMAGE=true")
+    }
+
+    def "build task renders environment arguments deterministically"() {
+        given:
+        File pack = writeFakePack()
+        writeBasicProject()
+        buildFile << """
+            micronaut {
+                buildpacks {
+                    environment.put("ZZZ_LAST", "last")
+                    environment.put("AAA_FIRST", "first")
+                    environment.put("MMM_MIDDLE", "middle")
+                    packExecutable.set("${pack.absolutePath}")
+                }
+            }
+        """
+
+        when:
+        def result = build("buildBuildpackImage")
+        String args = file("pack-args.txt").text
+
+        then:
+        result.task(":buildBuildpackImage").outcome == TaskOutcome.SUCCESS
+        args.indexOf("--env AAA_FIRST=first") < args.indexOf("--env MMM_MIDDLE=middle")
+        args.indexOf("--env MMM_MIDDLE=middle") < args.indexOf("--env ZZZ_LAST=last")
+    }
+
     def "missing pack executable reports actionable diagnostic"() {
         given:
         writeBasicProject()
@@ -115,8 +164,28 @@ class MicronautBuildpacksPluginSpec extends AbstractGradleBuildSpec {
         def result = fails("buildBuildpackImage")
 
         then:
-        result.output.contains("Unable to run the Cloud Native Buildpacks pack CLI")
+        result.output.contains("Unable to start the Cloud Native Buildpacks pack CLI")
         result.output.contains("micronaut.buildpacks.packExecutable")
+    }
+
+    def "non-zero pack build reports build failure diagnostic"() {
+        given:
+        File pack = writeFailingPack()
+        writeBasicProject()
+        buildFile << """
+            micronaut {
+                buildpacks {
+                    packExecutable.set("${pack.absolutePath}")
+                }
+            }
+        """
+
+        when:
+        def result = fails("buildBuildpackImage")
+
+        then:
+        result.output.contains("Cloud Native Buildpacks pack build failed")
+        !result.output.contains("Unable to start the Cloud Native Buildpacks pack CLI")
     }
 
     private void writeBasicProject() {
@@ -153,6 +222,16 @@ class Application {
         pack.text = """#!/bin/sh
 printf '%s ' "\$@" > "${file('pack-args.txt').absolutePath}"
 env | grep '^DOCKER_' > "${file('pack-env.txt').absolutePath}" || true
+"""
+        pack.setExecutable(true)
+        pack
+    }
+
+    private File writeFailingPack() {
+        File pack = file("failing-pack")
+        pack.text = """#!/bin/sh
+echo "pack failed" >&2
+exit 7
 """
         pack.setExecutable(true)
         pack

@@ -1042,6 +1042,7 @@ micronaut {
 ----
 
 Native-image buildpack tasks use the same application packaging and add `BP_NATIVE_IMAGE=true` by convention.
+An explicit `environment.put("BP_NATIVE_IMAGE", "...")` value in the buildpacks extension overrides that native-task convention.
 You can pass additional native buildpack settings through the same lazy environment map:
 
 [source, groovy, subs="verbatim,attributes", role="multi-language-sample"]

@@ -123,7 +123,7 @@ public class MicronautBuildpacksPlugin implements Plugin<Project> {
             task.getDockerConfigDirectory().convention(extension.getDockerConfigDirectory());
             task.getTrustBuilder().convention(extension.getTrustBuilder());
             if (nativeImage) {
-                task.getEnvironment().put("BP_NATIVE_IMAGE", "true");
+                task.getEnvironment().put("BP_NATIVE_IMAGE", extension.getEnvironment().map(environment -> environment.getOrDefault("BP_NATIVE_IMAGE", "true")));
             }
         });
     }
