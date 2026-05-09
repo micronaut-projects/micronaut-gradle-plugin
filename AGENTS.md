@@ -26,6 +26,12 @@ Use this file as durable project context for automation and review work in this 
 - Test resources behavior is in `test-resources-plugin/src/main/java/io/micronaut/gradle/testresources`, with sample projects under `samples/test-resources`.
 - OpenAPI and JSON Schema generation task behavior is in `openapi-plugin/src/main/java/io/micronaut/gradle/openapi` and `jsonschema-plugin/src/main/java/io/micronaut/gradle/jsonschema`; Kotlin/OpenAPI integration tests are under `functional-tests/src/test/groovy/io/micronaut/gradle/openapi`.
 
+## Contributing Guidelines
+
+- Before opening or updating a pull request, check whether this repository has a `CONTRIBUTING.md` or other maintainer contribution guide and follow every repo-specific PR requirement it names.
+- Treat contributor-checklist items as handoff requirements. If a requirement is not applicable, state that explicitly in the PR description or handoff note.
+- For UI-visible changes, confirm whether screenshots or other visual evidence are required and include them in the PR description; if screenshots cannot be provided, explain why and describe the verification that was performed.
+
 ## Verification
 
 - Documentation-only guidance changes: run `git diff --check` and do a readability pass.
