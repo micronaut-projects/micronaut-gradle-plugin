@@ -15,6 +15,7 @@
  */
 package io.micronaut.gradle.aot;
 
+import io.micronaut.gradle.ApplicationPluginUtils;
 import io.micronaut.gradle.AttributeUtils;
 import io.micronaut.gradle.MicronautBasePlugin;
 import io.micronaut.gradle.MicronautComponentPlugin;
@@ -325,6 +326,7 @@ public abstract class MicronautAotPlugin implements Plugin<Project> {
                 JavaApplication javaApplication = project.getExtensions().getByType(JavaApplication.class);
                 task.setDescription("Executes the Micronaut application with AOT optimizations");
                 task.getMainClass().convention(javaApplication.getMainClass());
+                task.getJvmArguments().convention(ApplicationPluginUtils.applicationDefaultJvmArgsProvider(project));
                 // https://github.com/micronaut-projects/micronaut-gradle-plugin/issues/385
                 task.getOutputs().upToDateWhen(t -> false);
                 task.setClasspath(project.files(jarTask, optimizedRuntimeClasspath));

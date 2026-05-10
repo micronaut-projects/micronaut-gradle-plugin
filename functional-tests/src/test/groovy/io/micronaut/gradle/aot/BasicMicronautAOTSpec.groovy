@@ -139,6 +139,27 @@ class BasicMicronautAOTSpec extends AbstractAOTPluginSpec {
 
     }
 
+    @Issue("https://github.com/micronaut-projects/micronaut-gradle-plugin/issues/765")
+    def "optimizedRun honors application default JVM args (#kind)"() {
+        withSample("aot/basic-app")
+        withPlugins(kind)
+        buildFile << """
+            application {
+                applicationDefaultJvmArgs = ["-Dio.micronaut.internal.test.interrupt.startup=true"]
+            }
+        """
+
+        when:
+        def result = build("optimizedRun")
+
+        then:
+        result.task(":optimizedRun").outcome == TaskOutcome.SUCCESS
+        result.output.contains("Detected test, interrupting application startup")
+
+        where:
+        kind << [Plugins.MINIMAL_APPLICATION, Plugins.APPLICATION]
+    }
+
     @Issue("https://github.com/micronaut-projects/micronaut-gradle-plugin/issues/401")
     def "supports spaces in file names"() {
         withSpacesInTestDir()
