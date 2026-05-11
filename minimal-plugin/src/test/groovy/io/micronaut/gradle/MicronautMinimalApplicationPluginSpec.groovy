@@ -153,19 +153,20 @@ class MicronautMinimalApplicationPluginSpec extends AbstractGradleBuildSpec {
     def "can override serde version for the default runtime serialization"() {
         given:
         settingsFile << "rootProject.name = 'hello-world'"
-        buildFile << """
+        buildFile.delete()
+        kotlinBuildFile << """
             plugins {
-                id "io.micronaut.minimal.application"
+                id("io.micronaut.minimal.application")
             }
 
             micronaut {
-                version "$micronautVersion"
-                runtime "netty"
-                serdeVersion.set("1.2.3")
-                testRuntime "junit5"
+                version("$micronautVersion")
+                runtime("netty")
+                serdeVersion = "1.2.3"
+                testRuntime("junit5")
             }
 
-            $repositoriesBlock
+            ${getRepositoriesBlock('kotlin')}
             application { mainClass = "example.Application" }
         """
 
