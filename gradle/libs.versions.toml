@@ -17,7 +17,7 @@ log4j2 = "2.25.4"
 tomlj = "1.1.1"
 openrewrite = "7.32.2"
 
-micronaut-platform = "4.10.13" # This is the platform version, used in our tests
+micronaut-platform = "5.0.0-M3" # This is the platform version, used in our tests
 micronaut-aot = "3.0.0-RC1"
 micronaut-openapi = "6.20.0"
 micronaut-testresources = "4.0.0-RC1"
