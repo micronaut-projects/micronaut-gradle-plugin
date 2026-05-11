@@ -8,7 +8,7 @@ import java.util.Optional;
 /**
  * Supported runtime serialization options for Micronaut application builds.
  *
- * @author Sergio del Amo
+ * @author Álvaro Sánchez-Mariscal
  * @since 5.0.0
  */
 public enum MicronautSerialization {
