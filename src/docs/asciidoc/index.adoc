@@ -153,12 +153,12 @@ micronaut {
 
     run {
       // Default: ["dev"]
-      environments.set(["dev"]) 
+      environments.set(["dev"])
     }
 
     test {
       // Default: ["test"]
-      environments.set(["test"]) 
+      environments.set(["test"])
     }
 
     assemble {
@@ -480,7 +480,7 @@ micronaut {
         // This should be the same as the artifactId in the POM
         module project.name
         // Sets the group.
-        // This should be th same as the groupId in the POM
+        // This should be the same as the groupId in the POM
         group project.group
         // Sets the Java package names containing any custom Micronaut
         // meta annotations (new annotations annotated with say @Around).
@@ -512,7 +512,7 @@ micronaut {
         // This should be the same as the artifactId in the POM
         module.set(project.name)
         // Sets the group.
-        // This should be th same as the groupId in the POM
+        // This should be the same as the groupId in the POM
         group.set(project.group)
         // Sets the Java package names containing any custom Micronaut
         // meta annotations (new annotations annotated with say @Around).
@@ -1727,7 +1727,7 @@ In particular, it makes use of https://testcontainers.org/[Testcontainers] to au
 Test resources are handled by a "test resources service" which is a server accepting requests for test resources, which <<sec:test-resources-lifecycle,lifecycle>> is handled by the Gradle plugin.
 A test resources request is, to simplify, a request to resolve a _missing configuration property_.
 For example, if the `kafka.bootstrap-servers` property isn't set, Micronaut will query the test resources service for the value of this property.
-This will trigger the creaton of a Kafka test container, and the service will answer with the URI to the bootstrap server.
+This will trigger the creation of a Kafka test container, and the service will answer with the URI to the bootstrap server.
 
 [NOTE]
 ====
@@ -1757,8 +1757,8 @@ The easiest way to add test resources support is to apply the `io.micronaut.test
 [source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
 ----
 plugins {
-    id "io.micronaut.application" version "{micronaut-version}"
-    id "io.micronaut.test-resources" version "{micronaut-version}"
+    id "io.micronaut.application" version "{gradle-project-version}"
+    id "io.micronaut.test-resources" version "{gradle-project-version}"
     ...
 }
 ----
@@ -1766,14 +1766,14 @@ plugins {
 [source, kotlin, subs="verbatim,attributes", role="multi-language-sample"]
 ----
 plugins {
-    id("io.micronaut.application") version "{micronaut-version}"
-    id("io.micronaut.test-resources") version "{micronaut-version}"
+    id("io.micronaut.application") version "{gradle-project-version}"
+    id("io.micronaut.test-resources") version "{gradle-project-version}"
     ...
 }
 ----
 
 Adding this plugin will be sufficient for most use cases.
-This will let Gradle automatically start containers, for example, when a particular property is not present in your configuration and that you run tests (`./gradlew test`) or the application in development mode (`./gradlew run` or `./gradlew -t run`).
+This will let Gradle automatically start containers, for example, when a particular property is not present in your configuration and you run tests (`./gradlew test`) or the application in development mode (`./gradlew run` or `./gradlew -t run`).
 
 For example, if the `datasources.default.url` configuration property is missing, and that your configuration contains:
 
@@ -1835,7 +1835,7 @@ micronaut {
 - by default, the plugin will automatically determine which modules to add to the test resources support, by inspecting the dependencies declared in the project. For example, if you use both `micronaut-data-jdbc` and `mysql-connector-java`, it will automatically add support for MySQL provisioning. Under some circumstances, you might want to disable this behavior by setting the `inferClasspath` property to `false`.
 - the `additionalModules` property can be used to explicitly declare test resources modules to be loaded. This is useful if inference failed to detect a module, or if you want to use <<sec:standalone-test-resources,a standalone test resources service>>.
 - if set to `true`, then the test server which is used by the project can be shared between independent builds (e.g. different Git repositories): this can be useful in conjunction with <<sec:standalone-test-resources,a standalone test resources service>>, where for example a producer is used in one project, and a consumer is defined in another, but both need to use the same messaging server.
-- if set, the `sharedServerNamespace` property will let you declare that the shared test resources service but be executed in a particular namespace. This can be useful if you need multiple shared servers (the default assumes a single shared server)
+- if set, the `sharedServerNamespace` property will let you declare that the shared test resources service must be executed in a particular namespace. This can be useful if you need multiple shared servers (the default assumes a single shared server)
 
 [NOTE]
 ====
@@ -1899,7 +1899,7 @@ However, you might want to run the consumer in one terminal, and the producer in
 For this you have a couple options:
 
     1. you can use a shared test server, by setting the `sharedServer` property to `true` in the `testResources` extension.
-    2. you can define a distinct project which role is to handle the test resources lifecycle
+    2. you can define a distinct project whose role is to handle the test resources lifecycle
 
 The first solution comes with a major drawback: _shared servers_ are shared by all projects in the multi-project build, but also between projects of the same build. However, the configuration of the server will depend on the _first one started_.
 
@@ -1910,7 +1910,7 @@ Here, we're going to add a project called `shared-testresources` which is going 
 ----
 // shared-testresources/build.gradle
 plugins {
-    id "io.micronaut.test-resources" version "{micronaut-version}" // <1>
+    id "io.micronaut.test-resources" version "{gradle-project-version}" // <1>
 }
 
 micronaut {
@@ -1924,7 +1924,7 @@ micronaut {
 ----
 // shared-testresources/build.gradle.kts
 plugins {
-    id("io.micronaut.test-resources") version "{micronaut-version}" // <1>
+    id("io.micronaut.test-resources") version "{gradle-project-version}" // <1>
 }
 
 micronaut {
@@ -1943,13 +1943,13 @@ This ensures they are loaded from the test-resources server classpath.
 If consumer projects apply `io.micronaut.test-resources-consumer`, their regular test classpath can provide `test-resources.properties` connection details, but it does not replace server-side files such as `testcontainers.properties`.
 ====
 
-Then each consumer of test resources need to apply the `io.micronaut.test-resources-consumer` plugin instead:
+Then each consumer of test resources needs to apply the `io.micronaut.test-resources-consumer` plugin instead:
 
 [source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
 ----
 plugins {
-    id "io.micronaut.application" version "{micronaut-version}"
-    id "io.micronaut.test-resources-consumer" version "{micronaut-version}" // <1>
+    id "io.micronaut.application" version "{gradle-project-version}"
+    id "io.micronaut.test-resources-consumer" version "{gradle-project-version}" // <1>
 }
 
 dependencies {
@@ -1960,8 +1960,8 @@ dependencies {
 [source, kotlin, subs="verbatim,attributes", role="multi-language-sample"]
 ----
 plugins {
-    id("io.micronaut.application") version "{micronaut-version}"
-    id("io.micronaut.test-resources-consumer") version "{micronaut-version}" // <1>
+    id("io.micronaut.application") version "{gradle-project-version}"
+    id("io.micronaut.test-resources-consumer") version "{gradle-project-version}" // <1>
 }
 
 dependencies {
@@ -1969,7 +1969,7 @@ dependencies {
 }
 ----
 <1> Use the test resources consumer plugin instead
-<2> Declare that it consumes test resources provided by the `:testresources` project
+<2> Declare that it consumes test resources provided by the `:shared-testresources` project
 
 Now Gradle will automatically start test resources when one of the project needs them, and reuse them in all consumer projects.
 
@@ -1995,10 +1995,10 @@ If you make any change to sources (production or test) and save the files, Gradl
 This behavior can be extremely useful to save time since typically Docker containers would only be spawned once.
 If you interrupt the continuous build, the test resources will be stopped.
 
-[sec:keepalive-test-resources]
+[[sec:keepalive-test-resources]]
 === Keeping test resources alive
 
-We have seen that running in continous mode allows keeping test resources alive as long as a continous build runs.
+We have seen that running in continuous mode allows keeping test resources alive as long as a continuous build runs.
 However, what if you want to start the test resources service in the background, and keep it alive for multiple, independent builds (different invocations on the command line for example) ?
 
 You can achieve this behavior by running the `startTestResourcesService` command:
@@ -2012,7 +2012,7 @@ Therefore, it's your responsibility to stop the service when you are done by run
 
 WARNING: When keeping a test resources service alive, you must understand that any change to the test resources configuration will be ignored until you stop the service.
 
-[sec:custom-test-resources]
+[[sec:custom-test-resources]]
 === Implementing your own test resources resolver
 
 https://github.com/micronaut-projects/micronaut-test-resources[Micronaut Test Resources] provides integration with a lot of databases and services, and also supports a {testresources-guide}/#modules-testcontainers[fully declarative way] to spawn test containers.
@@ -2508,7 +2508,7 @@ micronaut {
 == Use of Lombok
 
 In general, the use of Lombok annotation processing is strongly discouraged, as its behavior is dependent on the order of annotation processors, that it uses internal types of the JDK and is not compatible with incremental compilation.
-You should prefer using [Micronaut Sourcegen](https://micronaut-projects.github.io/micronaut-sourcegen/latest/guide/) whenever possible.
+You should prefer using https://micronaut-projects.github.io/micronaut-sourcegen/latest/guide/[Micronaut SourceGen] whenever possible.
 
 However, should you really want to use it, you may face situations where the Gradle plugin, despite reordering annotation processors, doesn't place the lombok jar in front of the annotation processor classpath, which would cause compilation errors.
 In such a case, you can add this workaround to your build scripts:
