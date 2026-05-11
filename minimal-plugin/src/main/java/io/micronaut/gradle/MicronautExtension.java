@@ -25,6 +25,7 @@ public abstract class MicronautExtension implements ExtensionAware {
     private final Property<Boolean> enableNativeImage;
     private final Property<MicronautRuntime> runtime;
     private final Property<MicronautTestRuntime> testRuntime;
+    private final MicronautSbomExtension sbom;
 
     /**
      * If set to false, then the Micronaut Gradle plugins will not automatically
@@ -55,6 +56,7 @@ public abstract class MicronautExtension implements ExtensionAware {
                                     .convention(MicronautRuntime.NONE);
         this.testRuntime = objectFactory.property(MicronautTestRuntime.class)
                                         .convention(MicronautTestRuntime.NONE);
+        this.sbom = objectFactory.newInstance(MicronautSbomExtension.class);
         getImportMicronautPlatform().convention(true);
     }
 
@@ -163,6 +165,23 @@ public abstract class MicronautExtension implements ExtensionAware {
 
     public AnnotationProcessing getProcessing() {
         return processing;
+    }
+
+    /**
+     * @return the Micronaut SBOM integration settings.
+     */
+    public MicronautSbomExtension getSbom() {
+        return sbom;
+    }
+
+    /**
+     * Allows configuring Micronaut SBOM integration.
+     * @param sbomAction The SBOM configuration action
+     * @return This extension
+     */
+    public MicronautExtension sbom(Action<MicronautSbomExtension> sbomAction) {
+        sbomAction.execute(this.getSbom());
+        return this;
     }
 
     /**

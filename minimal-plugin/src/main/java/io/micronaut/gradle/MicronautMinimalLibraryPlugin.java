@@ -30,5 +30,6 @@ public class MicronautMinimalLibraryPlugin implements Plugin<Project> {
         PluginManager plugins = project.getPluginManager();
         plugins.apply(JavaLibraryPlugin.class);
         plugins.apply(MicronautComponentPlugin.class);
+        CycloneDxSbomSupport.configure(project, "LIBRARY");
     }
 }
