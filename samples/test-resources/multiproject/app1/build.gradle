@@ -30,6 +30,7 @@ application {
 
 micronaut {
     runtime("netty")
+    serialization("jackson")
     testRuntime("junit5")
     processing {
         incremental(true)

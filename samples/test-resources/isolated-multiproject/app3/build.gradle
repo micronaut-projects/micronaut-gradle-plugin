@@ -13,6 +13,7 @@ dependencies {
 }
 
 micronaut {
+    serialization("jackson")
     testRuntime("junit5")
     processing {
         incremental(true)

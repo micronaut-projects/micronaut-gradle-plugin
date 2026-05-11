@@ -1353,7 +1353,7 @@ The available runtimes are:
 
 The advantage of allowing your dependencies to be dictated by the runtime is that you can potentially take the same application and deploy it to any of the above runtimes without changes.
 
-The plugin also supports selecting the runtime serialization library. By default, minimal application builds use `serde-jackson`, which adds the runtime-only dependency `io.micronaut.serde:micronaut-serde-jackson`. You can switch to `jackson` to add `io.micronaut.jackson:micronaut-jackson-databind` instead:
+The plugin also supports selecting the runtime serialization library. By default, minimal application builds use `serde-jackson`, which adds the runtime-only dependency `io.micronaut.serde:micronaut-serde-jackson`. You can switch to `jackson` to add `io.micronaut:micronaut-jackson-databind` instead:
 
 [source, groovy]
 ----

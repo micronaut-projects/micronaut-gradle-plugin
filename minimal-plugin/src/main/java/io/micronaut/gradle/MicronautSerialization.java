@@ -19,7 +19,7 @@ public enum MicronautSerialization {
     /**
      * Micronaut Jackson Databind runtime.
      */
-    JACKSON("io.micronaut.jackson:micronaut-jackson-databind", null);
+    JACKSON("io.micronaut:micronaut-jackson-databind", null);
 
     private final String runtimeDependency;
     private final ConfigurableVersionProperty versionProperty;

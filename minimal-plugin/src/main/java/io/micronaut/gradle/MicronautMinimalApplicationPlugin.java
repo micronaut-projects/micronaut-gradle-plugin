@@ -38,14 +38,20 @@ import org.gradle.api.tasks.SourceSetOutput;
 import org.gradle.api.tasks.TaskContainer;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import static io.micronaut.gradle.PluginsHelper.resolveRuntime;
+import static org.gradle.api.plugins.JavaPlugin.COMPILE_ONLY_CONFIGURATION_NAME;
+import static org.gradle.api.plugins.JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME;
+import static org.gradle.api.plugins.JavaPlugin.RUNTIME_ONLY_CONFIGURATION_NAME;
+import static org.gradle.api.plugins.JavaPlugin.TEST_IMPLEMENTATION_CONFIGURATION_NAME;
 
 /**
  * A plugin which allows building Micronaut applications, without support
@@ -169,26 +175,10 @@ public class MicronautMinimalApplicationPlugin implements Plugin<Project> {
     }
 
     private void configureMicronautRuntime(Project project) {
+        registerMicronautRuntimeDependencies(project);
         project.afterEvaluate(p -> {
             MicronautRuntime micronautRuntime = resolveRuntime(p);
-            MicronautSerialization micronautSerialization = PluginsHelper.findMicronautExtension(p)
-                    .getSerialization()
-                    .getOrElse(MicronautSerialization.SERDE_JACKSON);
             DependencyHandler dependencyHandler = p.getDependencies();
-            boolean shouldAutoConfigureSerialization = !hasExplicitSerializationRuntimeDependency(p);
-            MicronautRuntimeDependencies.findApplicationPluginDependenciesByRuntime(
-                            micronautRuntime,
-                            micronautSerialization,
-                            shouldAutoConfigureSerialization
-                    )
-                    .toMap()
-                    .forEach((scope, dependencies) -> {
-                for (AutomaticDependency dependency : dependencies) {
-                    if (!hasExplicitDependency(p, dependency.coordinates())) {
-                        dependency.applyTo(project);
-                    }
-                }
-            });
             if (micronautRuntime == MicronautRuntime.GOOGLE_FUNCTION) {
                 configureGoogleCloudFunctionRuntime(project, p, dependencyHandler);
             }
@@ -197,31 +187,46 @@ public class MicronautMinimalApplicationPlugin implements Plugin<Project> {
         });
     }
 
-    private boolean hasExplicitSerializationRuntimeDependency(Project project) {
-        return project.getConfigurations().stream()
-                .flatMap(configuration -> configuration.getDependencies().stream())
-                .map(Dependency::getName)
-                .filter(Objects::nonNull)
-                .anyMatch(this::isSupportedSerializationArtifact);
+    private void registerMicronautRuntimeDependencies(Project project) {
+        for (String configurationName : runtimeDependencyConfigurations()) {
+            project.getConfigurations().named(configurationName, configuration ->
+                    configuration.getDependencies().addAllLater(project.provider(() ->
+                            resolveMicronautRuntimeDependencies(project, configurationName)
+                    ))
+            );
+        }
     }
 
-    private boolean hasExplicitDependency(Project project, String coordinates) {
-        String[] parts = coordinates.split(":");
-        if (parts.length < 2) {
-            return false;
+    private Collection<Dependency> resolveMicronautRuntimeDependencies(Project project, String configurationName) {
+        MicronautRuntime micronautRuntime = resolveRuntime(project);
+        MicronautSerialization micronautSerialization = PluginsHelper.findMicronautExtension(project)
+                .getSerialization()
+                .getOrElse(MicronautSerialization.SERDE_JACKSON);
+        List<AutomaticDependency> dependencies = MicronautRuntimeDependencies.findApplicationPluginDependenciesByRuntime(
+                        micronautRuntime,
+                        micronautSerialization,
+                        true
+                )
+                .toMap()
+                .getOrDefault(configurationName, List.of());
+        if (dependencies.isEmpty()) {
+            return Collections.emptyList();
         }
-        return project.getConfigurations().stream()
-                .flatMap(configuration -> configuration.getDependencies().stream())
-                .anyMatch(dependency -> parts[0].equals(dependency.getGroup()) && parts[1].equals(dependency.getName()));
+        List<Dependency> resolvedDependencies = new ArrayList<>(dependencies.size());
+        for (AutomaticDependency dependency : dependencies) {
+            dependency.resolve(project).ifPresent(resolvedDependencies::add);
+        }
+        return resolvedDependencies;
     }
 
-    private boolean isSupportedSerializationArtifact(String artifactId) {
-        for (MicronautSerialization serialization : MicronautSerialization.values()) {
-            if (serialization.matchesArtifact(artifactId)) {
-                return true;
-            }
-        }
-        return false;
+    private List<String> runtimeDependencyConfigurations() {
+        return List.of(
+                COMPILE_ONLY_CONFIGURATION_NAME,
+                CONFIGURATION_DEVELOPMENT_ONLY,
+                IMPLEMENTATION_CONFIGURATION_NAME,
+                RUNTIME_ONLY_CONFIGURATION_NAME,
+                TEST_IMPLEMENTATION_CONFIGURATION_NAME
+        );
     }
 
     private void configureGoogleCloudFunctionRuntime(Project project, Project p, DependencyHandler dependencyHandler) {
