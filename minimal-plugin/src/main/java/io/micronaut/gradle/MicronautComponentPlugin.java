@@ -173,12 +173,12 @@ public class MicronautComponentPlugin implements Plugin<Project> {
             configureSourceSet(project, sourceSet, micronautBoms);
             knownSourceSets.add(sourceSet);
         });
+        project.getConfigurations().configureEach(conf -> {
+            if (CONFIGURATIONS_TO_APPLY_BOMS.contains(conf.getName())) {
+                conf.extendsFrom(micronautBoms);
+            }
+        });
         project.afterEvaluate(p -> {
-            project.getConfigurations().configureEach(conf -> {
-                if (CONFIGURATIONS_TO_APPLY_BOMS.contains(conf.getName())) {
-                    conf.extendsFrom(micronautBoms);
-                }
-            });
             var additionalSourceSets =
                     micronautExtension.getProcessing().getAdditionalSourceSets();
             if (additionalSourceSets.isPresent()) {
@@ -217,33 +217,30 @@ public class MicronautComponentPlugin implements Plugin<Project> {
 
 
     private void configureJava(Project project, TaskContainer tasks) {
+        var sourceSets = PluginsHelper.findSourceSets(project);
+        sourceSets.configureEach(sourceSet -> {
+            if (SOURCESETS.contains(sourceSet.getName())) {
+                String implementationScope;
 
-        project.afterEvaluate(p -> {
-            var sourceSets = PluginsHelper.findSourceSets(p);
-            for (String sourceSetName : SOURCESETS) {
-                SourceSet sourceSet = sourceSets.findByName(sourceSetName);
-                if (sourceSet != null) {
-                    String implementationScope;
-
-                    String apiConfigurationName = sourceSet.getApiConfigurationName();
-                    Configuration c = p.getConfigurations().findByName(apiConfigurationName);
-                    if (c != null) {
-                        implementationScope = apiConfigurationName;
-                    } else {
-                        implementationScope = sourceSet.getImplementationConfigurationName();
-                    }
-
-                    String annotationProcessorConfigurationName =
-                            sourceSet.getAnnotationProcessorConfigurationName();
-
-                    configureAnnotationProcessors(
-                            project,
-                            implementationScope,
-                            annotationProcessorConfigurationName
-                    );
+                String apiConfigurationName = sourceSet.getApiConfigurationName();
+                Configuration c = project.getConfigurations().findByName(apiConfigurationName);
+                if (c != null) {
+                    implementationScope = apiConfigurationName;
+                } else {
+                    implementationScope = sourceSet.getImplementationConfigurationName();
                 }
-            }
 
+                String annotationProcessorConfigurationName =
+                        sourceSet.getAnnotationProcessorConfigurationName();
+
+                configureAnnotationProcessors(
+                        project,
+                        implementationScope,
+                        annotationProcessorConfigurationName
+                );
+            }
+        });
+        project.afterEvaluate(p -> {
             tasks.withType(JavaCompile.class).configureEach(javaCompile -> {
                 final MicronautExtension micronautExtension = p.getExtensions().getByType(MicronautExtension.class);
                 final AnnotationProcessing processing = micronautExtension.getProcessing();

@@ -8,7 +8,9 @@ group = "demo"
 
 dependencies {
     implementation(project(":lib"))
+    implementation("io.micronaut:micronaut-http-server-netty")
     implementation("io.micronaut.kafka:micronaut-kafka")
+    runtimeOnly("io.micronaut.serde:micronaut-serde-jackson")
     runtimeOnly("ch.qos.logback:logback-classic")
     runtimeOnly("org.yaml:snakeyaml")
 }

@@ -184,7 +184,9 @@ public class MicronautMinimalApplicationPlugin implements Plugin<Project> {
                     .toMap()
                     .forEach((scope, dependencies) -> {
                 for (AutomaticDependency dependency : dependencies) {
-                    dependency.applyTo(project);
+                    if (!hasExplicitDependency(p, dependency.coordinates())) {
+                        dependency.applyTo(project);
+                    }
                 }
             });
             if (micronautRuntime == MicronautRuntime.GOOGLE_FUNCTION) {
@@ -201,6 +203,16 @@ public class MicronautMinimalApplicationPlugin implements Plugin<Project> {
                 .map(Dependency::getName)
                 .filter(Objects::nonNull)
                 .anyMatch(this::isSupportedSerializationArtifact);
+    }
+
+    private boolean hasExplicitDependency(Project project, String coordinates) {
+        String[] parts = coordinates.split(":");
+        if (parts.length < 2) {
+            return false;
+        }
+        return project.getConfigurations().stream()
+                .flatMap(configuration -> configuration.getDependencies().stream())
+                .anyMatch(dependency -> parts[0].equals(dependency.getGroup()) && parts[1].equals(dependency.getName()));
     }
 
     private boolean isSupportedSerializationArtifact(String artifactId) {
