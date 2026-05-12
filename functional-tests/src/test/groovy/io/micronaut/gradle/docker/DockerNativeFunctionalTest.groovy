@@ -664,17 +664,17 @@ micronaut:
             COPY --link layers/resources /home/alternate/resources
             RUN mkdir /home/alternate/config-dirs
             RUN mkdir -p /home/alternate/config-dirs/generateResourcesConfigFile
+            RUN mkdir -p /home/alternate/config-dirs/org.reactivestreams/reactive-streams/4.0.0
             RUN mkdir -p /home/alternate/config-dirs/org.slf4j/slf4j-api/4.0.0
             RUN mkdir -p /home/alternate/config-dirs/jakarta.inject/jakarta.inject-api/4.0.0
             RUN mkdir -p /home/alternate/config-dirs/jakarta.annotation/jakarta.annotation-api/4.0.0
-            RUN mkdir -p /home/alternate/config-dirs/org.reactivestreams/reactive-streams/4.0.0
             RUN mkdir -p /home/alternate/config-dirs/io.netty/netty-common/4.0.0.Final
             RUN mkdir -p /home/alternate/config-dirs/io.netty/netty-transport/4.0.0.Final
             COPY --link config-dirs/generateResourcesConfigFile /home/alternate/config-dirs/generateResourcesConfigFile
+            COPY --link config-dirs/org.reactivestreams/reactive-streams/4.0.0 /home/alternate/config-dirs/org.reactivestreams/reactive-streams/4.0.0
             COPY --link config-dirs/org.slf4j/slf4j-api/4.0.0 /home/alternate/config-dirs/org.slf4j/slf4j-api/4.0.0
             COPY --link config-dirs/jakarta.inject/jakarta.inject-api/4.0.0 /home/alternate/config-dirs/jakarta.inject/jakarta.inject-api/4.0.0
             COPY --link config-dirs/jakarta.annotation/jakarta.annotation-api/4.0.0 /home/alternate/config-dirs/jakarta.annotation/jakarta.annotation-api/4.0.0
-            COPY --link config-dirs/org.reactivestreams/reactive-streams/4.0.0 /home/alternate/config-dirs/org.reactivestreams/reactive-streams/4.0.0
             COPY --link config-dirs/io.netty/netty-common/4.0.0.Final /home/alternate/config-dirs/io.netty/netty-common/4.0.0.Final
             COPY --link config-dirs/io.netty/netty-transport/4.0.0.Final /home/alternate/config-dirs/io.netty/netty-transport/4.0.0.Final
             RUN native-image
