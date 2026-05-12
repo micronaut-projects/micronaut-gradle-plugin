@@ -236,6 +236,14 @@ abstract class AbstractGradleBuildSpec extends Specification {
                                   *args])
                 .forwardStdOutput(System.out.newWriter())
                 .forwardStdError(System.err.newWriter())
+        if (useGradleRunnerDebug()) {
+            runner.withDebug(true)
+        }
+        runner
+    }
+
+    protected boolean useGradleRunnerDebug() {
+        true
     }
 
     static String normalizeLineEndings(String s) {

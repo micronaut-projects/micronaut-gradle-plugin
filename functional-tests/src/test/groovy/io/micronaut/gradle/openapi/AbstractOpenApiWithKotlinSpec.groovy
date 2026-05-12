@@ -19,4 +19,9 @@ class AbstractOpenApiWithKotlinSpec extends AbstractEagerConfiguringFunctionalTe
     protected void withPetstore() {
         file("petstore.json").text = this.class.getResourceAsStream("/petstore.json").getText("UTF-8")
     }
+
+    @Override
+    protected boolean useGradleRunnerDebug() {
+        false
+    }
 }
