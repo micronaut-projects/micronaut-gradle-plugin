@@ -13,6 +13,10 @@ import java.util.Optional;
  */
 public enum MicronautSerialization {
     /**
+     * Do not add a runtime serialization dependency automatically.
+     */
+    NONE(null, null),
+    /**
      * Micronaut Serialization with Jackson annotations.
      */
     SERDE_JACKSON("io.micronaut.serde:micronaut-serde-jackson", PluginsHelper.SERDE_VERSION_PROPERTY),
@@ -33,19 +37,24 @@ public enum MicronautSerialization {
         return runtimeDependency;
     }
 
+    public boolean hasRuntimeDependency() {
+        return runtimeDependency != null;
+    }
+
     public Optional<ConfigurableVersionProperty> getVersionProperty() {
         return Optional.ofNullable(versionProperty);
     }
 
     public boolean matchesArtifact(String artifactId) {
-        return runtimeDependency.endsWith(":" + artifactId);
+        return runtimeDependency != null && runtimeDependency.endsWith(":" + artifactId);
     }
 
     public static MicronautSerialization parse(String value) {
         if (value == null) {
-            return SERDE_JACKSON;
+            return NONE;
         }
         return switch (value.replace('-', '_').toUpperCase(Locale.ENGLISH)) {
+            case "NONE" -> NONE;
             case "SERDE_JACKSON" -> SERDE_JACKSON;
             case "JACKSON" -> JACKSON;
             default -> throw new IllegalArgumentException("Unsupported Micronaut serialization '" + value + "'");

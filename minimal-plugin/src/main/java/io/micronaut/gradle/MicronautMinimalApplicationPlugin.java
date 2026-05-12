@@ -201,7 +201,7 @@ public class MicronautMinimalApplicationPlugin implements Plugin<Project> {
         MicronautRuntime micronautRuntime = resolveRuntime(project);
         MicronautSerialization micronautSerialization = PluginsHelper.findMicronautExtension(project)
                 .getSerialization()
-                .getOrElse(MicronautSerialization.SERDE_JACKSON);
+                .getOrElse(MicronautSerialization.NONE);
         List<AutomaticDependency> dependencies = MicronautRuntimeDependencies.findApplicationPluginDependenciesByRuntime(
                         micronautRuntime,
                         micronautSerialization,

@@ -94,7 +94,7 @@ public final class MicronautRuntimeDependencies {
      * @return The dependencies and scopes
      */
     public static Dependencies findApplicationPluginDependenciesByRuntime(MicronautRuntime runtime) {
-        return findApplicationPluginDependenciesByRuntime(runtime, MicronautSerialization.SERDE_JACKSON);
+        return findApplicationPluginDependenciesByRuntime(runtime, MicronautSerialization.NONE);
     }
 
     /**
@@ -179,10 +179,12 @@ public final class MicronautRuntimeDependencies {
     }
 
     private static void addSerializationDependency(Dependencies.Builder builder, MicronautSerialization serialization) {
-        builder.runtimeOnly(
-                serialization.getRuntimeDependency(),
-                serialization.getVersionProperty().orElse(null)
-        );
+        if (serialization.hasRuntimeDependency()) {
+            builder.runtimeOnly(
+                    serialization.getRuntimeDependency(),
+                    serialization.getVersionProperty().orElse(null)
+            );
+        }
     }
 
     private static String micronautOracleDependency(String artifactId) {

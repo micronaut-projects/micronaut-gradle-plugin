@@ -22,6 +22,8 @@ class MicronautMinimalApplicationPluginSpec extends AbstractGradleBuildSpec {
             
             $repositoriesBlock
             application { mainClass = "example.Application" }
+
+            $withSerde
         """
         testProjectDir.newFolder("src", "test", "java", "example")
         def javaFile = writeExampleClass()
@@ -38,7 +40,7 @@ class MicronautMinimalApplicationPluginSpec extends AbstractGradleBuildSpec {
 
     }
 
-    def "defaults runtime serialization to serde jackson"() {
+    def "does not add runtime serialization by default"() {
         given:
         settingsFile << "rootProject.name = 'hello-world'"
         buildFile << """
@@ -60,7 +62,7 @@ class MicronautMinimalApplicationPluginSpec extends AbstractGradleBuildSpec {
         def result = build('dependencies', '--configuration', 'runtimeClasspath')
 
         then:
-        result.output.contains('io.micronaut.serde:micronaut-serde-jackson')
+        !result.output.contains('io.micronaut.serde:micronaut-serde-jackson')
         !result.output.contains('io.micronaut:micronaut-jackson-databind')
     }
 
@@ -75,7 +77,7 @@ class MicronautMinimalApplicationPluginSpec extends AbstractGradleBuildSpec {
             micronaut {
                 version "$micronautVersion"
                 runtime "netty"
-                serialization "jackson"
+                serialization = "jackson"
                 testRuntime "junit5"
             }
 
@@ -89,6 +91,33 @@ class MicronautMinimalApplicationPluginSpec extends AbstractGradleBuildSpec {
         then:
         result.output.contains('io.micronaut:micronaut-jackson-databind')
         !result.output.contains('io.micronaut.serde:micronaut-serde-jackson')
+    }
+
+    def "can explicitly disable runtime serialization"() {
+        given:
+        settingsFile << "rootProject.name = 'hello-world'"
+        buildFile << """
+            plugins {
+                id "io.micronaut.minimal.application"
+            }
+
+            micronaut {
+                version "$micronautVersion"
+                runtime "netty"
+                serialization = "none"
+                testRuntime "junit5"
+            }
+
+            $repositoriesBlock
+            application { mainClass = "example.Application" }
+        """
+
+        when:
+        def result = build('dependencies', '--configuration', 'runtimeClasspath')
+
+        then:
+        !result.output.contains('io.micronaut.serde:micronaut-serde-jackson')
+        !result.output.contains('io.micronaut:micronaut-jackson-databind')
     }
 
     def "can explicitly select serde jackson runtime serialization"() {
@@ -118,7 +147,7 @@ class MicronautMinimalApplicationPluginSpec extends AbstractGradleBuildSpec {
         !result.output.contains('io.micronaut:micronaut-jackson-databind')
     }
 
-    def "does not add default serde serialization when jackson serialization is configured and runtime is already declared"() {
+    def "does not add serde serialization when jackson serialization is configured and runtime is already declared"() {
         given:
         settingsFile << "rootProject.name = 'hello-world'"
         buildFile << """
@@ -150,7 +179,7 @@ class MicronautMinimalApplicationPluginSpec extends AbstractGradleBuildSpec {
         !result.output.contains('io.micronaut.serde:micronaut-serde-jackson')
     }
 
-    def "can override serde version for the default runtime serialization"() {
+    def "can override serde version for selected serde runtime serialization"() {
         given:
         settingsFile << "rootProject.name = 'hello-world'"
         buildFile.delete()
@@ -162,6 +191,7 @@ class MicronautMinimalApplicationPluginSpec extends AbstractGradleBuildSpec {
             micronaut {
                 version("$micronautVersion")
                 runtime("netty")
+                serialization("serde-jackson")
                 serdeVersion = "1.2.3"
                 testRuntime("junit5")
             }
@@ -175,38 +205,6 @@ class MicronautMinimalApplicationPluginSpec extends AbstractGradleBuildSpec {
 
         then:
         result.output.contains('io.micronaut.serde:micronaut-serde-jackson:1.2.3 ->')
-    }
-
-    def "can resolve runtime classpath during project configuration"() {
-        given:
-        settingsFile << "rootProject.name = 'hello-world'"
-        buildFile << """
-            plugins {
-                id "io.micronaut.minimal.application"
-            }
-
-            micronaut {
-                version "$micronautVersion"
-                runtime "netty"
-                testRuntime "junit5"
-            }
-
-            $repositoriesBlock
-            application { mainClass = "example.Application" }
-
-            def runtimeClasspathFiles = configurations.runtimeClasspath.files
-            tasks.register("verifyRuntimeClasspathResolved") {
-                doLast {
-                    assert runtimeClasspathFiles*.name.any { it.startsWith("micronaut-serde-jackson") }
-                }
-            }
-        """
-
-        when:
-        def result = build('verifyRuntimeClasspathResolved')
-
-        then:
-        result.task(':verifyRuntimeClasspathResolved').outcome == TaskOutcome.SUCCESS
     }
 
     @Issue("https://github.com/micronaut-projects/micronaut-gradle-plugin/issues/292")
