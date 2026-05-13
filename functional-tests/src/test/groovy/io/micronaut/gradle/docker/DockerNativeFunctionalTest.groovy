@@ -654,9 +654,10 @@ micronaut:
         dockerFile = dockerFile.replaceAll("[0-9]\\.[0-9]+\\.[0-9]+", "4.0.0")
                 .replaceAll("RUN native-image .*", "RUN native-image")
                 .trim()
+        dockerFile = normalizeNativeDockerfileConfigDirs(dockerFile)
 
         then:
-        dockerFile == """
+        dockerFile == normalizeNativeDockerfileConfigDirs("""
             FROM ghcr.io/graalvm/native-image-community:25-ol${DefaultVersions.ORACLELINUX} AS graalvm
             WORKDIR /home/alternate
             COPY --link layers/libs /home/alternate/libs
@@ -682,7 +683,7 @@ micronaut:
             EXPOSE 8080
             HEALTHCHECK CMD curl -s localhost:8090/health | grep '"status":"UP"'
             COPY --link --from=graalvm /home/alternate/application /app/application
-            ENTRYPOINT ["/app/application", "-Xmx64m"]""".stripIndent().trim()
+            ENTRYPOINT ["/app/application", "-Xmx64m"]""".stripIndent().trim())
 
         when:
         def result = build ":dockerBuildNative"

@@ -67,9 +67,10 @@ ENTRYPOINT ["java", "-jar", "/home/app/application.jar"]
         dockerFile = dockerFile.replaceAll("[0-9]\\.[0-9]+\\.[0-9]+", "4.0.0")
             .replaceAll("RUN native-image .*", "RUN native-image")
                 .trim()
+        dockerFile = normalizeNativeDockerfileConfigDirs(dockerFile)
 
         then:
-        dockerFile == """
+        dockerFile == normalizeNativeDockerfileConfigDirs("""
             FROM ghcr.io/graalvm/native-image-community:25-ol${DefaultVersions.ORACLELINUX} AS graalvm
             WORKDIR /home/app
             COPY --link layers/libs /home/app/libs
@@ -105,7 +106,7 @@ ENTRYPOINT ["java", "-jar", "/home/app/application.jar"]
             FROM cgr.dev/chainguard/wolfi-base:latest
             EXPOSE 8080
             COPY --link --from=graalvm /home/app/application /app/application
-            ENTRYPOINT ["/app/application"]""".stripIndent().trim()
+            ENTRYPOINT ["/app/application"]""".stripIndent().trim())
 
         when:
         def result = build "optimizedDockerBuildNative"
