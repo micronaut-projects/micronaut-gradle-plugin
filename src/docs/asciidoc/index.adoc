@@ -2183,7 +2183,7 @@ micronaut {
 
 The `io.micronaut.openapi` plugin adds support for generating https://www.openapis.org/[OpenAPI] clients or servers, given an OpenAPI definition, in both Java and Kotlin.
 
-The plugin adds an link:api/io/micronaut/gradle/openapi/OpenApiExtension.html[openapi] extension to the `micronaut` configuration block.
+The plugin adds a link:api/io/micronaut/gradle/openapi/OpenApiExtension.html[openapi] extension to the `micronaut` configuration block.
 
 === Generating a client
 
@@ -2221,7 +2221,7 @@ micronaut {
 }
 ----
 
-The generated sources will be found by default in your `$buildDir/generated/openapi/client` directory, and automatically added to your main source set (so the classes are directly available for you to use).
+The generated API and model sources are written by default under task-specific directories in `$buildDir/generated/openapi`, such as `generateClientOpenApiApis` and `generateClientOpenApiModels`, and automatically added to your main source set (so the classes are directly available for you to use).
 
 You can generate multiple clients by adding multiple `client` blocks, in which case each client is identified by a name:
 
@@ -2319,7 +2319,7 @@ micronaut {
 }
 ----
 
-The generated sources will be found by default in your `$buildDir/generated/openapi/server` directory, and automatically added to your main source set (so the classes are directly available for you to use).
+The generated API and model sources are written by default under task-specific directories in `$buildDir/generated/openapi`, such as `generateServerOpenApiApis` and `generateServerOpenApiModels`, and automatically added to your main source set (so the classes are directly available for you to use).
 
 You can generate multiple servers by providing a name to the `server` block:
 
