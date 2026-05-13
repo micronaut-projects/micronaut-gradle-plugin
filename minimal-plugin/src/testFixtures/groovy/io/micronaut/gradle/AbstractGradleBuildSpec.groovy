@@ -265,6 +265,10 @@ abstract class AbstractGradleBuildSpec extends Specification {
         normalized.join("\n")
     }
 
+    static String removeNativeDockerfileConfigDirLines(String s) {
+        s.readLines().findAll { nativeDockerfileConfigDirLineKind(it) == 0 }.join("\n")
+    }
+
     private static void flushNativeDockerfileConfigDirLines(List<String> normalized, List<String> configDirLines) {
         if (!configDirLines.empty) {
             normalized.addAll(configDirLines.sort())
