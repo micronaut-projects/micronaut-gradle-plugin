@@ -74,7 +74,7 @@ public abstract class OpenApiGenericWorkAction extends AbstractOpenApiWorkAction
         } catch (IllegalAccessException | InvocationTargetException e) {
             throw new GradleException("Unable to configure OpenAPI generator property '" + name + "'", e);
         }
-        throw new GradleException("Unable to find a method on builder " + builderClass + " with name '" + name + "' which accepts argument '" + value + "'");
+        throw new GradleException("Unable to find a method on builder " + builderClass + " with name '" + name + "' accepting a value of type '" + valueType(value) + "'. Supported value types are String, Boolean, and Integer.");
     }
 
     private static boolean invokeIfMatches(
@@ -125,5 +125,9 @@ public abstract class OpenApiGenericWorkAction extends AbstractOpenApiWorkAction
             }
         }
         return null;
+    }
+
+    private static String valueType(Object value) {
+        return value == null ? "null" : value.getClass().getName();
     }
 }

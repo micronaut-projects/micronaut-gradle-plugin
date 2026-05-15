@@ -84,4 +84,41 @@ class OpenApiGenericGeneratorSpec extends AbstractOpenApiGeneratorSpec {
         then:
         result.output.contains("build/generated/openapi/generatePetOpenApi/src/main/java")
     }
+
+    def "generic OpenAPI generator property mismatch does not log raw property value"() {
+        given:
+        settingsFile << "rootProject.name = 'openapi-generic-mismatch'"
+        buildFile << """
+            plugins {
+                id "io.micronaut.minimal.application"
+                id "io.micronaut.openapi"
+            }
+
+            micronaut {
+                version "$micronautVersion"
+                runtime "netty"
+                testRuntime "junit5"
+                openapi {
+                    generic("pet", file("petstore.json")) {
+                        generatorClassName = "io.micronaut.openapi.generator.JavaMicronautClientCodegen"
+                        generatorProperties.put("missingSecretProperty", "super-secret-token-value")
+                    }
+                }
+            }
+
+            $repositoriesBlock
+            application { mainClass = "example.Application" }
+        """
+
+        withPetstore()
+
+        when:
+        def result = fails('generatePetOpenApi')
+
+        then:
+        result.output.contains("missingSecretProperty")
+        result.output.contains("java.lang.String")
+        result.output.contains("Supported value types are String, Boolean, and Integer")
+        !result.output.contains("super-secret-token-value")
+    }
 }
