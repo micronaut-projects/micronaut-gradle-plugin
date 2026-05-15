@@ -61,40 +61,47 @@ public abstract class OpenApiGenericWorkAction extends AbstractOpenApiWorkAction
     }
 
     private static void invokeMethod(String name, GeneratorOptionsBuilder builder, Object value) {
+        if (name == null || name.isBlank()) {
+            throw new GradleException("OpenAPI generator property name must not be blank");
+        }
         String capitalizedName = Character.toUpperCase(name.charAt(0)) + name.substring(1);
         String witherName = "with" + capitalizedName;
         String setterName = "set" + capitalizedName;
         Class<? extends GeneratorOptionsBuilder> builderClass = builder.getClass();
+        boolean methodNameFound = false;
         try {
             for (Method method : builderClass.getMethods()) {
-                if (invokeIfMatches(name, builder, value, witherName, setterName, method)) {
-                    return;
+                if (methodNameMatches(name, witherName, setterName, method)) {
+                    methodNameFound = true;
+                    Object argument = coerceArgument(method.getParameterTypes()[0], value);
+                    if (argument != null) {
+                        method.setAccessible(true);
+                        method.invoke(builder, argument);
+                        return;
+                    }
                 }
             }
         } catch (IllegalAccessException | InvocationTargetException e) {
             throw new GradleException("Unable to configure OpenAPI generator property '" + name + "'", e);
         }
-        throw new GradleException("Unable to find a method on builder " + builderClass + " with name '" + name + "' accepting a value of type '" + valueType(value) + "'. Supported value types are String, Boolean, and Integer.");
+        if (!methodNameFound) {
+            throw new GradleException("Unable to find a method on builder " + builderClass + " with name '" + name + "'");
+        }
+        throw new GradleException(
+            "Unable to find an overload on builder " + builderClass + " with name '" + name
+                + "' accepting a value of type '" + valueType(value)
+                + "'. Supported value types are String, Boolean, and Integer."
+        );
     }
 
-    private static boolean invokeIfMatches(
+    private static boolean methodNameMatches(
         String name,
-        GeneratorOptionsBuilder builder,
-        Object value,
         String witherName,
         String setterName,
         Method method
-    ) throws IllegalAccessException, InvocationTargetException {
+    ) {
         var methodName = method.getName();
-        if ((methodName.equals(name) || methodName.equals(witherName) || methodName.equals(setterName)) && method.getParameterCount() == 1) {
-            Object argument = coerceArgument(method.getParameterTypes()[0], value);
-            if (argument != null) {
-                method.setAccessible(true);
-                method.invoke(builder, argument);
-                return true;
-            }
-        }
-        return false;
+        return (methodName.equals(name) || methodName.equals(witherName) || methodName.equals(setterName)) && method.getParameterCount() == 1;
     }
 
     private static Object coerceArgument(Class<?> parameterType, Object value) {
@@ -104,27 +111,35 @@ public abstract class OpenApiGenericWorkAction extends AbstractOpenApiWorkAction
         if (parameterType.isInstance(value)) {
             return value;
         }
-        if (parameterType.equals(Boolean.TYPE) && value instanceof Boolean) {
+        if (isBoolean(parameterType) && value instanceof Boolean) {
             return value;
         }
-        if (parameterType.equals(Integer.TYPE) && value instanceof Number number) {
+        if (isInteger(parameterType) && value instanceof Number number) {
             return number.intValue();
         }
         if (value instanceof String stringValue) {
             if (parameterType.equals(String.class)) {
                 return stringValue;
             }
-            if (parameterType.equals(Boolean.TYPE)) {
+            if (isBoolean(parameterType)) {
                 var coerced = stringValue.toLowerCase(Locale.US);
                 if ("true".equals(coerced) || "false".equals(coerced)) {
                     return Boolean.parseBoolean(coerced);
                 }
             }
-            if (parameterType.equals(Integer.TYPE) && stringValue.matches("[0-9]+")) {
+            if (isInteger(parameterType) && stringValue.matches("[0-9]+")) {
                 return Integer.parseInt(stringValue);
             }
         }
         return null;
+    }
+
+    private static boolean isBoolean(Class<?> parameterType) {
+        return parameterType.equals(Boolean.TYPE) || parameterType.equals(Boolean.class);
+    }
+
+    private static boolean isInteger(Class<?> parameterType) {
+        return parameterType.equals(Integer.TYPE) || parameterType.equals(Integer.class);
     }
 
     private static String valueType(Object value) {
