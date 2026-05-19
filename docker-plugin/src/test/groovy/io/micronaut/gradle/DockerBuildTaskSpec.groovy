@@ -290,7 +290,7 @@ class Application {
 
         and:
         def dockerfile = new File(testProjectDir.root, 'build/docker/main/Dockerfile').text
-        dockerfile.contains('ENTRYPOINT ["java", "-Dtest.flag=from-application", "-Xmx256m", "-jar", "/home/app/application.jar"]')
+        dockerfile.contains('ENTRYPOINT ["java", "-Dtest.flag=from-application", "-Xmx256m", "-cp", "/home/app/resources:/home/app/classes:/home/app/libs/*", "example.Application"]')
     }
 
     @Issue("https://github.com/micronaut-projects/micronaut-gradle-plugin/issues/765")
@@ -339,7 +339,7 @@ class Application {
 
         and:
         def dockerfile = new File(testProjectDir.root, 'build/docker/main/Dockerfile').text
-        dockerfile.contains('ENTRYPOINT ["java", "-Xmx128m", "-jar", "/home/app/application.jar"]')
+        dockerfile.contains('ENTRYPOINT ["java", "-Xmx128m", "-cp", "/home/app/resources:/home/app/classes:/home/app/libs/*", "example.Application"]')
         !dockerfile.contains('-Dtest.flag=from-application')
         !dockerfile.contains('-Xmx256m')
     }
