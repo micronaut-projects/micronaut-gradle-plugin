@@ -13,3 +13,9 @@ dependencies {
     implementation projects.micronautMinimalPlugin
     testImplementation testFixtures(projects.micronautMinimalPlugin)
 }
+
+tasks.withType(Test).configureEach {
+    // The Micronaut OpenAPI generator uses shared template/classloader state.
+    // Keep the TestKit builds in this module out of parallel forks.
+    maxParallelForks = 1
+}

@@ -1,6 +1,7 @@
 package io.micronaut.gradle.openapi
 
 import io.micronaut.gradle.fixtures.AbstractEagerConfiguringFunctionalTest
+import org.gradle.testkit.runner.GradleRunner
 import spock.lang.Shared
 
 class AbstractOpenApiWithKotlinSpec extends AbstractEagerConfiguringFunctionalTest {
@@ -23,5 +24,10 @@ class AbstractOpenApiWithKotlinSpec extends AbstractEagerConfiguringFunctionalTe
 
     protected void withPetstore() {
         file("petstore.json").text = this.class.getResourceAsStream("/petstore.json").getText("UTF-8")
+    }
+
+    @Override
+    GradleRunner configureRunner(String... args) {
+        super.configureRunner(args).withDebug(false)
     }
 }
