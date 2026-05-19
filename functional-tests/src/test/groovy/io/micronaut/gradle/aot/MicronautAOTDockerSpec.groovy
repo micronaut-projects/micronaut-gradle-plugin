@@ -83,7 +83,6 @@ ENTRYPOINT ["java", "-jar", "/home/app/application.jar"]
             RUN mkdir -p /home/app/config-dirs/io.netty/netty-common/4.0.0.Final
             RUN mkdir -p /home/app/config-dirs/io.netty/netty-transport/4.0.0.Final
             RUN mkdir -p /home/app/config-dirs/com.fasterxml.jackson.core/jackson-annotations/4.0.0
-            RUN mkdir -p /home/app/config-dirs/com.fasterxml.jackson.core/jackson-core/4.0.0
             RUN mkdir -p /home/app/config-dirs/org.yaml/snakeyaml/1.32
             RUN mkdir -p /home/app/config-dirs/jakarta.validation/jakarta.validation-api/4.0.0
             RUN mkdir -p /home/app/config-dirs/ch.qos.logback/logback-classic/4.0.0
@@ -96,7 +95,6 @@ ENTRYPOINT ["java", "-jar", "/home/app/application.jar"]
             COPY --link config-dirs/io.netty/netty-common/4.0.0.Final /home/app/config-dirs/io.netty/netty-common/4.0.0.Final
             COPY --link config-dirs/io.netty/netty-transport/4.0.0.Final /home/app/config-dirs/io.netty/netty-transport/4.0.0.Final
             COPY --link config-dirs/com.fasterxml.jackson.core/jackson-annotations/4.0.0 /home/app/config-dirs/com.fasterxml.jackson.core/jackson-annotations/4.0.0
-            COPY --link config-dirs/com.fasterxml.jackson.core/jackson-core/4.0.0 /home/app/config-dirs/com.fasterxml.jackson.core/jackson-core/4.0.0
             COPY --link config-dirs/org.yaml/snakeyaml/1.32 /home/app/config-dirs/org.yaml/snakeyaml/1.32
             COPY --link config-dirs/jakarta.validation/jakarta.validation-api/4.0.0 /home/app/config-dirs/jakarta.validation/jakarta.validation-api/4.0.0
             COPY --link config-dirs/ch.qos.logback/logback-classic/4.0.0 /home/app/config-dirs/ch.qos.logback/logback-classic/4.0.0
