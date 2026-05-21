@@ -1418,6 +1418,142 @@ plugins {
 }
 ----
 
+=== CycloneDX software bill of materials
+
+The Micronaut application and library plugins configure CycloneDX defaults when you apply the https://plugins.gradle.org/plugin/org.cyclonedx.bom[`org.cyclonedx.bom`] plugin.
+Micronaut does not apply the CycloneDX plugin automatically.
+
+[source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
+----
+plugins {
+    id "io.micronaut.application" version "{gradle-project-version}"
+    id "org.cyclonedx.bom" version "{cyclonedx-version}"
+}
+
+micronaut {
+    version "{micronaut-version}"
+}
+----
+
+[source, kotlin, subs="verbatim,attributes", role="multi-language-sample"]
+----
+plugins {
+    id("io.micronaut.application") version "{gradle-project-version}"
+    id("org.cyclonedx.bom") version "{cyclonedx-version}"
+}
+
+micronaut {
+    version.set("{micronaut-version}")
+}
+----
+
+Generate the per-project CycloneDX SBOM with:
+
+[source,bash]
+----
+./gradlew cyclonedxDirectBom
+----
+
+By default, Micronaut configures `cyclonedxDirectBom` to write a CycloneDX JSON SBOM to `build/reports/micronaut/sbom/application.cdx.json`.
+The default included configuration is `runtimeClasspath`, so production runtime dependencies are included and test-only configurations are not.
+
+You can configure the Micronaut defaults with `micronaut { sbom { ... } }`:
+
+[source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
+----
+micronaut {
+    sbom {
+        enabled.set(true)
+        outputDirectory.set(layout.buildDirectory.dir("reports/micronaut/sbom"))
+        outputFileName.set("application.cdx.json")
+        includeConfigurations.set(["runtimeClasspath"])
+        skipConfigurations.set([])
+    }
+}
+----
+
+[source, kotlin, subs="verbatim,attributes", role="multi-language-sample"]
+----
+micronaut {
+    sbom {
+        enabled.set(true)
+        outputDirectory.set(layout.buildDirectory.dir("reports/micronaut/sbom"))
+        outputFileName.set("application.cdx.json")
+        includeConfigurations.set(listOf("runtimeClasspath"))
+        skipConfigurations.set(emptyList())
+    }
+}
+----
+
+Set `enabled` to `false` if you want to apply and configure the CycloneDX plugin yourself without Micronaut changing its task defaults.
+Users who need XML output or other CycloneDX-specific settings can configure the CycloneDX task directly.
+
+==== Packaging the SBOM in a JAR
+
+JAR packaging is disabled by default.
+Enable it with `includeInJar`:
+
+[source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
+----
+micronaut {
+    sbom {
+        includeInJar.set(true)
+    }
+}
+----
+
+[source, kotlin, subs="verbatim,attributes", role="multi-language-sample"]
+----
+micronaut {
+    sbom {
+        includeInJar.set(true)
+    }
+}
+----
+
+When enabled, the `jar` task packages the generated SBOM at `META-INF/sbom/application.cdx.json` and records these manifest attributes:
+
+* `Micronaut-SBOM-Format: CycloneDX JSON`
+* `Micronaut-SBOM-Location: META-INF/sbom/application.cdx.json`
+
+You can verify the packaged SBOM with:
+
+[source,bash]
+----
+jar tf build/libs/<app>.jar | grep META-INF/sbom
+unzip -p build/libs/<app>.jar META-INF/MANIFEST.MF | grep Micronaut-SBOM
+----
+
+You can change the packaged path with `sbomPathInJar`:
+
+[source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
+----
+micronaut {
+    sbom {
+        includeInJar.set(true)
+        sbomPathInJar.set("META-INF/sbom/application.cdx.json")
+    }
+}
+----
+
+[source, kotlin, subs="verbatim,attributes", role="multi-language-sample"]
+----
+micronaut {
+    sbom {
+        includeInJar.set(true)
+        sbomPathInJar.set("META-INF/sbom/application.cdx.json")
+    }
+}
+----
+
+This first iteration produces an SBOM artifact and can package it into JVM JARs.
+It does not modify native executables, Docker image metadata, buildpacks image metadata, or OCI labels.
+For native-image, Docker, and buildpacks workflows, publish the generated SBOM next to the built artifact, or rely on the packaged JVM JAR path when that JAR is the image input.
+
+SBOMs expose dependency and component metadata.
+Treat them as release artifacts and publish them only to intended artifact repositories, registries, or compliance systems.
+An SBOM is not a signature, attestation, vulnerability scan, or provenance statement.
+
 == Micronaut GraalVM Plugin
 
 The https://plugins.gradle.org/plugin/io.micronaut.graalvm[Micronaut GraalVM plugin] is applied automatically by the

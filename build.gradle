@@ -43,6 +43,7 @@ dependencies {
     javadoc libs.micronaut.openapi.generator
     javadoc libs.bundles.optionalPlugins
     javadoc libs.shadowPlugin
+    javadoc libs.cyclonedxPlugin
     javadoc libs.micronaut.jsonschema.generator
 }
 
@@ -51,7 +52,8 @@ asciidoctorj {
             'kotlin-version': libs.versions.kotlin.get(),
             'micronaut-version': libs.versions.micronaut.platform.get(),
             'gradle-version': GradleVersion.current().version,
-            'shadow-version': libs.versions.shadow.get()
+            'shadow-version': libs.versions.shadow.get(),
+            'cyclonedx-version': libs.versions.cyclonedx.get()
 }
 
 if (System.getenv("SONAR_TOKEN")) {

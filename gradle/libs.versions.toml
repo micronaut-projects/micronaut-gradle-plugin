@@ -16,6 +16,7 @@ mockserver = "5.15.0"
 log4j2 = "2.25.4"
 tomlj = "1.1.1"
 openrewrite = "7.32.2"
+cyclonedx = "3.2.4"
 
 micronaut-platform = "5.0.0-RC1" # This is the platform version, used in our tests
 micronaut-aot = "3.0.0"
@@ -32,6 +33,7 @@ diffplugPlugin = { module = "com.diffplug.gradle:goomph", version.ref = "diffplu
 shadowPlugin = { module = "com.gradleup.shadow:shadow-gradle-plugin", version.ref = "shadow" }
 graalvmPlugin = { module = "org.graalvm.buildtools:native-gradle-plugin", version.ref = "graalvmPlugin" }
 openrewritePlugin = { module = "org.openrewrite.rewrite:org.openrewrite.rewrite.gradle.plugin", version.ref = "openrewrite" }
+cyclonedxPlugin = { module = "org.cyclonedx:cyclonedx-gradle-plugin", version.ref = "cyclonedx" }
 
 kotlin-allopen = { module = "org.jetbrains.kotlin:kotlin-allopen", version.ref = "kotlin" }
 kotlin-gradlePlugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }

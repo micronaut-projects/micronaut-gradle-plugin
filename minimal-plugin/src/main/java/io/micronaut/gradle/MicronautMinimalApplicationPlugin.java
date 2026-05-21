@@ -70,6 +70,7 @@ public class MicronautMinimalApplicationPlugin implements Plugin<Project> {
         configureLogging(project);
         configureMicronautRuntime(project);
         configureJavaExecTasks(project, developmentOnly);
+        CycloneDxSbomSupport.configure(project, "APPLICATION");
     }
 
 
