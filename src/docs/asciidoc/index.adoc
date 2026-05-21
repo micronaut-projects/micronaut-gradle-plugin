@@ -2395,7 +2395,53 @@ micronaut {
 ----
 
 In addition, it exposes a `openApiGenerator` configuration which can be used to declare additional dependencies to put on the generator classpath.
-This can be useful in case you want to implement your own generators, in which case you will also have to implement custom tasks which extend the link:api/io/micronaut/gradle/openapi/tasks/AbstractOpenApiGenerator.html[AbstractOpenApiGenerator task type].
+This can be useful in case you want to implement your own generators.
+Custom Micronaut OpenAPI generators can be configured with the `generic { ... }` block:
+
+[source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
+----
+dependencies {
+    openApiGenerator("com.mycompany:my-openapi-generator:1.0.0")
+}
+
+micronaut {
+    ...
+    openapi {
+        generic("myGenerator", file("src/openapi/my-definition.yml")) {
+            generatorClassName = "com.mycompany.openapi.MyCodeGenerator"
+            outputKinds = ["apis", "models", "supporting_files"]
+            generatorProperties.put("apiPrefix", "Internal")
+            generatorProperties.put("retryable", true)
+            generatorProperties.put("retryableAttempts", 3)
+        }
+    }
+}
+----
+
+[source, kotlin, subs="verbatim,attributes", role="multi-language-sample"]
+----
+dependencies {
+    openApiGenerator("com.mycompany:my-openapi-generator:1.0.0")
+}
+
+micronaut {
+    ...
+    openapi {
+        generic("myGenerator", file("src/openapi/my-definition.yml")) {
+            generatorClassName.set("com.mycompany.openapi.MyCodeGenerator")
+            outputKinds.set(listOf("apis", "models", "supporting_files"))
+            generatorProperties.put("apiPrefix", "Internal")
+            generatorProperties.put("retryable", true)
+            generatorProperties.put("retryableAttempts", 3)
+        }
+    }
+}
+----
+
+The custom generator class must implement `io.micronaut.openapi.generator.MicronautCodeGenerator` and be available on the `openApiGenerator` classpath.
+`generatorProperties` entries are applied to the generator options builder by matching the property name, `with<PropertyName>`, or `set<PropertyName>`.
+String, boolean, and integer values are supported; string values are coerced to boolean or integer values when the matching builder method requires that type.
+By default, the generic task writes to `$buildDir/generated/openapi/<taskName>` and adds `src/main/java` or `src/main/kotlin` from that directory to the main source set.
 
 == Source Generator from Micronaut JSON Schema
 
