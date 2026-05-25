@@ -55,9 +55,10 @@ Should not trigger:
 - If JSpecify is available and the approved change uses it, new Java packages should include `package-info.java` with `@NullMarked` and `import org.jspecify.annotations.NullMarked`; use `org.jspecify.annotations.Nullable` for nullable values, including nullable parameters, return values, fields, array/component positions such as `String @Nullable []`, nullable collection elements such as `List<@Nullable T>`, and nullable type bounds such as `<T extends @Nullable Object>`.
 - Preserve existing nullability intent when editing older code. Do not rewrite deliberate compatibility annotations such as `javax.annotation.Nullable`, `io.micronaut.core.annotation.Nullable`, or `jakarta.annotation.Nullable` unless the task is specifically a nullability migration and compatibility impact has been checked.
 - Avoid reflection-oriented implementations in plugin code paths; prefer Gradle providers, Micronaut compile-time/introspection mechanisms, and existing repository helpers.
-- Use `jakarta.inject` APIs for DI, not `javax.inject`.
+- Use `javax.inject.Inject` for Gradle-managed service/object injection in plugin production code, matching existing Gradle API conventions in this repository.
+- Use `jakarta.inject` in generated or sample Micronaut application/library code where application DI APIs require it.
 - Prefer constructor injection and immutable state over field injection.
-- For configuration models, prefer `@ConfigurationProperties` over scattered `@Value` usage.
+- For Micronaut application configuration models in samples or generated code, prefer `@ConfigurationProperties` over scattered `@Value` usage.
 
 ### 3) Enforce API boundaries and compatibility
 
@@ -121,7 +122,7 @@ If Spotless fails, run `./gradlew -q spotlessApply` and re-run `spotlessCheck`.
 
 ## Guardrails
 
-- Do not introduce `javax.inject` usage.
+- Do not replace Gradle plugin production-code `javax.inject.Inject` usage with `jakarta.inject` unless the repository's Gradle API conventions explicitly change.
 - Do not introduce new nullability annotation families unless the repository already uses them or the approved change explicitly adds them.
 - Do not hard-code dependency versions in module build files.
 - Do not break public APIs without explicit major-version intent.
