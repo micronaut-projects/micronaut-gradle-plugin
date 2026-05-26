@@ -89,8 +89,11 @@ class ApplicationTestResourcesPluginSpec extends AbstractGradleBuildSpec {
 
         then:
         result.task(':test').outcome == TaskOutcome.SUCCESS
-        result.output.contains "Loaded 3 test resources resolvers"
+        result.output.contains "Loaded 6 test resources resolvers"
+        result.output.contains "io.micronaut.testresources.kafka.KafkaSchemaRegistryTestResourceProvider"
         result.output.contains "io.micronaut.testresources.kafka.KafkaTestResourceProvider"
+        result.output.contains "io.micronaut.testresources.kafka.KafkaKsqlDbTestResourceProvider"
+        result.output.contains "io.micronaut.testresources.kafka.KafkaConnectTestResourceProvider"
         result.output.contains "io.micronaut.testresources.mysql.MySQLTestResourceProvider"
         result.output.contains "io.micronaut.testresources.testcontainers.GenericTestContainerProvider"
     }

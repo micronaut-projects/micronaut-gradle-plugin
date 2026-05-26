@@ -106,7 +106,6 @@ micronaut:
         runtime           | jdk | nativeImage                                                                    | sharedArenaSupportEnabled
         "netty"           | 25  | "FROM ghcr.io/graalvm/native-image-community:25-ol${DefaultVersions.ORACLELINUX}" | true
         "lambda_provided" | 25  | "FROM public.ecr.aws/amazonlinux/amazonlinux:${DefaultVersions.AMAZONLINUX} AS graalvm" | true
-        "lambda_provided" | 21  | "FROM public.ecr.aws/amazonlinux/amazonlinux:${DefaultVersions.AMAZONLINUX} AS graalvm" | false
         "jetty"           | 25  | "FROM ghcr.io/graalvm/native-image-community:25-ol${DefaultVersions.ORACLELINUX}" | true
     }
 
