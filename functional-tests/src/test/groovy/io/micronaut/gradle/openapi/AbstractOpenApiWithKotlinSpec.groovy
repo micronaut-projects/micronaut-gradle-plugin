@@ -1,6 +1,7 @@
 package io.micronaut.gradle.openapi
 
 import io.micronaut.gradle.fixtures.AbstractEagerConfiguringFunctionalTest
+import org.gradle.testkit.runner.GradleRunner
 import spock.lang.Shared
 
 class AbstractOpenApiWithKotlinSpec extends AbstractEagerConfiguringFunctionalTest {
@@ -21,7 +22,7 @@ class AbstractOpenApiWithKotlinSpec extends AbstractEagerConfiguringFunctionalTe
     }
 
     @Override
-    protected boolean useGradleRunnerDebug() {
-        false
+    GradleRunner configureRunner(String... args) {
+        super.configureRunner(args).withDebug(false)
     }
 }

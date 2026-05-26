@@ -54,12 +54,13 @@ class Kotest5FunctionalTest extends AbstractEagerConfiguringFunctionalTest {
                         |import io.kotest.core.spec.style.StringSpec
                         |
                         |@MicronautTest
-                        |class ExampleTest(private val application: EmbeddedApplication<*>): StringSpec({
-                        |
+                        |class ExampleTest(private val application: EmbeddedApplication<*>): StringSpec() {
+                        |    init {
                         |    "test the server is running" {
                         |        assert(application.isRunning)
                         |    }
-                        |})
+                        |    }
+                        |}
                         """.stripMargin()
         def configFile = testProjectDir.newFile("src/test/kotlin/example/ProjectConfig.kt")
         configFile << """package com.example
