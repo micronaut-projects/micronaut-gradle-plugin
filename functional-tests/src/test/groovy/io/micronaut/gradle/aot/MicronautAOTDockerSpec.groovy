@@ -71,10 +71,10 @@ ENTRYPOINT ["java", "-jar", "/home/app/application.jar"]
 
         then:
         dockerFile.contains("RUN mkdir -p /home/app/config-dirs/org.reactivestreams/reactive-streams/4.0.0")
-        dockerFile.contains("RUN mkdir -p /home/app/config-dirs/com.fasterxml.jackson.core/jackson-core/4.0.0")
+        dockerFile.contains("RUN mkdir -p /home/app/config-dirs/com.fasterxml.jackson.core/jackson-annotations/4.0.0")
         dockerFile.contains("RUN mkdir -p /home/app/config-dirs/ch.qos.logback/logback-classic/4.0.0")
         dockerFile.contains("COPY --link config-dirs/org.reactivestreams/reactive-streams/4.0.0 /home/app/config-dirs/org.reactivestreams/reactive-streams/4.0.0")
-        dockerFile.contains("COPY --link config-dirs/com.fasterxml.jackson.core/jackson-core/4.0.0 /home/app/config-dirs/com.fasterxml.jackson.core/jackson-core/4.0.0")
+        dockerFile.contains("COPY --link config-dirs/com.fasterxml.jackson.core/jackson-annotations/4.0.0 /home/app/config-dirs/com.fasterxml.jackson.core/jackson-annotations/4.0.0")
         dockerFile.contains("COPY --link config-dirs/ch.qos.logback/logback-classic/4.0.0 /home/app/config-dirs/ch.qos.logback/logback-classic/4.0.0")
         removeNativeDockerfileConfigDirLines(dockerFile) == removeNativeDockerfileConfigDirLines("""
             FROM ghcr.io/graalvm/native-image-community:25-ol${DefaultVersions.ORACLELINUX} AS graalvm
