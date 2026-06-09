@@ -97,6 +97,31 @@ class CracCustomizationSpec extends BaseCracGradleBuildSpec {
         fileTextContents("build/docker/main/Dockerfile.CRaCCheckpoint").contains('ENTRYPOINT ["/home/app/checkpoint.sh", "example.Application"]')
     }
 
+    void "checkpoint dockerfile reports missing application extension clearly"() {
+        given:
+        settingsFile << "rootProject.name = 'hello-world'"
+        buildFile << """
+            plugins {
+                id "java"
+                id "io.micronaut.docker"
+                id "io.micronaut.crac"
+            }
+
+            $repositoriesBlock
+
+            micronaut {
+                version "$micronautVersion"
+                runtime("netty")
+            }
+        """.stripIndent()
+
+        when:
+        def result = fails('checkpointDockerfile', '-s')
+
+        then:
+        result.output.contains("The CRaC checkpoint Dockerfile requires the Gradle application extension. Apply the application plugin or a Micronaut application plugin and configure application.mainClass.")
+    }
+
     void "base image is customizable"() {
         given:
         settingsFile << "rootProject.name = 'hello-world'"

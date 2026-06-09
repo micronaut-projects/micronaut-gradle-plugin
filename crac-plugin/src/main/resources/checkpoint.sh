@@ -24,12 +24,12 @@ JAVA_CMD=(
 if [ -f application.jar ]; then
   JAVA_CMD+=(-jar application.jar)
 else
-  MAIN_CLASS=$1
-  shift
-  if [ -z "$MAIN_CLASS" ]; then
+  if [ -z "$1" ]; then
     echo "Main class argument is required when application.jar is not present"
     exit 1
   fi
+  MAIN_CLASS=$1
+  shift
   JAVA_CMD+=(-cp "/home/app/resources:/home/app/classes:/home/app/libs/*" "$MAIN_CLASS" "$@")
 fi
 

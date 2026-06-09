@@ -145,6 +145,7 @@ public class MicronautCRaCPlugin implements Plugin<Project> {
         File f = project.file(adaptTaskName("DockerfileCracCheckpoint", imageName));
         String dockerFileTaskName = adaptTaskName("checkpointDockerfile", imageName);
         Provider<RegularFile> targetCheckpointDockerFile = project.getLayout().getBuildDirectory().file(BUILD_DOCKER_DIRECTORY + imageName + "/Dockerfile.CRaCCheckpoint");
+        Provider<List<String>> checkpointMainClassArgs = checkpointMainClassArgs(project);
         TaskProvider<CRaCCheckpointDockerfile> dockerFileTask = tasks.register(dockerFileTaskName, CRaCCheckpointDockerfile.class, task -> {
             task.setGroup(CRAC_TASK_GROUP);
             task.setDescription("Builds a Checkpoint Docker File for image " + imageName);
@@ -157,7 +158,7 @@ public class MicronautCRaCPlugin implements Plugin<Project> {
             task.getArch().set(configuration.getArch());
             task.getOs().set(configuration.getOs());
             task.getJavaVersion().set(configuration.getJavaVersion());
-            task.getArgs().set(project.getExtensions().getByType(JavaApplication.class).getMainClass().map(Collections::singletonList));
+            task.getArgs().set(checkpointMainClassArgs);
             task.setupDockerfileInstructions();
             task.getLayers().convention(buildLayersTask.flatMap(BuildLayersTask::getLayers));
         });
@@ -229,6 +230,14 @@ public class MicronautCRaCPlugin implements Plugin<Project> {
         });
         start.configure(t -> t.finalizedBy(await));
         return new CheckpointTasksOfNote(f.exists() ? null : dockerFileTask, start);
+    }
+
+    private Provider<List<String>> checkpointMainClassArgs(Project project) {
+        JavaApplication application = project.getExtensions().findByType(JavaApplication.class);
+        if (application == null) {
+            throw new GradleException("The CRaC checkpoint Dockerfile requires the Gradle application extension. Apply the application plugin or a Micronaut application plugin and configure application.mainClass.");
+        }
+        return application.getMainClass().map(Collections::singletonList);
     }
 
     static String createCheckpointImageName(Project project) {
