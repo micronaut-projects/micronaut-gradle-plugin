@@ -116,6 +116,9 @@ class ApplicationTestResourcesPluginSpec extends AbstractGradleBuildSpec {
 
     def "standalone test resources service survives after build-owned service shutdown"() {
         withSample("test-resources/data-mysql")
+        buildFile.text = buildFile.text
+                .replace('implementation("io.micronaut:micronaut-jackson-databind")', 'implementation("io.micronaut.serde:micronaut-serde-jackson")')
+                .replace('runtimeOnly("io.micronaut:micronaut-jackson-databind")', '')
 
         when:
         def firstRun = build '-DinterruptStartup=true', 'run'
@@ -126,19 +129,24 @@ class ApplicationTestResourcesPluginSpec extends AbstractGradleBuildSpec {
         when:
         def firstRunPort = testResourcesPort()
 
-        and:
+        then:
+        eventuallyCannotConnectTo(firstRunPort)
+
+        when:
         def startResult = build 'startTestResourcesService'
+        def standalonePort = testResourcesPort()
 
         and:
         def secondRun = build '-DinterruptStartup=true', 'run'
+        def reusedPort = testResourcesPort()
 
         and:
         def stopResult = build 'stopTestResourcesService'
 
         then:
-        !canConnectTo(firstRunPort)
         startResult.task(':internalStartTestResourcesService').outcome == TaskOutcome.SUCCESS
         secondRun.task(':run').outcome == TaskOutcome.SUCCESS
+        standalonePort == reusedPort
         stopResult.task(':stopTestResourcesService').outcome == TaskOutcome.SUCCESS
 
         cleanup:
@@ -156,12 +164,23 @@ class ApplicationTestResourcesPluginSpec extends AbstractGradleBuildSpec {
     private boolean canConnectTo(int port) {
         try {
             new Socket().withCloseable {
-                it.connect(new InetSocketAddress("localhost", port), 1000)
+                it.connect(new InetSocketAddress("127.0.0.1", port), 1000)
             }
             return true
         } catch (IOException ignored) {
             return false
         }
+    }
+
+    private boolean eventuallyCannotConnectTo(int port) {
+        long deadline = System.currentTimeMillis() + 5000
+        while (canConnectTo(port)) {
+            if (System.currentTimeMillis() >= deadline) {
+                return false
+            }
+            Thread.sleep(100)
+        }
+        true
     }
 
     private void withTestResourcesConfiguration(String configuration) {
