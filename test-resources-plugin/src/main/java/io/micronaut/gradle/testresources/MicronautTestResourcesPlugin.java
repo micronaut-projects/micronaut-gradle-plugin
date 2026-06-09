@@ -423,7 +423,7 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
                                 project.getLogger().debug("Stop file contains {}", stopFileLines);
                             }
                             Files.deleteIfExists(shouldStopFile);
-                            if (Boolean.parseBoolean(stopFileLines.get(0))) {
+                            if (!stopFileLines.isEmpty() && Boolean.parseBoolean(stopFileLines.get(0).trim())) {
                                 ServerUtils.stopServer(settingsDirectory.get().getAsFile().toPath());
                             }
                         }

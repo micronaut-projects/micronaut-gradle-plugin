@@ -119,6 +119,11 @@ class ApplicationTestResourcesPluginSpec extends AbstractGradleBuildSpec {
 
         when:
         def firstRun = build '-DinterruptStartup=true', 'run'
+
+        then:
+        firstRun.task(':run').outcome == TaskOutcome.SUCCESS
+
+        when:
         def firstRunPort = testResourcesPort()
 
         and:
@@ -131,7 +136,6 @@ class ApplicationTestResourcesPluginSpec extends AbstractGradleBuildSpec {
         def stopResult = build 'stopTestResourcesService'
 
         then:
-        firstRun.task(':run').outcome == TaskOutcome.SUCCESS
         !canConnectTo(firstRunPort)
         startResult.task(':internalStartTestResourcesService').outcome == TaskOutcome.SUCCESS
         secondRun.task(':run').outcome == TaskOutcome.SUCCESS
