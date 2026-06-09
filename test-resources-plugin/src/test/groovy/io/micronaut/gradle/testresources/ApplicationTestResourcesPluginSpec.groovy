@@ -4,6 +4,9 @@ import io.micronaut.gradle.AbstractGradleBuildSpec
 import org.gradle.testkit.runner.TaskOutcome
 import spock.lang.IgnoreIf
 
+import java.net.InetSocketAddress
+import java.net.Socket
+
 @IgnoreIf({ os.windows })
 class ApplicationTestResourcesPluginSpec extends AbstractGradleBuildSpec {
 
@@ -109,6 +112,52 @@ class ApplicationTestResourcesPluginSpec extends AbstractGradleBuildSpec {
         result.output.contains "Loaded 2 test resources resolvers"
         result.output.contains "io.micronaut.testresources.mysql.MySQLTestResourceProvider"
         result.output.contains "io.micronaut.testresources.testcontainers.GenericTestContainerProvider"
+    }
+
+    def "standalone test resources service survives after build-owned service shutdown"() {
+        withSample("test-resources/data-mysql")
+
+        when:
+        def firstRun = build '-DinterruptStartup=true', 'run'
+        def firstRunPort = testResourcesPort()
+
+        and:
+        def startResult = build 'startTestResourcesService'
+
+        and:
+        def secondRun = build '-DinterruptStartup=true', 'run'
+
+        and:
+        def stopResult = build 'stopTestResourcesService'
+
+        then:
+        firstRun.task(':run').outcome == TaskOutcome.SUCCESS
+        !canConnectTo(firstRunPort)
+        startResult.task(':internalStartTestResourcesService').outcome == TaskOutcome.SUCCESS
+        secondRun.task(':run').outcome == TaskOutcome.SUCCESS
+        stopResult.task(':stopTestResourcesService').outcome == TaskOutcome.SUCCESS
+
+        cleanup:
+        try {
+            build 'stopTestResourcesService'
+        } catch (ignored) {
+            // best effort cleanup when the assertion path already stopped the service
+        }
+    }
+
+    private int testResourcesPort() {
+        file(".micronaut/test-resources/test-resources-port.txt").text.trim() as int
+    }
+
+    private boolean canConnectTo(int port) {
+        try {
+            new Socket().withCloseable {
+                it.connect(new InetSocketAddress("localhost", port), 1000)
+            }
+            return true
+        } catch (IOException ignored) {
+            return false
+        }
     }
 
     private void withTestResourcesConfiguration(String configuration) {

@@ -418,10 +418,12 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
                 public void beforeComplete() {
                     try {
                         if (Files.exists(shouldStopFile)) {
+                            List<String> stopFileLines = Files.readAllLines(shouldStopFile);
                             if (project.getLogger().isDebugEnabled()) {
-                                project.getLogger().debug("Stop file contains {}", Files.readAllLines(shouldStopFile));
+                                project.getLogger().debug("Stop file contains {}", stopFileLines);
                             }
-                            if (Boolean.parseBoolean(Files.readAllLines(shouldStopFile).get(0))) {
+                            Files.deleteIfExists(shouldStopFile);
+                            if (Boolean.parseBoolean(stopFileLines.get(0))) {
                                 ServerUtils.stopServer(settingsDirectory.get().getAsFile().toPath());
                             }
                         }
