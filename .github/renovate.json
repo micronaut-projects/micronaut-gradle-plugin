@@ -1,12 +1,49 @@
 {
   "extends": [
-    "config:base"
+    "config:recommended"
   ],
-  "addLabels": ["dependency-upgrade"],
+  "addLabels": [
+    "type: dependency-upgrade"
+  ],
   "schedule": [
-    "every weekend"
+    "after 10pm"
   ],
   "prHourlyLimit": 1,
   "prConcurrentLimit": 20,
-  "timezone": "Europe/Prague"
+  "timezone": "Europe/Prague",
+  "packageRules": [
+    {
+      "dependencyDashboardApproval": true,
+      "matchUpdateTypes": [
+        "patch"
+      ],
+      "matchCurrentVersion": "!/^0/",
+      "automerge": true,
+      "matchManagers": ["github-actions"],
+      "groupName": "GitHub Actions dependencies"
+    },
+    {
+      "matchDatasources": [
+        "maven"
+      ],
+      "matchManagers": [
+        "maven",
+        "gradle"
+      ],
+      "allowedVersions": "!/.+-SNAPSHOT$/"
+    },
+    {
+      "matchUpdateTypes": [
+        "patch"
+      ],
+      "matchCurrentVersion": "!/^0/",
+      "automerge": true
+    },
+    {
+      "matchPackageNames": [
+        "/.*micronaut.*/"
+      ],
+      "groupName": "Micronaut dependencies"
+    }
+  ]
 }
