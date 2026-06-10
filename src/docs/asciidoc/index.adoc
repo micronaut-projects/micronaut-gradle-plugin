@@ -587,23 +587,7 @@ The https://plugins.gradle.org/plugin/io.micronaut.application[Micronaut applica
 * Applies the `io.micronaut.graalvm` plugin
 * Correctly configures Gradle for continuous build
 
-Using the `io.micronaut.application` plugin:
-
-[source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
-----
-plugins {
-  id 'io.micronaut.application' version '{gradle-project-version}'
-}
-----
-
-[source, kotlin, subs="verbatim,attributes", role="multi-language-sample"]
-----
-plugins {
-  id("io.micronaut.application") version "{gradle-project-version}"
-}
-----
-
-is therefore equivalent to applying those plugins individually:
+The `io.micronaut.application` plugin application shown above is therefore equivalent to applying those plugins individually:
 
 [source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
 ----
@@ -622,7 +606,7 @@ plugins {
   id("io.micronaut.docker") version "{gradle-project-version}"
   id("io.micronaut.graalvm") version "{gradle-project-version}"
 }
-apply(plugin=com.diffplug.gradle.eclipse.apt.AptEclipsePlugin::class.java)
+plugins.apply(com.diffplug.gradle.eclipse.apt.AptEclipsePlugin::class.java)
 ----
 
 `io.micronaut.application` applies the `io.micronaut.minimal.application`, `io.micronaut.graalvm` and `io.micronaut.docker` plugins, as well as the Eclipse annotation processing support plugin.
