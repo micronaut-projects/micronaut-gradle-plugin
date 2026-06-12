@@ -2085,7 +2085,7 @@ $ ./gradlew dockerVerifyCrac
 
 The `dockerVerifyCrac` task is opt-in. It depends on the final CRaC image, creates a temporary container with the `SYS_PTRACE` capability needed for restore, starts the restored image, and runs a post-restore readiness command in the container until it succeeds or the configured timeout expires. The task is useful in CI because `dockerBuildCrac` proves that checkpointing completed, while `dockerVerifyCrac` proves that the final restored image starts and becomes ready.
 
-By default, the post-restore readiness command uses the same command as `preCheckpointReadinessCommand`, the timeout is two minutes, the retry delay is two seconds, and the verification container is removed after success or failure. The verification task streams container logs for diagnosis, so avoid passing secrets unless the restored application is configured not to print them. Use `retainPostRestoreContainer` only when debugging, because the retained container, logs, and CRaC checkpoint files may contain secrets or other JVM-visible runtime state.
+By default, the post-restore readiness command uses the same command as `preCheckpointReadinessCommand`, the timeout is two minutes, the retry delay is two seconds, and the verification container is removed after success or failure. The verification flow prints container logs after the readiness check for diagnosis, so avoid passing secrets unless the restored application is configured not to print them. Use `retainPostRestoreContainer` only when debugging, because the retained container, logs, and CRaC checkpoint files may contain secrets or other JVM-visible runtime state.
 
 === Restore verification scenarios
 
@@ -2171,6 +2171,7 @@ micronaut {
         postRestorePortBindings.add("18080:8080")
         postRestoreEnvironment.put("MICRONAUT_ENVIRONMENTS", "ci")
         postRestoreArgs.add("--micronaut.server.port=8080")
+        postRestoreCapAdd.add("SYS_PTRACE")
 
         // Keep the verification container for debugging instead of removing it.
         retainPostRestoreContainer = false
@@ -2226,6 +2227,7 @@ micronaut {
         postRestorePortBindings.add("18080:8080")
         postRestoreEnvironment.put("MICRONAUT_ENVIRONMENTS", "ci")
         postRestoreArgs.add("--micronaut.server.port=8080")
+        postRestoreCapAdd.add("SYS_PTRACE")
 
         // Keep the verification container for debugging instead of removing it.
         retainPostRestoreContainer.set(false)
