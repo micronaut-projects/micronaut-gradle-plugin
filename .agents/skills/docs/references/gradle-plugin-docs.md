@@ -23,8 +23,8 @@ Relevant behavior:
 
 - Applies `org.asciidoctor.jvm.convert`.
 - Configures the `asciidoctor` task output under `build/asciidoc`.
-- Copies local CSS, JavaScript, highlight assets, and the template from `src/docs/asciidoc`.
-- Registers `asciidocThemer` to apply `src/docs/asciidoc/template/template.html`.
+- Copies local CSS, JavaScript, and highlight assets from `src/docs/asciidoc` as `asciidoctor` resources.
+- Registers `asciidocThemer` to read and apply `src/docs/asciidoc/template/template.html`.
 - Registers `docs`, a `Copy` task that writes assembled documentation under `build/docs` and includes generated API docs under `build/docs/api`.
 
 Maintainer implication:
