@@ -281,7 +281,7 @@ public abstract class StartTestResourcesService extends DefaultTask {
     }
 
     private boolean canReuseExistingServer(Path settingsDirectory, Path portFile) {
-        java.util.Optional<ServerSettings> settings = ServerUtils.readServerSettings(settingsDirectory);
+        var settings = ServerUtils.readServerSettings(settingsDirectory);
         try {
             Integer port = null;
             if (settings.isPresent()) {
