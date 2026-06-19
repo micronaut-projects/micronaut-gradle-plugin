@@ -51,6 +51,8 @@ class DockerNativeFunctionalTest extends AbstractEagerConfiguringFunctionalTest 
             graalvmNative.binaries.all {
                 buildArgs.addAll(["--exclude-config", "micronaut-function-aws-api-proxy-.*.jar", "META-INF/native-image/.*.properties"])
             }
+
+            graalvmNative.metadataRepository.enabled = false
         """
         testProjectDir.newFolder("src", "main", "java", "example")
         def resources = testProjectDir.newFolder("src", "main", "resources")
