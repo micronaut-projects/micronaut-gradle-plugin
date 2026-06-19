@@ -4,6 +4,9 @@ import io.micronaut.gradle.AbstractGradleBuildSpec
 import org.gradle.testkit.runner.TaskOutcome
 import spock.lang.IgnoreIf
 
+import java.net.InetSocketAddress
+import java.net.Socket
+
 @IgnoreIf({ os.windows })
 class ApplicationTestResourcesPluginSpec extends AbstractGradleBuildSpec {
 
@@ -109,6 +112,75 @@ class ApplicationTestResourcesPluginSpec extends AbstractGradleBuildSpec {
         result.output.contains "Loaded 2 test resources resolvers"
         result.output.contains "io.micronaut.testresources.mysql.MySQLTestResourceProvider"
         result.output.contains "io.micronaut.testresources.testcontainers.GenericTestContainerProvider"
+    }
+
+    def "standalone test resources service survives after build-owned service shutdown"() {
+        withSample("test-resources/data-mysql")
+        buildFile.text = buildFile.text
+                .replace('implementation("io.micronaut:micronaut-jackson-databind")', 'implementation("io.micronaut.serde:micronaut-serde-jackson")')
+                .replace('runtimeOnly("io.micronaut:micronaut-jackson-databind")', '')
+
+        when:
+        def firstRun = build '-DinterruptStartup=true', 'run'
+
+        then:
+        firstRun.task(':run').outcome == TaskOutcome.SUCCESS
+
+        when:
+        def firstRunPort = testResourcesPort()
+
+        then:
+        eventuallyCannotConnectTo(firstRunPort)
+
+        when:
+        def startResult = build 'startTestResourcesService'
+        def standalonePort = testResourcesPort()
+
+        and:
+        def secondRun = build '-DinterruptStartup=true', 'run'
+        def reusedPort = testResourcesPort()
+
+        and:
+        def stopResult = build 'stopTestResourcesService'
+
+        then:
+        startResult.task(':internalStartTestResourcesService').outcome == TaskOutcome.SUCCESS
+        secondRun.task(':run').outcome == TaskOutcome.SUCCESS
+        standalonePort == reusedPort
+        stopResult.task(':stopTestResourcesService').outcome == TaskOutcome.SUCCESS
+
+        cleanup:
+        try {
+            build 'stopTestResourcesService'
+        } catch (ignored) {
+            // best effort cleanup when the assertion path already stopped the service
+        }
+    }
+
+    private int testResourcesPort() {
+        file(".micronaut/test-resources/test-resources-port.txt").text.trim() as int
+    }
+
+    private boolean canConnectTo(int port) {
+        try {
+            new Socket().withCloseable {
+                it.connect(new InetSocketAddress("127.0.0.1", port), 1000)
+            }
+            return true
+        } catch (IOException ignored) {
+            return false
+        }
+    }
+
+    private boolean eventuallyCannotConnectTo(int port) {
+        long deadline = System.currentTimeMillis() + 5000
+        while (canConnectTo(port)) {
+            if (System.currentTimeMillis() >= deadline) {
+                return false
+            }
+            Thread.sleep(100)
+        }
+        true
     }
 
     private void withTestResourcesConfiguration(String configuration) {
