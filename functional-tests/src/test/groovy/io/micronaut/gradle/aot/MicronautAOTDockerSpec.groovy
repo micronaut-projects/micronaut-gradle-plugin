@@ -2,11 +2,17 @@ package io.micronaut.gradle.aot
 
 import io.micronaut.gradle.DefaultVersions
 import io.micronaut.gradle.AbstractGradleBuildSpec
+import org.gradle.testkit.runner.GradleRunner
 import org.gradle.testkit.runner.TaskOutcome
 import spock.lang.IgnoreIf
 import spock.lang.Requires
 
 class MicronautAOTDockerSpec extends AbstractAOTPluginSpec {
+
+    @Override
+    GradleRunner configureRunner(String... args) {
+        super.configureRunner(args).withTestKitDir(file(".gradle-test-kit"))
+    }
 
     def "generates an optimized docker file"() {
         withSample("aot/basic-app")

@@ -2,6 +2,7 @@ package io.micronaut.gradle.docker
 
 import io.micronaut.gradle.DefaultVersions
 import io.micronaut.gradle.fixtures.AbstractEagerConfiguringFunctionalTest
+import org.gradle.testkit.runner.GradleRunner
 import org.gradle.testkit.runner.TaskOutcome
 import spock.lang.IgnoreIf
 import spock.lang.Issue
@@ -16,6 +17,11 @@ class DockerNativeFunctionalTest extends AbstractEagerConfiguringFunctionalTest 
 
     @Lazy
     String defaultDockerFrom = "FROM $defaultBaseImage"
+
+    @Override
+    GradleRunner configureRunner(String... args) {
+        super.configureRunner(args).withTestKitDir(file(".gradle-test-kit"))
+    }
 
     def "test build docker native image for runtime #runtime (JDK #jdk)"() {
         given:
