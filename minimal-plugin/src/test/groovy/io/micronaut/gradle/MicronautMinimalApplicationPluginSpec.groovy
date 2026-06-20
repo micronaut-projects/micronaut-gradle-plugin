@@ -21,6 +21,11 @@ class MicronautMinimalApplicationPluginSpec extends AbstractGradleBuildSpec {
             }
             
             $repositoriesBlock
+
+            dependencies {
+                implementation("io.micronaut:micronaut-http-server")
+            }
+
             application { mainClass = "example.Application" }
 
             $withSerde
@@ -143,6 +148,11 @@ class Application {
             }
             
             $repositoriesBlock
+
+            dependencies {
+                implementation("io.micronaut:micronaut-http-server")
+            }
+
             application { mainClass = "example.Application" }
             configurations.all {
                 exclude module: 'snakeyaml'
@@ -328,6 +338,11 @@ public class ExampleTest {
             }
             
             $repositoriesBlock
+
+            dependencies {
+                implementation("io.micronaut:micronaut-http-server")
+            }
+
             application { mainClass = "example.Application" }
 
             $withSerde
@@ -359,6 +374,11 @@ public class ExampleTest {
             }
             
             $repositoriesBlock
+
+            dependencies {
+                implementation("io.micronaut:micronaut-http-server")
+            }
+
             application { mainClass = "example.Application" }
 
             $withSerde
@@ -392,6 +412,11 @@ public class ExampleTest {
             }
             
             $repositoriesBlock
+
+            dependencies {
+                implementation("io.micronaut:micronaut-http-server")
+            }
+
             application { mainClass = "example.Application" }
         """
         testProjectDir.newFolder("src", "test", "java", "example")
