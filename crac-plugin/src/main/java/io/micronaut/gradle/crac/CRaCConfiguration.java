@@ -2,11 +2,14 @@ package io.micronaut.gradle.crac;
 
 import org.gradle.api.file.RegularFileProperty;
 import org.gradle.api.provider.ListProperty;
+import org.gradle.api.provider.MapProperty;
 import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.Optional;
 import org.gradle.api.tasks.PathSensitive;
 import org.gradle.api.tasks.PathSensitivity;
 import org.gradle.jvm.toolchain.JavaLanguageVersion;
+
+import java.time.Duration;
 
 public interface CRaCConfiguration {
 
@@ -84,4 +87,61 @@ public interface CRaCConfiguration {
      * @return the bash command to run to check the app is running, it should exit with 0 if the app is up.
      */
     Property<String> getPreCheckpointReadinessCommand();
+
+    /**
+     * The command to run in the restored CRaC container to verify the application became ready.
+     * Defaults to {@link #getPreCheckpointReadinessCommand()}.
+     * @return the bash command to run in the restored container, it should exit with 0 if the app is up.
+     */
+    Property<String> getPostRestoreReadinessCommand();
+
+    /**
+     * The maximum time to wait for the post-restore readiness command to succeed.
+     * @return the readiness timeout
+     */
+    Property<Duration> getPostRestoreReadinessTimeout();
+
+    /**
+     * The delay between post-restore readiness command attempts.
+     * @return the readiness retry delay
+     */
+    Property<Duration> getPostRestoreReadinessRetryDelay();
+
+    /**
+     * The optional docker network name to use for the post-restore verification container.
+     * Defaults to {@link #getNetwork()}.
+     * @return the network name
+     */
+    @Optional
+    Property<String> getPostRestoreNetwork();
+
+    /**
+     * Docker host port bindings to apply when verifying the restored CRaC image.
+     * @return the port bindings
+     */
+    ListProperty<String> getPostRestorePortBindings();
+
+    /**
+     * Environment variables to apply when verifying the restored CRaC image.
+     * @return the environment variables
+     */
+    MapProperty<String, String> getPostRestoreEnvironment();
+
+    /**
+     * Arguments passed to the restored-image verification container.
+     * @return list of arguments
+     */
+    ListProperty<String> getPostRestoreArgs();
+
+    /**
+     * Linux capabilities added to the restored-image verification container.
+     * @return list of capabilities
+     */
+    ListProperty<String> getPostRestoreCapAdd();
+
+    /**
+     * If set to true, the restored-image verification container is retained for debugging.
+     * @return whether the container should be retained
+     */
+    Property<Boolean> getRetainPostRestoreContainer();
 }
