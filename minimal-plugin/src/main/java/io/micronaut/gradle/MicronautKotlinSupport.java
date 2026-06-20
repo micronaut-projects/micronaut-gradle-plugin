@@ -280,6 +280,7 @@ public class MicronautKotlinSupport {
     private static void configureAllOpen(Project project) {
         AllOpenExtension allOpen = project.getExtensions().getByType(AllOpenExtension.class);
         allOpen.annotation("io.micronaut.aop.Around");
+        allOpen.annotation("io.micronaut.cache.annotation.CacheConfig");
     }
 
 }
