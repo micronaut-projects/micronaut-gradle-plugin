@@ -9,7 +9,7 @@ group = "example.micronaut"
 
 micronaut {
     runtime("lambda_provided")
-    testRuntime("junit5")
+    testRuntime("junit")
     processing {
         incremental(true)
         annotations("example.micronaut.*")

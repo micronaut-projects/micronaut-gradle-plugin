@@ -6,7 +6,7 @@ import spock.lang.Issue
 
 class MicronautMinimalApplicationPluginSpec extends AbstractGradleBuildSpec {
 
-    def "test junit 5 test runtime"() {
+    def "test junit test runtime"() {
         given:
         settingsFile << "rootProject.name = 'hello-world'"
         buildFile << """
@@ -17,7 +17,7 @@ class MicronautMinimalApplicationPluginSpec extends AbstractGradleBuildSpec {
             micronaut {
                 version "$micronautVersion"
                 runtime "netty"
-                testRuntime "junit5"
+                testRuntime "junit"
             }
             
             $repositoriesBlock
@@ -139,7 +139,7 @@ class Application {
             micronaut {
                 version "$micronautVersion"
                 runtime "netty"
-                testRuntime "junit5"
+                testRuntime "junit"
             }
             
             $repositoriesBlock
@@ -208,7 +208,7 @@ public class ExampleTest {
                 coreVersion.set("2048")
                 
                 runtime "netty"
-                testRuntime "junit5"
+                testRuntime "junit"
             }
             
             $repositoriesBlock
@@ -257,7 +257,7 @@ public class ExampleTest {
                 version "$micronautVersion"
                 
                 runtime "netty"
-                testRuntime "junit5"
+                testRuntime "junit"
             }
             
             $repositoriesBlock
@@ -288,7 +288,7 @@ public class ExampleTest {
             micronaut {
                 version "$micronautVersion"
                 runtime "netty"
-                testRuntime "junit5"
+                testRuntime "junit"
             }
             
             $repositoriesBlock
@@ -324,7 +324,7 @@ public class ExampleTest {
                 httpNettyVersion.set("2048")
                 
                 runtime "netty"
-                testRuntime "junit5"
+                testRuntime "junit"
             }
             
             $repositoriesBlock
@@ -355,7 +355,7 @@ public class ExampleTest {
             micronaut {
                 version "$micronautVersion"
                 runtime "netty"
-                testRuntime "junit5"
+                testRuntime "junit"
             }
             
             $repositoriesBlock
@@ -387,7 +387,7 @@ public class ExampleTest {
             micronaut {
                 version "$micronautVersion"
                 runtime "netty"
-                testRuntime "junit5"
+                testRuntime "junit"
                 ignoredAutomaticDependencies.add("io.micronaut:micronaut-inject-java")
             }
             

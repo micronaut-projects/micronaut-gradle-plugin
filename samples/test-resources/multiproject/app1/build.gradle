@@ -30,7 +30,7 @@ application {
 
 micronaut {
     runtime("netty")
-    testRuntime("junit5")
+    testRuntime("junit")
     processing {
         incremental(true)
         annotations("demo.*")

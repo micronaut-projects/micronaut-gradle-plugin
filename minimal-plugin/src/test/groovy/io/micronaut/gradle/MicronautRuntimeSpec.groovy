@@ -7,7 +7,7 @@ import spock.lang.Unroll
 class MicronautRuntimeSpec extends AbstractGradleBuildSpec {
 
     @Unroll
-    def "test execute tests for application for runtime: #runtime"() {
+    def "test execute tests for application for runtime with junit5 alias: #runtime"() {
         given:
         settingsFile << "rootProject.name = 'hello-world'"
         buildFile << """

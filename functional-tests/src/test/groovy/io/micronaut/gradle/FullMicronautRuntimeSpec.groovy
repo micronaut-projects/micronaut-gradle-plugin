@@ -19,7 +19,7 @@ class FullMicronautRuntimeSpec extends AbstractEagerConfiguringFunctionalTest {
             micronaut {
                 version "$micronautVersion"
                 runtime "$runtime"
-                testRuntime "junit5"
+                testRuntime "junit"
             }
             
             $repositoriesBlock

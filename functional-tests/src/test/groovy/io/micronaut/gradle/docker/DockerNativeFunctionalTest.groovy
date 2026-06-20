@@ -652,6 +652,7 @@ micronaut:
         def dockerFile = normalizeLineEndings(file("build/docker/native-main/DockerfileNative").text)
         dockerFile = dockerFile.replaceAll("[0-9]\\.[0-9]+\\.[0-9]+", "4.0.0")
                 .replaceAll("RUN native-image .*", "RUN native-image")
+        dockerFile = normalizeGeneratedNativeConfigDirectories(dockerFile, "/home/alternate")
                 .trim()
 
         then:
@@ -663,19 +664,7 @@ micronaut:
             COPY --link layers/resources /home/alternate/resources
             RUN mkdir /home/alternate/config-dirs
             RUN mkdir -p /home/alternate/config-dirs/generateResourcesConfigFile
-            RUN mkdir -p /home/alternate/config-dirs/org.slf4j/slf4j-api/4.0.0
-            RUN mkdir -p /home/alternate/config-dirs/jakarta.inject/jakarta.inject-api/4.0.0
-            RUN mkdir -p /home/alternate/config-dirs/jakarta.annotation/jakarta.annotation-api/4.0.0
-            RUN mkdir -p /home/alternate/config-dirs/org.reactivestreams/reactive-streams/4.0.0
-            RUN mkdir -p /home/alternate/config-dirs/io.netty/netty-common/4.0.0.Final
-            RUN mkdir -p /home/alternate/config-dirs/io.netty/netty-transport/4.0.0.Final
             COPY --link config-dirs/generateResourcesConfigFile /home/alternate/config-dirs/generateResourcesConfigFile
-            COPY --link config-dirs/org.slf4j/slf4j-api/4.0.0 /home/alternate/config-dirs/org.slf4j/slf4j-api/4.0.0
-            COPY --link config-dirs/jakarta.inject/jakarta.inject-api/4.0.0 /home/alternate/config-dirs/jakarta.inject/jakarta.inject-api/4.0.0
-            COPY --link config-dirs/jakarta.annotation/jakarta.annotation-api/4.0.0 /home/alternate/config-dirs/jakarta.annotation/jakarta.annotation-api/4.0.0
-            COPY --link config-dirs/org.reactivestreams/reactive-streams/4.0.0 /home/alternate/config-dirs/org.reactivestreams/reactive-streams/4.0.0
-            COPY --link config-dirs/io.netty/netty-common/4.0.0.Final /home/alternate/config-dirs/io.netty/netty-common/4.0.0.Final
-            COPY --link config-dirs/io.netty/netty-transport/4.0.0.Final /home/alternate/config-dirs/io.netty/netty-transport/4.0.0.Final
             RUN native-image
             FROM cgr.dev/chainguard/wolfi-base:latest
             EXPOSE 8080
@@ -786,7 +775,10 @@ ENTRYPOINT ["java", "-jar", "/home/app/application.jar"]
         result = build('dockerfileNative', '-s')
 
         then:
-        def dockerfileNative = new File(testProjectDir.root, 'build/docker/native-main/DockerfileNative').text
+        def dockerfileNative = normalizeGeneratedNativeConfigDirectories(
+                new File(testProjectDir.root, 'build/docker/native-main/DockerfileNative').text,
+                "/home/app"
+        )
         dockerfileNative == """FROM ghcr.io/graalvm/native-image-community:25-ol${DefaultVersions.ORACLELINUX} AS graalvm
 WORKDIR /home/app
 COPY --link layers/libs /home/app/libs
@@ -795,14 +787,8 @@ COPY --link layers/app /home/app/
 COPY --link layers/resources /home/app/resources
 RUN mkdir /home/app/config-dirs
 RUN mkdir -p /home/app/config-dirs/generateResourcesConfigFile
-RUN mkdir -p /home/app/config-dirs/org.slf4j/slf4j-api/1.7.36
-RUN mkdir -p /home/app/config-dirs/jakarta.inject/jakarta.inject-api/2.0.0
-RUN mkdir -p /home/app/config-dirs/jakarta.annotation/jakarta.annotation-api/1.3.3
 COPY --link config-dirs/generateResourcesConfigFile /home/app/config-dirs/generateResourcesConfigFile
-COPY --link config-dirs/org.slf4j/slf4j-api/1.7.36 /home/app/config-dirs/org.slf4j/slf4j-api/1.7.36
-COPY --link config-dirs/jakarta.inject/jakarta.inject-api/2.0.0 /home/app/config-dirs/jakarta.inject/jakarta.inject-api/2.0.0
-COPY --link config-dirs/jakarta.annotation/jakarta.annotation-api/1.3.3 /home/app/config-dirs/jakarta.annotation/jakarta.annotation-api/1.3.3
-RUN native-image -cp '/home/app/libs/*.jar:/home/app/resources:/home/app/application.jar' --no-fallback -o application -H:ConfigurationFileDirectories=/home/app/config-dirs/generateResourcesConfigFile,/home/app/config-dirs/org.slf4j/slf4j-api/1.7.36,/home/app/config-dirs/jakarta.inject/jakarta.inject-api/2.0.0,/home/app/config-dirs/jakarta.annotation/jakarta.annotation-api/1.3.3 ${SHARED_ARENA_SUPPORT} example.Application
+RUN native-image -cp '/home/app/libs/*.jar:/home/app/resources:/home/app/application.jar' --no-fallback -o application -H:ConfigurationFileDirectories=/home/app/config-dirs/generateResourcesConfigFile ${SHARED_ARENA_SUPPORT} example.Application
 ${defaultDockerFrom}
 EXPOSE 8080
 COPY --link --from=graalvm /home/app/application /app/application

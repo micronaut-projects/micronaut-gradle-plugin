@@ -110,15 +110,26 @@ abstract class AbstractGradleBuildSpec extends Specification {
         }
         File gradleProperties = file("gradle.properties")
         if (gradleProperties.exists() && micronautVersion != null) {
-            def writer = new StringWriter()
-            gradleProperties.newReader().transformLine(writer) { line ->
-                if (line.startsWith("micronautVersion=")) {
-                    return "micronautVersion=$micronautVersion"
-                }
-                return line
-            }
-            gradleProperties.text = writer.toString()
+            rewriteMicronautVersion(gradleProperties, micronautVersion)
         }
+    }
+
+    protected void overrideMicronautVersion(String version) {
+        File gradleProperties = file("gradle.properties")
+        if (gradleProperties.exists()) {
+            rewriteMicronautVersion(gradleProperties, version)
+        }
+    }
+
+    private static void rewriteMicronautVersion(File gradleProperties, String version) {
+        def writer = new StringWriter()
+        gradleProperties.newReader().transformLine(writer) { line ->
+            if (line.startsWith("micronautVersion=")) {
+                return "micronautVersion=$version"
+            }
+            return line
+        }
+        gradleProperties.text = writer.toString()
     }
 
     private static void copySample(Path from, Path into) {
@@ -236,11 +247,43 @@ abstract class AbstractGradleBuildSpec extends Specification {
                                   *args])
                 .forwardStdOutput(System.out.newWriter())
                 .forwardStdError(System.err.newWriter())
-                .withDebug(true)
+                .withDebug(usesDebugRunner())
+    }
+
+    protected boolean usesDebugRunner() {
+        true
     }
 
     static String normalizeLineEndings(String s) {
         s.replaceAll("\\r\\n?", "\n")
+    }
+
+    protected static String normalizeGeneratedNativeConfigDirectories(String dockerFile, String workDir) {
+        String generatedResourcesConfigDir = "${workDir}/config-dirs/generateResourcesConfigFile"
+        String configurationFileDirectoriesArg = "-H:ConfigurationFileDirectories=${generatedResourcesConfigDir}"
+        String normalized = dockerFile.readLines()
+                .findAll { line ->
+                    if (line.startsWith("RUN mkdir -p ${workDir}/config-dirs/")) {
+                        return line == "RUN mkdir -p ${generatedResourcesConfigDir}"
+                    }
+                    if (line.startsWith("COPY --link config-dirs/")) {
+                        return line.startsWith("COPY --link config-dirs/generateResourcesConfigFile ")
+                    }
+                    true
+                }
+                .collect { line ->
+                    int start = line.indexOf(configurationFileDirectoriesArg)
+                    if (start < 0) {
+                        return line
+                    }
+                    int end = line.indexOf(" ", start)
+                    if (end < 0) {
+                        return line.substring(0, start) + configurationFileDirectoriesArg
+                    }
+                    line.substring(0, start) + configurationFileDirectoriesArg + line.substring(end)
+                }
+                .join("\n")
+        dockerFile.endsWith("\n") ? normalized + "\n" : normalized
     }
 
     private static determineArgFileName(String lookupString) {
