@@ -205,22 +205,43 @@ public abstract class PluginsHelper {
     }
 
     static void applyAdditionalProcessors(Project project, String... configurations) {
-        Stream.of(IMPLEMENTATION_CONFIGURATION_NAME, COMPILE_ONLY_CONFIGURATION_NAME).forEach(config -> {
+        applyAdditionalProcessors(project, Stream.of(IMPLEMENTATION_CONFIGURATION_NAME, COMPILE_ONLY_CONFIGURATION_NAME), configurations);
+    }
+
+    static void applyAdditionalProcessors(Project project, SourceSet sourceSet, String... configurations) {
+        applyAdditionalProcessors(project, Stream.of(sourceSet.getImplementationConfigurationName(), sourceSet.getCompileOnlyConfigurationName()), configurations);
+    }
+
+    static void applyAdditionalProcessorsNow(Project project, SourceSet sourceSet, String... configurations) {
+        Stream.of(sourceSet.getImplementationConfigurationName(), sourceSet.getCompileOnlyConfigurationName()).forEach(config -> {
+            applyAdditionalProcessorsFromConfiguration(project, config, configurations);
+        });
+    }
+
+    private static void applyAdditionalProcessors(Project project, Stream<String> sourceConfigurations, String... configurations) {
+        sourceConfigurations.forEach(config -> {
             // Need to do in an afterEvaluate because this will add dependencies only if the user didn't do it
             project.afterEvaluate(p -> {
-                final DependencySet allDependencies = project.getConfigurations().getByName(config)
-                        .getAllDependencies();
-                for (var entry : GROUP_TO_PROCESSOR_MAP.entrySet()) {
-                    boolean hasDep = !allDependencies.matching(dependency -> Objects.equals(dependency.getGroup(), entry.getKey())).isEmpty();
-                    if (hasDep) {
-                        for (String configuration : configurations) {
-                            AutomaticDependency automaticDependency = entry.getValue();
-                            automaticDependency.withConfiguration(configuration).applyTo(project);
-                        }
-                    }
-                }
+                applyAdditionalProcessorsFromConfiguration(project, config, configurations);
             });
         });
+    }
+
+    private static void applyAdditionalProcessorsFromConfiguration(Project project, String sourceConfiguration, String... targetConfigurations) {
+        Configuration configuration = project.getConfigurations().findByName(sourceConfiguration);
+        if (configuration == null) {
+            return;
+        }
+        final DependencySet allDependencies = configuration.getAllDependencies();
+        for (var entry : GROUP_TO_PROCESSOR_MAP.entrySet()) {
+            boolean hasDep = !allDependencies.matching(dependency -> Objects.equals(dependency.getGroup(), entry.getKey())).isEmpty();
+            if (hasDep) {
+                for (String targetConfiguration : targetConfigurations) {
+                    AutomaticDependency automaticDependency = entry.getValue();
+                    automaticDependency.withConfiguration(targetConfiguration).applyTo(project);
+                }
+            }
+        }
     }
 
     public static MicronautRuntime resolveRuntime(Project p) {

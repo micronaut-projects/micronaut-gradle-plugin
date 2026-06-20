@@ -531,6 +531,37 @@ micronaut {
 
 NOTE: The Micronaut Library plugin also supports Groovy and Kotlin sources.
 
+=== Groovy Support
+
+For Groovy sources, apply Gradle's `groovy` plugin and declare the Groovy dependency needed by Gradle's Groovy compiler.
+Micronaut's Groovy AST transformations are configured on Gradle's `astTransformationClasspath` and are not added to the source set compile classpath automatically.
+
+[source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
+----
+plugins {
+    id "groovy"
+    id "io.micronaut.library" version "{gradle-project-version}"
+}
+
+dependencies {
+    implementation("org.apache.groovy:groovy")
+}
+----
+
+[source, kotlin, subs="verbatim,attributes", role="multi-language-sample"]
+----
+plugins {
+    id("groovy")
+    id("io.micronaut.library") version "{gradle-project-version}"
+}
+
+dependencies {
+    implementation("org.apache.groovy:groovy")
+}
+----
+
+For additional Groovy source sets, declare Groovy on the matching source set implementation configuration, such as `customImplementation("org.apache.groovy:groovy")`.
+
 === Kotlin Support
 
 For Kotlin, the Kotlin `jvm` and `kapt` plugins must be configured:
