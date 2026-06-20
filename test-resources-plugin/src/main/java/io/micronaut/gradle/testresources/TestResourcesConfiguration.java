@@ -19,6 +19,7 @@ import io.micronaut.testresources.buildtools.KnownModules;
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.MapProperty;
 import org.gradle.api.provider.Property;
+import org.gradle.api.provider.SetProperty;
 import org.gradle.jvm.toolchain.JavaLauncher;
 
 /**
@@ -75,6 +76,14 @@ public interface TestResourcesConfiguration extends KnownModules {
      * classpath.
      */
     ListProperty<String> getAdditionalModules();
+
+    /**
+     * Restricts test resources wiring to the selected {@code Test} task names.
+     * When empty, all {@code Test} tasks receive test resources support.
+     *
+     * @return the selected test task names
+     */
+    SetProperty<String> getTestTasks();
 
     /**
      * Configures the maximum amount of time to wait for
