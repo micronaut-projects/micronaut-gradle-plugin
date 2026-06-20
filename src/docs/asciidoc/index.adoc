@@ -997,6 +997,52 @@ $ ./gradlew dockerBuildNative
 
 Note that for this to work you must build the application with the same GraalVM SDK as used to build the executable.
 
+==== Building daemonless native executable image tarballs
+
+If you already built the native executable locally and want to package it as a container image without contacting a Docker daemon, use the Jib-backed `dockerBuildNativeImageTarball` task:
+
+[source,bash]
+----
+$ ./gradlew nativeCompile dockerBuildNativeImageTarball
+----
+
+The task is registered when both the Micronaut Docker and GraalVM plugins are applied. It depends on `nativeCompile`, copies only the native executable into the runtime image, and writes a Docker-format image tarball to `build/docker/native-main/jib-image.tar` by default. The tarball stores the image reference from the `imageName` property, which defaults to the Gradle project name with the `latest` tag added when no tag is supplied.
+
+The runtime defaults are:
+
+* base image: `cgr.dev/chainguard/wolfi-base:latest`
+* working directory: `/app`
+* entrypoint: `/app/<native-executable-name>`
+* exposed ports: `8080`
+* user: `65532`
+* target platform: Linux with the current host architecture
+
+You can configure those values directly on the task:
+
+[source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
+----
+tasks.named("dockerBuildNativeImageTarball") {
+    imageName = "registry.example.com/demo/my-app-native:$project.version"
+    outputFile = layout.buildDirectory.file("docker/native-main/my-app-native.tar")
+    baseImage = "cgr.dev/chainguard/wolfi-base:latest"
+    args("--some-runtime-argument")
+}
+----
+
+[source, kotlin, subs="verbatim,attributes", role="multi-language-sample"]
+----
+tasks.named<io.micronaut.gradle.docker.tasks.NativeImageTarball>("dockerBuildNativeImageTarball") {
+    imageName.set("registry.example.com/demo/my-app-native:${project.version}")
+    outputFile.set(layout.buildDirectory.file("docker/native-main/my-app-native.tar"))
+    baseImage.set("cgr.dev/chainguard/wolfi-base:latest")
+    args.add("--some-runtime-argument")
+}
+----
+
+Native executable tarball packaging copies a local executable into a Linux container image. By default the task fails on non-Linux hosts, or when the configured target architecture does not match the host architecture, because a macOS or Windows native executable will not run in a Linux container image. If you intentionally cross-compiled a compatible Linux executable, set `allowPlatformMismatch = true`. Use the Docker-backed `dockerBuildNative` task instead when Docker must build the Linux native executable for you.
+
+Registry publishing is intentionally not part of this first Gradle-native task. Load the generated tarball with your registry tooling or use `dockerBuildNative`/`dockerPushNative` when you need the existing Docker-daemon push path.
+
 To build a docker image containing a CRaC enabled JDK and a pre-warmed, checkpointed application, you can run:
 
 [source,bash]
