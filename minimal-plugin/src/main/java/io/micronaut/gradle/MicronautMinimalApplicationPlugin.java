@@ -24,6 +24,7 @@ import org.gradle.api.Project;
 import org.gradle.api.Task;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.ConfigurationContainer;
+import org.gradle.api.artifacts.Dependency;
 import org.gradle.api.artifacts.dsl.DependencyHandler;
 import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.file.FileCollection;
@@ -37,6 +38,9 @@ import org.gradle.api.tasks.SourceSetOutput;
 import org.gradle.api.tasks.TaskContainer;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -44,6 +48,10 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static io.micronaut.gradle.PluginsHelper.resolveRuntime;
+import static org.gradle.api.plugins.JavaPlugin.COMPILE_ONLY_CONFIGURATION_NAME;
+import static org.gradle.api.plugins.JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME;
+import static org.gradle.api.plugins.JavaPlugin.RUNTIME_ONLY_CONFIGURATION_NAME;
+import static org.gradle.api.plugins.JavaPlugin.TEST_IMPLEMENTATION_CONFIGURATION_NAME;
 
 /**
  * A plugin which allows building Micronaut applications, without support
@@ -167,22 +175,58 @@ public class MicronautMinimalApplicationPlugin implements Plugin<Project> {
     }
 
     private void configureMicronautRuntime(Project project) {
+        registerMicronautRuntimeDependencies(project);
         project.afterEvaluate(p -> {
             MicronautRuntime micronautRuntime = resolveRuntime(p);
             DependencyHandler dependencyHandler = p.getDependencies();
-            MicronautRuntimeDependencies.findApplicationPluginDependenciesByRuntime(micronautRuntime)
-                    .toMap()
-                    .forEach((scope, dependencies) -> {
-                for (AutomaticDependency dependency : dependencies) {
-                    dependency.applyTo(project);
-                }
-            });
             if (micronautRuntime == MicronautRuntime.GOOGLE_FUNCTION) {
                 configureGoogleCloudFunctionRuntime(project, p, dependencyHandler);
             }
             ShadowPluginSupport.withShadowPlugin(project, () -> ShadowPluginSupport.configureDefaults(project));
 
         });
+    }
+
+    private void registerMicronautRuntimeDependencies(Project project) {
+        for (String configurationName : runtimeDependencyConfigurations()) {
+            project.getConfigurations().named(configurationName, configuration ->
+                    configuration.getDependencies().addAllLater(project.provider(() ->
+                            resolveMicronautRuntimeDependencies(project, configurationName)
+                    ))
+            );
+        }
+    }
+
+    private Collection<Dependency> resolveMicronautRuntimeDependencies(Project project, String configurationName) {
+        MicronautRuntime micronautRuntime = resolveRuntime(project);
+        MicronautSerialization micronautSerialization = PluginsHelper.findMicronautExtension(project)
+                .getSerialization()
+                .getOrElse(MicronautSerialization.NONE);
+        List<AutomaticDependency> dependencies = MicronautRuntimeDependencies.findApplicationPluginDependenciesByRuntime(
+                        micronautRuntime,
+                        micronautSerialization,
+                        true
+                )
+                .toMap()
+                .getOrDefault(configurationName, List.of());
+        if (dependencies.isEmpty()) {
+            return Collections.emptyList();
+        }
+        List<Dependency> resolvedDependencies = new ArrayList<>(dependencies.size());
+        for (AutomaticDependency dependency : dependencies) {
+            dependency.resolve(project).ifPresent(resolvedDependencies::add);
+        }
+        return resolvedDependencies;
+    }
+
+    private List<String> runtimeDependencyConfigurations() {
+        return List.of(
+                COMPILE_ONLY_CONFIGURATION_NAME,
+                CONFIGURATION_DEVELOPMENT_ONLY,
+                IMPLEMENTATION_CONFIGURATION_NAME,
+                RUNTIME_ONLY_CONFIGURATION_NAME,
+                TEST_IMPLEMENTATION_CONFIGURATION_NAME
+        );
     }
 
     private void configureGoogleCloudFunctionRuntime(Project project, Project p, DependencyHandler dependencyHandler) {

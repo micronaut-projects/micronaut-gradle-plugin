@@ -67,9 +67,16 @@ ENTRYPOINT ["java", "-jar", "/home/app/application.jar"]
         dockerFile = dockerFile.replaceAll("[0-9]\\.[0-9]+\\.[0-9]+", "4.0.0")
             .replaceAll("RUN native-image .*", "RUN native-image")
                 .trim()
+        dockerFile = normalizeNativeDockerfileConfigDirs(dockerFile)
 
         then:
-        dockerFile == """
+        dockerFile.contains("RUN mkdir -p /home/app/config-dirs/org.reactivestreams/reactive-streams/4.0.0")
+        dockerFile.contains("RUN mkdir -p /home/app/config-dirs/com.fasterxml.jackson.core/jackson-annotations/4.0.0")
+        dockerFile.contains("RUN mkdir -p /home/app/config-dirs/ch.qos.logback/logback-classic/4.0.0")
+        dockerFile.contains("COPY --link config-dirs/org.reactivestreams/reactive-streams/4.0.0 /home/app/config-dirs/org.reactivestreams/reactive-streams/4.0.0")
+        dockerFile.contains("COPY --link config-dirs/com.fasterxml.jackson.core/jackson-annotations/4.0.0 /home/app/config-dirs/com.fasterxml.jackson.core/jackson-annotations/4.0.0")
+        dockerFile.contains("COPY --link config-dirs/ch.qos.logback/logback-classic/4.0.0 /home/app/config-dirs/ch.qos.logback/logback-classic/4.0.0")
+        removeNativeDockerfileConfigDirLines(dockerFile) == removeNativeDockerfileConfigDirLines("""
             FROM ghcr.io/graalvm/native-image-community:25-ol${DefaultVersions.ORACLELINUX} AS graalvm
             WORKDIR /home/app
             COPY --link layers/libs /home/app/libs
@@ -103,7 +110,7 @@ ENTRYPOINT ["java", "-jar", "/home/app/application.jar"]
             FROM cgr.dev/chainguard/wolfi-base:latest
             EXPOSE 8080
             COPY --link --from=graalvm /home/app/application /app/application
-            ENTRYPOINT ["/app/application"]""".stripIndent().trim()
+            ENTRYPOINT ["/app/application"]""".stripIndent().trim())
 
         when:
         def result = build "optimizedDockerBuildNative"
