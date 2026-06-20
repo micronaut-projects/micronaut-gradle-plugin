@@ -20,6 +20,7 @@ import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.Dependency;
 import org.gradle.api.artifacts.ExternalModuleDependency;
+import org.gradle.api.artifacts.component.ModuleComponentIdentifier;
 import org.gradle.api.artifacts.dsl.DependencyHandler;
 import org.gradle.api.plugins.BasePlugin;
 import org.gradle.api.plugins.JavaPlugin;
@@ -80,7 +81,6 @@ public class MicronautComponentPlugin implements Plugin<Project> {
         MicronautExtension micronautExtension = project.getExtensions().getByType(MicronautExtension.class);
         TaskContainer tasks = project.getTasks();
         TaskProvider<ApplicationClasspathInspector> inspectRuntimeClasspath = registerInspectRuntimeClasspath(project, tasks);
-
         configureJava(project, tasks);
 
         configureGroovy(project, tasks, micronautExtension);
@@ -217,14 +217,37 @@ public class MicronautComponentPlugin implements Plugin<Project> {
 
 
     private void configureJava(Project project, TaskContainer tasks) {
-
+        TaskProvider<GenerateImportFactoryTask> generateImportFactories = project.getTasks().register(
+                "generateImportFactories",
+                GenerateImportFactoryTask.class,
+                task -> {
+                    task.getGeneratedSourcesDir().convention(project.getLayout().getBuildDirectory().dir("generated-sources/importfactory"));
+                    task.getIncludeDependenciesFilter().convention("^.*:.*$");
+                    task.getExcludeDependenciesFilter().convention("^$");
+                    task.getIncludePackagesFilter().convention("^.*$");
+                    task.getExcludePackagesFilter().convention("^$");
+                    var tempconfiguration = project.getConfigurations().detachedConfiguration();
+                    tempconfiguration
+                            .getDependencies()
+                            .addAllLater(project.provider(() -> project.getConfigurations()
+                                            .getByName(JavaPlugin.RUNTIME_CLASSPATH_CONFIGURATION_NAME)
+                                            .getIncoming()
+                                            .getDependencies().stream().filter(d -> d instanceof ExternalModuleDependency)
+                                            .toList())
+                                    );
+                    task.getRuntimeClasspath().from(tempconfiguration);
+                }
+        );
         project.afterEvaluate(p -> {
             var sourceSets = PluginsHelper.findSourceSets(p);
             for (String sourceSetName : SOURCESETS) {
                 SourceSet sourceSet = sourceSets.findByName(sourceSetName);
                 if (sourceSet != null) {
-                    String implementationScope;
+                    if (SourceSet.MAIN_SOURCE_SET_NAME.equals(sourceSetName)) {
+                        sourceSet.getJava().srcDir(generateImportFactories);
+                    }
 
+                    String implementationScope;
                     String apiConfigurationName = sourceSet.getApiConfigurationName();
                     Configuration c = p.getConfigurations().findByName(apiConfigurationName);
                     if (c != null) {
