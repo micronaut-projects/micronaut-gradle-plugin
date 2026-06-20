@@ -25,6 +25,7 @@ public abstract class MicronautExtension implements ExtensionAware {
     private final Property<Boolean> enableNativeImage;
     private final Property<MicronautRuntime> runtime;
     private final Property<MicronautTestRuntime> testRuntime;
+    private final ImportFactoryConfiguration importFactory;
 
     /**
      * If set to false, then the Micronaut Gradle plugins will not automatically
@@ -48,6 +49,7 @@ public abstract class MicronautExtension implements ExtensionAware {
     @Inject
     public MicronautExtension(ObjectFactory objectFactory, SourceSetConfigurer sourceSetConfigurer) {
         this.processing = objectFactory.newInstance(AnnotationProcessing.class, sourceSetConfigurer);
+        this.importFactory = objectFactory.newInstance(ImportFactoryConfiguration.class);
         this.version = objectFactory.property(String.class);
         this.enableNativeImage = objectFactory.property(Boolean.class)
                                     .convention(true);
@@ -56,6 +58,11 @@ public abstract class MicronautExtension implements ExtensionAware {
         this.testRuntime = objectFactory.property(MicronautTestRuntime.class)
                                         .convention(MicronautTestRuntime.NONE);
         getImportMicronautPlatform().convention(true);
+        this.importFactory.getEnabled().convention(false);
+        this.importFactory.getIncludeDependenciesFilter().convention("^.*:.*$");
+        this.importFactory.getExcludeDependenciesFilter().convention("^$");
+        this.importFactory.getIncludePackagesFilter().convention("^.*$");
+        this.importFactory.getExcludePackagesFilter().convention("^$");
     }
 
     /**
@@ -166,6 +173,13 @@ public abstract class MicronautExtension implements ExtensionAware {
     }
 
     /**
+     * @return Configuration for import factory generation.
+     */
+    public ImportFactoryConfiguration getImportFactory() {
+        return importFactory;
+    }
+
+    /**
      * Property which drives if incremental native builds should be enabled.
      * @return the incremental property
      */
@@ -178,6 +192,16 @@ public abstract class MicronautExtension implements ExtensionAware {
      */
     public MicronautExtension processing(Action<AnnotationProcessing> processingAction) {
         processingAction.execute(this.getProcessing());
+        return this;
+    }
+
+    /**
+     * Allows configuring import factory generation.
+     * @param importFactoryAction The import factory configuration action
+     * @return This extension
+     */
+    public MicronautExtension importFactory(Action<ImportFactoryConfiguration> importFactoryAction) {
+        importFactoryAction.execute(this.getImportFactory());
         return this;
     }
 
