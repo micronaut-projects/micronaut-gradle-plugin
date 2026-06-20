@@ -317,6 +317,7 @@ This plugin will automatically import the Micronaut version catalog, which provi
 
 [IMPORTANT]
 This is a **settings** plugin, which means that it **must** be applied to your `settings.gradle(.kts)` file, not `build.gradle(.kts)`.
+The same settings plugin can also be applied from `buildSrc/settings.gradle(.kts)`; when you do, it reuses the owning build's `gradle.properties`, `gradle/libs.versions.toml`, and `gradle/mn-override.versions.toml` files if `buildSrc` does not provide local copies.
 
 Add the plugin to your `settings.gradle(.kts)` file:
 
