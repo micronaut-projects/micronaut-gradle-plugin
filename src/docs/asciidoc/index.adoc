@@ -233,47 +233,6 @@ NOTE: This requires a validator version that supports the CLI argument `--suppre
 The `*ConfigurationValidationReport` tasks are cacheable and compatible with Gradle configuration cache.
 To preserve failure results across cache hits (so that cached invalid configuration still fails subsequent builds), the failing `*ConfigurationValidation` tasks read the result marker produced by their corresponding report task.
 
-
-Using the `io.micronaut.application` plugin:
-
-[source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
-----
-plugins {
-  id 'io.micronaut.application' version '{gradle-project-version}'
-}
-----
-
-[source, kotlin, subs="verbatim,attributes", role="multi-language-sample"]
-----
-plugins {
-  id("io.micronaut.application") version "{gradle-project-version}"
-}
-----
-
-is therefore equivalent to applying those plugins individually:
-
-[source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
-----
-plugins {
-  id 'io.micronaut.minimal.application' version '{gradle-project-version}'
-  id 'io.micronaut.docker' version '{gradle-project-version}'
-  id 'io.micronaut.graalvm' version '{gradle-project-version}'
-}
-apply plugin: com.diffplug.gradle.eclipse.apt.AptEclipsePlugin
-----
-
-[source, kotlin, subs="verbatim,attributes", role="multi-language-sample"]
-----
-plugins {
-  id("io.micronaut.minimal.application") version "{gradle-project-version}"
-  id("io.micronaut.docker") version "{gradle-project-version}"
-  id("io.micronaut.graalvm") version "{gradle-project-version}"
-}
-apply(plugin=com.diffplug.gradle.eclipse.apt.AptEclipsePlugin::class.java)
-----
-
-`io.micronaut.minimal.application`, `io.micronaut.graalvm` and `io.micronaut.docker` plugins (as well as the Eclipse annotation processing support plugin).
-
 == Quick Start
 
 Template projects are available via https://micronaut.io/launch/[Micronaut Launch] for each language.
@@ -627,6 +586,30 @@ The https://plugins.gradle.org/plugin/io.micronaut.application[Micronaut applica
 * Instead of the `java-library` plugin the plugin applies the Gradle `application` plugin
 * Applies the `io.micronaut.graalvm` plugin
 * Correctly configures Gradle for continuous build
+
+The `io.micronaut.application` plugin application shown above is therefore equivalent to applying those plugins individually:
+
+[source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
+----
+plugins {
+  id 'io.micronaut.minimal.application' version '{gradle-project-version}'
+  id 'io.micronaut.docker' version '{gradle-project-version}'
+  id 'io.micronaut.graalvm' version '{gradle-project-version}'
+}
+apply plugin: com.diffplug.gradle.eclipse.apt.AptEclipsePlugin
+----
+
+[source, kotlin, subs="verbatim,attributes", role="multi-language-sample"]
+----
+plugins {
+  id("io.micronaut.minimal.application") version "{gradle-project-version}"
+  id("io.micronaut.docker") version "{gradle-project-version}"
+  id("io.micronaut.graalvm") version "{gradle-project-version}"
+}
+plugins.apply(com.diffplug.gradle.eclipse.apt.AptEclipsePlugin::class.java)
+----
+
+`io.micronaut.application` applies the `io.micronaut.minimal.application`, `io.micronaut.graalvm` and `io.micronaut.docker` plugins, as well as the Eclipse annotation processing support plugin.
 
 The following additional tasks are provided by this plugin:
 
