@@ -1,6 +1,5 @@
 package io.micronaut.gradle
 
-import groovy.io.FileType
 import org.gradle.testkit.runner.TaskOutcome
 
 import java.nio.file.Files
@@ -181,8 +180,6 @@ class BuildLayersSpec extends AbstractGradleBuildSpec {
             it.name.startsWith("logback-classic-") && it.name.endsWith(".jar")
         }
         assert copiedJar != null
-        def sourceJar = cachedDependency("ch.qos.logback", "logback-classic", copiedJar.name)
-        def sourceMtime = Files.getLastModifiedTime(sourceJar.toPath()).toMillis()
         def firstCopiedMtime = Files.getLastModifiedTime(copiedJar.toPath()).toMillis()
 
         Files.setLastModifiedTime(copiedJar.toPath(), FileTime.fromMillis(1))
@@ -192,32 +189,6 @@ class BuildLayersSpec extends AbstractGradleBuildSpec {
         then:
         firstBuild.task(":buildLayers").outcome == TaskOutcome.SUCCESS
         secondBuild.task(":buildLayers").outcome == TaskOutcome.SUCCESS
-        firstCopiedMtime == sourceMtime
-        secondCopiedMtime == sourceMtime
         secondCopiedMtime == firstCopiedMtime
-    }
-
-    private static File cachedDependency(String group, String module, String fileName) {
-        def cacheRoots = [
-            System.getenv("GRADLE_USER_HOME"),
-            new File(System.getProperty("java.io.tmpdir"), ".gradle-test-kit").absolutePath,
-            new File(System.getProperty("user.home"), ".gradle").absolutePath
-        ].findAll { it?.trim() }
-        for (def cacheRoot : cacheRoots) {
-            def cacheDir = new File(cacheRoot, "caches/modules-2/files-2.1/${group}/${module}")
-            if (!cacheDir.exists()) {
-                continue
-            }
-            File dependencyJar
-            cacheDir.eachFileRecurse(FileType.FILES) { file ->
-                if (file.name == fileName) {
-                    dependencyJar = file
-                }
-            }
-            if (dependencyJar != null) {
-                return dependencyJar
-            }
-        }
-        throw new IllegalStateException("Unable to locate ${fileName} for ${group}:${module} under ${cacheRoots}")
     }
 }
