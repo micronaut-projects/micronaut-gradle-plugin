@@ -36,7 +36,7 @@ public interface CRaCConfiguration {
     Property<String> getOs();
 
     /**
-     * The java version to use for building the CRaC enabled images. Currently only '17' is supported.
+     * The java version to use for building the CRaC enabled images. Defaults to {@code 25}.
      * @return the java version
      */
     Property<JavaLanguageVersion> getJavaVersion();
