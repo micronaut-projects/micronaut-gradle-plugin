@@ -455,7 +455,7 @@ plugins {
 
 The https://plugins.gradle.org/plugin/io.micronaut.library[Micronaut library plugin] applies the following modifications to the build:
 
-* Applies the https://search.maven.org/artifact/io.micronaut.platform/micronaut-platform[Micronaut Bill of Materials (BOM)]
+* Applies the https://central.sonatype.com/artifact/io.micronaut.platform/micronaut-platform[Micronaut Bill of Materials (BOM)]
 * Applies the `java-library` plugin
 * Configures annotation processing for the current language (Groovy, Java or Kotlin)
 * <<#sec:automatic-annotation-processors, Adds annotation processors automatically>> for Micronaut modules
@@ -1156,7 +1156,7 @@ tasks.named<io.micronaut.gradle.docker.NativeImageDockerfile>("dockerfileNative"
 }
 ----
 
-You can also add any of the other instructions/commands that the docker plugin supports, see {docker-plugin}/blob/master/src/main/groovy/com/bmuschko/gradle/docker/tasks/image/Dockerfile.groovy[the Dockerfile task documentation].
+You can also add any of the other instructions/commands that the docker plugin supports, see https://bmuschko.github.io/gradle-docker-plugin/current/api/com/bmuschko/gradle/docker/tasks/image/Dockerfile.html[the Dockerfile task documentation].
 
 ==== Tweaking the generated docker files
 
