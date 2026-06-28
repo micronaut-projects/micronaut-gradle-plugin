@@ -651,6 +651,37 @@ $ ./gradlew run -t
 
 The `run` task honors Gradle `application.applicationDefaultJvmArgs`. Micronaut-specific JVM arguments are added in addition to those defaults.
 
+=== Continuous Build and Watching Additional Files
+By default, when running the application in continuous mode (e.g. `./gradlew run -t`), the Micronaut plugin watches for changes to any file in the main source set and will restart if modified.
+
+If your project relies on files outside of the main source set (like separate source sets or externalized configuration files), you can configure the plugin to watch these additional files so that modifying any of these files will also trigger a rebuild and restart.
+
+You can specify these directories using the `additionalFilesToWatch` property within the `micronaut` extension:
+
+[source,groovy]
+.build.gradle
+----
+micronaut {
+    // Watch a specific directory
+    additionalFilesToWatch.from(file("src/custom-assets"))
+
+    // Or watch an entire custom source set
+    additionalFilesToWatch.from(sourceSets.custom.allSource.srcDirs)
+}
+----
+
+[source,kotlin]
+.build.gradle.kts
+----
+micronaut {
+    // Watch a specific directory
+    additionalFilesToWatch.from(file("src/custom-assets"))
+
+    // Or watch an entire custom source set
+    additionalFilesToWatch.from(sourceSets.getByName("custom").allSource.srcDirs)
+}
+----
+
 === Development-only Dependencies
 
 The application plugin creates a `developmentOnly` configuration for dependencies that are needed only while running the application locally.
