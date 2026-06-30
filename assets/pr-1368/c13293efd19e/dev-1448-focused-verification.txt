@@ -1,0 +1,12 @@
+DEV-1448 focused verification
+HEAD: c13293efd19eca09004826317182be4e0f502eed
+Base: 18e262882a60c7879f32f8f6833031c99227cfdd
+[1/2] Exact Docker context snapshot regression
+./gradlew :micronaut-docker-plugin:test --rerun-tasks --tests 'io.micronaut.gradle.docker.tasks.PrepareDockerContextSpec.output is an exact snapshot of existing input directories' -Pmicronaut-build-version=8.0.0-M17 --no-daemon
+Test Run :micronaut-docker-plugin:test > Partition 1 in session 2 on localhost-executor-1 > PrepareDockerContextSpec output is an exact snapshot of existing input directories PASSED
+BUILD SUCCESSFUL in 14s
+[2/2] Bounded generated Dockerfile regressions
+./gradlew :functional-tests:test --rerun-tasks --tests 'io.micronaut.gradle.docker.DockerNativeFunctionalTest.can configure an alternate working directory' --tests 'io.micronaut.gradle.docker.DockerNativeFunctionalTest.can disable COPY --link for native configuration directories' -Pmicronaut-build-version=8.0.0-M17 --no-daemon
+Test Run :functional-tests:test > Partition 1 in session 2 on localhost-executor-1 > DockerNativeFunctionalTest can configure an alternate working directory PASSED (7.3s)
+Test Run :functional-tests:test > Partition 1 in session 2 on localhost-executor-1 > DockerNativeFunctionalTest can disable COPY --link for native configuration directories PASSED
+BUILD SUCCESSFUL in 26s
