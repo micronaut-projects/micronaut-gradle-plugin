@@ -18,7 +18,7 @@ package io.micronaut.gradle.docker.tasks;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.file.DirectoryProperty;
-import org.gradle.api.internal.file.FileOperations;
+import org.gradle.api.file.FileSystemOperations;
 import org.gradle.api.tasks.InputFiles;
 import org.gradle.api.tasks.OutputDirectory;
 import org.gradle.api.tasks.TaskAction;
@@ -37,7 +37,7 @@ import java.io.File;
  */
 public abstract class PrepareDockerContext extends DefaultTask {
     @Inject
-    protected abstract FileOperations getFileOperations();
+    protected abstract FileSystemOperations getFileSystemOperations();
 
     @InputFiles
     public abstract ConfigurableFileCollection getInputDirectories();
@@ -47,14 +47,15 @@ public abstract class PrepareDockerContext extends DefaultTask {
 
     @TaskAction
     void copy() {
-        File outputDirectory = getOutputDirectory().get().getAsFile();
-        getFileOperations().delete(spec -> spec.delete(outputDirectory));
         var namer = new DockerResourceConfigDirectoryNamer();
-        for (File directory : getInputDirectories().getFiles()) {
-            if (directory.exists()) {
-                getFileOperations().copy(spec -> spec.into(new File(outputDirectory, namer.determineNameFor(directory))).from(directory));
+        getFileSystemOperations().sync(spec -> {
+            spec.into(getOutputDirectory());
+            for (File directory : getInputDirectories().getFiles()) {
+                if (directory.exists()) {
+                    spec.from(directory, child -> child.into(namer.determineNameFor(directory)));
+                }
             }
-        }
+        });
     }
 
 }
