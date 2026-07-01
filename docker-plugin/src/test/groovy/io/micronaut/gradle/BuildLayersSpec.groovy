@@ -199,8 +199,8 @@ class BuildLayersSpec extends AbstractGradleBuildSpec {
 
     private static File cachedDependency(String group, String module, String fileName) {
         def cacheRoots = [
-            System.getenv("GRADLE_USER_HOME"),
             new File(System.getProperty("java.io.tmpdir"), ".gradle-test-kit").absolutePath,
+            System.getenv("GRADLE_USER_HOME"),
             new File(System.getProperty("user.home"), ".gradle").absolutePath
         ].findAll { it?.trim() }
         for (def cacheRoot : cacheRoots) {
