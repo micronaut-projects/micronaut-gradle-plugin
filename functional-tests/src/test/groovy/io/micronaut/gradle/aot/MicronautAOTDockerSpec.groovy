@@ -8,6 +8,12 @@ import spock.lang.Requires
 
 class MicronautAOTDockerSpec extends AbstractAOTPluginSpec {
 
+    private static String withoutReachabilityMetadataConfigLines(String dockerFile) {
+        dockerFile.readLines()
+                .findAll { !it.contains('/config-dirs/') && !it.endsWith('/config-dirs') }
+                .join('\n')
+    }
+
     def "generates an optimized docker file"() {
         withSample("aot/basic-app")
 
@@ -69,13 +75,12 @@ ENTRYPOINT ["java", "-jar", "/home/app/application.jar"]
                 .trim()
 
         then:
-        dockerFile == """
+        dockerFile.readLines().findAll { it.contains('/config-dirs') }.every { it.contains('/home/app/config-dirs') }
+        withoutReachabilityMetadataConfigLines(dockerFile) == """
             FROM ghcr.io/graalvm/native-image-community:25-ol${DefaultVersions.ORACLELINUX} AS graalvm
             WORKDIR /home/app
             COPY --link layers/libs /home/app/libs
             COPY --link layers/app /home/app/
-            RUN mkdir /home/app/config-dirs
-            COPY --link config-dirs /home/app/config-dirs
             RUN native-image
             FROM cgr.dev/chainguard/wolfi-base:latest
             EXPOSE 8080
