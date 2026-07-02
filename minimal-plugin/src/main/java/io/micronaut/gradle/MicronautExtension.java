@@ -3,10 +3,14 @@ package io.micronaut.gradle;
 import org.gradle.api.Action;
 import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.plugins.ExtensionAware;
+import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Property;
 import org.gradle.api.provider.SetProperty;
 
 import javax.inject.Inject;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -25,6 +29,7 @@ public abstract class MicronautExtension implements ExtensionAware {
     private final Property<Boolean> enableNativeImage;
     private final Property<MicronautRuntime> runtime;
     private final Property<MicronautTestRuntime> testRuntime;
+    private final ListProperty<MicronautTestRuntime> testRuntimes;
 
     /**
      * If set to false, then the Micronaut Gradle plugins will not automatically
@@ -55,6 +60,8 @@ public abstract class MicronautExtension implements ExtensionAware {
                                     .convention(MicronautRuntime.NONE);
         this.testRuntime = objectFactory.property(MicronautTestRuntime.class)
                                         .convention(MicronautTestRuntime.NONE);
+        this.testRuntimes = objectFactory.listProperty(MicronautTestRuntime.class)
+                                         .convention(Collections.emptyList());
         getImportMicronautPlatform().convention(true);
     }
 
@@ -63,6 +70,13 @@ public abstract class MicronautExtension implements ExtensionAware {
      */
     public Property<MicronautTestRuntime> getTestRuntime() {
         return testRuntime;
+    }
+
+    /**
+     * @return The test runtimes to use in addition to the legacy single-value path.
+     */
+    public ListProperty<MicronautTestRuntime> getTestRuntimes() {
+        return testRuntimes;
     }
 
     /**
@@ -152,6 +166,61 @@ public abstract class MicronautExtension implements ExtensionAware {
             this.testRuntime.set(testRuntime);
         }
         return this;
+    }
+
+    /**
+     * Configures multiple test runtimes to use.
+     *
+     * @param runtimes The micronaut test runtime types
+     * @return This extension
+     * @since 5.0.0
+     */
+    public MicronautExtension testRuntimes(MicronautTestRuntime... runtimes) {
+        if (runtimes != null) {
+            for (MicronautTestRuntime runtime : runtimes) {
+                if (runtime != null) {
+                    this.testRuntimes.add(runtime);
+                }
+            }
+        }
+        return this;
+    }
+
+    /**
+     * Configures multiple test runtimes to use.
+     *
+     * @param runtimes The micronaut test runtime types
+     * @return This extension
+     * @since 5.0.0
+     */
+    public MicronautExtension testRuntimes(String... runtimes) {
+        if (runtimes != null) {
+            for (String runtime : runtimes) {
+                if (runtime != null) {
+                    this.testRuntimes.add(MicronautTestRuntime.parse(runtime));
+                }
+            }
+        }
+        return this;
+    }
+
+    List<MicronautTestRuntime> resolveTestRuntimes() {
+        List<MicronautTestRuntime> configured = new ArrayList<>();
+        configured.add(testRuntime.get());
+        configured.addAll(testRuntimes.getOrElse(Collections.emptyList()));
+
+        boolean hasSelectedRuntime = configured.stream().anyMatch(runtime -> runtime != null && runtime != MicronautTestRuntime.NONE);
+        var resolved = new LinkedHashSet<MicronautTestRuntime>();
+        for (MicronautTestRuntime runtime : configured) {
+            if (runtime == null) {
+                continue;
+            }
+            if (runtime == MicronautTestRuntime.NONE && hasSelectedRuntime) {
+                continue;
+            }
+            resolved.add(runtime);
+        }
+        return List.copyOf(resolved);
     }
 
     /**
