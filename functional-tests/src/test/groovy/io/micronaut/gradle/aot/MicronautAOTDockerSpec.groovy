@@ -64,8 +64,8 @@ ENTRYPOINT ["java", "-jar", "/home/app/application.jar"]
         when:
         build "optimizedDockerfileNative"
         def dockerFile = normalizeLineEndings(file("build/docker/native-optimized/DockerfileNative").text)
-        dockerFile = normalizeNativeMetadataDirectories(dockerFile.replaceAll("[0-9]\\.[0-9]+\\.[0-9]+", "4.0.0")
-            .replaceAll("RUN native-image .*", "RUN native-image"))
+        dockerFile = dockerFile.replaceAll("[0-9]\\.[0-9]+\\.[0-9]+", "4.0.0")
+            .replaceAll("RUN native-image .*", "RUN native-image")
                 .trim()
 
         then:
@@ -75,8 +75,7 @@ ENTRYPOINT ["java", "-jar", "/home/app/application.jar"]
             COPY --link layers/libs /home/app/libs
             COPY --link layers/app /home/app/
             RUN mkdir /home/app/config-dirs
-            RUN mkdir -p /home/app/config-dirs/generateResourcesConfigFile
-            COPY --link config-dirs/generateResourcesConfigFile /home/app/config-dirs/generateResourcesConfigFile
+            COPY --link config-dirs /home/app/config-dirs
             RUN native-image
             FROM cgr.dev/chainguard/wolfi-base:latest
             EXPOSE 8080
@@ -96,15 +95,6 @@ ENTRYPOINT ["java", "-jar", "/home/app/application.jar"]
         result.task(":optimizedDockerBuildNative").outcome != TaskOutcome.FAILED
         result.tasks.stream().noneMatch { it.path == ":nativeCompile" }
 
-    }
-
-    private static String normalizeNativeMetadataDirectories(String dockerFile) {
-        dockerFile.readLines()
-                .findAll { line ->
-                    !(line.startsWith("RUN mkdir -p ") && line.contains("/config-dirs/") && !line.endsWith("/config-dirs/generateResourcesConfigFile"))
-                            && !(line.startsWith("COPY --link config-dirs/") && !line.startsWith("COPY --link config-dirs/generateResourcesConfigFile "))
-                }
-                .join("\n")
     }
 
 }
