@@ -85,10 +85,13 @@ micronaut:
 """
 
 
-        def result = build('dockerBuildNative')
-
-        def task = result.task(":dockerBuildNative")
+        // Capture the generated file before the image build so Docker task cleanup cannot race the assertions.
+        def dockerfileResult = build('dockerfileNative')
         def dockerFile = new File(testProjectDir.root, 'build/docker/native-main/DockerfileNative').readLines('UTF-8')
+
+        def result = build('dockerBuildNative')
+        def task = result.task(":dockerBuildNative")
+        def buildOutput = dockerfileResult.output + result.output
 
         expect:
         dockerFile.first().startsWith(nativeImage)
@@ -98,7 +101,7 @@ micronaut:
 
         and:
         result.output.contains("Successfully tagged hello-world:latest")
-        result.output.contains("Resources configuration written into")
+        buildOutput.contains("Resources configuration written into")
         dockerFile.find { s -> s.startsWith('RUN native-image ') }.contains(SHARED_ARENA_SUPPORT) == sharedArenaSupportEnabled
         task.outcome == TaskOutcome.SUCCESS
 
