@@ -75,14 +75,7 @@ ENTRYPOINT ["java", "-jar", "/home/app/application.jar"]
             COPY --link layers/libs /home/app/libs
             COPY --link layers/app /home/app/
             RUN mkdir /home/app/config-dirs
-            RUN mkdir -p /home/app/config-dirs/generateResourcesConfigFile
-            RUN mkdir -p /home/app/config-dirs/io.netty/netty-common/4.0.0.Final
-            RUN mkdir -p /home/app/config-dirs/io.netty/netty-transport/4.0.0.Final
-            RUN mkdir -p /home/app/config-dirs/ch.qos.logback/logback-classic/4.0.0
-            COPY --link config-dirs/generateResourcesConfigFile /home/app/config-dirs/generateResourcesConfigFile
-            COPY --link config-dirs/io.netty/netty-common/4.0.0.Final /home/app/config-dirs/io.netty/netty-common/4.0.0.Final
-            COPY --link config-dirs/io.netty/netty-transport/4.0.0.Final /home/app/config-dirs/io.netty/netty-transport/4.0.0.Final
-            COPY --link config-dirs/ch.qos.logback/logback-classic/4.0.0 /home/app/config-dirs/ch.qos.logback/logback-classic/4.0.0
+            COPY --link config-dirs /home/app/config-dirs
             RUN native-image
             FROM cgr.dev/chainguard/wolfi-base:latest
             EXPOSE 8080

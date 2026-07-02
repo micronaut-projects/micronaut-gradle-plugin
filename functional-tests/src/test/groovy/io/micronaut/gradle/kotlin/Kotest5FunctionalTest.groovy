@@ -62,14 +62,13 @@ class Kotest5FunctionalTest extends AbstractEagerConfiguringFunctionalTest {
                         |})
                         """.stripMargin()
         def configFile = testProjectDir.newFile("src/test/kotlin/example/ProjectConfig.kt")
-        configFile << """package example
+        configFile << """package com.example
                       |
                       |import io.kotest.core.config.AbstractProjectConfig
                       |import io.micronaut.test.extensions.kotest5.MicronautKotest5Extension
                       |
                       |object ProjectConfig : AbstractProjectConfig() {
-                      |    override fun listeners() = listOf(MicronautKotest5Extension)
-                      |    override fun extensions() = listOf(MicronautKotest5Extension)
+                      |    override val extensions = listOf(MicronautKotest5Extension)
                       |}
                       """.stripMargin()
 

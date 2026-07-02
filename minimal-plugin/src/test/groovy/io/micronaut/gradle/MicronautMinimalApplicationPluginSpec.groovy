@@ -85,6 +85,49 @@ class MicronautMinimalApplicationPluginSpec extends AbstractGradleBuildSpec {
         watchLine.contains 'src/main/groovy'
     }
 
+    @Issue("https://github.com/micronaut-projects/micronaut-gradle-plugin/issues/765")
+    def "run task honors application default JVM args"() {
+        given:
+        settingsFile << "rootProject.name = 'hello-world'"
+        buildFile << """
+            plugins {
+                id "io.micronaut.minimal.application"
+            }
+
+            micronaut {
+                version "$micronautVersion"
+                runtime "netty"
+            }
+
+            $repositoriesBlock
+
+            application {
+                mainClass = "example.Application"
+                applicationDefaultJvmArgs = ["-Dtest.flag=from-application"]
+            }
+        """
+
+        testProjectDir.newFolder("src", "main", "java", "example")
+        def javaFile = testProjectDir.newFile("src/main/java/example/Application.java")
+        javaFile.parentFile.mkdirs()
+        javaFile << """
+package example;
+
+class Application {
+    static void main(String... args) {
+        System.out.println("test.flag=" + System.getProperty("test.flag"));
+    }
+}
+"""
+
+        when:
+        def result = build('run')
+
+        then:
+        result.task(":run").outcome == TaskOutcome.SUCCESS
+        result.output.contains("test.flag=from-application")
+    }
+
     @Issue("https://github.com/micronaut-projects/micronaut-gradle-plugin/issues/594")
     def "can detect that SnakeYAML is missing from classpath"() {
         settingsFile << "rootProject.name = 'hello-world'"

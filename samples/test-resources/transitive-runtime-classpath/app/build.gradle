@@ -1,0 +1,27 @@
+plugins {
+    id("io.micronaut.minimal.application")
+    id("io.micronaut.test-resources")
+}
+
+version = "0.1"
+group = "demo"
+
+dependencies {
+    implementation(project(":lib"))
+    implementation("io.micronaut.kafka:micronaut-kafka")
+    runtimeOnly("ch.qos.logback:logback-classic")
+    runtimeOnly("org.yaml:snakeyaml")
+}
+
+application {
+    mainClass.set("demo.Application")
+}
+
+micronaut {
+    runtime("netty")
+    testRuntime("junit5")
+    processing {
+        incremental(true)
+        annotations("demo.*")
+    }
+}

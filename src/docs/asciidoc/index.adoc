@@ -153,12 +153,12 @@ micronaut {
 
     run {
       // Default: ["dev"]
-      environments.set(["dev"]) 
+      environments.set(["dev"])
     }
 
     test {
       // Default: ["test"]
-      environments.set(["test"]) 
+      environments.set(["test"])
     }
 
     assemble {
@@ -232,47 +232,6 @@ NOTE: This requires a validator version that supports the CLI argument `--suppre
 
 The `*ConfigurationValidationReport` tasks are cacheable and compatible with Gradle configuration cache.
 To preserve failure results across cache hits (so that cached invalid configuration still fails subsequent builds), the failing `*ConfigurationValidation` tasks read the result marker produced by their corresponding report task.
-
-
-Using the `io.micronaut.application` plugin:
-
-[source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
-----
-plugins {
-  id 'io.micronaut.application' version '{gradle-project-version}'
-}
-----
-
-[source, kotlin, subs="verbatim,attributes", role="multi-language-sample"]
-----
-plugins {
-  id("io.micronaut.application") version "{gradle-project-version}"
-}
-----
-
-is therefore equivalent to applying those plugins individually:
-
-[source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
-----
-plugins {
-  id 'io.micronaut.minimal.application' version '{gradle-project-version}'
-  id 'io.micronaut.docker' version '{gradle-project-version}'
-  id 'io.micronaut.graalvm' version '{gradle-project-version}'
-}
-----
-
-[source, kotlin, subs="verbatim,attributes", role="multi-language-sample"]
-----
-plugins {
-  id("io.micronaut.minimal.application") version "{gradle-project-version}"
-  id("io.micronaut.docker") version "{gradle-project-version}"
-  id("io.micronaut.graalvm") version "{gradle-project-version}"
-}
-----
-
-This applies the `io.micronaut.minimal.application`, `io.micronaut.graalvm` and `io.micronaut.docker` plugins.
-
-If the Gradle `eclipse` plugin is also applied, `io.micronaut.application` additionally applies `com.diffplug.gradle.eclipse.apt.AptEclipsePlugin`.
 
 == Quick Start
 
@@ -455,7 +414,7 @@ plugins {
 
 The https://plugins.gradle.org/plugin/io.micronaut.library[Micronaut library plugin] applies the following modifications to the build:
 
-* Applies the https://search.maven.org/artifact/io.micronaut.platform/micronaut-platform[Micronaut Bill of Materials (BOM)]
+* Applies the https://central.sonatype.com/artifact/io.micronaut.platform/micronaut-platform[Micronaut Bill of Materials (BOM)]
 * Applies the `java-library` plugin
 * Configures annotation processing for the current language (Groovy, Java or Kotlin)
 * <<#sec:automatic-annotation-processors, Adds annotation processors automatically>> for Micronaut modules
@@ -481,7 +440,7 @@ micronaut {
         // This should be the same as the artifactId in the POM
         module project.name
         // Sets the group.
-        // This should be th same as the groupId in the POM
+        // This should be the same as the groupId in the POM
         group project.group
         // Sets the Java package names containing any custom Micronaut
         // meta annotations (new annotations annotated with say @Around).
@@ -513,7 +472,7 @@ micronaut {
         // This should be the same as the artifactId in the POM
         module.set(project.name)
         // Sets the group.
-        // This should be th same as the groupId in the POM
+        // This should be the same as the groupId in the POM
         group.set(project.group)
         // Sets the Java package names containing any custom Micronaut
         // meta annotations (new annotations annotated with say @Around).
@@ -630,6 +589,29 @@ The https://plugins.gradle.org/plugin/io.micronaut.application[Micronaut applica
 * Correctly configures Gradle for continuous build
 * Applies `com.diffplug.gradle.eclipse.apt.AptEclipsePlugin` when the Gradle `eclipse` plugin is applied
 
+The `io.micronaut.application` plugin application shown above is therefore equivalent to applying those plugins individually:
+
+[source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
+----
+plugins {
+  id 'io.micronaut.minimal.application' version '{gradle-project-version}'
+  id 'io.micronaut.docker' version '{gradle-project-version}'
+  id 'io.micronaut.graalvm' version '{gradle-project-version}'
+}
+----
+
+[source, kotlin, subs="verbatim,attributes", role="multi-language-sample"]
+----
+plugins {
+  id("io.micronaut.minimal.application") version "{gradle-project-version}"
+  id("io.micronaut.docker") version "{gradle-project-version}"
+  id("io.micronaut.graalvm") version "{gradle-project-version}"
+}
+----
+
+`io.micronaut.application` applies the `io.micronaut.minimal.application`, `io.micronaut.graalvm` and `io.micronaut.docker` plugins.
+If the Gradle `eclipse` plugin is also applied, `io.micronaut.application` additionally applies `com.diffplug.gradle.eclipse.apt.AptEclipsePlugin`.
+
 The following additional tasks are provided by this plugin:
 
 * `buildLayers` - Builds application layers for use in a Docker container
@@ -650,6 +632,53 @@ To run an application with continuous build use the `run` task with the `-t` par
 ----
 $ ./gradlew run -t
 ----
+
+The `run` task honors Gradle `application.applicationDefaultJvmArgs`. Micronaut-specific JVM arguments are added in addition to those defaults.
+
+=== Development-only Dependencies
+
+The application plugin creates a `developmentOnly` configuration for dependencies that are needed only while running the application locally.
+The `run` task uses a `developmentRuntimeClasspath` that extends the regular `runtimeClasspath` with `developmentOnly`, so those dependencies are available to local development runs without being added to the application's production runtime classpath.
+
+The plugin also adds some `developmentOnly` dependencies automatically:
+
+|===
+|Condition |Development-only dependencies
+
+|Running on macOS
+|`io.micronaut:micronaut-runtime-osx`
+
+|`micronaut.runtime("lambda_java")` or `micronaut.runtime("lambda_provided")`
+|`io.micronaut.aws:micronaut-function-aws-api-proxy-test`
+
+|`micronaut.runtime("oracle_function")`
+|`io.micronaut.oraclecloud:micronaut-oraclecloud-function-http-test`
+
+|`micronaut.runtime("google_function")`
+|`com.google.cloud.functions:functions-framework-api`, `io.micronaut.gcp:micronaut-gcp-function-http-test`
+
+|`micronaut.runtime("azure_function")`
+|`io.micronaut.azure:micronaut-azure-function-http-test`
+|===
+
+You can add your own local-only dependencies to `developmentOnly`:
+
+[source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
+----
+dependencies {
+    developmentOnly("com.example:local-development-helper")
+}
+----
+
+[source, kotlin, subs="verbatim,attributes", role="multi-language-sample"]
+----
+dependencies {
+    developmentOnly("com.example:local-development-helper")
+}
+----
+
+Gradle continuous mode is currently required for automatic restart on source and resource changes.
+Use `./gradlew run -t` when you want the plugin to enable Micronaut file watching and restart support for local development.
 
 === Minimal Build
 
@@ -843,6 +872,8 @@ $ ./gradlew nativeRun
 
 You can tweak the native executable options by configuring the `graalvmNative` extension as explained in the {native-gradle-plugin}[plugin documentation].
 
+Micronaut adds `-H:+SharedArenaSupport` to GraalVM 25+ native image builds by default so Netty-based applications continue to work with current GraalVM releases. The plugin skips that flag for older GraalVM JDK lines that do not support it. You can still override the generated build arguments through the standard `graalvmNative` configuration if you need different behavior.
+
 For example, you can add options to the main executable by doing:
 
 [source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
@@ -1004,6 +1035,15 @@ Notice that you can supply two different image names to push to for the JVM vers
 
 If you wish to customize the docker builds that are used, the easiest way is to run `./gradlew dockerfile` (or `dockerfileNative` for the native version) and copy the generated `Dockerfile` from `build/docker` to your root directory and modify as required.
 
+[NOTE]
+====
+`dockerBuildNative` keeps the Micronaut Gradle plugins' managed native-image wiring together. When you use those managed native build tasks on this supported compatibility line, the plugin also auto-adds `io.micronaut:micronaut-graal` to the relevant processing configuration, including Java/Groovy `annotationProcessor`, Kotlin `kapt`, and Kotlin `ksp`, so the normal `dockerfileNative` and copied `DockerfileNative` workflows do not require an extra manual dependency declaration.
+
+You only need to wire `io.micronaut:micronaut-graal` yourself if you intentionally opt out of automatic dependencies, for example via `ignoredAutomaticDependencies` as described in <<sec:suppress-automatic-dependencies,Suppressing automatic dependencies>>, or if a non-standard build replaces the configured annotation processor path after Micronaut sets it up.
+
+After customizing the Dockerfile, rerun `./gradlew classes dockerfileNative` and verify that your external native Docker build still consumes the jar produced by Gradle rather than recompiling sources in Docker. For example, check that the customized Dockerfile still copies the Gradle output under `build/libs/`, and inspect the jar to confirm it contains Micronaut's generated `META-INF/native-image` entries.
+====
+
 To customize the JVM arguments or native executable arguments, use the `args` method of the `dockerfile` and `dockerfileNative` tasks:
 
 [source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
@@ -1027,6 +1067,31 @@ tasks.named<io.micronaut.gradle.docker.NativeImageDockerfile>("dockerfileNative"
 ----
 
 The above configuration uses a max heap setting of `128m` for Java and `64m` for native executable for the application.
+For the JVM docker image, `dockerfile` uses `application.applicationDefaultJvmArgs` by default. Configuring `dockerfile.args(...)` replaces those defaults for that task.
+
+The generated `dockerfile` and `dockerfileNative` tasks expose port `8080` by default. To override the ports declared in the generated Dockerfile, configure `exposedPorts` on the corresponding task:
+
+[source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
+----
+tasks.named("dockerfile") {
+   exposedPorts = [8123, 8443]
+}
+tasks.named("dockerfileNative") {
+   exposedPorts = [9000]
+}
+----
+
+[source, kotlin, subs="verbatim,attributes", role="multi-language-sample"]
+----
+tasks.named<io.micronaut.gradle.docker.MicronautDockerfile>("dockerfile") {
+   exposedPorts.set(listOf(8123, 8443))
+}
+tasks.named<io.micronaut.gradle.docker.NativeImageDockerfile>("dockerfileNative") {
+   exposedPorts.set(listOf(9000))
+}
+----
+
+After updating the task, run `./gradlew dockerfile` or `./gradlew dockerfileNative` and inspect the generated Dockerfile under `build/docker/<imageName>/Dockerfile` or `build/docker/native-<imageName>/DockerfileNative` (for example, `build/docker/main/Dockerfile`) to confirm the expected `EXPOSE` lines are present.
 
 ==== GraalVM JDK version
 
@@ -1075,7 +1140,7 @@ tasks.named<io.micronaut.gradle.docker.NativeImageDockerfile>("dockerfileNative"
 }
 ----
 
-You can also add any of the other instructions/commands that the docker plugin supports, see {docker-plugin}/blob/master/src/main/groovy/com/bmuschko/gradle/docker/tasks/image/Dockerfile.groovy[the Dockerfile task documentation].
+You can also add any of the other instructions/commands that the docker plugin supports, see https://bmuschko.github.io/gradle-docker-plugin/current/api/com/bmuschko/gradle/docker/tasks/image/Dockerfile.html[the Dockerfile task documentation].
 
 ==== Tweaking the generated docker files
 
@@ -1111,6 +1176,54 @@ The `editDockerfile` DSL allows you to:
 - insert lines by calling `insert`
 - replace lines by calling `replace`
 
+There is no dedicated Gradle DSL property for `dnf --releasever`. If you need to opt into a specific DNF release policy for the generated native-image Dockerfile, customize `dockerfileNative` directly and replace the generated `RUN dnf ...` lines.
+
+The `editDockerfile` matchers are exact string replacements. Generate `DockerfileNative` first and copy the current `RUN dnf ...` lines from `build/docker/DockerfileNative` into `replace(...)` so the recipe stays aligned with the Dockerfile produced by your plugin version and chosen base image.
+
+For example, the following recipe uses a placeholder release value for the DNF-based native-image stages. Replace `<releasever>` with the exact release value you want for your target distribution. If you intentionally want a moving target such as `latest`, treat that as a separate opt-in choice with less deterministic rebuild behavior.
+
+[source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
+----
+tasks.named("dockerfileNative") {
+    editDockerfile {
+        before("FROM graalvm AS builder") {
+            replace(
+                "RUN dnf update -y && dnf install -y gcc glibc-devel zlib-devel libstdc++-static tar && dnf clean all && rm -rf /var/cache/dnf",
+                "RUN dnf --releasever=<releasever> update -y && dnf --releasever=<releasever> install -y gcc glibc-devel zlib-devel libstdc++-static tar && dnf clean all && rm -rf /var/cache/dnf"
+            )
+        }
+        after("FROM graalvm AS builder") {
+            replace(
+                "RUN dnf update -y && dnf install -y zip && dnf clean all",
+                "RUN dnf --releasever=<releasever> update -y && dnf --releasever=<releasever> install -y zip && dnf clean all"
+            )
+        }
+    }
+}
+----
+
+[source, kotlin, subs="verbatim,attributes", role="multi-language-sample"]
+----
+tasks.named<io.micronaut.gradle.docker.NativeImageDockerfile>("dockerfileNative") {
+    editDockerfile {
+        before("FROM graalvm AS builder") {
+            replace(
+                "RUN dnf update -y && dnf install -y gcc glibc-devel zlib-devel libstdc++-static tar && dnf clean all && rm -rf /var/cache/dnf",
+                "RUN dnf --releasever=<releasever> update -y && dnf --releasever=<releasever> install -y gcc glibc-devel zlib-devel libstdc++-static tar && dnf clean all && rm -rf /var/cache/dnf"
+            )
+        }
+        after("FROM graalvm AS builder") {
+            replace(
+                "RUN dnf update -y && dnf install -y zip && dnf clean all",
+                "RUN dnf --releasever=<releasever> update -y && dnf --releasever=<releasever> install -y zip && dnf clean all"
+            )
+        }
+    }
+}
+----
+
+After changing the recipe, run `./gradlew dockerfileNative` and inspect the generated `DockerfileNative` under `build/docker` to confirm the `RUN dnf ...` lines now include your chosen `--releasever` value.
+
 ==== Duplicates on classpath
 
 In some projects, it may happen that different transitive dependencies have the same file name.
@@ -1130,6 +1243,14 @@ tasks.withType(io.micronaut.gradle.docker.tasks.BuildLayersTask) {
     duplicatesStrategy.set(DuplicatesStrategy.INCLUDE)
 }
 ----
+
+==== Docker build layers
+
+The `buildLayers` task creates files under `build/docker/main/layers` for the generated Docker image.
+This directory is an internal Docker build artifact, not a supported application distribution.
+
+The plugin also produces an additional runner JAR in `build/libs` with the `runner` classifier.
+That archive is used to populate the Docker layers and is not meant to be copied or run on its own.
 
 
 === Micronaut Runtimes
@@ -1253,13 +1374,11 @@ dockerfileNative {
 === Packaging the application
 
 By default, the plugin doesn't create a runnable fatjar when running `./gradlew assemble`.
-There are a couple of options:
 
-==== Layered application
+==== Standard distribution
 
-The plugin creates a "layered" application in `build/docker/main/layers` and from that directory you can run `java -jar myapp.jar`.
-It works because that directory contains a `lib` directory with all the libraries and a `resources` directory with the configuration.
-Keep in mind that copying the only `.jar` file to another directory won't work.
+Use the standard Gradle application distributions provided in `build/distributions`.
+These distributions include the application scripts together with the dependency layout expected by the application.
 
 ==== Add Shadow plugin
 
@@ -1501,6 +1620,7 @@ Therefore, some optimizations like conversion of YAML files to Java configuratio
 The plugin provides a couple of tasks aimed at running an optimized application.
 The first one, `optimizedJar`, will simply run the AOT compiler and produce an "optimized" jar.
 If you want to run the application with the resulting jar, you will need to call the `optimizedRun` task instead, which will create the jar and then start the application.
+Like the standard `run` task, `optimizedRun` honors `application.applicationDefaultJvmArgs` unless you configure task-specific JVM arguments.
 
 If you also have the `distribution` plugin applied, the optimized jar will be used to create optimized distributions, in which case you can call the `optimizedDistZip` task to create a distribution zip, the `optimizedDistTar` to create an optimized distribution tar file, or `installOptimizedDist` to install the optimized application to the `build/install` directory.
 
@@ -1547,7 +1667,7 @@ tasks.withType(ShadowJar).configureEach {
 [source, kotlin, subs="verbatim,attributes", role="multi-language-sample"]
 ----
 tasks.withType<ShadowJar>().configureEach {
-    zip64.set(true)
+    isZip64 = true
 }
 ----
 ====
@@ -1591,7 +1711,7 @@ In particular, it makes use of https://testcontainers.org/[Testcontainers] to au
 Test resources are handled by a "test resources service" which is a server accepting requests for test resources, which <<sec:test-resources-lifecycle,lifecycle>> is handled by the Gradle plugin.
 A test resources request is, to simplify, a request to resolve a _missing configuration property_.
 For example, if the `kafka.bootstrap-servers` property isn't set, Micronaut will query the test resources service for the value of this property.
-This will trigger the creaton of a Kafka test container, and the service will answer with the URI to the bootstrap server.
+This will trigger the creation of a Kafka test container, and the service will answer with the URI to the bootstrap server.
 
 [NOTE]
 ====
@@ -1621,8 +1741,8 @@ The easiest way to add test resources support is to apply the `io.micronaut.test
 [source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
 ----
 plugins {
-    id "io.micronaut.application" version "{micronaut-version}"
-    id "io.micronaut.test-resources" version "{micronaut-version}"
+    id "io.micronaut.application" version "{gradle-project-version}"
+    id "io.micronaut.test-resources" version "{gradle-project-version}"
     ...
 }
 ----
@@ -1630,14 +1750,14 @@ plugins {
 [source, kotlin, subs="verbatim,attributes", role="multi-language-sample"]
 ----
 plugins {
-    id("io.micronaut.application") version "{micronaut-version}"
-    id("io.micronaut.test-resources") version "{micronaut-version}"
+    id("io.micronaut.application") version "{gradle-project-version}"
+    id("io.micronaut.test-resources") version "{gradle-project-version}"
     ...
 }
 ----
 
 Adding this plugin will be sufficient for most use cases.
-This will let Gradle automatically start containers, for example, when a particular property is not present in your configuration and that you run tests (`./gradlew test`) or the application in development mode (`./gradlew run` or `./gradlew -t run`).
+This will let Gradle automatically start containers, for example, when a particular property is not present in your configuration and you run tests (`./gradlew test`) or the application in development mode (`./gradlew run` or `./gradlew -t run`).
 
 For example, if the `datasources.default.url` configuration property is missing, and that your configuration contains:
 
@@ -1685,6 +1805,7 @@ micronaut {
         inferClasspath.set(true) // true by default
         additionalModules.add(JDBC_MYSQL) // empty by default
         clientTimeout.set(60) // in seconds, maximum time to wait for resources to be available, 60s by default
+        serverIdleTimeoutMinutes.set(60) // if the server doesn't receive any request for this amount of time, it will be shut down
         sharedServer.set(true) // false by default
         sharedServerNamespace.set("custom") // unset by default
         javaLauncher.set(javaToolchainSpec) // uses the project's toolchain if available, otherwise uses the same Java executable as Gradle
@@ -1699,7 +1820,7 @@ micronaut {
 - by default, the plugin will automatically determine which modules to add to the test resources support, by inspecting the dependencies declared in the project. For example, if you use both `micronaut-data-jdbc` and `mysql-connector-java`, it will automatically add support for MySQL provisioning. Under some circumstances, you might want to disable this behavior by setting the `inferClasspath` property to `false`.
 - the `additionalModules` property can be used to explicitly declare test resources modules to be loaded. This is useful if inference failed to detect a module, or if you want to use <<sec:standalone-test-resources,a standalone test resources service>>.
 - if set to `true`, then the test server which is used by the project can be shared between independent builds (e.g. different Git repositories): this can be useful in conjunction with <<sec:standalone-test-resources,a standalone test resources service>>, where for example a producer is used in one project, and a consumer is defined in another, but both need to use the same messaging server.
-- if set, the `sharedServerNamespace` property will let you declare that the shared test resources service but be executed in a particular namespace. This can be useful if you need multiple shared servers (the default assumes a single shared server)
+- if set, the `sharedServerNamespace` property will let you declare that the shared test resources service must be executed in a particular namespace. This can be useful if you need multiple shared servers (the default assumes a single shared server)
 
 [NOTE]
 ====
@@ -1711,6 +1832,14 @@ dependencies {
     testResourcesService "my:jdbc-driver:1.0"
 }
 ----
+====
+
+[NOTE]
+====
+Private registry settings for Testcontainers must be visible to the Micronaut Test Resources server classpath, not only to the regular test classpath.
+For example, if you configure `hub.image.name.prefix` in `testcontainers.properties`, place that file in `src/testResources/resources/testcontainers.properties` when the project applies `io.micronaut.test-resources` directly.
+The `src/testResources/resources` directory is the dedicated server-side resources location used for the Micronaut Test Resources server classpath.
+Putting `testcontainers.properties` only under `src/test/resources` configures the tests, but not the test-resources server that starts the containers.
 ====
 
 [[src:test-resources-native]]
@@ -1755,7 +1884,7 @@ However, you might want to run the consumer in one terminal, and the producer in
 For this you have a couple options:
 
     1. you can use a shared test server, by setting the `sharedServer` property to `true` in the `testResources` extension.
-    2. you can define a distinct project which role is to handle the test resources lifecycle
+    2. you can define a distinct project whose role is to handle the test resources lifecycle
 
 The first solution comes with a major drawback: _shared servers_ are shared by all projects in the multi-project build, but also between projects of the same build. However, the configuration of the server will depend on the _first one started_.
 
@@ -1766,7 +1895,7 @@ Here, we're going to add a project called `shared-testresources` which is going 
 ----
 // shared-testresources/build.gradle
 plugins {
-    id "io.micronaut.test-resources" version "{micronaut-version}" // <1>
+    id "io.micronaut.test-resources" version "{gradle-project-version}" // <1>
 }
 
 micronaut {
@@ -1780,7 +1909,7 @@ micronaut {
 ----
 // shared-testresources/build.gradle.kts
 plugins {
-    id("io.micronaut.test-resources") version "{micronaut-version}" // <1>
+    id("io.micronaut.test-resources") version "{gradle-project-version}" // <1>
 }
 
 micronaut {
@@ -1792,13 +1921,20 @@ micronaut {
 <1> use `test-resources` as a standalone plugin
 <2> declare that it will provide Kafka containers
 
-Then each consumer of test resources need to apply the `io.micronaut.test-resources-consumer` plugin instead:
+[NOTE]
+====
+When you use a standalone provider project, keep `testcontainers.properties` and other private registry or Testcontainers server settings in the provider project's `src/testResources/resources`.
+This ensures they are loaded from the test-resources server classpath.
+If consumer projects apply `io.micronaut.test-resources-consumer`, their regular test classpath can provide `test-resources.properties` connection details, but it does not replace server-side files such as `testcontainers.properties`.
+====
+
+Then each consumer of test resources needs to apply the `io.micronaut.test-resources-consumer` plugin instead:
 
 [source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
 ----
 plugins {
-    id "io.micronaut.application" version "{micronaut-version}"
-    id "io.micronaut.test-resources-consumer" version "{micronaut-version}" // <1>
+    id "io.micronaut.application" version "{gradle-project-version}"
+    id "io.micronaut.test-resources-consumer" version "{gradle-project-version}" // <1>
 }
 
 dependencies {
@@ -1809,8 +1945,8 @@ dependencies {
 [source, kotlin, subs="verbatim,attributes", role="multi-language-sample"]
 ----
 plugins {
-    id("io.micronaut.application") version "{micronaut-version}"
-    id("io.micronaut.test-resources-consumer") version "{micronaut-version}" // <1>
+    id("io.micronaut.application") version "{gradle-project-version}"
+    id("io.micronaut.test-resources-consumer") version "{gradle-project-version}" // <1>
 }
 
 dependencies {
@@ -1818,7 +1954,7 @@ dependencies {
 }
 ----
 <1> Use the test resources consumer plugin instead
-<2> Declare that it consumes test resources provided by the `:testresources` project
+<2> Declare that it consumes test resources provided by the `:shared-testresources` project
 
 Now Gradle will automatically start test resources when one of the project needs them, and reuse them in all consumer projects.
 
@@ -1844,10 +1980,10 @@ If you make any change to sources (production or test) and save the files, Gradl
 This behavior can be extremely useful to save time since typically Docker containers would only be spawned once.
 If you interrupt the continuous build, the test resources will be stopped.
 
-[sec:keepalive-test-resources]
+[[sec:keepalive-test-resources]]
 === Keeping test resources alive
 
-We have seen that running in continous mode allows keeping test resources alive as long as a continous build runs.
+We have seen that running in continuous mode allows keeping test resources alive as long as a continuous build runs.
 However, what if you want to start the test resources service in the background, and keep it alive for multiple, independent builds (different invocations on the command line for example) ?
 
 You can achieve this behavior by running the `startTestResourcesService` command:
@@ -1861,7 +1997,7 @@ Therefore, it's your responsibility to stop the service when you are done by run
 
 WARNING: When keeping a test resources service alive, you must understand that any change to the test resources configuration will be ignored until you stop the service.
 
-[sec:custom-test-resources]
+[[sec:custom-test-resources]]
 === Implementing your own test resources resolver
 
 https://github.com/micronaut-projects/micronaut-test-resources[Micronaut Test Resources] provides integration with a lot of databases and services, and also supports a {testresources-guide}/#modules-testcontainers[fully declarative way] to spawn test containers.
@@ -1973,7 +2109,7 @@ micronaut {
         // The OS of the Azul CRaC JDK to use. Defaults to linux-glibc for the default base image.
         os = "linux-glibc"
 
-        // The version of the Azul CRaC JDK to use in the image (currently only 17 is supported)
+        // The version of the Azul CRaC JDK to use in the image (defaults to 25)
         javaVersion = JavaLanguageVersion.of(25)
 
         // A command to run that will be successful when the application is ready to be checkpointed.
@@ -2011,7 +2147,7 @@ micronaut {
         // The OS of the Azul CRaC JDK to use. Defaults to linux-glibc for the default base image.
         os.set("linux-glibc")
 
-        // The version of the Azul CRaC JDK to use in the image (currently only 17 is supported)
+        // The version of the Azul CRaC JDK to use in the image (defaults to 25)
         javaVersion.set(JavaLanguageVersion.of(25))
 
         // A command to run that will be successful when the application is ready to be checkpointed.
@@ -2032,7 +2168,7 @@ micronaut {
 
 The `io.micronaut.openapi` plugin adds support for generating https://www.openapis.org/[OpenAPI] clients or servers, given an OpenAPI definition, in both Java and Kotlin.
 
-The plugin adds an link:api/io/micronaut/gradle/openapi/OpenApiExtension.html[openapi] extension to the `micronaut` configuration block.
+The plugin adds a link:api/io/micronaut/gradle/openapi/OpenApiExtension.html[openapi] extension to the `micronaut` configuration block.
 
 === Generating a client
 
@@ -2070,7 +2206,7 @@ micronaut {
 }
 ----
 
-The generated sources will be found by default in your `$buildDir/generated/openapi/client` directory, and automatically added to your main source set (so the classes are directly available for you to use).
+The generated API and model sources are written by default under task-specific directories in `$buildDir/generated/openapi`, such as `generateClientOpenApiApis` and `generateClientOpenApiModels`, and automatically added to your main source set (so the classes are directly available for you to use).
 
 You can generate multiple clients by adding multiple `client` blocks, in which case each client is identified by a name:
 
@@ -2120,7 +2256,19 @@ micronaut {
 }
 ----
 
-Please refer to link:api/io/micronaut/gradle/openapi/OpenApiClientSpec.html[OpenApiClientSpec] for the whole list of client configuration options.
+The reference API documentation lists every property on link:api/io/micronaut/gradle/openapi/OpenApiClientSpec.html[OpenApiClientSpec] and its parent link:api/io/micronaut/gradle/openapi/OpenApiSpec.html[OpenApiSpec], including option defaults and generated-code effects.
+
+==== Dependency expectations for generated code
+
+The Gradle plugin configures code generation and may add some supporting dependencies automatically, but it does not add all of the Micronaut Security or other application/runtime dependencies required by the generated sources. Treat the generated client like application code: after you enable an option such as `useAuth`, add the Micronaut modules that the emitted classes import and compile against.
+
+The exact dependency set depends on the auth features present in your OpenAPI definition and on the generator version you select. For example, the auth-enabled OpenAPI client tests in this repository compile with `io.micronaut.security:micronaut-security-oauth2` and `io.micronaut.reactor:micronaut-reactor` on the application classpath. The plugin can contribute some generated-code support dependencies automatically, but if you generate auth support, regenerate the client and run your normal compile task to confirm that the required Micronaut Security modules are present.
+
+==== Ownership boundary for generated guides and READMEs
+
+This guide owns the Gradle plugin DSL and how to wire generation into your build. Generated files such as `README.md`, `api-guide.md`, or `auth-guide.md` come from the Micronaut OpenAPI generator templates, not from this documentation page.
+
+If those generated files are missing or incomplete, fix that in `micronaut-openapi` or select a newer generator release with the `openapi { version = ... }` / `version.set(...)` configuration described below. Use this repository guide to document the Gradle-side integration and dependency expectations; use the generator project to change generated content.
 
 === Generating a server
 
@@ -2156,7 +2304,7 @@ micronaut {
 }
 ----
 
-The generated sources will be found by default in your `$buildDir/generated/openapi/server` directory, and automatically added to your main source set (so the classes are directly available for you to use).
+The generated API and model sources are written by default under task-specific directories in `$buildDir/generated/openapi`, such as `generateServerOpenApiApis` and `generateServerOpenApiModels`, and automatically added to your main source set (so the classes are directly available for you to use).
 
 You can generate multiple servers by providing a name to the `server` block:
 
@@ -2204,7 +2352,7 @@ micronaut {
 
 NOTE: Server generation will generate interfaces that you have to implement in order to write your server code.
 
-Please refer to link:api/io/micronaut/gradle/openapi/OpenApiServerSpec.html[OpenApiServerSpec] for the whole list of client configuration options.
+Please refer to link:api/io/micronaut/gradle/openapi/OpenApiServerSpec.html[OpenApiServerSpec] and its parent link:api/io/micronaut/gradle/openapi/OpenApiSpec.html[OpenApiSpec] for the full list of server configuration options, including option defaults and generated-code effects.
 
 === Advanced configuration
 
@@ -2357,7 +2505,7 @@ micronaut {
 == Use of Lombok
 
 In general, the use of Lombok annotation processing is strongly discouraged, as its behavior is dependent on the order of annotation processors, that it uses internal types of the JDK and is not compatible with incremental compilation.
-You should prefer using [Micronaut Sourcegen](https://micronaut-projects.github.io/micronaut-sourcegen/latest/guide/) whenever possible.
+You should prefer using https://micronaut-projects.github.io/micronaut-sourcegen/latest/guide/[Micronaut SourceGen] whenever possible.
 
 However, should you really want to use it, you may face situations where the Gradle plugin, despite reordering annotation processors, doesn't place the lombok jar in front of the annotation processor classpath, which would cause compilation errors.
 In such a case, you can add this workaround to your build scripts:

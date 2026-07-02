@@ -47,6 +47,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import static io.micronaut.gradle.PluginsHelper.findMicronautExtension;
 import static io.micronaut.gradle.docker.MicronautDockerfile.DEFAULT_WORKING_DIR;
@@ -61,6 +62,7 @@ import static io.micronaut.gradle.docker.MicronautDockerfile.applyStandardTransf
 public abstract class NativeImageDockerfile extends Dockerfile implements DockerBuildOptions {
 
     public static final String AMAZON_LINUX_BASE_IMAGE = "public.ecr.aws/amazonlinux/amazonlinux:" + DefaultVersions.AMAZONLINUX;
+    private static final String SHARED_ARENA_SUPPORT = "-H:+SharedArenaSupport";
 
     private static final List<Integer> SUPPORTED_JAVA_VERSIONS = List.of(
             // keep those in descending order
@@ -75,6 +77,7 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
     private static final String GRAALVM_DISTRIBUTION_PATH = "/%s/%s/graalvm-jdk-%s_linux-%s_bin.tar.gz";
     //Latest version of GraalVM for JDK 17 available under the GraalVM Free Terms and Conditions (GFTC) licence
     private static final String GRAALVM_FOR_JDK17 = "17.0.12";
+    private static final Pattern POSIX_SAFE_SHELL_TOKEN = Pattern.compile("[A-Za-z0-9_@%+=:,./-]+");
 
     /**
      * @return The JDK version to use with native image. Defaults to the toolchain version, or the current Java version.
@@ -511,30 +514,19 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
         executable.set("application");
         String workDir = getTargetWorkingDirectory().get();
         runCommand("mkdir " + workDir + "/config-dirs");
-        getInstructions().addAll(getNativeImageOptions().map(options -> {
-                    var namer = new DockerResourceConfigDirectoryNamer();
-                    return options.getConfigurationFileDirectories()
-                            .getFiles()
-                            .stream()
-                            .filter(java.io.File::exists)
-                            .map(dir -> {
-                                String dirName = namer.determineNameFor(dir);
-                                return new RunCommandInstruction("mkdir -p " + workDir + "/config-dirs/" + dirName);
-                            })
-                            .toList();
-                }
+        getInstructions().addAll(getNativeImageOptions().map(options ->
+                options.getConfigurationFileDirectories()
+                        .getFiles()
+                        .stream()
+                        .filter(java.io.File::exists)
+                        .findAny()
+                        .map(ignored -> List.<Instruction>of(new CopyFileInstruction(new CopyFile(
+                                "config-dirs",
+                                workDir + "/config-dirs"
+                        ))))
+                        .orElseGet(List::of)
         ));
-        getInstructions().addAll(getNativeImageOptions().map(options -> {
-                    var namer = new DockerResourceConfigDirectoryNamer();
-                    return options.getConfigurationFileDirectories()
-                            .getFiles()
-                            .stream()
-                            .filter(java.io.File::exists)
-                            .map(dir -> toCopyResourceDirectoryInstruction(dir, namer))
-                            .toList();
-                }
-        ));
-        runCommand(getProviders().provider(() -> String.join(" ", buildActualCommandLine(executable, buildStrategy, imageResolver))));
+        runCommand(getProviders().provider(() -> renderShellCommand(buildActualCommandLine(executable, buildStrategy, imageResolver))));
         switch (buildStrategy) {
             case ORACLE_FUNCTION:
                 from(new From("fnproject/fn-java-fdk:" + getProjectFnVersion()).withStage("fnfdk"));
@@ -589,14 +581,6 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
         }
     }
 
-    private CopyFileInstruction toCopyResourceDirectoryInstruction(java.io.File resourceDirectory, DockerResourceConfigDirectoryNamer namer) {
-        String relativePath = namer.determineNameFor(resourceDirectory).replace(java.io.File.separatorChar, '/');
-        return new CopyFileInstruction(new CopyFile(
-                "config-dirs/" + relativePath,
-                getTargetWorkingDirectory().get() + "/config-dirs/" + relativePath
-        ));
-    }
-
     protected List<String> buildActualCommandLine(Provider<String> executable, DockerBuildStrategy buildStrategy, BaseImageForBuildStrategyResolver imageResolver) {
         NativeImageOptions options = newNativeImageOptions("actualDockerOptions");
         prepareNativeImageOptions(options);
@@ -634,6 +618,22 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
         return commandLine;
     }
 
+    private static String renderShellCommand(List<String> commandLine) {
+        return String.join(" ", commandLine.stream()
+                .map(NativeImageDockerfile::renderShellToken)
+                .toList());
+    }
+
+    private static String renderShellToken(String token) {
+        if (token.isEmpty()) {
+            return "''";
+        }
+        if (POSIX_SAFE_SHELL_TOKEN.matcher(token).matches()) {
+            return token;
+        }
+        return "'" + token.replace("'", "'\"'\"'") + "'";
+    }
+
     private List<String> buildNativeImageCommandLineArgs(Provider<String> executable, NativeImageOptions options) {
         List<String> args = new NativeImageCommandLineProvider(
                 getProviders().provider(() -> options),
@@ -662,6 +662,10 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
         return args;
     }
 
+    private static boolean supportsSharedArenaSupport(String version) {
+        return toMajorVersion(version) >= 25;
+    }
+
     private static Integer toMajorVersion(String version) {
         if (version.contains(".")) {
             return Integer.parseInt(version.substring(0, version.indexOf('.')));
@@ -676,7 +680,14 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
      */
     private void prepareNativeImageOptions(NativeImageOptions options) {
         Property<NativeImageOptions> originalOptions = getNativeImageOptions();
-        options.getBuildArgs().set(originalOptions.flatMap(NativeImageOptions::getBuildArgs));
+        options.getBuildArgs().set(originalOptions.flatMap(NativeImageOptions::getBuildArgs).map(buildArgs -> {
+            if (supportsSharedArenaSupport(getJdkVersion().get())) {
+                return buildArgs;
+            }
+            return buildArgs.stream()
+                    .filter(buildArg -> !SHARED_ARENA_SUPPORT.equals(buildArg))
+                    .toList();
+        }));
         options.getJvmArgs().set(originalOptions.flatMap(NativeImageOptions::getJvmArgs));
         options.getMainClass().set(originalOptions.flatMap(NativeImageOptions::getMainClass));
         options.getVerbose().set(originalOptions.flatMap(NativeImageOptions::getVerbose));
