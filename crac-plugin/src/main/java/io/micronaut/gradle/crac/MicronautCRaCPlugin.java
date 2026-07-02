@@ -82,7 +82,7 @@ public class MicronautCRaCPlugin implements Plugin<Project> {
         // Default to linux-glibc
         crac.getOs().convention(DEFAULT_OS);
 
-        // Default to Java 17
+        // Default to Java 25
         crac.getJavaVersion().convention(JavaLanguageVersion.of(25));
 
         return crac;
