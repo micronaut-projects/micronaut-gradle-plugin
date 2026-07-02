@@ -93,6 +93,54 @@ For example, the `minimal` plugins can be used to reduce the number of tasks, fo
 |
 |===
 
+[[import-factory-generation]]
+== Import Factories From Dependencies
+
+The minimal Micronaut plugins can generate Java `ImportFactory` sources from dependency jars so that `@Import` declarations stay aligned with packages published by external libraries.
+
+This feature is opt-in and disabled by default. When enabled, the plugin scans matching runtime dependency jars, generates Java sources under `build/generated-sources/importfactory`, and wires them into the main source set automatically.
+
+Use narrow dependency and package filters where possible instead of scanning every dependency on the runtime classpath.
+
+.Groovy DSL
+[source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
+----
+micronaut {
+  importFactory {
+    enabled.set(true)
+    includeDependenciesFilter.set("com\\.example:legacy-.*")
+    excludeDependenciesFilter.set("com\\.example:legacy-tests")
+    includePackagesFilter.set("com\\.example\\.legacy\\..*")
+    excludePackagesFilter.set("com\\.example\\.legacy\\.internal\\..*")
+    targetPackage.set("com.example.generated")
+  }
+}
+----
+
+.Kotlin DSL
+[source, kotlin, subs="verbatim,attributes", role="multi-language-sample"]
+----
+micronaut {
+    importFactory {
+        enabled.set(true)
+        includeDependenciesFilter.set("com\\.example:legacy-.*")
+        excludeDependenciesFilter.set("com\\.example:legacy-tests")
+        includePackagesFilter.set("com\\.example\\.legacy\\..*")
+        excludePackagesFilter.set("com\\.example\\.legacy\\.internal\\..*")
+        targetPackage.set("com.example.generated")
+    }
+}
+----
+
+Configuration properties:
+
+* `enabled`: turns generation on
+* `includeDependenciesFilter`: regex matched against `group:name`
+* `excludeDependenciesFilter`: regex matched against `group:name`
+* `includePackagesFilter`: regex matched against discovered package names
+* `excludePackagesFilter`: regex matched against discovered package names
+* `targetPackage`: when set, generates one aggregated `ImportFactory`; otherwise one `ImportFactory` is generated per matched package
+
 [[configuration-validation]]
 == Micronaut Configuration Validation Plugin
 
