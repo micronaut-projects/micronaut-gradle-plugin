@@ -410,4 +410,88 @@ class LambdaNativeImageSpec extends AbstractFunctionalTest {
         'API_GATEWAY_V2' | 'io.micronaut.function.aws.runtime.APIGatewayV2HTTPEventMicronautLambdaRuntime'
         'ALB'            | 'io.micronaut.function.aws.runtime.ApplicationLoadBalancerMicronautLambdaRuntime'
     }
+
+    void 'docker buildx native task uses target architecture mapping for lambda images'() {
+        given:
+        settingsFile << "rootProject.name = 'hello-world'"
+        buildFile << """import io.micronaut.gradle.docker.DockerBuildx
+            plugins {
+                id "io.micronaut.minimal.application"
+                id "io.micronaut.graalvm"
+                id "io.micronaut.docker"
+            }
+
+            version = "0.1"
+
+            micronaut {
+                version "$micronautVersion"
+                runtime "lambda_provided"
+            }
+
+            $repositoriesBlock
+
+            application {
+                mainClass.set("com.example.Application")
+            }
+
+            java {
+                sourceCompatibility = JavaVersion.toVersion('25')
+                targetCompatibility = JavaVersion.toVersion('25')
+            }
+
+            tasks.named("dockerBuildxNative", DockerBuildx) {
+                dockerExecutable = file("fake-docker.sh").absolutePath
+                platforms = ["linux/amd64", "linux/arm64"]
+                images = ["example.com/demo/native:0.1"]
+                builder = "multiarch-builder"
+            }
+        """
+        testProjectDir.newFolder("src", "main", "java", "com", "example")
+        def javaFile = testProjectDir.newFile("src/main/java/com/example/Application.java")
+        javaFile.parentFile.mkdirs()
+        javaFile << """
+package com.example;
+
+class Application {
+    public static void main(String... args) {
+    }
+}
+"""
+        def fakeDocker = file("fake-docker.sh")
+        fakeDocker.text = """#!/bin/sh
+set -eu
+mkdir -p "\$PWD/build"
+printf '%s\\n' "\$@" > "\$PWD/build/buildx-native-args.txt"
+"""
+        fakeDocker.setExecutable(true)
+
+        when:
+        def result = build('dockerBuildxNative')
+
+        then:
+        result.task(':dockerBuildxNative').outcome == TaskOutcome.SUCCESS
+
+        and:
+        def dockerfileBuildxNative = file('build/docker/native-main/DockerfileBuildxNative').text
+        dockerfileBuildxNative.contains('ARG TARGETARCH')
+        dockerfileBuildxNative.contains('amd64) printf x64')
+        dockerfileBuildxNative.contains('arm64) printf aarch64')
+        dockerfileBuildxNative.contains('graalvm-jdk-25_linux-$(case "${TARGETARCH}" in amd64) printf x64 ;; arm64) printf aarch64 ;; *) printf \'%s\' "${TARGETARCH}" ;; esac)_bin.tar.gz')
+
+        and:
+        file("build/buildx-native-args.txt").readLines() == [
+                "buildx",
+                "build",
+                "--builder",
+                "multiarch-builder",
+                "--platform",
+                "linux/amd64,linux/arm64",
+                "--tag",
+                "example.com/demo/native:0.1",
+                "--push",
+                "--file",
+                file("build/docker/native-main/DockerfileBuildxNative").absolutePath,
+                file("build/docker/native-main").absolutePath
+        ]
+    }
 }
