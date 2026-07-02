@@ -4,8 +4,6 @@ import io.micronaut.gradle.fixtures.AbstractEagerConfiguringFunctionalTest
 import org.gradle.testkit.runner.TaskOutcome
 import spock.lang.Issue
 
-import java.util.jar.JarFile
-
 @Issue("https://github.com/micronaut-projects/micronaut-gradle-plugin/issues/820")
 class DockerJvmFunctionalTest extends AbstractEagerConfiguringFunctionalTest {
 
@@ -46,18 +44,15 @@ public class Application {
 
         when:
         def result = build("assemble")
-        def runnerJar = new File(testProjectDir.root, "build/libs/hello-world-runner.jar")
-        def manifestMainClass
-        new JarFile(runnerJar).withCloseable { jar ->
-            manifestMainClass = jar.manifest.mainAttributes.getValue("Main-Class")
-        }
+        def startScript = new File(testProjectDir.root, "build/scripts/hello-world")
 
         then:
         result.task(":assemble").outcome == TaskOutcome.SUCCESS
-        manifestMainClass == "example.Application"
+        startScript.text.contains('example.Application')
+        !startScript.text.contains('io.micronaut.function.aws.runtime.MicronautLambdaRuntime')
     }
 
-    void "dockerfile uses lambda runtime entrypoint without changing runner jar main class"() {
+    void "dockerfile uses lambda runtime entrypoint without changing application main class"() {
         given:
         settingsFile << "rootProject.name = 'hello-world'"
         buildFile << """
@@ -96,17 +91,14 @@ public class Application {
         def result = build("dockerfile", "assemble")
         def dockerFile = new File(testProjectDir.root, "build/docker/main/Dockerfile").readLines("UTF-8")
         def imageLibraries = new File(testProjectDir.root, "build/docker/main/layers/libs").list()
-        def runnerJar = new File(testProjectDir.root, "build/libs/hello-world-runner.jar")
-        def manifestMainClass
-        new JarFile(runnerJar).withCloseable { jar ->
-            manifestMainClass = jar.manifest.mainAttributes.getValue("Main-Class")
-        }
+        def startScript = new File(testProjectDir.root, "build/scripts/hello-world")
 
         then:
         result.task(":dockerfile").outcome == TaskOutcome.SUCCESS
         result.task(":assemble").outcome == TaskOutcome.SUCCESS
-        manifestMainClass == "example.Application"
-        dockerFile.find { s -> s == 'ENTRYPOINT ["java", "-cp", "/home/app/libs/*:/home/app/resources:/home/app/application.jar", "io.micronaut.function.aws.runtime.MicronautLambdaRuntime"]' }
+        startScript.text.contains('example.Application')
+        !startScript.text.contains('io.micronaut.function.aws.runtime.MicronautLambdaRuntime')
+        dockerFile.find { s -> s == 'ENTRYPOINT ["java", "-cp", "/home/app/resources:/home/app/classes:/home/app/libs/*", "io.micronaut.function.aws.runtime.MicronautLambdaRuntime"]' }
         imageLibraries.any { it.startsWith("micronaut-function-aws-custom-runtime-") }
     }
 }
