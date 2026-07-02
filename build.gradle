@@ -58,6 +58,7 @@ if (System.getenv("SONAR_TOKEN")) {
     allprojects {
         tasks.configureEach {
             if (name == "sonar" || name == "sonarqube") {
+                setDependsOn([])
                 enabled = false
             }
         }
