@@ -2125,7 +2125,7 @@ micronaut {
         // The OS of the Azul CRaC JDK to use. Defaults to linux-glibc for the default base image.
         os = "linux-glibc"
 
-        // The version of the Azul CRaC JDK to use in the image (currently only 17 is supported)
+        // The version of the Azul CRaC JDK to use in the image (defaults to 25)
         javaVersion = JavaLanguageVersion.of(25)
 
         // A command to run that will be successful when the application is ready to be checkpointed.
@@ -2163,7 +2163,7 @@ micronaut {
         // The OS of the Azul CRaC JDK to use. Defaults to linux-glibc for the default base image.
         os.set("linux-glibc")
 
-        // The version of the Azul CRaC JDK to use in the image (currently only 17 is supported)
+        // The version of the Azul CRaC JDK to use in the image (defaults to 25)
         javaVersion.set(JavaLanguageVersion.of(25))
 
         // A command to run that will be successful when the application is ready to be checkpointed.
