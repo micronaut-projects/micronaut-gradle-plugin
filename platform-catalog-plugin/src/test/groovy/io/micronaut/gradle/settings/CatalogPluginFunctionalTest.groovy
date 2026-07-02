@@ -60,6 +60,23 @@ micronaut = "$micronautVersion"
                 .resolve('build/classes/java/test/example/$ExampleTest$Definition.class').toFile().exists()
     }
 
+    def "fails with the expected message when no Micronaut version input exists"() {
+        given:
+        settingsFile << """
+            plugins {
+                id 'io.micronaut.platform.catalog'
+            }
+
+            rootProject.name = 'hello-world'
+            """
+
+        when:
+        def result = fails('help')
+
+        then:
+        result.output.contains('Micronaut version must either be declared in `gradle.properties`, in `gradle/libs.versions.toml`')
+    }
+
 
     private File writeExampleClass() {
         def javaFile = testProjectDir.newFile("src/test/java/example/ExampleTest.java")
