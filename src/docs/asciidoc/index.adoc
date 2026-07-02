@@ -636,6 +636,7 @@ The following additional tasks are provided by this plugin:
 * `dockerfileNative` - Builds a Docker File for GraalVM Native Image
 * `dockerBuildNative` - Builds a Native Docker Image using GraalVM Native Image
 * `dockerBuildCrac` - Builds a docker Image containing a CRaC enabled JDK and a pre-warmed, checkpointed application.
+* `dockerVerifyCrac` - Starts the final restored CRaC Docker image and fails if it does not become ready.
 * `dockerFileCrac` - Builds a Docker File for a CRaC checkpointed image.
 * `nativeCompile` - Builds a GraalVM Native Executable
 * `dockerPush` - Pushes a Docker Image to configured container registry
@@ -2076,6 +2077,30 @@ You will then be able to run your image via:
 docker run --cap-add=cap_sys_ptrace -p 8080:8080 <image-name>
 ----
 
+You can also verify the restored image from Gradle after `dockerBuildCrac`:
+
+[source, bash]
+----
+$ ./gradlew dockerVerifyCrac
+----
+
+The `dockerVerifyCrac` task is opt-in. It depends on the final CRaC image, creates a temporary container with the `SYS_PTRACE` capability needed for restore, starts the restored image, and runs a post-restore readiness command in the container until it succeeds or the configured timeout expires. The task is useful in CI because `dockerBuildCrac` proves that checkpointing completed, while `dockerVerifyCrac` proves that the final restored image starts and becomes ready.
+
+By default, the post-restore readiness command uses the same command as `preCheckpointReadinessCommand`, the timeout is two minutes, the retry delay is two seconds, and the verification container is removed after success or failure. The verification flow prints container logs after the readiness check for diagnosis, so avoid passing secrets unless the restored application is configured not to print them. Use `retainPostRestoreContainer` only when debugging, because the retained container, logs, and CRaC checkpoint files may contain secrets or other JVM-visible runtime state.
+
+=== Restore verification scenarios
+
+Use these checks when adding `dockerVerifyCrac` to local development or CI:
+
+Successful restored-image verification::
+Run `./gradlew dockerVerifyCrac` after configuring any required `postRestorePortBindings`, `postRestoreEnvironment`, `postRestoreArgs`, or `postRestoreNetwork` values. The task builds the final CRaC image if needed, starts the restored image, retries `postRestoreReadinessCommand`, and succeeds only when that command exits with status `0` before `postRestoreReadinessTimeout`.
+
+Readiness timeout or failure::
+To verify that CI fails closed, temporarily point `postRestoreReadinessCommand` at an endpoint that will not become ready, or set a short `postRestoreReadinessTimeout` with a non-zero command such as `sh -c 'exit 1'`. `dockerVerifyCrac` should fail the Gradle build after retrying for the configured timeout. If the restored container exits before the readiness probe can run, the Docker exec/readiness step fails the build instead of reporting success.
+
+Cleanup after verification failure::
+Leave `retainPostRestoreContainer` at its default `false` in CI. The verification flow finalizes both the container start task and `dockerVerifyCrac` with log collection and `postRestoreRemoveContainer`, so logs are emitted and the temporary verification container is removed after a readiness failure, timeout, or early container failure. Set `retainPostRestoreContainer.set(true)` only for local debugging when you intentionally want to inspect the failed container and checkpoint files, then remove that container manually when finished.
+
 === Configuration
 
 The `io.micronaut.crac` plugin is a standalone plugin which requires the following minimal configuration.
@@ -2129,10 +2154,28 @@ micronaut {
         javaVersion = JavaLanguageVersion.of(25)
 
         // A command to run that will be successful when the application is ready to be checkpointed.
-        preCheckpointReadinessCheck = "curl --output /dev/null --silent --head http://localhost:8080"
+        preCheckpointReadinessCommand = "curl --output /dev/null --silent --head http://localhost:8080"
+
+        // A command to run in the restored container for dockerVerifyCrac.
+        // Defaults to preCheckpointReadinessCommand.
+        postRestoreReadinessCommand = "curl --fail --silent http://localhost:8080/health"
+
+        // Timeout and retry delay for the post-restore readiness command.
+        postRestoreReadinessTimeout = java.time.Duration.ofSeconds(60)
+        postRestoreReadinessRetryDelay = java.time.Duration.ofSeconds(2)
 
         // The existing Docker network to use when running the application prior to checkpointing
         network = "my-docker-network"
+
+        // Optional Docker runtime settings for dockerVerifyCrac.
+        postRestoreNetwork = "my-docker-network"
+        postRestorePortBindings.add("18080:8080")
+        postRestoreEnvironment.put("MICRONAUT_ENVIRONMENTS", "ci")
+        postRestoreArgs.add("--micronaut.server.port=8080")
+        postRestoreCapAdd.add("SYS_PTRACE")
+
+        // Keep the verification container for debugging instead of removing it.
+        retainPostRestoreContainer = false
 
         // You can use these to replace the script that generates a checkpoint, and the script that warms up the
         // application prior to checkpointing
@@ -2167,10 +2210,28 @@ micronaut {
         javaVersion.set(JavaLanguageVersion.of(25))
 
         // A command to run that will be successful when the application is ready to be checkpointed.
-        preCheckpointReadinessCheck.set("curl --output /dev/null --silent --head http://localhost:8080")
+        preCheckpointReadinessCommand.set("curl --output /dev/null --silent --head http://localhost:8080")
+
+        // A command to run in the restored container for dockerVerifyCrac.
+        // Defaults to preCheckpointReadinessCommand.
+        postRestoreReadinessCommand.set("curl --fail --silent http://localhost:8080/health")
+
+        // Timeout and retry delay for the post-restore readiness command.
+        postRestoreReadinessTimeout.set(java.time.Duration.ofSeconds(60))
+        postRestoreReadinessRetryDelay.set(java.time.Duration.ofSeconds(2))
 
         // The existing Docker network to use when running the application prior to checkpointing
         network.set("my-docker-network")
+
+        // Optional Docker runtime settings for dockerVerifyCrac.
+        postRestoreNetwork.set("my-docker-network")
+        postRestorePortBindings.add("18080:8080")
+        postRestoreEnvironment.put("MICRONAUT_ENVIRONMENTS", "ci")
+        postRestoreArgs.add("--micronaut.server.port=8080")
+        postRestoreCapAdd.add("SYS_PTRACE")
+
+        // Keep the verification container for debugging instead of removing it.
+        retainPostRestoreContainer.set(false)
 
         // You can use these to replace the script that generates a checkpoint, and the script that warms up the
         // application prior to checkpointing
