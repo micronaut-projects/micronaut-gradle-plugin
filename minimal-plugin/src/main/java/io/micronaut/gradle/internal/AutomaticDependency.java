@@ -27,6 +27,7 @@ import org.gradle.api.provider.Provider;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.BooleanSupplier;
 
 /**
  * Represents a dependency which is automatically
@@ -44,6 +45,10 @@ public record AutomaticDependency(
 ) {
 
     public void applyTo(Project p) {
+        applyTo(p, () -> true);
+    }
+
+    public void applyTo(Project p, BooleanSupplier condition) {
         p.getPlugins().withType(MicronautComponentPlugin.class, unused -> {
             p.afterEvaluate(unusedProject -> VersionCatalogLookupCache.get().clear());
             var dependencyHandler = p.getDependencies();
@@ -51,6 +56,9 @@ public record AutomaticDependency(
             var ignoredDependencies = micronautExtension.getIgnoredAutomaticDependencies();
             p.getConfigurations().getByName(configuration).getDependencies().addAllLater(
                 p.getProviders().provider(() -> {
+                    if (!condition.getAsBoolean()) {
+                        return List.of();
+                    }
                     var ignored = ignoredDependencies.getOrElse(Set.of());
                     if (ignored.contains(coordinates)) {
                         return List.of();

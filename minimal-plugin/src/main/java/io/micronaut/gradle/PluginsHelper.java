@@ -40,6 +40,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.BooleanSupplier;
 import java.util.stream.Stream;
 
 import static org.gradle.api.plugins.JavaPlugin.COMPILE_ONLY_CONFIGURATION_NAME;
@@ -168,26 +169,42 @@ public abstract class PluginsHelper {
             Project project,
             String implementationScope,
             String annotationProcessorConfiguration) {
-        registerAnnotationProcessors(project, annotationProcessorConfiguration);
+        configureAnnotationProcessors(project, implementationScope, annotationProcessorConfiguration, () -> true);
+    }
+
+    static void configureAnnotationProcessors(
+            Project project,
+            String implementationScope,
+            String annotationProcessorConfiguration,
+            BooleanSupplier condition) {
+        registerAnnotationProcessors(project, condition, annotationProcessorConfiguration);
         new AutomaticDependency(
                 implementationScope,
                 "io.micronaut:micronaut-inject",
                 Optional.of(CORE_VERSION_PROPERTY)
-        ).applyTo(project);
+        ).applyTo(project, condition);
     }
 
     static void registerAnnotationProcessors(Project p, String... annotationProcessingConfigurations) {
-        registerAnnotationProcessors(p, ANNOTATION_PROCESSOR_MODULES, annotationProcessingConfigurations);
+        registerAnnotationProcessors(p, () -> true, annotationProcessingConfigurations);
+    }
+
+    static void registerAnnotationProcessors(Project p, BooleanSupplier condition, String... annotationProcessingConfigurations) {
+        registerAnnotationProcessors(p, ANNOTATION_PROCESSOR_MODULES, condition, annotationProcessingConfigurations);
     }
 
     static void registerAnnotationProcessors(Project p, List<String> annotationProcessorModules, String... annotationProcessingConfigurations) {
+        registerAnnotationProcessors(p, annotationProcessorModules, () -> true, annotationProcessingConfigurations);
+    }
+
+    static void registerAnnotationProcessors(Project p, List<String> annotationProcessorModules, BooleanSupplier condition, String... annotationProcessingConfigurations) {
         for (String annotationProcessorModule : annotationProcessorModules) {
             for (String annotationProcessingConfiguration : annotationProcessingConfigurations) {
                 new AutomaticDependency(
                         annotationProcessingConfiguration,
                         "io.micronaut:micronaut-" + annotationProcessorModule,
                         Optional.of(CORE_VERSION_PROPERTY)
-                ).applyTo(p);
+                ).applyTo(p, condition);
             }
         }
     }
@@ -205,9 +222,16 @@ public abstract class PluginsHelper {
     }
 
     static void applyAdditionalProcessors(Project project, String... configurations) {
+        applyAdditionalProcessors(project, () -> true, configurations);
+    }
+
+    static void applyAdditionalProcessors(Project project, BooleanSupplier condition, String... configurations) {
         Stream.of(IMPLEMENTATION_CONFIGURATION_NAME, COMPILE_ONLY_CONFIGURATION_NAME).forEach(config -> {
             // Need to do in an afterEvaluate because this will add dependencies only if the user didn't do it
             project.afterEvaluate(p -> {
+                if (!condition.getAsBoolean()) {
+                    return;
+                }
                 final DependencySet allDependencies = project.getConfigurations().getByName(config)
                         .getAllDependencies();
                 for (var entry : GROUP_TO_PROCESSOR_MAP.entrySet()) {
@@ -215,7 +239,7 @@ public abstract class PluginsHelper {
                     if (hasDep) {
                         for (String configuration : configurations) {
                             AutomaticDependency automaticDependency = entry.getValue();
-                            automaticDependency.withConfiguration(configuration).applyTo(project);
+                            automaticDependency.withConfiguration(configuration).applyTo(project, condition);
                         }
                     }
                 }
