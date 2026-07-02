@@ -29,6 +29,7 @@ import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.file.SourceDirectorySet;
 import org.gradle.api.plugins.ApplicationPlugin;
+import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.plugins.PluginManager;
 import org.gradle.api.tasks.JavaExec;
 import org.gradle.api.tasks.SourceSet;
@@ -62,8 +63,15 @@ public class MicronautMinimalApplicationPlugin implements Plugin<Project> {
 
     @Override
     public void apply(Project project) {
+        applyMinimalPlugin(project, true);
+    }
+
+    protected final void applyMinimalPlugin(Project project, boolean applyApplicationPlugin) {
         PluginManager plugins = project.getPluginManager();
-        plugins.apply(ApplicationPlugin.class);
+        plugins.apply(JavaPlugin.class);
+        if (applyApplicationPlugin) {
+            plugins.apply(ApplicationPlugin.class);
+        }
         plugins.apply(MicronautComponentPlugin.class);
         PluginsHelper.registerVersionExtensions(MicronautRuntimeDependencies.KNOWN_VERSION_PROPERTIES, project);
         Configuration developmentOnly = createDevelopmentOnlyConfiguration(project);

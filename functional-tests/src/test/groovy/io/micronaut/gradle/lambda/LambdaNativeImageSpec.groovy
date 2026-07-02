@@ -410,4 +410,44 @@ class LambdaNativeImageSpec extends AbstractFunctionalTest {
         'API_GATEWAY_V2' | 'io.micronaut.function.aws.runtime.APIGatewayV2HTTPEventMicronautLambdaRuntime'
         'ALB'            | 'io.micronaut.function.aws.runtime.ApplicationLoadBalancerMicronautLambdaRuntime'
     }
+
+    @Issue("https://github.com/micronaut-projects/micronaut-gradle-plugin/issues/820")
+    void 'function plugin preserves the configured mainClass for lambda provided native builds'() {
+        given:
+        settingsFile << "rootProject.name = 'hello-world'"
+        buildFile << """
+            plugins {
+                id "io.micronaut.function"
+            }
+
+            micronaut {
+                version "$micronautVersion"
+                runtime "lambda_provided"
+            }
+
+            $repositoriesBlock
+
+            application {
+                mainClass.set("com.example.BookLambdaRuntime")
+            }
+
+            java {
+                sourceCompatibility = JavaVersion.toVersion('25')
+                targetCompatibility = JavaVersion.toVersion('25')
+            }
+        """
+
+        when:
+        def result = build('dockerfileNative')
+
+        def dockerfileNativeTask = result.task(':dockerfileNative')
+        def dockerFileNative = new File(testProjectDir.root, 'build/docker/native-main/DockerfileNative').readLines('UTF-8')
+
+        then:
+        dockerfileNativeTask.outcome == TaskOutcome.SUCCESS
+
+        and:
+        !dockerFileNative.find() { it.endsWith(' io.micronaut.function.aws.runtime.MicronautLambdaRuntime') }
+        dockerFileNative.find() { it.endsWith('com.example.BookLambdaRuntime') }
+    }
 }
