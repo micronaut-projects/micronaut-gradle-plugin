@@ -580,7 +580,10 @@ class Application {
         "jetty"           | "FROM ghcr.io/graalvm/native-image-community:25-ol${DefaultVersions.ORACLELINUX}"
     }
 
-    @Issue("https://github.com/micronaut-projects/micronaut-gradle-plugin/issues/402")
+    @Issue([
+            "https://github.com/micronaut-projects/micronaut-gradle-plugin/issues/402",
+            "https://github.com/micronaut-projects/micronaut-gradle-plugin/issues/1367"
+    ])
     def "can configure an alternate working directory"() {
         given:
         settingsFile << "rootProject.name = 'hello-world'"
@@ -649,30 +652,37 @@ micronaut:
 
         when:
         build "dockerfileNative"
-        def dockerFile = normalizeLineEndings(file("build/docker/native-main/DockerfileNative").text)
-        dockerFile = dockerFile.replaceAll("[0-9]\\.[0-9]+\\.[0-9]+", "4.0.0")
+        def generatedDockerFile = normalizeLineEndings(file("build/docker/native-main/DockerfileNative").text)
+        def configurationDirectories = generatedDockerFile.readLines()
+                .find { it.startsWith('RUN native-image ') }
+                .split('-H:ConfigurationFileDirectories=')[1]
+                .split(' ')[0]
+                .split(',')
+        def dockerFile = generatedDockerFile.replaceAll("[0-9]\\.[0-9]+\\.[0-9]+", "4.0.0")
                 .replaceAll("RUN native-image .*", "RUN native-image")
                 .trim()
 
         then:
-        def dockerFileLines = dockerFile.readLines()
-        dockerFileLines.take(6) == [
-            "FROM ghcr.io/graalvm/native-image-community:25-ol${DefaultVersions.ORACLELINUX} AS graalvm",
-            "WORKDIR /home/alternate",
-            "COPY --link layers/libs /home/alternate/libs",
-            "COPY --link layers/app /home/alternate/",
-            "COPY --link layers/resources /home/alternate/resources",
-            "RUN mkdir /home/alternate/config-dirs"
-        ]
-        dockerFile.contains("COPY --link config-dirs/generateResourcesConfigFile /home/alternate/config-dirs/generateResourcesConfigFile")
-        dockerFileLines[-5..-1] == [
-            "FROM cgr.dev/chainguard/wolfi-base:latest",
-            "EXPOSE 8080",
-            "HEALTHCHECK CMD curl -s localhost:8090/health | grep '\"status\":\"UP\"'",
-            "COPY --link --from=graalvm /home/alternate/application /app/application",
-            "ENTRYPOINT [\"/app/application\", \"-Xmx64m\"]"
-        ]
-        dockerFile.contains("RUN native-image")
+        dockerFile == """
+            FROM ghcr.io/graalvm/native-image-community:25-ol${DefaultVersions.ORACLELINUX} AS graalvm
+            WORKDIR /home/alternate
+            COPY --link layers/libs /home/alternate/libs
+            COPY --link layers/app /home/alternate/
+            COPY --link layers/resources /home/alternate/resources
+            RUN mkdir /home/alternate/config-dirs
+            COPY --link config-dirs /home/alternate/config-dirs
+            RUN native-image
+            FROM cgr.dev/chainguard/wolfi-base:latest
+            EXPOSE 8080
+            HEALTHCHECK CMD curl -s localhost:8090/health | grep '"status":"UP"'
+            COPY --link --from=graalvm /home/alternate/application /app/application
+            ENTRYPOINT ["/app/application", "-Xmx64m"]""".stripIndent().trim()
+
+        and:
+        generatedDockerFile.readLines().findAll { it.startsWith('COPY') && it.contains('config-dirs') } ==
+                ['COPY --link config-dirs /home/alternate/config-dirs']
+        configurationDirectories.size() > 1
+        configurationDirectories.every { it.startsWith('/home/alternate/config-dirs/') }
 
         when:
         def result = build ":dockerBuildNative"
@@ -681,6 +691,50 @@ micronaut:
         then:
         task.outcome == TaskOutcome.SUCCESS
 
+    }
+
+    @Issue("https://github.com/micronaut-projects/micronaut-gradle-plugin/issues/1367")
+    def "can disable COPY --link for native configuration directories"() {
+        given:
+        settingsFile << "rootProject.name = 'hello-world'"
+        buildFile << """
+            plugins {
+                id "io.micronaut.minimal.application"
+                id "io.micronaut.docker"
+                id "io.micronaut.graalvm"
+            }
+
+            micronaut {
+                version "$micronautVersion"
+                runtime "netty"
+                docker.useCopyLink = false
+            }
+
+            $repositoriesBlock
+
+            application { mainClass = "example.Application" }
+
+            java {
+                sourceCompatibility = JavaVersion.toVersion('25')
+                targetCompatibility = JavaVersion.toVersion('25')
+            }
+        """
+
+        when:
+        def result = build('dockerfileNative')
+        def dockerFile = normalizeLineEndings(file("build/docker/native-main/DockerfileNative").text)
+        def configurationDirectories = dockerFile.readLines()
+                .find { it.startsWith('RUN native-image ') }
+                .split('-H:ConfigurationFileDirectories=')[1]
+                .split(' ')[0]
+                .split(',')
+
+        then:
+        result.task(':dockerfileNative').outcome == TaskOutcome.SUCCESS
+        dockerFile.readLines().findAll { it.startsWith('COPY') && it.contains('config-dirs') } ==
+                ['COPY config-dirs /home/app/config-dirs']
+        configurationDirectories.size() > 1
+        configurationDirectories.every { it.startsWith('/home/app/config-dirs/') }
     }
 
     @Issue("https://github.com/micronaut-projects/micronaut-gradle-plugin/issues/373")
@@ -778,27 +832,20 @@ ENTRYPOINT ["java", "-jar", "/home/app/application.jar"]
 
         then:
         def dockerfileNative = new File(testProjectDir.root, 'build/docker/native-main/DockerfileNative').text
-        def dockerfileNativeLines = dockerfileNative.readLines()
-        dockerfileNativeLines.take(7) == [
-            "FROM ghcr.io/graalvm/native-image-community:25-ol${DefaultVersions.ORACLELINUX} AS graalvm",
-            "WORKDIR /home/app",
-            "COPY --link layers/libs /home/app/libs",
-            "COPY --link server.iprof /home/app/server.iprof",
-            "COPY --link layers/app /home/app/",
-            "COPY --link layers/resources /home/app/resources",
-            "RUN mkdir /home/app/config-dirs"
-        ]
-        dockerfileNative.contains("COPY --link config-dirs/generateResourcesConfigFile /home/app/config-dirs/generateResourcesConfigFile")
-        def nativeImageCommand = dockerfileNativeLines.find {
-            it.startsWith("RUN native-image -cp '/home/app/libs/*.jar:/home/app/resources:/home/app/application.jar' --no-fallback -o application -H:ConfigurationFileDirectories=/home/app/config-dirs/generateResourcesConfigFile,")
-        }
-        nativeImageCommand.contains("${SHARED_ARENA_SUPPORT} example.Application")
-        dockerfileNativeLines[-4..-1] == [
-            defaultDockerFrom,
-            "EXPOSE 8080",
-            "COPY --link --from=graalvm /home/app/application /app/application",
-            "ENTRYPOINT [\"/app/application\"]"
-        ]
+        dockerfileNative == """FROM ghcr.io/graalvm/native-image-community:25-ol${DefaultVersions.ORACLELINUX} AS graalvm
+WORKDIR /home/app
+COPY --link layers/libs /home/app/libs
+COPY --link server.iprof /home/app/server.iprof
+COPY --link layers/app /home/app/
+COPY --link layers/resources /home/app/resources
+RUN mkdir /home/app/config-dirs
+COPY --link config-dirs /home/app/config-dirs
+RUN native-image -cp '/home/app/libs/*.jar:/home/app/resources:/home/app/application.jar' --no-fallback -o application -H:ConfigurationFileDirectories=/home/app/config-dirs/generateResourcesConfigFile,/home/app/config-dirs/org.slf4j/slf4j-api/1.7.36,/home/app/config-dirs/jakarta.inject/jakarta.inject-api/2.0.0,/home/app/config-dirs/jakarta.annotation/jakarta.annotation-api/2.1.0,/home/app/config-dirs/org.jspecify/jspecify/1.0.0 ${SHARED_ARENA_SUPPORT} example.Application
+${defaultDockerFrom}
+EXPOSE 8080
+COPY --link --from=graalvm /home/app/application /app/application
+ENTRYPOINT ["/app/application"]
+"""
     }
 
     @Issue("https://github.com/micronaut-projects/micronaut-gradle-plugin/issues/1198")

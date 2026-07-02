@@ -69,22 +69,18 @@ ENTRYPOINT ["java", "-jar", "/home/app/application.jar"]
                 .trim()
 
         then:
-        def dockerFileLines = dockerFile.readLines()
-        dockerFileLines.take(5) == [
-            "FROM ghcr.io/graalvm/native-image-community:25-ol${DefaultVersions.ORACLELINUX} AS graalvm",
-            "WORKDIR /home/app",
-            "COPY --link layers/libs /home/app/libs",
-            "COPY --link layers/app /home/app/",
-            "RUN mkdir /home/app/config-dirs"
-        ]
-        dockerFile.contains("COPY --link config-dirs/generateResourcesConfigFile /home/app/config-dirs/generateResourcesConfigFile")
-        dockerFile.contains("RUN native-image")
-        dockerFileLines[-4..-1] == [
-            "FROM cgr.dev/chainguard/wolfi-base:latest",
-            "EXPOSE 8080",
-            "COPY --link --from=graalvm /home/app/application /app/application",
-            "ENTRYPOINT [\"/app/application\"]"
-        ]
+        dockerFile == """
+            FROM ghcr.io/graalvm/native-image-community:25-ol${DefaultVersions.ORACLELINUX} AS graalvm
+            WORKDIR /home/app
+            COPY --link layers/libs /home/app/libs
+            COPY --link layers/app /home/app/
+            RUN mkdir /home/app/config-dirs
+            COPY --link config-dirs /home/app/config-dirs
+            RUN native-image
+            FROM cgr.dev/chainguard/wolfi-base:latest
+            EXPOSE 8080
+            COPY --link --from=graalvm /home/app/application /app/application
+            ENTRYPOINT ["/app/application"]""".stripIndent().trim()
 
         when:
         def result = build "optimizedDockerBuildNative"
