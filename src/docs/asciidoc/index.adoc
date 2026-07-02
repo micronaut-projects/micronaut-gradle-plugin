@@ -1248,14 +1248,14 @@ You can work around this issue by configuring the duplicates strategy on the tas
 
 [source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
 ----
-tasks.withType<io.micronaut.gradle.docker.tasks.BuildLayersTask> {
+tasks.withType(io.micronaut.gradle.docker.tasks.BuildLayersTask).configureEach {
     duplicatesStrategy = DuplicatesStrategy.INCLUDE
 }
 ----
 
 [source, kotlin, subs="verbatim,attributes", role="multi-language-sample"]
 ----
-tasks.withType(io.micronaut.gradle.docker.tasks.BuildLayersTask) {
+tasks.withType<io.micronaut.gradle.docker.tasks.BuildLayersTask>().configureEach {
     duplicatesStrategy.set(DuplicatesStrategy.INCLUDE)
 }
 ----
@@ -2125,7 +2125,7 @@ micronaut {
         // The OS of the Azul CRaC JDK to use. Defaults to linux-glibc for the default base image.
         os = "linux-glibc"
 
-        // The version of the Azul CRaC JDK to use in the image (currently only 17 is supported)
+        // The version of the Azul CRaC JDK to use in the image (25 by default; other versions can be configured)
         javaVersion = JavaLanguageVersion.of(25)
 
         // A command to run that will be successful when the application is ready to be checkpointed.
@@ -2163,7 +2163,7 @@ micronaut {
         // The OS of the Azul CRaC JDK to use. Defaults to linux-glibc for the default base image.
         os.set("linux-glibc")
 
-        // The version of the Azul CRaC JDK to use in the image (currently only 17 is supported)
+        // The version of the Azul CRaC JDK to use in the image (25 by default; other versions can be configured)
         javaVersion.set(JavaLanguageVersion.of(25))
 
         // A command to run that will be successful when the application is ready to be checkpointed.
