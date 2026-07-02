@@ -22,6 +22,11 @@ class MicronautApplicationPluginSpec extends AbstractGradleBuildSpec {
             $withSerde
             
             $repositoriesBlock
+
+            dependencies {
+                implementation("io.micronaut:micronaut-http-server")
+            }
+
             application { mainClass = "example.Application" }
         """
         testProjectDir.newFolder("src", "test", "java", "example")
