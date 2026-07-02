@@ -85,10 +85,13 @@ micronaut:
 """
 
 
-        def result = build('dockerBuildNative')
-
-        def task = result.task(":dockerBuildNative")
+        // Capture the generated file before the image build so Docker task cleanup cannot race the assertions.
+        def dockerfileResult = build('dockerfileNative')
         def dockerFile = new File(testProjectDir.root, 'build/docker/native-main/DockerfileNative').readLines('UTF-8')
+
+        def result = build('dockerBuildNative')
+        def task = result.task(":dockerBuildNative")
+        def buildOutput = dockerfileResult.output + result.output
 
         expect:
         dockerFile.first().startsWith(nativeImage)
@@ -98,7 +101,7 @@ micronaut:
 
         and:
         result.output.contains("Successfully tagged hello-world:latest")
-        result.output.contains("Resources configuration written into")
+        buildOutput.contains("Resources configuration written into")
         dockerFile.find { s -> s.startsWith('RUN native-image ') }.contains(SHARED_ARENA_SUPPORT) == sharedArenaSupportEnabled
         task.outcome == TaskOutcome.SUCCESS
 
@@ -661,9 +664,10 @@ micronaut:
         def dockerFile = generatedDockerFile.replaceAll("[0-9]\\.[0-9]+\\.[0-9]+", "4.0.0")
                 .replaceAll("RUN native-image .*", "RUN native-image")
                 .trim()
+        dockerFile = normalizeNativeDockerfileConfigDirs(dockerFile)
 
         then:
-        dockerFile == """
+        dockerFile == normalizeNativeDockerfileConfigDirs("""
             FROM ghcr.io/graalvm/native-image-community:25-ol${DefaultVersions.ORACLELINUX} AS graalvm
             WORKDIR /home/alternate
             COPY --link layers/libs /home/alternate/libs
@@ -676,7 +680,7 @@ micronaut:
             EXPOSE 8080
             HEALTHCHECK CMD curl -s localhost:8090/health | grep '"status":"UP"'
             COPY --link --from=graalvm /home/alternate/application /app/application
-            ENTRYPOINT ["/app/application", "-Xmx64m"]""".stripIndent().trim()
+            ENTRYPOINT ["/app/application", "-Xmx64m"]""".stripIndent().trim())
 
         and:
         generatedDockerFile.readLines().findAll { it.startsWith('COPY') && it.contains('config-dirs') } ==

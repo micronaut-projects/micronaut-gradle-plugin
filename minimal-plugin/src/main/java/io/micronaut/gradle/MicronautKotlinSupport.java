@@ -111,6 +111,7 @@ public class MicronautKotlinSupport {
 
     private static void configureKapt(Project project) {
         configureKotlinCompilerPlugin(project, KAPT_CONFIGURATIONS, "kapt", PluginsHelper.ANNOTATION_PROCESSOR_MODULES);
+        addJavaParserDependencies(KAPT_CONFIGURATIONS, project);
 
         // Need to identify KAPT version. We can't configure KAPT 2.x for incremental processing
         // Remove this block after the end of support for KAPT 1.9
@@ -275,6 +276,12 @@ public class MicronautKotlinSupport {
                     Optional.of(CORE_VERSION_PROPERTY)).applyTo(project);
             }
         });
+    }
+
+    private static void addJavaParserDependencies(String[] compilerConfigurations, Project project) {
+        for (String configuration : compilerConfigurations) {
+            project.getDependencies().add(configuration, "com.github.javaparser:javaparser-core");
+        }
     }
 
     private static void configureAllOpen(Project project) {

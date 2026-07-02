@@ -25,6 +25,7 @@ public abstract class MicronautExtension implements ExtensionAware {
     private final Property<Boolean> enableNativeImage;
     private final Property<MicronautRuntime> runtime;
     private final Property<MicronautTestRuntime> testRuntime;
+    private final Property<MicronautSerialization> serialization;
 
     /**
      * If set to false, then the Micronaut Gradle plugins will not automatically
@@ -55,6 +56,8 @@ public abstract class MicronautExtension implements ExtensionAware {
                                     .convention(MicronautRuntime.NONE);
         this.testRuntime = objectFactory.property(MicronautTestRuntime.class)
                                         .convention(MicronautTestRuntime.NONE);
+        this.serialization = objectFactory.property(MicronautSerialization.class)
+                                          .convention(MicronautSerialization.NONE);
         getImportMicronautPlatform().convention(true);
     }
 
@@ -70,6 +73,13 @@ public abstract class MicronautExtension implements ExtensionAware {
      */
     public Property<MicronautRuntime> getRuntime() {
         return runtime;
+    }
+
+    /**
+     * @return The runtime serialization to use.
+     */
+    public Property<MicronautSerialization> getSerialization() {
+        return serialization;
     }
 
     /**
@@ -152,6 +162,50 @@ public abstract class MicronautExtension implements ExtensionAware {
             this.testRuntime.set(testRuntime);
         }
         return this;
+    }
+
+    /**
+     * Configures the runtime serialization to use.
+     *
+     * @param serialization The Micronaut serialization type
+     * @return This extension
+     */
+    public MicronautExtension serialization(String serialization) {
+        if (serialization != null) {
+            this.serialization.set(MicronautSerialization.parse(serialization));
+        }
+        return this;
+    }
+
+    /**
+     * Configures the runtime serialization to use.
+     *
+     * @param serialization The Micronaut serialization type
+     * @return This extension
+     */
+    public MicronautExtension serialization(MicronautSerialization serialization) {
+        if (serialization != null) {
+            this.serialization.set(serialization);
+        }
+        return this;
+    }
+
+    /**
+     * Sets the runtime serialization to use.
+     *
+     * @param serialization The Micronaut serialization type
+     */
+    public void setSerialization(String serialization) {
+        serialization(serialization);
+    }
+
+    /**
+     * Sets the runtime serialization to use.
+     *
+     * @param serialization The Micronaut serialization type
+     */
+    public void setSerialization(MicronautSerialization serialization) {
+        serialization(serialization);
     }
 
     /**
