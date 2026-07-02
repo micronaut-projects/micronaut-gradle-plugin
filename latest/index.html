@@ -162,7 +162,7 @@
 <div class="sectionbody">
 
 <div class="paragraph">
-<p>Version 5.0.1</p>
+<p>Version 5.0.2</p>
 </div>
 </div>
 </div>
@@ -329,16 +329,16 @@ Reports are written under <code>build/reports/micronaut/config-validation/&lt;sc
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-groovy hljs" data-lang="groovy">plugins {
-  id 'io.micronaut.application' version '5.0.1'
-  id 'io.micronaut.configuration.validation' version '5.0.1'
+  id 'io.micronaut.application' version '5.0.2'
+  id 'io.micronaut.configuration.validation' version '5.0.2'
 }</code></pre>
 </div>
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-kotlin hljs" data-lang="kotlin">plugins {
-  id("io.micronaut.application") version "5.0.1"
-  id("io.micronaut.configuration.validation") version "5.0.1"
+  id("io.micronaut.application") version "5.0.2"
+  id("io.micronaut.configuration.validation") version "5.0.2"
 }</code></pre>
 </div>
 </div>
@@ -482,49 +482,6 @@ This requires a validator version that supports the CLI argument <code>--suppres
 <p>The <code>*ConfigurationValidationReport</code> tasks are cacheable and compatible with Gradle configuration cache.
 To preserve failure results across cache hits (so that cached invalid configuration still fails subsequent builds), the failing <code>*ConfigurationValidation</code> tasks read the result marker produced by their corresponding report task.</p>
 </div>
-<div class="paragraph">
-<p>Using the <code>io.micronaut.application</code> plugin:</p>
-</div>
-<div class="listingblock multi-language-sample">
-<div class="content">
-<pre class="highlightjs highlight"><code class="language-groovy hljs" data-lang="groovy">plugins {
-  id 'io.micronaut.application' version '5.0.1'
-}</code></pre>
-</div>
-</div>
-<div class="listingblock multi-language-sample">
-<div class="content">
-<pre class="highlightjs highlight"><code class="language-kotlin hljs" data-lang="kotlin">plugins {
-  id("io.micronaut.application") version "5.0.1"
-}</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>is therefore equivalent to applying those plugins individually:</p>
-</div>
-<div class="listingblock multi-language-sample">
-<div class="content">
-<pre class="highlightjs highlight"><code class="language-groovy hljs" data-lang="groovy">plugins {
-  id 'io.micronaut.minimal.application' version '5.0.1'
-  id 'io.micronaut.docker' version '5.0.1'
-  id 'io.micronaut.graalvm' version '5.0.1'
-}
-apply plugin: com.diffplug.gradle.eclipse.apt.AptEclipsePlugin</code></pre>
-</div>
-</div>
-<div class="listingblock multi-language-sample">
-<div class="content">
-<pre class="highlightjs highlight"><code class="language-kotlin hljs" data-lang="kotlin">plugins {
-  id("io.micronaut.minimal.application") version "5.0.1"
-  id("io.micronaut.docker") version "5.0.1"
-  id("io.micronaut.graalvm") version "5.0.1"
-}
-apply(plugin=com.diffplug.gradle.eclipse.apt.AptEclipsePlugin::class.java)</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p><code>io.micronaut.minimal.application</code>, <code>io.micronaut.graalvm</code> and <code>io.micronaut.docker</code> plugins (as well as the Eclipse annotation processing support plugin).</p>
-</div>
 </div>
 </div>
 </div>
@@ -602,14 +559,14 @@ This is a <strong>settings</strong> plugin, which means that it <strong>must</st
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-groovy hljs" data-lang="groovy">plugins {
-  id 'io.micronaut.platform.catalog' version '5.0.1'
+  id 'io.micronaut.platform.catalog' version '5.0.2'
 }</code></pre>
 </div>
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-kotlin hljs" data-lang="kotlin">plugins {
-  id("io.micronaut.platform.catalog") version "5.0.1"
+  id("io.micronaut.platform.catalog") version "5.0.2"
 }</code></pre>
 </div>
 </div>
@@ -760,14 +717,14 @@ ehcache = "3.8.2" # override version of ehcache</code></pre>
 <div class="title">Applying the plugin</div>
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-groovy hljs" data-lang="groovy">plugins {
-  id 'io.micronaut.library' version '5.0.1'
+  id 'io.micronaut.library' version '5.0.2'
 }</code></pre>
 </div>
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-kotlin hljs" data-lang="kotlin">plugins {
-  id("io.micronaut.library") version "5.0.1"
+  id("io.micronaut.library") version "5.0.2"
 }</code></pre>
 </div>
 </div>
@@ -777,7 +734,7 @@ ehcache = "3.8.2" # override version of ehcache</code></pre>
 <div class="ulist">
 <ul>
 <li>
-<p>Applies the <a href="https://search.maven.org/artifact/io.micronaut.platform/micronaut-platform">Micronaut Bill of Materials (BOM)</a></p>
+<p>Applies the <a href="https://central.sonatype.com/artifact/io.micronaut.platform/micronaut-platform">Micronaut Bill of Materials (BOM)</a></p>
 </li>
 <li>
 <p>Applies the <code>java-library</code> plugin</p>
@@ -884,7 +841,7 @@ The Micronaut Library plugin also supports Groovy and Kotlin sources.
 <pre class="highlightjs highlight"><code class="language-groovy hljs" data-lang="groovy">plugins {
     id "org.jetbrains.kotlin.jvm" version "1.9.25"
     id "org.jetbrains.kotlin.kapt" version "1.9.25"
-    id "io.micronaut.library" version "5.0.1"
+    id "io.micronaut.library" version "5.0.2"
 }</code></pre>
 </div>
 </div>
@@ -893,7 +850,7 @@ The Micronaut Library plugin also supports Groovy and Kotlin sources.
 <pre class="highlightjs highlight"><code class="language-kotlin hljs" data-lang="kotlin">plugins {
     id("org.jetbrains.kotlin.jvm") version "1.9.25"
     id("org.jetbrains.kotlin.kapt") version "1.9.25"
-    id("io.micronaut.library") version "5.0.1"
+    id("io.micronaut.library") version "5.0.2"
 }</code></pre>
 </div>
 </div>
@@ -907,7 +864,7 @@ The Micronaut Library plugin also supports Groovy and Kotlin sources.
 <div class="title">A minimal build file</div>
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-groovy hljs" data-lang="groovy">plugins {
-    id 'io.micronaut.library' version '5.0.1'
+    id 'io.micronaut.library' version '5.0.2'
 }
 
 version "0.1"
@@ -930,7 +887,7 @@ dependencies {
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-kotlin hljs" data-lang="kotlin">plugins {
-    id("io.micronaut.library") version "5.0.1"
+    id("io.micronaut.library") version "5.0.2"
 }
 
 version = "0.1"
@@ -960,14 +917,14 @@ dependencies {
 <div class="title">Applying the Micronaut Application plugin</div>
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-groovy hljs" data-lang="groovy">plugins {
-  id "io.micronaut.application" version "5.0.1"
+  id "io.micronaut.application" version "5.0.2"
 }</code></pre>
 </div>
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-kotlin hljs" data-lang="kotlin">plugins {
-  id("io.micronaut.application") version "5.0.1"
+  id("io.micronaut.application") version "5.0.2"
 }</code></pre>
 </div>
 </div>
@@ -986,6 +943,32 @@ dependencies {
 <p>Correctly configures Gradle for continuous build</p>
 </li>
 </ul>
+</div>
+<div class="paragraph">
+<p>The <code>io.micronaut.application</code> plugin application shown above is therefore equivalent to applying those plugins individually:</p>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-groovy hljs" data-lang="groovy">plugins {
+  id 'io.micronaut.minimal.application' version '5.0.2'
+  id 'io.micronaut.docker' version '5.0.2'
+  id 'io.micronaut.graalvm' version '5.0.2'
+}
+apply plugin: com.diffplug.gradle.eclipse.apt.AptEclipsePlugin</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-kotlin hljs" data-lang="kotlin">plugins {
+  id("io.micronaut.minimal.application") version "5.0.2"
+  id("io.micronaut.docker") version "5.0.2"
+  id("io.micronaut.graalvm") version "5.0.2"
+}
+plugins.apply(com.diffplug.gradle.eclipse.apt.AptEclipsePlugin::class.java)</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>io.micronaut.application</code> applies the <code>io.micronaut.minimal.application</code>, <code>io.micronaut.graalvm</code> and <code>io.micronaut.docker</code> plugins, as well as the Eclipse annotation processing support plugin.</p>
 </div>
 <div class="paragraph">
 <p>The following additional tasks are provided by this plugin:</p>
@@ -1111,7 +1094,7 @@ Use <code>./gradlew run -t</code> when you want the plugin to enable Micronaut f
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-groovy hljs" data-lang="groovy">plugins {
-    id 'io.micronaut.application' version '5.0.1'
+    id 'io.micronaut.application' version '5.0.2'
 }
 
 version "0.1"
@@ -1140,7 +1123,7 @@ application {
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-kotlin hljs" data-lang="kotlin">plugins {
-    id("io.micronaut.application") version "5.0.1"
+    id("io.micronaut.application") version "5.0.2"
 }
 
 version = "0.1"
@@ -1178,7 +1161,7 @@ application {
     id "org.jetbrains.kotlin.jvm" version "1.9.25"
     id "org.jetbrains.kotlin.kapt" version "1.9.25"
     id "org.jetbrains.kotlin.plugin.allopen" version "1.9.25"
-    id "io.micronaut.application" version "5.0.1"
+    id "io.micronaut.application" version "5.0.2"
 }
 
 version "0.1"
@@ -1212,7 +1195,7 @@ application {
     id("org.jetbrains.kotlin.jvm") version "1.9.25"
     id("org.jetbrains.kotlin.kapt") version "1.9.25"
     id("org.jetbrains.kotlin.plugin.allopen") version "1.9.25"
-    id("io.micronaut.application") version "5.0.1"
+    id("io.micronaut.application") version "5.0.2"
 }
 
 version = "0.1"
@@ -1646,7 +1629,7 @@ tasks.named&lt;io.micronaut.gradle.docker.NativeImageDockerfile&gt;("dockerfileN
 </div>
 </div>
 <div class="paragraph">
-<p>You can also add any of the other instructions/commands that the docker plugin supports, see <a href="https://github.com/bmuschko/gradle-docker-plugin/blob/master/src/main/groovy/com/bmuschko/gradle/docker/tasks/image/Dockerfile.groovy">the Dockerfile task documentation</a>.</p>
+<p>You can also add any of the other instructions/commands that the docker plugin supports, see <a href="https://bmuschko.github.io/gradle-docker-plugin/current/api/com/bmuschko/gradle/docker/tasks/image/Dockerfile.html">the Dockerfile task documentation</a>.</p>
 </div>
 </div>
 <div class="sect3">
@@ -1790,7 +1773,7 @@ That archive is used to populate the Docker layers and is not meant to be copied
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-groovy hljs" data-lang="groovy">plugins {
-     id 'io.micronaut.application' version '5.0.1'
+     id 'io.micronaut.application' version '5.0.2'
 }
 version "0.1"
 group "com.example"
@@ -1816,7 +1799,7 @@ application {
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-kotlin hljs" data-lang="kotlin">plugins {
-     id("io.micronaut.application") version "5.0.1"
+     id("io.micronaut.application") version "5.0.2"
 }
 version = "0.1"
 group = "com.example"
@@ -2052,8 +2035,8 @@ Micronaut AOT is a <em>deployment</em> optimization: it adds to build time, in o
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-groovy hljs" data-lang="groovy">plugins {
     ...
-    id "io.micronaut.application" version "5.0.1"
-    id "io.micronaut.aot" version "5.0.1"
+    id "io.micronaut.application" version "5.0.2"
+    id "io.micronaut.aot" version "5.0.2"
     ...
 }</code></pre>
 </div>
@@ -2062,8 +2045,8 @@ Micronaut AOT is a <em>deployment</em> optimization: it adds to build time, in o
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-kotlin hljs" data-lang="kotlin">plugins {
     ...
-    id("io.micronaut.application") version "5.0.1"
-    id("io.micronaut.aot") version "5.0.1"
+    id("io.micronaut.application") version "5.0.2"
+    id("io.micronaut.aot") version "5.0.2"
     ...
 }</code></pre>
 </div>
@@ -2426,8 +2409,8 @@ Should this happen to you, you can disable class data sharing explicitly using t
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-groovy hljs" data-lang="groovy">plugins {
-    id "io.micronaut.application" version "5.0.1"
-    id "io.micronaut.test-resources" version "5.0.1"
+    id "io.micronaut.application" version "5.0.2"
+    id "io.micronaut.test-resources" version "5.0.2"
     ...
 }</code></pre>
 </div>
@@ -2435,8 +2418,8 @@ Should this happen to you, you can disable class data sharing explicitly using t
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-kotlin hljs" data-lang="kotlin">plugins {
-    id("io.micronaut.application") version "5.0.1"
-    id("io.micronaut.test-resources") version "5.0.1"
+    id("io.micronaut.application") version "5.0.2"
+    id("io.micronaut.test-resources") version "5.0.2"
     ...
 }</code></pre>
 </div>
@@ -2649,7 +2632,7 @@ Here, we&#8217;re going to add a project called <code>shared-testresources</code
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-groovy hljs" data-lang="groovy">// shared-testresources/build.gradle
 plugins {
-    id "io.micronaut.test-resources" version "5.0.1" // <b class="conum">(1)</b>
+    id "io.micronaut.test-resources" version "5.0.2" // <b class="conum">(1)</b>
 }
 
 micronaut {
@@ -2663,7 +2646,7 @@ micronaut {
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-kotlin hljs" data-lang="kotlin">// shared-testresources/build.gradle.kts
 plugins {
-    id("io.micronaut.test-resources") version "5.0.1" // <b class="conum">(1)</b>
+    id("io.micronaut.test-resources") version "5.0.2" // <b class="conum">(1)</b>
 }
 
 micronaut {
@@ -2705,8 +2688,8 @@ If consumer projects apply <code>io.micronaut.test-resources-consumer</code>, th
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-groovy hljs" data-lang="groovy">plugins {
-    id "io.micronaut.application" version "5.0.1"
-    id "io.micronaut.test-resources-consumer" version "5.0.1" // <b class="conum">(1)</b>
+    id "io.micronaut.application" version "5.0.2"
+    id "io.micronaut.test-resources-consumer" version "5.0.2" // <b class="conum">(1)</b>
 }
 
 dependencies {
@@ -2717,8 +2700,8 @@ dependencies {
 <div class="listingblock multi-language-sample">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-kotlin hljs" data-lang="kotlin">plugins {
-    id("io.micronaut.application") version "5.0.1"
-    id("io.micronaut.test-resources-consumer") version "5.0.1" // <b class="conum">(1)</b>
+    id("io.micronaut.application") version "5.0.2"
+    id("io.micronaut.test-resources-consumer") version "5.0.2" // <b class="conum">(1)</b>
 }
 
 dependencies {
@@ -2960,9 +2943,9 @@ Currently, CRaC support has only been tested on Ubuntu 18.04, 20.04 and 22.04.
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-groovy hljs" data-lang="groovy">plugins {
     ...
-    id "io.micronaut.minimal.application" version "5.0.1"
-    id "io.micronaut.docker" version "5.0.1"
-    id "io.micronaut.crac" version "5.0.1"
+    id "io.micronaut.minimal.application" version "5.0.2"
+    id "io.micronaut.docker" version "5.0.2"
+    id "io.micronaut.crac" version "5.0.2"
     ...
 }</code></pre>
 </div>
@@ -2971,9 +2954,9 @@ Currently, CRaC support has only been tested on Ubuntu 18.04, 20.04 and 22.04.
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-kotlin hljs" data-lang="kotlin">plugins {
     ...
-    id("io.micronaut.minimal.application") version "5.0.1"
-    id("io.micronaut.docker") version "5.0.1"
-    id("io.micronaut.crac") version "5.0.1"
+    id("io.micronaut.minimal.application") version "5.0.2"
+    id("io.micronaut.docker") version "5.0.2"
+    id("io.micronaut.crac") version "5.0.2"
     ...
 }</code></pre>
 </div>
@@ -3002,7 +2985,7 @@ Currently, CRaC support has only been tested on Ubuntu 18.04, 20.04 and 22.04.
         // The OS of the Azul CRaC JDK to use. Defaults to linux-glibc for the default base image.
         os = "linux-glibc"
 
-        // The version of the Azul CRaC JDK to use in the image (currently only 17 is supported)
+        // The version of the Azul CRaC JDK to use in the image (defaults to 25)
         javaVersion = JavaLanguageVersion.of(25)
 
         // A command to run that will be successful when the application is ready to be checkpointed.
@@ -3040,7 +3023,7 @@ Currently, CRaC support has only been tested on Ubuntu 18.04, 20.04 and 22.04.
         // The OS of the Azul CRaC JDK to use. Defaults to linux-glibc for the default base image.
         os.set("linux-glibc")
 
-        // The version of the Azul CRaC JDK to use in the image (currently only 17 is supported)
+        // The version of the Azul CRaC JDK to use in the image (defaults to 25)
         javaVersion.set(JavaLanguageVersion.of(25))
 
         // A command to run that will be successful when the application is ready to be checkpointed.
@@ -3653,9 +3636,9 @@ In such a case, you can add this workaround to your build scripts:</p>
                                 </a>
                             </li>
                             <li id="menu-item-2888" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-2888">
-                                <a target="_blank" rel="noopener" href="https://gitter.im/micronautfw/">
-                                    <i class="fab fa-gitter">
-                                        <span class="sr-only">Gitter</span>
+                                <a target="_blank" rel="noopener" href="https://micronaut.io/community/">
+                                    <i class="fas fa-comments">
+                                        <span class="sr-only">Community</span>
                                     </i>
                                 </a>
                             </li>
