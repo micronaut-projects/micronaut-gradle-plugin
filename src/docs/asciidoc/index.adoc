@@ -841,8 +841,8 @@ org.gradle.java.installations.auto-download=false
 # Disable auto-detection of Java installations
 org.gradle.java.installations.auto-detect=false
 # Setup explicitly that the Java version to use
-# should be the one from the JAVA_HOME environment variable
-org.gradle.java.installations.fromEnv=JAVA_HOME
+# should be the one from the GRAALVM_HOME environment variable
+org.gradle.java.installations.fromEnv=GRAALVM_HOME
 ----
 
 Alternatively you can pass those options from the command line:
@@ -851,7 +851,7 @@ Alternatively you can pass those options from the command line:
 ----
 ./gradlew -Porg.gradle.java.installations.auto-download=false \
   -Porg.gradle.java.installations.auto-detect=false \
-  -Porg.gradle.java.installations.fromEnv=JAVA_HOME \
+  -Porg.gradle.java.installations.fromEnv=GRAALVM_HOME \
   build
 ----
 
