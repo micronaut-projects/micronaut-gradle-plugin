@@ -514,28 +514,17 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
         executable.set("application");
         String workDir = getTargetWorkingDirectory().get();
         runCommand("mkdir " + workDir + "/config-dirs");
-        getInstructions().addAll(getNativeImageOptions().map(options -> {
-                    var namer = new DockerResourceConfigDirectoryNamer();
-                    return options.getConfigurationFileDirectories()
-                            .getFiles()
-                            .stream()
-                            .filter(java.io.File::exists)
-                            .map(dir -> {
-                                String dirName = namer.determineNameFor(dir);
-                                return new RunCommandInstruction("mkdir -p " + workDir + "/config-dirs/" + dirName);
-                            })
-                            .toList();
-                }
-        ));
-        getInstructions().addAll(getNativeImageOptions().map(options -> {
-                    var namer = new DockerResourceConfigDirectoryNamer();
-                    return options.getConfigurationFileDirectories()
-                            .getFiles()
-                            .stream()
-                            .filter(java.io.File::exists)
-                            .map(dir -> toCopyResourceDirectoryInstruction(dir, namer))
-                            .toList();
-                }
+        getInstructions().addAll(getNativeImageOptions().map(options ->
+                options.getConfigurationFileDirectories()
+                        .getFiles()
+                        .stream()
+                        .filter(java.io.File::exists)
+                        .findAny()
+                        .map(ignored -> List.<Instruction>of(new CopyFileInstruction(new CopyFile(
+                                "config-dirs",
+                                workDir + "/config-dirs"
+                        ))))
+                        .orElseGet(List::of)
         ));
         runCommand(getProviders().provider(() -> renderShellCommand(buildActualCommandLine(executable, buildStrategy, imageResolver))));
         switch (buildStrategy) {
@@ -590,14 +579,6 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
                 }));
                 break;
         }
-    }
-
-    private CopyFileInstruction toCopyResourceDirectoryInstruction(java.io.File resourceDirectory, DockerResourceConfigDirectoryNamer namer) {
-        String relativePath = namer.determineNameFor(resourceDirectory).replace(java.io.File.separatorChar, '/');
-        return new CopyFileInstruction(new CopyFile(
-                "config-dirs/" + relativePath,
-                getTargetWorkingDirectory().get() + "/config-dirs/" + relativePath
-        ));
     }
 
     protected List<String> buildActualCommandLine(Provider<String> executable, DockerBuildStrategy buildStrategy, BaseImageForBuildStrategyResolver imageResolver) {
