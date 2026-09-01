@@ -487,7 +487,7 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
         if (buildStrategy == DockerBuildStrategy.LAMBDA) {
             from(new From(imageResolver.resolve()).withStage("graalvm"));
             environmentVariable("LANG", "en_US.UTF-8");
-            runCommand("dnf update -y && dnf install -y gcc glibc-devel zlib-devel libstdc++-static tar && dnf clean all && rm -rf /var/cache/dnf");
+            runCommand("dnf update -y && dnf install -y gcc glibc-devel zlib-devel libstdc++-static tar gzip && dnf clean all && rm -rf /var/cache/dnf");
             String jdkVersion = getJdkVersion().get();
             String graalArch = getGraalArch().get();
             // https://download.oracle.com/graalvm/17/latest/graalvm-jdk-17_linux-aarch64_bin.tar.gz
