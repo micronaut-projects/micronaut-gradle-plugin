@@ -1187,8 +1187,8 @@ tasks.named("dockerfileNative") {
     editDockerfile {
         before("FROM graalvm AS builder") {
             replace(
-                "RUN dnf update -y && dnf install -y gcc glibc-devel zlib-devel libstdc++-static tar && dnf clean all && rm -rf /var/cache/dnf",
-                "RUN dnf --releasever=<releasever> update -y && dnf --releasever=<releasever> install -y gcc glibc-devel zlib-devel libstdc++-static tar && dnf clean all && rm -rf /var/cache/dnf"
+                "RUN dnf update -y && dnf install -y gcc glibc-devel zlib-devel libstdc++-static tar gzip && dnf clean all && rm -rf /var/cache/dnf",
+                "RUN dnf --releasever=<releasever> update -y && dnf --releasever=<releasever> install -y gcc glibc-devel zlib-devel libstdc++-static tar gzip && dnf clean all && rm -rf /var/cache/dnf"
             )
         }
         after("FROM graalvm AS builder") {
@@ -1207,8 +1207,8 @@ tasks.named<io.micronaut.gradle.docker.NativeImageDockerfile>("dockerfileNative"
     editDockerfile {
         before("FROM graalvm AS builder") {
             replace(
-                "RUN dnf update -y && dnf install -y gcc glibc-devel zlib-devel libstdc++-static tar && dnf clean all && rm -rf /var/cache/dnf",
-                "RUN dnf --releasever=<releasever> update -y && dnf --releasever=<releasever> install -y gcc glibc-devel zlib-devel libstdc++-static tar && dnf clean all && rm -rf /var/cache/dnf"
+                "RUN dnf update -y && dnf install -y gcc glibc-devel zlib-devel libstdc++-static tar gzip && dnf clean all && rm -rf /var/cache/dnf",
+                "RUN dnf --releasever=<releasever> update -y && dnf --releasever=<releasever> install -y gcc glibc-devel zlib-devel libstdc++-static tar gzip && dnf clean all && rm -rf /var/cache/dnf"
             )
         }
         after("FROM graalvm AS builder") {
