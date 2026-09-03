@@ -1,8 +1,11 @@
 package io.micronaut.gradle;
 
 import org.gradle.api.Action;
+import org.gradle.api.file.ConfigurableFileCollection;
+import org.gradle.api.file.Directory;
 import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.plugins.ExtensionAware;
+import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Property;
 import org.gradle.api.provider.SetProperty;
 
@@ -25,6 +28,7 @@ public abstract class MicronautExtension implements ExtensionAware {
     private final Property<Boolean> enableNativeImage;
     private final Property<MicronautRuntime> runtime;
     private final Property<MicronautTestRuntime> testRuntime;
+    private final ConfigurableFileCollection additionalFilesToWatch;
 
     /**
      * If set to false, then the Micronaut Gradle plugins will not automatically
@@ -49,6 +53,7 @@ public abstract class MicronautExtension implements ExtensionAware {
     public MicronautExtension(ObjectFactory objectFactory, SourceSetConfigurer sourceSetConfigurer) {
         this.processing = objectFactory.newInstance(AnnotationProcessing.class, sourceSetConfigurer);
         this.version = objectFactory.property(String.class);
+        this.additionalFilesToWatch = objectFactory.fileCollection();
         this.enableNativeImage = objectFactory.property(Boolean.class)
                                     .convention(true);
         this.runtime = objectFactory.property(MicronautRuntime.class)
@@ -159,6 +164,13 @@ public abstract class MicronautExtension implements ExtensionAware {
      */
     public Property<String> getVersion() {
         return version;
+    }
+
+    /*
+     * @return list of files to watch when running the application with continuous build
+     */
+    public ConfigurableFileCollection getAdditionalFilesToWatch() {
+        return this.additionalFilesToWatch;
     }
 
     public AnnotationProcessing getProcessing() {
