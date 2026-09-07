@@ -600,6 +600,70 @@ class Application {
 
     }
 
+    @IgnoreIf({ os.windows })
+    def "can build native executable image tarball without Docker daemon"() {
+        given:
+        settingsFile << "rootProject.name = 'hello-world'"
+        buildFile << """
+            plugins {
+                id "io.micronaut.minimal.application"
+                id "org.graalvm.buildtools.native" version "1.1.0"
+                id "io.micronaut.docker"
+            }
+
+            micronaut {
+                version "$micronautVersion"
+            }
+
+            $repositoriesBlock
+
+            application { mainClass = "example.Application" }
+
+            tasks.register("createNativeExecutable") {
+                def nativeExecutable = layout.buildDirectory.file("native/nativeCompile/hello-world")
+                outputs.file(nativeExecutable)
+                doLast {
+                    def file = nativeExecutable.get().asFile
+                    file.parentFile.mkdirs()
+                    file.text = "#!/bin/sh\\n"
+                    file.setExecutable(true)
+                }
+            }
+
+            tasks.named("nativeCompile") {
+                enabled = false
+            }
+
+            tasks.named("dockerBuildNativeImageTarball") {
+                dependsOn(tasks.named("createNativeExecutable"))
+                executable = layout.buildDirectory.file("native/nativeCompile/hello-world")
+                baseImage = "scratch"
+                imageName = "example/hello-world:native"
+                allowPlatformMismatch = true
+            }
+        """
+        testProjectDir.newFolder("src", "main", "java", "example")
+        def javaFile = testProjectDir.newFile("src/main/java/example/Application.java")
+        javaFile.parentFile.mkdirs()
+        javaFile << """
+package example;
+
+class Application {
+    public static void main(String... args) {
+    }
+}
+"""
+
+        when:
+        def result = build('dockerBuildNativeImageTarball', '-s')
+
+        then:
+        result.task(":dockerBuildNativeImageTarball").outcome == TaskOutcome.SUCCESS
+        result.task(":nativeCompile").outcome == TaskOutcome.SKIPPED
+        file("build/docker/native-main/jib-image.tar").isFile()
+        result.output.contains("Native image container tarball written to:")
+    }
+
     @Issue("https://github.com/micronaut-projects/micronaut-gradle-plugin/issues/971")
     def "can disable COPY --link"() {
         given:

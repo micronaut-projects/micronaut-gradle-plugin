@@ -11,6 +11,7 @@ micronautPlugins {
 dependencies {
     api projects.micronautMinimalPlugin
     api libs.dockerPlug
+    implementation libs.jibCore
 
     compileOnly libs.graalvmPlugin
 

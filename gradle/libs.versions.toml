@@ -12,6 +12,7 @@ junit-platform = "1.14.4"
 oraclelinux = "9"
 amazonlinux = "2023-minimal"
 graalvmPlugin = "1.1.2"
+jibCore = "0.28.1"
 mockserver = "5.15.0"
 log4j2 = "2.25.4"
 tomlj = "1.1.1"
@@ -31,6 +32,7 @@ dockerPlug = { module = "com.bmuschko:gradle-docker-plugin", version.ref = "dock
 diffplugPlugin = { module = "com.diffplug.gradle:goomph", version.ref = "diffplug" }
 shadowPlugin = { module = "com.gradleup.shadow:shadow-gradle-plugin", version.ref = "shadow" }
 graalvmPlugin = { module = "org.graalvm.buildtools:native-gradle-plugin", version.ref = "graalvmPlugin" }
+jibCore = { module = "com.google.cloud.tools:jib-core", version.ref = "jibCore" }
 openrewritePlugin = { module = "org.openrewrite.rewrite:org.openrewrite.rewrite.gradle.plugin", version.ref = "openrewrite" }
 
 kotlin-allopen = { module = "org.jetbrains.kotlin:kotlin-allopen", version.ref = "kotlin" }
