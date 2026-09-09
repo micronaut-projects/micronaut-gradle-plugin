@@ -111,6 +111,57 @@ class Foo {}
         'minimal.library' | kotlin2Version
     }
 
+    def "test Micronaut processing prefers KSP when KAPT is also applied for #plugin with #pluginOrder"() {
+        given:
+        settingsFile << "rootProject.name = 'hello-world'"
+        buildFile.delete()
+        kotlinBuildFile << """
+            plugins {
+                id("org.jetbrains.kotlin.jvm") version("$kotlin2Version")
+                $processingPlugins
+                id("org.jetbrains.kotlin.plugin.allopen") version("$kotlin2Version")
+                id("io.micronaut.$plugin")
+            }
+
+            micronaut {
+                version("$micronautVersion")
+                processing {
+                    incremental(true)
+                }
+            }
+
+            ${getRepositoriesBlock('kotlin')}
+
+        """
+        testProjectDir.newFolder("src", "main", "kotlin", "example")
+        def javaFile = testProjectDir.newFile("src/main/kotlin/example/Foo.kt")
+        javaFile.parentFile.mkdirs()
+        javaFile << """
+package example
+
+@jakarta.inject.Singleton
+class Foo {}
+"""
+
+        when:
+        def result = build('assemble')
+
+        then:
+        result.task(":assemble").outcome == TaskOutcome.SUCCESS
+        new File(testProjectDir.root, "build/generated/ksp/main/classes/example")
+                .listFiles()
+                ?.find { it.name.endsWith(".class") && it.name.contains('$Definition') }
+        !file('build/tmp/kapt3/classes/main/example/$Foo$Definition.class').exists()
+        result.output.contains("Micronaut processing will use KSP")
+
+        where:
+        plugin            | pluginOrder   | processingPlugins
+        'library'         | 'KAPT first'  | """id("org.jetbrains.kotlin.kapt") version("$kotlin2Version")\nid("com.google.devtools.ksp") version("$ksp2Version")"""
+        'library'         | 'KSP first'   | """id("com.google.devtools.ksp") version("$ksp2Version")\nid("org.jetbrains.kotlin.kapt") version("$kotlin2Version")"""
+        'minimal.library' | 'KAPT first'  | """id("org.jetbrains.kotlin.kapt") version("$kotlin2Version")\nid("com.google.devtools.ksp") version("$ksp2Version")"""
+        'minimal.library' | 'KSP first'   | """id("com.google.devtools.ksp") version("$ksp2Version")\nid("org.jetbrains.kotlin.kapt") version("$kotlin2Version")"""
+    }
+
     def "test custom sourceSet for micronaut-library and kotlin with kotlin DSL for #plugin (Kotlin #kotlin)"() {
         given:
         settingsFile << "rootProject.name = 'hello-world'"
