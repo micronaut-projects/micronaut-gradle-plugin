@@ -178,6 +178,10 @@ public class MicronautDockerPlugin implements Plugin<Project> {
                 buildStrategy.ifPresent(bs -> it.getBuildStrategy().set(buildStrategy.get()));
                 it.setupNativeImageTaskPostEvaluate();
             }));
+            withBuildStrategy(project, buildStrategy -> tasks.named(adaptTaskName("dockerfileBuildxNative", imageName), NativeImageDockerfile.class).configure(it -> {
+                buildStrategy.ifPresent(bs -> it.getBuildStrategy().set(buildStrategy.get()));
+                it.setupNativeImageTaskPostEvaluate();
+            }));
         });
         withBuildStrategy(project, buildStrategy -> dockerFileTask.ifPresent(t -> t.configure(it -> {
             buildStrategy.ifPresent(bs -> it.getBuildStrategy().set(buildStrategy.get()));
@@ -269,6 +273,12 @@ public class MicronautDockerPlugin implements Plugin<Project> {
             task.getImages().set(Collections.singletonList(project.getName()));
             task.getInputDir().set(dockerFileTask.flatMap(Dockerfile::getDestDir));
         });
+        tasks.register(adaptTaskName("dockerBuildx", imageName), DockerBuildx.class, task -> {
+            task.dependsOn(buildLayersTask);
+            task.setDescription("Builds and pushes a multi-platform Docker image using Docker Buildx (image " + imageName + ")");
+            task.getDockerFile().convention(dockerFileTask.flatMap(Dockerfile::getDestFile));
+            task.getInputDir().set(dockerFileTask.flatMap(Dockerfile::getDestDir));
+        });
 
         TaskProvider<DockerPushImage> pushDockerImage = tasks.register(adaptTaskName("dockerPush", imageName), DockerPushImage.class, task -> {
             task.dependsOn(dockerBuildTask);
@@ -311,6 +321,31 @@ public class MicronautDockerPlugin implements Plugin<Project> {
                 task.getLayers().convention(buildLayersTask.flatMap(BuildLayersTask::getLayers));
             });
         }
+        TaskProvider<NativeImageDockerfile> buildxDockerFileTask;
+        String buildxDockerfileNativeTaskName = adaptTaskName("dockerfileBuildxNative", imageName);
+        Provider<RegularFile> buildxTargetDockerFile = project.getLayout().getBuildDirectory().file("docker/native-" + imageName + "/DockerfileBuildxNative");
+        if (f.exists()) {
+            buildxDockerFileTask = tasks.register(buildxDockerfileNativeTaskName, NativeImageDockerfile.class, task -> {
+                task.setGroup(BasePlugin.BUILD_GROUP);
+                task.setDescription("Builds a Native Docker File for multi-platform Buildx image " + imageName);
+                try {
+                    task.instructionsFromTemplate(f);
+                } catch (IOException e) {
+                    throw new GradleException("Unable to configure docker task for image " + imageName, e);
+                }
+                task.getDestFile().set(buildxTargetDockerFile);
+                task.getLayers().convention(buildLayersTask.flatMap(BuildLayersTask::getLayers));
+                task.getUseBuildxTargetArch().set(true);
+            });
+        } else {
+            buildxDockerFileTask = tasks.register(buildxDockerfileNativeTaskName, NativeImageDockerfile.class, task -> {
+                task.setGroup(BasePlugin.BUILD_GROUP);
+                task.setDescription("Builds a Native Docker File for multi-platform Buildx image " + imageName);
+                task.getDestFile().set(buildxTargetDockerFile);
+                task.getLayers().convention(buildLayersTask.flatMap(BuildLayersTask::getLayers));
+                task.getUseBuildxTargetArch().set(true);
+            });
+        }
         TaskProvider<PrepareDockerContext> prepareContext = tasks.register(adaptTaskName("dockerPrepareContext", imageName), PrepareDockerContext.class, context -> {
             // Because docker requires all files to be found in the build context we need to
             // copy the configuration file directories into the build context
@@ -329,6 +364,15 @@ public class MicronautDockerPlugin implements Plugin<Project> {
             task.getImages().set(Collections.singletonList(project.getName()));
             task.dependsOn(buildLayersTask);
             task.getInputDir().set(dockerFileTask.flatMap(Dockerfile::getDestDir));
+        });
+        tasks.register(adaptTaskName("dockerBuildxNative", imageName), DockerBuildx.class, task -> {
+            task.setDescription("Builds and pushes a multi-platform native Docker image using Docker Buildx (image " + imageName + ")");
+            task.getInputs().files(prepareContext)
+                .withPropertyName("preparedDockerContext")
+                .withPathSensitivity(PathSensitivity.RELATIVE);
+            task.dependsOn(buildLayersTask);
+            task.getDockerFile().convention(buildxDockerFileTask.flatMap(Dockerfile::getDestFile));
+            task.getInputDir().set(buildxDockerFileTask.flatMap(Dockerfile::getDestDir));
         });
 
         TaskProvider<DockerPushImage> pushDockerImage = tasks.register(adaptTaskName("dockerPushNative", imageName), DockerPushImage.class);
