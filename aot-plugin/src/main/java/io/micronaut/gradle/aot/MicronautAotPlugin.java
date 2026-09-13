@@ -260,6 +260,14 @@ public abstract class MicronautAotPlugin implements Plugin<Project> {
                 mainBinary.buildArgs("--initialize-at-build-time=io.micronaut.context.ApplicationContextConfigurer$1")
         );
 
+        // native-gradle-plugin 1.1.12+ gives custom binaries an image classpath with the project jar unless this
+        // configuration already exists. The optimized binary uses the optimized jar instead, and having both
+        // duplicates resources such as application.yml.
+        Configuration optimizedImageClasspath = project.getConfigurations().maybeCreate("nativeImageOptimizedClasspath");
+        optimizedImageClasspath.setCanBeConsumed(false);
+        optimizedImageClasspath.setCanBeResolved(false);
+        optimizedImageClasspath.setDescription("Placeholder: the optimized native binary classpath is configured by the Micronaut AOT plugin");
+
         binaries.create(OPTIMIZED_BINARY_NAME, binary -> {
             var mainSourceSet = PluginsHelper.findSourceSets(project).getByName(SourceSet.MAIN_SOURCE_SET_NAME);
             NativeImageOptions main = binaries.getByName(MAIN_BINARY_NAME);

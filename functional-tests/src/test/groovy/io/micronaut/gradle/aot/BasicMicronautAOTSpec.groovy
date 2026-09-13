@@ -190,6 +190,26 @@ class BasicMicronautAOTSpec extends AbstractAOTPluginSpec {
 
     }
 
+    def "optimized native binary classpath does not include the project jar"() {
+        withSample("aot/basic-app")
+        withPlugins(Plugins.APPLICATION)
+        buildFile << """
+            tasks.register("printOptimizedClasspath") {
+                def optimizedClasspath = graalvmNative.binaries.optimized.classpath
+                def mainJar = tasks.named("jar").flatMap { it.archiveFile }
+                doLast {
+                    println "main-jar-present=\${optimizedClasspath.files.contains(mainJar.get().asFile)}"
+                }
+            }
+        """
+
+        when:
+        def result = build("printOptimizedClasspath")
+
+        then:
+        result.output.contains("main-jar-present=false")
+    }
+
     @Issue("https://github.com/micronaut-projects/micronaut-gradle-plugin/issues/803")
     def "supports main class not in package"() {
         withSample("aot/basic-app")

@@ -7,11 +7,13 @@ import io.micronaut.gradle.docker.model.Layer;
 import io.micronaut.gradle.docker.tasks.DockerResourceConfigDirectoryNamer;
 import io.micronaut.gradle.graalvm.NativeLambdaExtension;
 import org.graalvm.buildtools.gradle.NativeImagePlugin;
+import org.graalvm.buildtools.gradle.dsl.NativeImageLayer;
 import org.graalvm.buildtools.gradle.dsl.NativeImageOptions;
 import org.graalvm.buildtools.gradle.dsl.NativeResourcesOptions;
 import org.graalvm.buildtools.gradle.dsl.agent.DeprecatedAgentOptions;
 import org.graalvm.buildtools.gradle.internal.BaseNativeImageOptions;
 import org.graalvm.buildtools.gradle.internal.NativeImageCommandLineProvider;
+import org.graalvm.buildtools.gradle.internal.NativeImageLayerRegistry;
 import org.graalvm.buildtools.gradle.tasks.BuildNativeImageTask;
 import org.graalvm.buildtools.gradle.tasks.CreateLayerOptions;
 import org.graalvm.buildtools.gradle.tasks.LayerOptions;
@@ -434,11 +436,53 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
                         }
 
                         @Override
+                        public Property<CreateLayerOptions> getLayerCreate() {
+                            return delegate.getLayerCreate();
+                        }
+
+                        @Override
+                        public ConfigurableFileCollection getLayerFiles() {
+                            return delegate.getLayerFiles();
+                        }
+
+                        @Override
+                        public ListProperty<String> getLayerNames() {
+                            return delegate.getLayerNames();
+                        }
+
+                        @Override
+                        @SuppressWarnings("deprecation")
                         public void useLayer(String name) {
                             delegate.useLayer(name);
                         }
 
                         @Override
+                        public void useLayer(NativeImageLayer layer) {
+                            delegate.useLayer(layer);
+                        }
+
+                        @Override
+                        public void useLayer(Provider<? extends NativeImageLayer> layer) {
+                            delegate.useLayer(layer);
+                        }
+
+                        @Override
+                        public void usesLayer(String name) {
+                            delegate.usesLayer(name);
+                        }
+
+                        @Override
+                        public NativeImageLayer getLayer() {
+                            return delegate.getLayer();
+                        }
+
+                        @Override
+                        public void setLayer(NativeImageLayer layer) {
+                            delegate.setLayer(layer);
+                        }
+
+                        @Override
+                        @SuppressWarnings("deprecation")
                         public void createLayer(Action<? super CreateLayerOptions> action) {
                             delegate.createLayer(action);
                         }
@@ -643,7 +687,8 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
                 getObjects().fileProperty(),
                 getProviders().provider(() -> false), // in a docker container we don't use the @arg file
                 getObjects().property(Integer.class).value(getJdkVersion().map(NativeImageDockerfile::toMajorVersion)),
-                getProviders().provider(() -> false) // in a docker container we don't use color output
+                getProviders().provider(() -> false), // the GraalVM version of the image is unknown, keep --no-fallback
+                getProviders().provider(() -> false) // in a docker container we don't use color output, see prepareNativeImageOptions
         ).asArguments();
         if (System.getProperty("os.name").toLowerCase().contains("windows")) {
             // This is a dirty workaround for https://github.com/micronaut-projects/micronaut-gradle-plugin/issues/358
@@ -743,6 +788,7 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
                 getObjects(),
                 getProviders(),
                 getJavaToolchainService(),
+                new NativeImageLayerRegistry(getObjects()),
                 "application");
     }
 
