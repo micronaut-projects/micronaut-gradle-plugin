@@ -4,6 +4,216 @@ import org.gradle.testkit.runner.TaskOutcome
 
 class OpenApiClientGeneratorSpec extends AbstractOpenApiGeneratorSpec {
 
+    def "reruns client generation when a recursively referenced local file changes"() {
+        given:
+        settingsFile << "rootProject.name = 'openapi-client'"
+        buildFile << """
+            plugins {
+                id "io.micronaut.minimal.application"
+                id "io.micronaut.openapi"
+            }
+
+            micronaut {
+                version "$micronautVersion"
+                openapi {
+                    client(file("src/main/openapi/openapi.yml")) {
+                    }
+                }
+            }
+
+            $repositoriesBlock
+
+            dependencies {
+                annotationProcessor "io.micronaut.serde:micronaut-serde-processor"
+                implementation "io.micronaut.serde:micronaut-serde-jackson"
+            }
+        """
+        file("src/main/openapi/openapi.yml").with {
+            parentFile.mkdirs()
+            text = """
+                openapi: "3.0.0"
+                info:
+                  title: Example
+                  version: "1.0"
+                paths:
+                  /foo:
+                    post:
+                      operationId: createFoo
+                      requestBody:
+                        required: true
+                        content:
+                          application/json:
+                            schema:
+                              \$ref: './schemas/request.json#/\$defs/Req'
+                      responses:
+                        "200":
+                          description: ok
+                          content:
+                            application/json:
+                              schema:
+                                \$ref: './schemas/response.json#/\$defs/Res'
+            """.stripIndent()
+        }
+        file("src/main/openapi/schemas/request.json").with {
+            parentFile.mkdirs()
+            text = '''
+                {
+                  "$defs": {
+                    "Req": {
+                      "type": "object",
+                      "required": ["value"],
+                      "properties": {
+                        "value": {
+                          "$ref": "./common.json#/$defs/CommonValue"
+                        }
+                      }
+                    }
+                  }
+                }
+            '''.stripIndent()
+        }
+        file("src/main/openapi/schemas/response.json").text = '''
+            {
+              "$defs": {
+                "Res": {
+                  "type": "object",
+                  "properties": {
+                    "value": {
+                      "$ref": "./common.json#/$defs/CommonValue"
+                    }
+                  }
+                }
+              }
+            }
+        '''.stripIndent()
+        def commonSchema = file("src/main/openapi/schemas/common.json")
+        commonSchema.text = '''
+            {
+              "$defs": {
+                "CommonValue": {
+                  "type": "string"
+                }
+              }
+            }
+        '''.stripIndent()
+
+        when:
+        def firstRun = build('generateClientOpenApiApis')
+        def secondRun = build('generateClientOpenApiApis')
+        commonSchema.text = '''
+            {
+              "$defs": {
+                "CommonValue": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            }
+        '''.stripIndent()
+        def thirdRun = build('generateClientOpenApiApis')
+
+        then:
+        firstRun.task(":generateClientOpenApiApis").outcome == TaskOutcome.SUCCESS
+        secondRun.task(":generateClientOpenApiApis").outcome == TaskOutcome.UP_TO_DATE
+        thirdRun.task(":generateClientOpenApiApis").outcome == TaskOutcome.SUCCESS
+    }
+
+    def "ignores ref-like text in comments and example blocks for task inputs"() {
+        given:
+        settingsFile << "rootProject.name = 'openapi-client'"
+        buildFile << """
+            plugins {
+                id "io.micronaut.minimal.application"
+                id "io.micronaut.openapi"
+            }
+
+            micronaut {
+                version "$micronautVersion"
+                openapi {
+                    client(file("src/main/openapi/openapi.yml")) {
+                    }
+                }
+            }
+
+            $repositoriesBlock
+
+            dependencies {
+                annotationProcessor "io.micronaut.serde:micronaut-serde-processor"
+                implementation "io.micronaut.serde:micronaut-serde-jackson"
+            }
+        """
+        file("src/main/openapi/openapi.yml").with {
+            parentFile.mkdirs()
+            text = """
+                openapi: "3.0.0"
+                info:
+                  title: Example
+                  version: "1.0"
+                  description: |
+                    Example payload mentioning \$ref: './ignored.json'
+                # \$ref: './ignored.json'
+                paths:
+                  /foo:
+                    get:
+                      operationId: getFoo
+                      responses:
+                        "200":
+                          description: ok
+                          content:
+                            application/json:
+                              schema:
+                                \$ref: './schemas/response.json#/\$defs/Res'
+            """.stripIndent()
+        }
+        file("src/main/openapi/schemas/response.json").with {
+            parentFile.mkdirs()
+            text = '''
+                {
+                  "$defs": {
+                    "Res": {
+                      "type": "object",
+                      "properties": {
+                        "value": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+            '''.stripIndent()
+        }
+        def ignored = file("src/main/openapi/ignored.json")
+        ignored.text = '''
+            {
+              "$defs": {
+                "Ignored": {
+                  "type": "string"
+                }
+              }
+            }
+        '''.stripIndent()
+
+        when:
+        def firstRun = build('generateClientOpenApiApis')
+        def secondRun = build('generateClientOpenApiApis')
+        ignored.text = '''
+            {
+              "$defs": {
+                "Ignored": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            }
+        '''.stripIndent()
+        def thirdRun = build('generateClientOpenApiApis')
+
+        then:
+        firstRun.task(":generateClientOpenApiApis").outcome == TaskOutcome.SUCCESS
+        secondRun.task(":generateClientOpenApiApis").outcome == TaskOutcome.UP_TO_DATE
+        thirdRun.task(":generateClientOpenApiApis").outcome == TaskOutcome.UP_TO_DATE
+    }
+
     def "can generate an java OpenAPI client implementation"() {
         given:
         settingsFile << "rootProject.name = 'openapi-client'"
