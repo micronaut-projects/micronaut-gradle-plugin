@@ -2,8 +2,8 @@ package io.micronaut.gradle.docker.tasks;
 
 import io.micronaut.gradle.docker.model.Layer;
 import io.micronaut.gradle.docker.model.LayerKind;
+import io.micronaut.gradle.docker.model.RuntimeKind;
 import org.gradle.api.DefaultTask;
-import org.gradle.api.UncheckedIOException;
 import org.gradle.api.file.CopySpec;
 import org.gradle.api.file.Directory;
 import org.gradle.api.file.DirectoryProperty;
@@ -20,9 +20,13 @@ import org.gradle.api.tasks.OutputDirectory;
 import org.gradle.api.tasks.TaskAction;
 
 import javax.inject.Inject;
+import java.io.File;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -48,11 +52,21 @@ public abstract class BuildLayersTask extends DefaultTask {
         fileOperations.delete(getOutputDir());
         // Create folders if case there are no resources/libs in project
         for (Layer layer : getLayers().get()) {
-            final Provider<Directory> layerDir = layerDirectoryOf(layer, getOutputDir());
             if (layer.getLayerKind().get() == LayerKind.APP) {
-                // special case for now
-                copyLayer(fileOperations, layer, getOutputDir().dir("app"), copy -> copy.rename(s -> "application.jar"));
+                if (layer.getRuntimeKind().get() == RuntimeKind.NATIVE) {
+                    copyLayer(fileOperations, layer, getOutputDir().dir("app"), copy -> copy.rename(s -> "application.jar"));
+                } else {
+                    var appClassesDir = getOutputDir().dir("app/classes");
+                    createDir(appClassesDir);
+                    copyToLayer(fileOperations, appClassesDir, copy -> {
+                        copy.from(layer.getFiles().getFiles().stream()
+                            .sorted(Comparator.comparing(File::getAbsolutePath))
+                            .map(file -> file.getName().endsWith(".jar") ? fileOperations.zipTree(file) : file)
+                            .toList()).into(appClassesDir);
+                    });
+                }
             } else {
+                final Provider<Directory> layerDir = layerDirectoryOf(layer, getOutputDir());
                 copyLayer(fileOperations, layer, layerDir, copy -> {
                 });
             }
@@ -63,12 +77,20 @@ public abstract class BuildLayersTask extends DefaultTask {
                            Layer layer,
                            Provider<Directory> destination,
                            org.gradle.api.Action<CopySpec> customizer) {
+        copyToLayer(fileOperations, destination, copy -> {
+            copy.from(layer.getFiles()).into(destination);
+            customizer.execute(copy);
+        });
+    }
+
+    private void copyToLayer(FileOperations fileOperations,
+                             Provider<Directory> destination,
+                             org.gradle.api.Action<CopySpec> configurer) {
         Path destinationPath = destination.get().getAsFile().toPath();
         Map<Path, Path> copiedFiles = new LinkedHashMap<>();
         fileOperations.copy(copy -> {
             configureDuplicatesStrategy(copy);
-            copy.from(layer.getFiles()).into(destination);
-            customizer.execute(copy);
+            configurer.execute(copy);
             copy.eachFile(details -> recordCopiedFile(copiedFiles, destinationPath.resolve(relativePathOf(details)), details.getFile().toPath()));
         });
         restoreLastModifiedTimes(copiedFiles);
@@ -87,7 +109,7 @@ public abstract class BuildLayersTask extends DefaultTask {
         if (segments.length == 0) {
             return Path.of("");
         }
-        return Path.of(segments[0], java.util.Arrays.copyOfRange(segments, 1, segments.length));
+        return Path.of(segments[0], Arrays.copyOfRange(segments, 1, segments.length));
     }
 
     private void restoreLastModifiedTimes(Map<Path, Path> copiedFiles) {
@@ -102,6 +124,15 @@ public abstract class BuildLayersTask extends DefaultTask {
         }
     }
 
+    private static void createDir(Provider<Directory> dir) {
+        Path path = dir.get().getAsFile().toPath();
+        try {
+            Files.createDirectories(path);
+        } catch (IOException e) {
+            throw new UncheckedIOException("Failed to create directory " + path, e);
+        }
+    }
+
     private void configureDuplicatesStrategy(CopySpec copy) {
         if (getDuplicatesStrategy().isPresent()) {
             copy.setDuplicatesStrategy(getDuplicatesStrategy().get());
@@ -112,11 +143,7 @@ public abstract class BuildLayersTask extends DefaultTask {
                                                         DirectoryProperty outputDir) {
         var kind = layer.getLayerKind().get();
         var dir = outputDir.dir(kind.sourceDirName());
-        try {
-            Files.createDirectories(dir.get().getAsFile().toPath());
-        } catch (IOException e) {
-            throw new UncheckedIOException("Failed to create layer directory " + dir.get().getAsFile(), e);
-        }
+        createDir(dir);
         return dir;
     }
 }
