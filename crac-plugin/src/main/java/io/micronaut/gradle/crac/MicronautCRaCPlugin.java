@@ -2,6 +2,7 @@ package io.micronaut.gradle.crac;
 
 import com.bmuschko.gradle.docker.tasks.container.DockerCreateContainer;
 import com.bmuschko.gradle.docker.tasks.container.DockerExistingContainer;
+import com.bmuschko.gradle.docker.tasks.container.DockerExecContainer;
 import com.bmuschko.gradle.docker.tasks.container.DockerLogsContainer;
 import com.bmuschko.gradle.docker.tasks.container.DockerRemoveContainer;
 import com.bmuschko.gradle.docker.tasks.container.DockerStartContainer;
@@ -34,6 +35,7 @@ import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -50,6 +52,9 @@ public class MicronautCRaCPlugin implements Plugin<Project> {
     public static final String X86_64_ARCH = "amd64";
     public static final String DEFAULT_OS = "linux-glibc";
     public static final String CRAC_DEFAULT_READINESS_COMMAND = "curl --output /dev/null --silent --head http://localhost:8080";
+    public static final Duration CRAC_DEFAULT_RESTORE_READINESS_TIMEOUT = Duration.ofMinutes(2);
+    public static final Duration CRAC_DEFAULT_RESTORE_READINESS_RETRY_DELAY = Duration.ofSeconds(2);
+    public static final String CRAC_DEFAULT_RESTORE_CAPABILITY = "SYS_PTRACE";
     private static final String CRAC_TASK_GROUP = "CRaC";
     public static final String BUILD_DOCKER_DIRECTORY = "docker/";
 
@@ -74,6 +79,15 @@ public class MicronautCRaCPlugin implements Plugin<Project> {
         crac.getEnabled().convention(true);
         crac.getBaseImage().convention(CRAC_DEFAULT_BASE_IMAGE);
         crac.getPreCheckpointReadinessCommand().convention(CRAC_DEFAULT_READINESS_COMMAND);
+        crac.getPostRestoreReadinessCommand().convention(crac.getPreCheckpointReadinessCommand());
+        crac.getPostRestoreReadinessTimeout().convention(CRAC_DEFAULT_RESTORE_READINESS_TIMEOUT);
+        crac.getPostRestoreReadinessRetryDelay().convention(CRAC_DEFAULT_RESTORE_READINESS_RETRY_DELAY);
+        crac.getPostRestoreNetwork().convention(crac.getNetwork());
+        crac.getPostRestorePortBindings().convention(Collections.emptyList());
+        crac.getPostRestoreEnvironment().convention(Collections.emptyMap());
+        crac.getPostRestoreArgs().convention(Collections.emptyList());
+        crac.getPostRestoreCapAdd().convention(Collections.singletonList(CRAC_DEFAULT_RESTORE_CAPABILITY));
+        crac.getRetainPostRestoreContainer().convention(false);
 
         // Default to current architecture
         String osArch = System.getProperty("os.arch");
@@ -109,13 +123,14 @@ public class MicronautCRaCPlugin implements Plugin<Project> {
         });
         TaskProvider<BuildLayersTask> buildLayersTask = tasks.named("buildLayers", BuildLayersTask.class);
         CheckpointTasksOfNote checkpointDockerBuild = configureCheckpointDockerBuild(project, tasks, scriptTask, buildLayersTask, configuration, imageName);
-        Optional<TaskProvider<CRaCFinalDockerfile>> finalDockerBuild = configureFinalDockerBuild(project, tasks, scriptTask, buildLayersTask, checkpointDockerBuild.start, configuration, imageName);
+        FinalDockerTasksOfNote finalDockerBuild = configureFinalDockerBuild(project, tasks, scriptTask, buildLayersTask, checkpointDockerBuild.start, configuration, imageName);
+        configurePostRestoreVerification(project, tasks, finalDockerBuild.dockerBuildTask(), configuration, imageName);
         withBuildStrategy(project, buildStrategy -> {
             checkpointDockerBuild.getCheckpointDockerBuild().ifPresent(t -> t.configure(it -> {
                 buildStrategy.ifPresent(bs -> it.getBuildStrategy().set(buildStrategy.get()));
                 it.setupTaskPostEvaluate();
             }));
-            finalDockerBuild.ifPresent(t -> t.configure(it -> {
+            finalDockerBuild.getFinalDockerBuild().ifPresent(t -> t.configure(it -> {
                 buildStrategy.ifPresent(bs -> it.getBuildStrategy().set(buildStrategy.get()));
                 it.setupTaskPostEvaluate();
             }));
@@ -244,13 +259,13 @@ public class MicronautCRaCPlugin implements Plugin<Project> {
             }
     }
 
-    private Optional<TaskProvider<CRaCFinalDockerfile>> configureFinalDockerBuild(Project project,
-                                                                                  TaskContainer tasks,
-                                                                                  TaskProvider<CheckpointScriptTask> scriptTask,
-                                                                                  TaskProvider<BuildLayersTask> buildLayersTask,
-                                                                                  TaskProvider<DockerStartContainer> start,
-                                                                                  CRaCConfiguration configuration,
-                                                                                  String imageName) {
+    private FinalDockerTasksOfNote configureFinalDockerBuild(Project project,
+                                                             TaskContainer tasks,
+                                                             TaskProvider<CheckpointScriptTask> scriptTask,
+                                                             TaskProvider<BuildLayersTask> buildLayersTask,
+                                                             TaskProvider<DockerStartContainer> start,
+                                                             CRaCConfiguration configuration,
+                                                             String imageName) {
         File f = project.file(adaptTaskName("Dockerfile", imageName));
         String dockerFileTaskName = adaptTaskName("dockerfileCrac", imageName);
         Provider<RegularFile> targetCheckpointDockerFile = project.getLayout().getBuildDirectory().file(BUILD_DOCKER_DIRECTORY + imageName + "/Dockerfile");
@@ -298,9 +313,78 @@ public class MicronautCRaCPlugin implements Plugin<Project> {
             task.setDescription("Pushes the " + imageName + " Docker Image");
             task.getImages().set(dockerBuildTask.flatMap(DockerBuildImage::getImages));
         });
-        if (!f.exists()) {
-            return Optional.of(dockerFileTask);
+        return new FinalDockerTasksOfNote(f.exists() ? null : dockerFileTask, dockerBuildTask);
+    }
+
+    private record FinalDockerTasksOfNote(
+        @Nullable
+        TaskProvider<CRaCFinalDockerfile> finalDockerBuild,
+        TaskProvider<DockerBuildImage> dockerBuildTask
+    ) {
+
+        Optional<TaskProvider<CRaCFinalDockerfile>> getFinalDockerBuild() {
+            return Optional.ofNullable(finalDockerBuild);
         }
-        return Optional.empty();
+    }
+
+    private void configurePostRestoreVerification(Project project,
+                                                  TaskContainer tasks,
+                                                  TaskProvider<DockerBuildImage> dockerBuildTask,
+                                                  CRaCConfiguration configuration,
+                                                  String imageName) {
+        TaskProvider<DockerCreateContainer> createContainer = tasks.register(adaptTaskName("postRestoreCreateContainer", imageName), DockerCreateContainer.class, task -> {
+            task.dependsOn(dockerBuildTask);
+            task.setGroup(CRAC_TASK_GROUP);
+            task.setDescription("Creates the CRaC restored-image verification container");
+            task.getImage().set(dockerBuildTask.flatMap(DockerBuildImage::getImages).map(images -> images.iterator().next()));
+            task.getHostConfig().getNetwork().convention(configuration.getPostRestoreNetwork());
+            task.getHostConfig().getPortBindings().set(configuration.getPostRestorePortBindings());
+            task.getHostConfig().getCapAdd().set(configuration.getPostRestoreCapAdd());
+            task.getEnvVars().set(configuration.getPostRestoreEnvironment());
+            task.getCmd().set(configuration.getPostRestoreArgs());
+        });
+
+        TaskProvider<DockerStartContainer> start = tasks.register(adaptTaskName("postRestoreDockerRun", imageName), DockerStartContainer.class, task -> {
+            task.dependsOn(createContainer);
+            task.setGroup(CRAC_TASK_GROUP);
+            task.setDescription("Runs the CRaC restored-image verification container");
+            task.targetContainerId(createContainer.flatMap(DockerCreateContainer::getContainerId));
+        });
+
+        TaskProvider<DockerLogsContainer> logs = tasks.register(adaptTaskName("postRestoreLogs", imageName), DockerLogsContainer.class, task -> {
+            task.setGroup(CRAC_TASK_GROUP);
+            task.setDescription("Shows logs from the CRaC restored-image verification container");
+            task.getTailAll().set(true);
+            task.getContainerId().set(createContainer.flatMap(DockerCreateContainer::getContainerId));
+        });
+
+        TaskProvider<DockerRemoveContainer> removeContainer = tasks.register(adaptTaskName("postRestoreRemoveContainer", imageName), DockerRemoveContainer.class, task -> {
+            task.setGroup(CRAC_TASK_GROUP);
+            task.setDescription("Removes the CRaC restored-image verification container");
+            task.getForce().set(true);
+            task.getContainerId().set(createContainer.flatMap(DockerCreateContainer::getContainerId));
+            task.onlyIf(t -> !configuration.getRetainPostRestoreContainer().get());
+        });
+
+        TaskProvider<DockerExecContainer> verify = tasks.register(adaptTaskName("dockerVerifyCrac", imageName), DockerExecContainer.class, task -> {
+            task.dependsOn(start);
+            task.setGroup(CRAC_TASK_GROUP);
+            task.setDescription("Verifies the restored CRaC Docker Image");
+            task.getContainerId().set(createContainer.flatMap(DockerCreateContainer::getContainerId));
+            task.getCommands().set(configuration.getPostRestoreReadinessCommand().map(command -> Collections.singletonList(new String[] {"/bin/sh", "-c", command})));
+            task.getSuccessOnExitCodes().set(Collections.singletonList(0));
+            task.doFirst(new Action<>() {
+                @Override
+                public void execute(Task t) {
+                    t.getLogger().lifecycle("Verifying restored CRaC image readiness using configured postRestoreReadinessCommand");
+                }
+            });
+            task.finalizedBy(logs, removeContainer);
+        });
+        project.afterEvaluate(p -> verify.configure(task -> task.setExecProbe(configuration.getPostRestoreReadinessTimeout().zip(configuration.getPostRestoreReadinessRetryDelay(),
+            (timeout, retryDelay) -> task.execProbe(timeout.toMillis(), retryDelay.toMillis())).get())));
+        start.configure(t -> t.finalizedBy(logs, removeContainer));
+        logs.configure(t -> t.mustRunAfter(verify));
+        removeContainer.configure(t -> t.mustRunAfter(logs));
     }
 }
