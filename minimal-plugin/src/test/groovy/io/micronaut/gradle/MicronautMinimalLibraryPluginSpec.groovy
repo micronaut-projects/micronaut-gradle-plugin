@@ -475,6 +475,48 @@ class Foo {}
         ).exists()
     }
 
+    def "test groovy incremental compilation works with automatic dependencies"() {
+        given:
+        settingsFile << "rootProject.name = 'hello-world'"
+        buildFile << """
+            import org.gradle.api.tasks.compile.GroovyCompile
+
+            plugins {
+                id "io.micronaut.minimal.library"
+                id "groovy"
+            }
+
+            micronaut {
+                version "$micronautVersion"
+            }
+
+            $repositoriesBlock
+
+            tasks.withType(GroovyCompile).configureEach {
+                options.incremental = true
+            }
+        """
+        testProjectDir.newFolder("src", "main", "groovy", "example")
+        def groovyFile = testProjectDir.newFile("src/main/groovy/example/Foo.groovy")
+        groovyFile.parentFile.mkdirs()
+        groovyFile << """
+package example;
+
+@jakarta.inject.Singleton
+class Foo {}
+"""
+
+        when:
+        def result = build('compileGroovy')
+
+        then:
+        result.task(":compileGroovy").outcome == TaskOutcome.SUCCESS
+        new File(
+                testProjectDir.getRoot(),
+                'build/classes/groovy/main/example/$Foo$Definition.class'
+        ).exists()
+    }
+
     def "test add openapi processing - groovy"() {
         given:
         settingsFile << "rootProject.name = 'hello-world'"
