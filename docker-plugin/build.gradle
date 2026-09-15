@@ -14,6 +14,7 @@ dependencies {
 
     compileOnly libs.graalvmPlugin
 
+    testImplementation libs.graalvmPlugin
     testImplementation testFixtures(projects.micronautMinimalPlugin)
     testImplementation libs.mockserver.netty
 }

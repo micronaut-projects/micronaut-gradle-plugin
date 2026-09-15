@@ -42,6 +42,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static io.micronaut.gradle.PluginsHelper.resolveRuntime;
 
@@ -88,13 +89,7 @@ public class MicronautMinimalApplicationPlugin implements Plugin<Project> {
             var sourceSets = PluginsHelper.findSourceSets(project);
             if (javaExec.getName().equals("run")) {
                 javaExec.dependsOn(tasks.named(MicronautComponentPlugin.INSPECT_RUNTIME_CLASSPATH_TASK_NAME));
-                javaExec.jvmArgs(
-                        "-Dcom.sun.management.jmxremote"
-                );
-                if (!GraalUtil.isGraalJVM()) {
-                    // graal doesn't support this
-                    javaExec.jvmArgs("-XX:TieredStopAtLevel=1");
-                }
+                javaExec.getJvmArgumentProviders().add(new MicronautRunJvmArgumentsProvider(GraalUtil.isGraalJVM()));
                 // https://github.com/micronaut-projects/micronaut-gradle-plugin/issues/385
                 javaExec.getOutputs().upToDateWhen(t -> false);
                 FileCollection classpath = javaExec.getClasspath();
@@ -112,17 +107,23 @@ public class MicronautMinimalApplicationPlugin implements Plugin<Project> {
             if (project.getGradle().getStartParameter().isContinuous() || Boolean.getBoolean(INTERNAL_CONTINUOUS_FLAG)) {
                 SourceSet sourceSet = sourceSets.findByName("main");
                 if (sourceSet != null) {
+                    MicronautExtension micronautExtension = project.getExtensions().findByType(MicronautExtension.class);
                     var sysProps = new LinkedHashMap<String, Object>();
                     sysProps.put("micronaut.io.watch.restart", true);
                     sysProps.put("micronaut.io.watch.enabled", true);
                     FileCollection sourceDirectories = sourceSet.getAllSource().getSourceDirectories();
+                    FileCollection additionalFilePathsToWatch = micronautExtension.getAdditionalFilesToWatch();
                     //noinspection Convert2Lambda
                     javaExec.doFirst(new Action<>() {
                         @Override
                         public void execute(Task workaroundEagerSystemProps) {
-                            String watchPaths = sourceDirectories
-                                    .getFiles()
-                                    .stream()
+                            Stream<File> fileSources = Stream.concat(
+                                    sourceDirectories
+                                            .getFiles().stream(),
+                                    additionalFilePathsToWatch.getFiles().stream()
+
+                            );
+                            String watchPaths = fileSources
                                     .map(File::getPath)
                                     .collect(Collectors.joining(","));
                             javaExec.systemProperty("micronaut.io.watch.paths", watchPaths);
