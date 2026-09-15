@@ -43,4 +43,19 @@ class MultiProjectTestResourcePluginSpec extends AbstractGradleBuildSpec {
         }
     }
 
+    def "detects transitive runtime classpath modules from project dependencies"() {
+        withSample("test-resources/transitive-runtime-classpath")
+
+        when:
+        def result = build 'test'
+
+        then:
+        result.task(':app:internalStartTestResourcesService').outcome == TaskOutcome.SUCCESS
+        result.task(':app:test').outcome == TaskOutcome.SUCCESS
+        result.output.contains "io.micronaut.testresources.kafka.KafkaTestResourceProvider"
+        result.output.contains "io.micronaut.testresources.redis.RedisTestResourceProvider"
+        result.output.contains "io.micronaut.testresources.testcontainers.GenericTestContainerProvider"
+        result.output.count("io.micronaut.testresources.redis.RedisTestResourceProvider") == 1
+    }
+
 }

@@ -84,6 +84,97 @@ class MicronautMinimalApplicationPluginSpec extends AbstractGradleBuildSpec {
         task.outcome == TaskOutcome.SUCCESS
         watchLine.contains 'src/main/groovy'
     }
+    def "additional files are passed when configuring watch paths"() {
+        given:
+        settingsFile << "rootProject.name = 'hello-world'"
+        buildFile << """
+            plugins {
+                id "io.micronaut.minimal.application"
+                id 'groovy'
+            }
+
+            micronaut {
+                version "$micronautVersion"
+                runtime "netty"
+                additionalFilesToWatch.setFrom(
+                    fileTree("watch")
+                )
+            }
+
+            $repositoriesBlock
+
+            dependencies {
+                implementation "org.apache.groovy:groovy"
+            }
+            $withSerde
+
+            application { mainClass = "example.Application" }
+        """
+
+        testProjectDir.newFolder("src", "main", "groovy", "example")
+        testProjectDir.newFolder("watch")
+        testProjectDir.newFile("watch/example.txt")
+        def groovyApp = testProjectDir.newFile("src/main/groovy/example/Application.groovy")
+
+        groovyApp << """package example
+
+            println "Watch paths: \${System.getProperty('micronaut.io.watch.paths')}"
+        """
+
+        when:
+        def result = build('run', "-D${MicronautMinimalApplicationPlugin.INTERNAL_CONTINUOUS_FLAG}=true")
+        def task = result.task(":run")
+        def output = result.output.readLines()
+        def watchLine = output.find { it.startsWith("Watch paths: ") }
+                .replace(File.separatorChar, (char) '/')
+
+        then:
+        task.outcome == TaskOutcome.SUCCESS
+        watchLine.contains 'watch/example.txt'
+    }
+
+    @Issue("https://github.com/micronaut-projects/micronaut-gradle-plugin/issues/765")
+    def "run task honors application default JVM args"() {
+        given:
+        settingsFile << "rootProject.name = 'hello-world'"
+        buildFile << """
+            plugins {
+                id "io.micronaut.minimal.application"
+            }
+
+            micronaut {
+                version "$micronautVersion"
+                runtime "netty"
+            }
+
+            $repositoriesBlock
+
+            application {
+                mainClass = "example.Application"
+                applicationDefaultJvmArgs = ["-Dtest.flag=from-application"]
+            }
+        """
+
+        testProjectDir.newFolder("src", "main", "java", "example")
+        def javaFile = testProjectDir.newFile("src/main/java/example/Application.java")
+        javaFile.parentFile.mkdirs()
+        javaFile << """
+package example;
+
+class Application {
+    static void main(String... args) {
+        System.out.println("test.flag=" + System.getProperty("test.flag"));
+    }
+}
+"""
+
+        when:
+        def result = build('run')
+
+        then:
+        result.task(":run").outcome == TaskOutcome.SUCCESS
+        result.output.contains("test.flag=from-application")
+    }
 
     @Issue("https://github.com/micronaut-projects/micronaut-gradle-plugin/issues/594")
     def "can detect that SnakeYAML is missing from classpath"() {
