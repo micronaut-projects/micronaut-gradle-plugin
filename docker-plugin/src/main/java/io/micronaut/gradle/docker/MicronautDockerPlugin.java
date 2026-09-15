@@ -16,6 +16,7 @@ import io.micronaut.gradle.docker.model.LayerKind;
 import io.micronaut.gradle.docker.model.MicronautDockerImage;
 import io.micronaut.gradle.docker.model.RuntimeKind;
 import io.micronaut.gradle.docker.tasks.BuildLayersTask;
+import io.micronaut.gradle.docker.tasks.NativeImageTarball;
 import io.micronaut.gradle.docker.tasks.PrepareDockerContext;
 import org.graalvm.buildtools.gradle.dsl.NativeImageOptions;
 import org.gradle.api.Action;
@@ -166,6 +167,7 @@ public class MicronautDockerPlugin implements Plugin<Project> {
         });
 
         Optional<TaskProvider<MicronautDockerfile>> dockerFileTask = configureDockerBuild(project, tasks, buildLayersTask, imageName);
+        project.getPlugins().withId("org.graalvm.buildtools.native", plugin -> configureNativeImageTarballBuild(project, tasks, imageName));
         project.getPlugins().withId("io.micronaut.graalvm", plugin -> {
             TaskProvider<BuildLayersTask> buildNativeLayersTask = tasks.register(adaptTaskName("buildNativeLayersTask", imageName), BuildLayersTask.class, task -> {
                 task.setGroup(BasePlugin.BUILD_GROUP);
@@ -378,5 +380,17 @@ public class MicronautDockerPlugin implements Plugin<Project> {
 
         });
         return dockerFileTask;
+    }
+
+    private void configureNativeImageTarballBuild(Project project,
+                                                  TaskContainer tasks,
+                                                  String imageName) {
+        TaskProvider<Task> nativeCompile = tasks.named("nativeCompile");
+        tasks.register(adaptTaskName("dockerBuildNativeImageTarball", imageName), NativeImageTarball.class, task -> {
+            task.dependsOn(nativeCompile);
+            task.getExecutable().convention(project.getLayout().getBuildDirectory().file("native/nativeCompile/" + project.getName()));
+            task.getOutputFile().convention(project.getLayout().getBuildDirectory().file("docker/native-" + imageName + "/jib-image.tar"));
+            task.getImageName().convention(project.getName());
+        });
     }
 }
