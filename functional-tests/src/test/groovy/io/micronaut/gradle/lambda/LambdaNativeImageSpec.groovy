@@ -52,6 +52,7 @@ class LambdaNativeImageSpec extends AbstractFunctionalTest {
         !dockerFileNative.find() { it.endsWith('com.example.Application') }
     }
 
+    @Issue("https://github.com/micronaut-projects/micronaut-gradle-plugin/issues/1372")
     void 'native lambdas build in docker fetch the correct graalvm for #desc'() {
         given:
         settingsFile << "rootProject.name = 'hello-world'"
@@ -94,6 +95,7 @@ class LambdaNativeImageSpec extends AbstractFunctionalTest {
 
         and:
         dockerFileNative.find { it ==~ /.*graalvm-jdk-\d+_linux-${archset}_bin\.tar\.gz.*/ }
+        dockerFileNative.find { it == 'RUN dnf update -y && dnf install -y gcc glibc-devel zlib-devel libstdc++-static tar gzip && dnf clean all && rm -rf /var/cache/dnf' }
 
         where:
         archset   | desc
