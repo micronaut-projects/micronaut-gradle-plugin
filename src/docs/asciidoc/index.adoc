@@ -233,47 +233,6 @@ NOTE: This requires a validator version that supports the CLI argument `--suppre
 The `*ConfigurationValidationReport` tasks are cacheable and compatible with Gradle configuration cache.
 To preserve failure results across cache hits (so that cached invalid configuration still fails subsequent builds), the failing `*ConfigurationValidation` tasks read the result marker produced by their corresponding report task.
 
-
-Using the `io.micronaut.application` plugin:
-
-[source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
-----
-plugins {
-  id 'io.micronaut.application' version '{gradle-project-version}'
-}
-----
-
-[source, kotlin, subs="verbatim,attributes", role="multi-language-sample"]
-----
-plugins {
-  id("io.micronaut.application") version "{gradle-project-version}"
-}
-----
-
-is therefore equivalent to applying those plugins individually:
-
-[source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
-----
-plugins {
-  id 'io.micronaut.minimal.application' version '{gradle-project-version}'
-  id 'io.micronaut.docker' version '{gradle-project-version}'
-  id 'io.micronaut.graalvm' version '{gradle-project-version}'
-}
-apply plugin: com.diffplug.gradle.eclipse.apt.AptEclipsePlugin
-----
-
-[source, kotlin, subs="verbatim,attributes", role="multi-language-sample"]
-----
-plugins {
-  id("io.micronaut.minimal.application") version "{gradle-project-version}"
-  id("io.micronaut.docker") version "{gradle-project-version}"
-  id("io.micronaut.graalvm") version "{gradle-project-version}"
-}
-apply(plugin=com.diffplug.gradle.eclipse.apt.AptEclipsePlugin::class.java)
-----
-
-`io.micronaut.minimal.application`, `io.micronaut.graalvm` and `io.micronaut.docker` plugins (as well as the Eclipse annotation processing support plugin).
-
 == Quick Start
 
 Template projects are available via https://micronaut.io/launch/[Micronaut Launch] for each language.
@@ -455,7 +414,7 @@ plugins {
 
 The https://plugins.gradle.org/plugin/io.micronaut.library[Micronaut library plugin] applies the following modifications to the build:
 
-* Applies the https://search.maven.org/artifact/io.micronaut.platform/micronaut-platform[Micronaut Bill of Materials (BOM)]
+* Applies the https://central.sonatype.com/artifact/io.micronaut.platform/micronaut-platform[Micronaut Bill of Materials (BOM)]
 * Applies the `java-library` plugin
 * Configures annotation processing for the current language (Groovy, Java or Kotlin)
 * <<#sec:automatic-annotation-processors, Adds annotation processors automatically>> for Micronaut modules
@@ -628,6 +587,30 @@ The https://plugins.gradle.org/plugin/io.micronaut.application[Micronaut applica
 * Applies the `io.micronaut.graalvm` plugin
 * Correctly configures Gradle for continuous build
 
+The `io.micronaut.application` plugin application shown above is therefore equivalent to applying those plugins individually:
+
+[source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
+----
+plugins {
+  id 'io.micronaut.minimal.application' version '{gradle-project-version}'
+  id 'io.micronaut.docker' version '{gradle-project-version}'
+  id 'io.micronaut.graalvm' version '{gradle-project-version}'
+}
+apply plugin: com.diffplug.gradle.eclipse.apt.AptEclipsePlugin
+----
+
+[source, kotlin, subs="verbatim,attributes", role="multi-language-sample"]
+----
+plugins {
+  id("io.micronaut.minimal.application") version "{gradle-project-version}"
+  id("io.micronaut.docker") version "{gradle-project-version}"
+  id("io.micronaut.graalvm") version "{gradle-project-version}"
+}
+plugins.apply(com.diffplug.gradle.eclipse.apt.AptEclipsePlugin::class.java)
+----
+
+`io.micronaut.application` applies the `io.micronaut.minimal.application`, `io.micronaut.graalvm` and `io.micronaut.docker` plugins, as well as the Eclipse annotation processing support plugin.
+
 The following additional tasks are provided by this plugin:
 
 * `buildLayers` - Builds application layers for use in a Docker container
@@ -650,6 +633,37 @@ $ ./gradlew run -t
 ----
 
 The `run` task honors Gradle `application.applicationDefaultJvmArgs`. Micronaut-specific JVM arguments are added in addition to those defaults.
+
+=== Continuous Build and Watching Additional Files
+By default, when running the application in continuous mode (e.g. `./gradlew run -t`), the Micronaut plugin watches for changes to any file in the main source set and will restart if modified.
+
+If your project relies on files outside of the main source set (like separate source sets or externalized configuration files), you can configure the plugin to watch these additional files so that modifying any of these files will also trigger a rebuild and restart.
+
+You can specify these directories using the `additionalFilesToWatch` property within the `micronaut` extension:
+
+[source,groovy]
+.build.gradle
+----
+micronaut {
+    // Watch a specific directory
+    additionalFilesToWatch.from(file("src/custom-assets"))
+
+    // Or watch an entire custom source set
+    additionalFilesToWatch.from(sourceSets.custom.allSource.srcDirs)
+}
+----
+
+[source,kotlin]
+.build.gradle.kts
+----
+micronaut {
+    // Watch a specific directory
+    additionalFilesToWatch.from(file("src/custom-assets"))
+
+    // Or watch an entire custom source set
+    additionalFilesToWatch.from(sourceSets.getByName("custom").allSource.srcDirs)
+}
+----
 
 === Development-only Dependencies
 
@@ -1156,7 +1170,7 @@ tasks.named<io.micronaut.gradle.docker.NativeImageDockerfile>("dockerfileNative"
 }
 ----
 
-You can also add any of the other instructions/commands that the docker plugin supports, see {docker-plugin}/blob/master/src/main/groovy/com/bmuschko/gradle/docker/tasks/image/Dockerfile.groovy[the Dockerfile task documentation].
+You can also add any of the other instructions/commands that the docker plugin supports, see https://bmuschko.github.io/gradle-docker-plugin/current/api/com/bmuschko/gradle/docker/tasks/image/Dockerfile.html[the Dockerfile task documentation].
 
 ==== Tweaking the generated docker files
 
@@ -1204,8 +1218,8 @@ tasks.named("dockerfileNative") {
     editDockerfile {
         before("FROM graalvm AS builder") {
             replace(
-                "RUN dnf update -y && dnf install -y gcc glibc-devel zlib-devel libstdc++-static tar && dnf clean all && rm -rf /var/cache/dnf",
-                "RUN dnf --releasever=<releasever> update -y && dnf --releasever=<releasever> install -y gcc glibc-devel zlib-devel libstdc++-static tar && dnf clean all && rm -rf /var/cache/dnf"
+                "RUN dnf update -y && dnf install -y gcc glibc-devel zlib-devel libstdc++-static tar gzip && dnf clean all && rm -rf /var/cache/dnf",
+                "RUN dnf --releasever=<releasever> update -y && dnf --releasever=<releasever> install -y gcc glibc-devel zlib-devel libstdc++-static tar gzip && dnf clean all && rm -rf /var/cache/dnf"
             )
         }
         after("FROM graalvm AS builder") {
@@ -1224,8 +1238,8 @@ tasks.named<io.micronaut.gradle.docker.NativeImageDockerfile>("dockerfileNative"
     editDockerfile {
         before("FROM graalvm AS builder") {
             replace(
-                "RUN dnf update -y && dnf install -y gcc glibc-devel zlib-devel libstdc++-static tar && dnf clean all && rm -rf /var/cache/dnf",
-                "RUN dnf --releasever=<releasever> update -y && dnf --releasever=<releasever> install -y gcc glibc-devel zlib-devel libstdc++-static tar && dnf clean all && rm -rf /var/cache/dnf"
+                "RUN dnf update -y && dnf install -y gcc glibc-devel zlib-devel libstdc++-static tar gzip && dnf clean all && rm -rf /var/cache/dnf",
+                "RUN dnf --releasever=<releasever> update -y && dnf --releasever=<releasever> install -y gcc glibc-devel zlib-devel libstdc++-static tar gzip && dnf clean all && rm -rf /var/cache/dnf"
             )
         }
         after("FROM graalvm AS builder") {
@@ -1957,6 +1971,7 @@ micronaut {
         inferClasspath.set(true) // true by default
         additionalModules.add(JDBC_MYSQL) // empty by default
         clientTimeout.set(60) // in seconds, maximum time to wait for resources to be available, 60s by default
+        serverIdleTimeoutMinutes.set(60) // if the server doesn't receive any request for this amount of time, it will be shut down
         sharedServer.set(true) // false by default
         sharedServerNamespace.set("custom") // unset by default
         javaLauncher.set(javaToolchainSpec) // uses the project's toolchain if available, otherwise uses the same Java executable as Gradle
@@ -2260,7 +2275,7 @@ micronaut {
         // The OS of the Azul CRaC JDK to use. Defaults to linux-glibc for the default base image.
         os = "linux-glibc"
 
-        // The version of the Azul CRaC JDK to use in the image (currently only 17 is supported)
+        // The version of the Azul CRaC JDK to use in the image (defaults to 25)
         javaVersion = JavaLanguageVersion.of(25)
 
         // A command to run that will be successful when the application is ready to be checkpointed.
@@ -2298,7 +2313,7 @@ micronaut {
         // The OS of the Azul CRaC JDK to use. Defaults to linux-glibc for the default base image.
         os.set("linux-glibc")
 
-        // The version of the Azul CRaC JDK to use in the image (currently only 17 is supported)
+        // The version of the Azul CRaC JDK to use in the image (defaults to 25)
         javaVersion.set(JavaLanguageVersion.of(25))
 
         // A command to run that will be successful when the application is ready to be checkpointed.
@@ -2319,7 +2334,7 @@ micronaut {
 
 The `io.micronaut.openapi` plugin adds support for generating https://www.openapis.org/[OpenAPI] clients or servers, given an OpenAPI definition, in both Java and Kotlin.
 
-The plugin adds an link:api/io/micronaut/gradle/openapi/OpenApiExtension.html[openapi] extension to the `micronaut` configuration block.
+The plugin adds a link:api/io/micronaut/gradle/openapi/OpenApiExtension.html[openapi] extension to the `micronaut` configuration block.
 
 === Generating a client
 
@@ -2357,7 +2372,7 @@ micronaut {
 }
 ----
 
-The generated sources will be found by default in your `$buildDir/generated/openapi/client` directory, and automatically added to your main source set (so the classes are directly available for you to use).
+The generated API and model sources are written by default under task-specific directories in `$buildDir/generated/openapi`, such as `generateClientOpenApiApis` and `generateClientOpenApiModels`, and automatically added to your main source set (so the classes are directly available for you to use).
 
 You can generate multiple clients by adding multiple `client` blocks, in which case each client is identified by a name:
 
@@ -2407,7 +2422,19 @@ micronaut {
 }
 ----
 
-Please refer to link:api/io/micronaut/gradle/openapi/OpenApiClientSpec.html[OpenApiClientSpec] for the whole list of client configuration options.
+The reference API documentation lists every property on link:api/io/micronaut/gradle/openapi/OpenApiClientSpec.html[OpenApiClientSpec] and its parent link:api/io/micronaut/gradle/openapi/OpenApiSpec.html[OpenApiSpec], including option defaults and generated-code effects.
+
+==== Dependency expectations for generated code
+
+The Gradle plugin configures code generation and may add some supporting dependencies automatically, but it does not add all of the Micronaut Security or other application/runtime dependencies required by the generated sources. Treat the generated client like application code: after you enable an option such as `useAuth`, add the Micronaut modules that the emitted classes import and compile against.
+
+The exact dependency set depends on the auth features present in your OpenAPI definition and on the generator version you select. For example, the auth-enabled OpenAPI client tests in this repository compile with `io.micronaut.security:micronaut-security-oauth2` and `io.micronaut.reactor:micronaut-reactor` on the application classpath. The plugin can contribute some generated-code support dependencies automatically, but if you generate auth support, regenerate the client and run your normal compile task to confirm that the required Micronaut Security modules are present.
+
+==== Ownership boundary for generated guides and READMEs
+
+This guide owns the Gradle plugin DSL and how to wire generation into your build. Generated files such as `README.md`, `api-guide.md`, or `auth-guide.md` come from the Micronaut OpenAPI generator templates, not from this documentation page.
+
+If those generated files are missing or incomplete, fix that in `micronaut-openapi` or select a newer generator release with the `openapi { version = ... }` / `version.set(...)` configuration described below. Use this repository guide to document the Gradle-side integration and dependency expectations; use the generator project to change generated content.
 
 === Generating a server
 
@@ -2443,7 +2470,7 @@ micronaut {
 }
 ----
 
-The generated sources will be found by default in your `$buildDir/generated/openapi/server` directory, and automatically added to your main source set (so the classes are directly available for you to use).
+The generated API and model sources are written by default under task-specific directories in `$buildDir/generated/openapi`, such as `generateServerOpenApiApis` and `generateServerOpenApiModels`, and automatically added to your main source set (so the classes are directly available for you to use).
 
 You can generate multiple servers by providing a name to the `server` block:
 
@@ -2491,7 +2518,7 @@ micronaut {
 
 NOTE: Server generation will generate interfaces that you have to implement in order to write your server code.
 
-Please refer to link:api/io/micronaut/gradle/openapi/OpenApiServerSpec.html[OpenApiServerSpec] for the whole list of client configuration options.
+Please refer to link:api/io/micronaut/gradle/openapi/OpenApiServerSpec.html[OpenApiServerSpec] and its parent link:api/io/micronaut/gradle/openapi/OpenApiSpec.html[OpenApiSpec] for the full list of server configuration options, including option defaults and generated-code effects.
 
 === Advanced configuration
 
