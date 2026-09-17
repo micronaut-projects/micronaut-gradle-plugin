@@ -48,6 +48,13 @@ public interface OpenApiExtension {
     void client(File file, Action<? super OpenApiClientSpec> spec);
 
     /**
+     * Configures generation with a custom Micronaut OpenAPI generator, given a definition file.
+     * @param file the OpenAPI definition file
+     * @param spec configuration for the generator
+     */
+    void generic(File file, Action<? super OpenApiGenericSpec> spec);
+
+    /**
      * Configures generation of a server, given a definition file.
      * @param name an identifier used to uniquely refer to the generator, used to derive task names
      * @param definition the OpenAPI definition file provider
@@ -64,6 +71,14 @@ public interface OpenApiExtension {
     void client(String name, Provider<RegularFile> definition, Action<? super OpenApiClientSpec> spec);
 
     /**
+     * Configures generation with a custom Micronaut OpenAPI generator, given a definition file.
+     * @param name an identifier used to uniquely refer to the generator, used to derive task names
+     * @param definition the OpenAPI definition file provider
+     * @param spec configuration for the generator
+     */
+    void generic(String name, Provider<RegularFile> definition, Action<? super OpenApiGenericSpec> spec);
+
+    /**
      * Configures generation of a server, given a definition file.
      * @param name an identifier used to uniquely refer to the generator, used to derive task names
      * @param definition the OpenAPI definition file provider
@@ -78,4 +93,12 @@ public interface OpenApiExtension {
      * @param spec configuration for the server generation
      */
     void client(String name, File definition, Action<? super OpenApiClientSpec> spec);
+
+    /**
+     * Configures generation with a custom Micronaut OpenAPI generator, given a definition file.
+     * @param name an identifier used to uniquely refer to the generator, used to derive task names
+     * @param definition the OpenAPI definition file provider
+     * @param spec configuration for the generator
+     */
+    void generic(String name, File definition, Action<? super OpenApiGenericSpec> spec);
 }
