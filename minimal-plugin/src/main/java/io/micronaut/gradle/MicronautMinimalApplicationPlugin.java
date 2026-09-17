@@ -45,6 +45,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -195,16 +196,40 @@ public class MicronautMinimalApplicationPlugin implements Plugin<Project> {
     }
 
     private void registerMicronautRuntimeDependencies(Project project) {
+        AtomicBoolean explicitAwsFunctionRuntime = trackExplicitAwsFunctionRuntimeDependency(project);
         for (String configurationName : runtimeDependencyConfigurations()) {
             project.getConfigurations().named(configurationName, configuration ->
                     configuration.getDependencies().addAllLater(project.provider(() ->
-                            resolveMicronautRuntimeDependencies(project, configurationName)
+                            resolveMicronautRuntimeDependencies(project, configurationName, explicitAwsFunctionRuntime.get())
                     ))
             );
         }
     }
 
-    private Collection<Dependency> resolveMicronautRuntimeDependencies(Project project, String configurationName) {
+    /**
+     * Tracks whether the build explicitly declares the AWS Lambda function runtime dependency, so that
+     * the automatic API proxy dependencies can be skipped for function applications. This has to observe
+     * dependencies as they are added instead of reading the dependency sets, because those sets are the
+     * ones we contribute to lazily and reading them here would trigger a circular evaluation.
+     *
+     * @param project the project
+     * @return a holder which is updated as soon as the dependency is declared
+     */
+    private AtomicBoolean trackExplicitAwsFunctionRuntimeDependency(Project project) {
+        var explicitAwsFunctionRuntime = new AtomicBoolean();
+        for (String configurationName : List.of(IMPLEMENTATION_CONFIGURATION_NAME, RUNTIME_ONLY_CONFIGURATION_NAME)) {
+            project.getConfigurations().named(configurationName, configuration ->
+                    configuration.getDependencies().whenObjectAdded(dependency -> {
+                        if (MicronautRuntimeDependencies.isExplicitAwsFunctionRuntimeDependency(dependency.getGroup(), dependency.getName())) {
+                            explicitAwsFunctionRuntime.set(true);
+                        }
+                    })
+            );
+        }
+        return explicitAwsFunctionRuntime;
+    }
+
+    private Collection<Dependency> resolveMicronautRuntimeDependencies(Project project, String configurationName, boolean explicitAwsFunctionRuntime) {
         MicronautRuntime micronautRuntime = resolveRuntime(project);
         MicronautSerialization micronautSerialization = PluginsHelper.findMicronautExtension(project)
                 .getSerialization()
@@ -219,8 +244,13 @@ public class MicronautMinimalApplicationPlugin implements Plugin<Project> {
         if (dependencies.isEmpty()) {
             return Collections.emptyList();
         }
+        boolean skipAutomaticAwsApiProxy = micronautRuntime.isLambda() && explicitAwsFunctionRuntime;
         List<Dependency> resolvedDependencies = new ArrayList<>(dependencies.size());
         for (AutomaticDependency dependency : dependencies) {
+            if (skipAutomaticAwsApiProxy
+                    && MicronautRuntimeDependencies.isAutomaticAwsApiProxyDependency(dependency.coordinates())) {
+                continue;
+            }
             dependency.resolve(project).ifPresent(resolvedDependencies::add);
         }
         return resolvedDependencies;
