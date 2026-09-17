@@ -19,13 +19,54 @@ import org.gradle.api.provider.Property;
 
 public interface OpenApiServerSpec extends OpenApiSpec {
 
+    /**
+     * Package used for generated server controller types.
+     *
+     * <p>Defaults to {@code "io.micronaut.openapi.controller"}.</p>
+     *
+     * @return the generated controller package
+     */
     Property<String> getControllerPackage();
 
+    /**
+     * Whether to generate server-side authentication annotations and support
+     * for OpenAPI security requirements.
+     *
+     * <p>Defaults to {@code false}. When enabled, the generated server sources
+     * may require Micronaut Security dependencies in the consuming
+     * application.</p>
+     *
+     * @return whether server authentication support is generated
+     */
     Property<Boolean> getUseAuth();
 
+    /**
+     * Whether to generate server code prepared for Micronaut AOT scenarios.
+     *
+     * <p>Defaults to {@code false}.</p>
+     *
+     * @return whether AOT-oriented server code is generated
+     */
     Property<Boolean> getAot();
 
+    /**
+     * Whether Java server models should distinguish required nullable
+     * properties more strictly in generated code.
+     *
+     * <p>Defaults to {@code true}. This option applies to Java server
+     * generation.</p>
+     *
+     * @return whether hard nullable model handling is generated
+     */
     Property<Boolean> getGenerateHardNullable();
 
+    /**
+     * Whether generated server operations should support streaming file upload
+     * types.
+     *
+     * <p>Defaults to {@code false}.</p>
+     *
+     * @return whether streaming file upload support is generated
+     */
     Property<Boolean> getGenerateStreamingFileUpload();
 }

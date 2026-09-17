@@ -1,8 +1,11 @@
 package io.micronaut.gradle;
 
 import org.gradle.api.Action;
+import org.gradle.api.file.ConfigurableFileCollection;
+import org.gradle.api.file.Directory;
 import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.plugins.ExtensionAware;
+import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Property;
 import org.gradle.api.provider.SetProperty;
 
@@ -25,6 +28,8 @@ public abstract class MicronautExtension implements ExtensionAware {
     private final Property<Boolean> enableNativeImage;
     private final Property<MicronautRuntime> runtime;
     private final Property<MicronautTestRuntime> testRuntime;
+    private final Property<MicronautSerialization> serialization;
+    private final ConfigurableFileCollection additionalFilesToWatch;
 
     /**
      * If set to false, then the Micronaut Gradle plugins will not automatically
@@ -49,12 +54,15 @@ public abstract class MicronautExtension implements ExtensionAware {
     public MicronautExtension(ObjectFactory objectFactory, SourceSetConfigurer sourceSetConfigurer) {
         this.processing = objectFactory.newInstance(AnnotationProcessing.class, sourceSetConfigurer);
         this.version = objectFactory.property(String.class);
+        this.additionalFilesToWatch = objectFactory.fileCollection();
         this.enableNativeImage = objectFactory.property(Boolean.class)
                                     .convention(true);
         this.runtime = objectFactory.property(MicronautRuntime.class)
                                     .convention(MicronautRuntime.NONE);
         this.testRuntime = objectFactory.property(MicronautTestRuntime.class)
                                         .convention(MicronautTestRuntime.NONE);
+        this.serialization = objectFactory.property(MicronautSerialization.class)
+                                          .convention(MicronautSerialization.NONE);
         getImportMicronautPlatform().convention(true);
     }
 
@@ -70,6 +78,13 @@ public abstract class MicronautExtension implements ExtensionAware {
      */
     public Property<MicronautRuntime> getRuntime() {
         return runtime;
+    }
+
+    /**
+     * @return The runtime serialization to use.
+     */
+    public Property<MicronautSerialization> getSerialization() {
+        return serialization;
     }
 
     /**
@@ -155,10 +170,61 @@ public abstract class MicronautExtension implements ExtensionAware {
     }
 
     /**
+     * Configures the runtime serialization to use.
+     *
+     * @param serialization The Micronaut serialization type
+     * @return This extension
+     */
+    public MicronautExtension serialization(String serialization) {
+        if (serialization != null) {
+            this.serialization.set(MicronautSerialization.parse(serialization));
+        }
+        return this;
+    }
+
+    /**
+     * Configures the runtime serialization to use.
+     *
+     * @param serialization The Micronaut serialization type
+     * @return This extension
+     */
+    public MicronautExtension serialization(MicronautSerialization serialization) {
+        if (serialization != null) {
+            this.serialization.set(serialization);
+        }
+        return this;
+    }
+
+    /**
+     * Sets the runtime serialization to use.
+     *
+     * @param serialization The Micronaut serialization type
+     */
+    public void setSerialization(String serialization) {
+        serialization(serialization);
+    }
+
+    /**
+     * Sets the runtime serialization to use.
+     *
+     * @param serialization The Micronaut serialization type
+     */
+    public void setSerialization(MicronautSerialization serialization) {
+        serialization(serialization);
+    }
+
+    /**
      * @return The micronaut version.
      */
     public Property<String> getVersion() {
         return version;
+    }
+
+    /*
+     * @return list of files to watch when running the application with continuous build
+     */
+    public ConfigurableFileCollection getAdditionalFilesToWatch() {
+        return this.additionalFilesToWatch;
     }
 
     public AnnotationProcessing getProcessing() {
