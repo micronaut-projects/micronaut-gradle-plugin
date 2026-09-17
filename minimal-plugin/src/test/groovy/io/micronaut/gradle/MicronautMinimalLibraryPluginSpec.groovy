@@ -126,6 +126,81 @@ class FooTest {
                 .resolve('build/classes/java/test/example/$FooTest$Definition.class').toFile().exists()
     }
 
+    def "test lombok plugin works with required args constructor beans"() {
+        given:
+        settingsFile << "rootProject.name = 'hello-world'"
+        buildFile << """
+            plugins {
+                id "io.micronaut.minimal.library"
+                id "io.freefair.lombok" version "8.6"
+            }
+
+            micronaut {
+                version "$micronautVersion"
+                testRuntime "junit"
+                processing {
+                    incremental true
+                }
+            }
+
+            $repositoriesBlock
+        """
+        testProjectDir.newFolder("src", "main", "java", "example")
+        testProjectDir.newFolder("src", "test", "java", "example")
+        def javaFile = testProjectDir.newFile("src/main/java/example/GreetingService.java")
+        def testJavaFile = testProjectDir.newFile("src/test/java/example/GreetingServiceTest.java")
+        javaFile.parentFile.mkdirs()
+        javaFile << """
+package example;
+
+import jakarta.inject.Singleton;
+import lombok.RequiredArgsConstructor;
+
+@Singleton
+class GreetingDependency {
+    String message() {
+        return "Good";
+    }
+}
+
+@RequiredArgsConstructor
+@Singleton
+class GreetingService {
+    private final GreetingDependency greetingDependency;
+
+    String greet() {
+        return greetingDependency.message();
+    }
+}
+"""
+        testJavaFile.parentFile.mkdirs()
+        testJavaFile << """
+package example;
+
+import io.micronaut.context.ApplicationContext;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
+class GreetingServiceTest {
+
+    @Test
+    void testRequiredArgsConstructorBeanInstantiates() {
+        try (ApplicationContext context = ApplicationContext.run()) {
+            Assertions.assertEquals("Good", context.getBean(GreetingService.class).greet());
+        }
+    }
+}
+"""
+
+        when:
+        def result = build('test')
+
+        then:
+        result.task(":test").outcome == TaskOutcome.SUCCESS
+        testProjectDir.root.toPath()
+                .resolve('build/classes/java/main/example/$GreetingService$Definition.class').toFile().exists()
+    }
+
     def "test add jaxrs processing"() {
         given:
         settingsFile << "rootProject.name = 'hello-world'"
