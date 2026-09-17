@@ -118,7 +118,7 @@ public class MicronautKotlinSupport {
     private static void configureKapt(Project project) {
         warnAboutKspTakingPrecedence(project);
         configureKotlinCompilerPlugin(project, KAPT_CONFIGURATIONS, "kapt", PluginsHelper.ANNOTATION_PROCESSOR_MODULES, () -> !isMicronautKaptDisabledByKsp(project));
-        addJavaParserDependencies(KAPT_CONFIGURATIONS, project);
+        addJavaParserDependencies(KAPT_CONFIGURATIONS, project, () -> !isMicronautKaptDisabledByKsp(project));
 
         // Need to identify KAPT version. We can't configure KAPT 2.x for incremental processing
         // Remove this block after the end of support for KAPT 1.9
@@ -305,9 +305,19 @@ public class MicronautKotlinSupport {
         });
     }
 
-    private static void addJavaParserDependencies(String[] compilerConfigurations, Project project) {
+    private static void addJavaParserDependencies(String[] compilerConfigurations, Project project, BooleanSupplier condition) {
+        // This dependency is declared without a version, which is contributed by the Micronaut
+        // annotation processors themselves, so it must be registered lazily and under the same
+        // condition: without it the configuration would fail to resolve.
         for (String configuration : compilerConfigurations) {
-            project.getDependencies().add(configuration, "com.github.javaparser:javaparser-core");
+            project.getConfigurations().getByName(configuration).getDependencies().addAllLater(
+                project.getProviders().provider(() -> {
+                    if (!condition.getAsBoolean()) {
+                        return List.<Dependency>of();
+                    }
+                    return List.of(project.getDependencies().create("com.github.javaparser:javaparser-core"));
+                })
+            );
         }
     }
 
