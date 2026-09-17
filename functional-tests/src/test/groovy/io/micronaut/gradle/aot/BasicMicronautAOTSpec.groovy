@@ -139,6 +139,27 @@ class BasicMicronautAOTSpec extends AbstractAOTPluginSpec {
 
     }
 
+    @Issue("https://github.com/micronaut-projects/micronaut-gradle-plugin/issues/765")
+    def "optimizedRun honors application default JVM args (#kind)"() {
+        withSample("aot/basic-app")
+        withPlugins(kind)
+        buildFile << """
+            application {
+                applicationDefaultJvmArgs = ["-Dio.micronaut.internal.test.interrupt.startup=true"]
+            }
+        """
+
+        when:
+        def result = build("optimizedRun")
+
+        then:
+        result.task(":optimizedRun").outcome == TaskOutcome.SUCCESS
+        result.output.contains("Detected test, interrupting application startup")
+
+        where:
+        kind << [Plugins.MINIMAL_APPLICATION, Plugins.APPLICATION]
+    }
+
     @Issue("https://github.com/micronaut-projects/micronaut-gradle-plugin/issues/401")
     def "supports spaces in file names"() {
         withSpacesInTestDir()
@@ -167,6 +188,26 @@ class BasicMicronautAOTSpec extends AbstractAOTPluginSpec {
         where:
         task << ["nativeCompile", "nativeOptimizedCompile"]
 
+    }
+
+    def "optimized native binary classpath does not include the project jar"() {
+        withSample("aot/basic-app")
+        withPlugins(Plugins.APPLICATION)
+        buildFile << """
+            tasks.register("printOptimizedClasspath") {
+                def optimizedClasspath = graalvmNative.binaries.optimized.classpath
+                def mainJar = tasks.named("jar").flatMap { it.archiveFile }
+                doLast {
+                    println "main-jar-present=\${optimizedClasspath.files.contains(mainJar.get().asFile)}"
+                }
+            }
+        """
+
+        when:
+        def result = build("printOptimizedClasspath")
+
+        then:
+        result.output.contains("main-jar-present=false")
     }
 
     @Issue("https://github.com/micronaut-projects/micronaut-gradle-plugin/issues/803")
