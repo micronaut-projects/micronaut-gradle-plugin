@@ -1,0 +1,15 @@
+plugins {
+    id "io.micronaut.internal.build.gradle-plugin"
+}
+
+description = "Micronaut Cloud Native Buildpacks Gradle plugin"
+
+micronautPlugins {
+    register('buildpacks', 'io.micronaut.gradle.buildpacks.MicronautBuildpacksPlugin', 'Micronaut Buildpacks Plugin')
+}
+
+dependencies {
+    api projects.micronautMinimalPlugin
+
+    testImplementation testFixtures(projects.micronautMinimalPlugin)
+}

@@ -33,6 +33,7 @@ dependencies {
     javadoc gradleApi()
     javadoc project(":micronaut-minimal-plugin")
     javadoc project(":micronaut-docker-plugin")
+    javadoc project(":micronaut-buildpacks-plugin")
     javadoc project(":micronaut-graalvm-plugin")
     javadoc project(":micronaut-aot-plugin")
     javadoc project(":micronaut-gradle-plugin")
