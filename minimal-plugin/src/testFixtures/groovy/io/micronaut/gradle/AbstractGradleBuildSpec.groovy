@@ -243,6 +243,50 @@ abstract class AbstractGradleBuildSpec extends Specification {
         s.replaceAll("\\r\\n?", "\n")
     }
 
+    static String normalizeNativeDockerfileConfigDirs(String s) {
+        List<String> normalized = []
+        List<String> configDirLines = []
+        int configDirLineKind = 0
+        s.readLines().each { line ->
+            int lineKind = nativeDockerfileConfigDirLineKind(line)
+            if (lineKind == 0) {
+                flushNativeDockerfileConfigDirLines(normalized, configDirLines)
+                configDirLineKind = 0
+                normalized.add(line)
+            } else {
+                if (configDirLineKind != 0 && configDirLineKind != lineKind) {
+                    flushNativeDockerfileConfigDirLines(normalized, configDirLines)
+                }
+                configDirLineKind = lineKind
+                configDirLines.add(line)
+            }
+        }
+        flushNativeDockerfileConfigDirLines(normalized, configDirLines)
+        normalized.join("\n")
+    }
+
+    static String removeNativeDockerfileConfigDirLines(String s) {
+        s.readLines().findAll { nativeDockerfileConfigDirLineKind(it) == 0 }.join("\n")
+    }
+
+    private static void flushNativeDockerfileConfigDirLines(List<String> normalized, List<String> configDirLines) {
+        if (!configDirLines.empty) {
+            normalized.addAll(configDirLines.sort())
+            configDirLines.clear()
+        }
+    }
+
+    private static int nativeDockerfileConfigDirLineKind(String line) {
+        String trimmedLine = line.trim()
+        if (trimmedLine.startsWith("RUN mkdir -p ") && trimmedLine.contains("/config-dirs/")) {
+            return 1
+        }
+        if (trimmedLine.startsWith("COPY --link config-dirs/")) {
+            return 2
+        }
+        0
+    }
+
     private static determineArgFileName(String lookupString) {
         String name = lookupString.substring(lookupString.lastIndexOf('@') + 1)
         return name.substring(0, name.indexOf(".args") + 5)
