@@ -23,6 +23,7 @@ class TestResourcesWithGraalVMSpec extends AbstractTestResourcesSpec {
 }
 
 graalvmNative.binaries.all {
+    quickBuild = true
     runtimeArgs.add("-DinterruptStartup=true")
 }
 
@@ -50,6 +51,7 @@ graalvmNative.binaries.all {
 }
 
 graalvmNative.binaries.all {
+    quickBuild = true
     runtimeArgs.add("-DinterruptStartup=true")
 }
 
