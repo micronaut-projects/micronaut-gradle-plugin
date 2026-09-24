@@ -33,6 +33,7 @@ import org.gradle.api.plugins.AppliedPlugin;
 import org.gradle.api.plugins.BasePlugin;
 import org.gradle.api.plugins.ExtensionContainer;
 import org.gradle.api.plugins.JavaApplication;
+import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.PathSensitivity;
 import org.gradle.api.tasks.SourceSet;
@@ -47,6 +48,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Optional;
+import java.util.concurrent.Callable;
 import java.util.function.Consumer;
 
 import static io.micronaut.gradle.Strings.capitalize;
@@ -64,20 +66,26 @@ public class MicronautDockerPlugin implements Plugin<Project> {
             MicronautExtension micronautExtension = extensions.getByType(MicronautExtension.class);
             var dockerExtension = micronautExtension.getExtensions().create("docker", DockerExtension.class);
             configureCopyLink(dockerExtension, project);
+            JdkAotCacheSupport.configureDefaults(dockerExtension.getJdkAotCache());
             NamedDomainObjectContainer<MicronautDockerImage> dockerImages = project.getObjects().domainObjectContainer(MicronautDockerImage.class, s -> project.getObjects().newInstance(DefaultMicronautDockerImage.class, s));
             micronautExtension.getExtensions().add("dockerImages", dockerImages);
-            dockerImages.all(image -> createDockerImage(project, image));
-            TaskProvider<Jar> runnerJar = createMainRunnerJar(project, tasks);
+            dockerImages.all(image -> createDockerImage(project, image, dockerExtension.getJdkAotCache()));
+            Provider<Boolean> jdkAotCache = dockerExtension.getJdkAotCache().getEnabled();
+            TaskProvider<Jar> runnerResourcesJar = createMainRunnerResourcesJar(tasks);
+            TaskProvider<Jar> runnerJar = createMainRunnerJar(project, tasks, jdkAotCache, runnerResourcesJar);
             dockerImages.create("main", image -> {
                 createDependencyLayers(image, project.getConfigurations().getByName(RUNTIME_CLASSPATH_CONFIGURATION_NAME));
                 image.addLayer(layer -> {
                     layer.getLayerKind().set(LayerKind.APP);
                     layer.getFiles().from(runnerJar);
                 });
+                File resourcesDir = project.getExtensions().getByType(SourceSetContainer.class)
+                    .getByName(SourceSet.MAIN_SOURCE_SET_NAME).getOutput().getResourcesDir();
                 image.addLayer(layer -> {
                     layer.getLayerKind().set(LayerKind.EXPANDED_RESOURCES);
-                    layer.getFiles().from(project.getExtensions().getByType(SourceSetContainer.class)
-                        .getByName(SourceSet.MAIN_SOURCE_SET_NAME).getOutput().getResourcesDir());
+                    // A JDK AOT cache needs a class path of JARs only, so the resources are packaged
+                    // as a JAR in the same layer when it is enabled
+                    layer.getFiles().from((Callable<Object>) () -> Boolean.TRUE.equals(jdkAotCache.get()) ? runnerResourcesJar : resourcesDir);
                 });
             });
         });
@@ -147,7 +155,7 @@ public class MicronautDockerPlugin implements Plugin<Project> {
         return context + capitalize(baseName);
     }
 
-    private void createDockerImage(Project project, MicronautDockerImage imageSpec) {
+    private void createDockerImage(Project project, MicronautDockerImage imageSpec, JdkAotCacheOptions jdkAotCache) {
         TaskContainer tasks = project.getTasks();
         String imageName = imageSpec.getName();
         project.getLogger().info("Creating docker tasks for image {}", imageName);
@@ -165,7 +173,7 @@ public class MicronautDockerPlugin implements Plugin<Project> {
             }
         });
 
-        Optional<TaskProvider<MicronautDockerfile>> dockerFileTask = configureDockerBuild(project, tasks, buildLayersTask, imageName);
+        Optional<TaskProvider<MicronautDockerfile>> dockerFileTask = configureDockerBuild(project, tasks, buildLayersTask, imageName, jdkAotCache);
         project.getPlugins().withId("io.micronaut.graalvm", plugin -> {
             TaskProvider<BuildLayersTask> buildNativeLayersTask = tasks.register(adaptTaskName("buildNativeLayersTask", imageName), BuildLayersTask.class, task -> {
                 task.setGroup(BasePlugin.BUILD_GROUP);
@@ -198,7 +206,15 @@ public class MicronautDockerPlugin implements Plugin<Project> {
         });
     }
 
-    private TaskProvider<Jar> createMainRunnerJar(Project project, TaskContainer tasks) {
+    private TaskProvider<Jar> createMainRunnerResourcesJar(TaskContainer tasks) {
+        return tasks.register("runnerResourcesJar", Jar.class, jar -> {
+            jar.setDescription("Assembles the resources of the main Docker image as a JAR, used when the JDK AOT cache is enabled");
+            jar.getArchiveClassifier().set("runner-resources");
+            jar.from(tasks.named(JavaPlugin.PROCESS_RESOURCES_TASK_NAME));
+        });
+    }
+
+    private TaskProvider<Jar> createMainRunnerJar(Project project, TaskContainer tasks, Provider<Boolean> jdkAotCache, TaskProvider<Jar> runnerResourcesJar) {
         return tasks.register("runnerJar", Jar.class, jar -> {
             jar.dependsOn(tasks.findByName("classes"));
             jar.getArchiveClassifier().set("runner");
@@ -220,8 +236,13 @@ public class MicronautDockerPlugin implements Plugin<Project> {
                     Configuration runtimeClasspath = project.getConfigurations()
                         .getByName(RUNTIME_CLASSPATH_CONFIGURATION_NAME);
 
-                    classpath.add("resources/");
-                    classpath.add("classes/");
+                    if (Boolean.TRUE.equals(jdkAotCache.get())) {
+                        // The JDK AOT cache does not support non-empty directories on the class path
+                        classpath.add("resources/" + runnerResourcesJar.get().getArchiveFileName().get());
+                    } else {
+                        classpath.add("resources/");
+                        classpath.add("classes/");
+                    }
                     for (File file : runtimeClasspath) {
                         classpath.add("libs/" + file.getName());
                     }
@@ -235,7 +256,8 @@ public class MicronautDockerPlugin implements Plugin<Project> {
     private Optional<TaskProvider<MicronautDockerfile>> configureDockerBuild(Project project,
                                                                              TaskContainer tasks,
                                                                              TaskProvider<BuildLayersTask> buildLayersTask,
-                                                                             String imageName) {
+                                                                             String imageName,
+                                                                             JdkAotCacheOptions jdkAotCache) {
         File f = project.file(adaptTaskName("Dockerfile", imageName));
 
         TaskProvider<? extends Dockerfile> dockerFileTask;
@@ -259,6 +281,12 @@ public class MicronautDockerPlugin implements Plugin<Project> {
                 task.getDestFile().set(targetDockerFile);
                 task.setupDockerfileInstructions();
                 task.getLayers().convention(buildLayersTask.flatMap(BuildLayersTask::getLayers));
+                JdkAotCacheOptions taskJdkAotCache = task.getJdkAotCache();
+                taskJdkAotCache.getEnabled().convention(jdkAotCache.getEnabled());
+                taskJdkAotCache.getTrainingPaths().convention(jdkAotCache.getTrainingPaths());
+                taskJdkAotCache.getTrainingTimeout().convention(jdkAotCache.getTrainingTimeout());
+                taskJdkAotCache.getCompatibleOopCompression().convention(jdkAotCache.getCompatibleOopCompression());
+                taskJdkAotCache.getStrictProbes().convention(jdkAotCache.getStrictProbes());
             });
         }
         TaskProvider<DockerBuildImage> dockerBuildTask = tasks.register(adaptTaskName("dockerBuild", imageName), DockerBuildImage.class, task -> {

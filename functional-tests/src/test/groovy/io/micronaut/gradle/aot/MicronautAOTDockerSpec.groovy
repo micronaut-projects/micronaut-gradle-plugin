@@ -4,7 +4,10 @@ import io.micronaut.gradle.DefaultVersions
 import io.micronaut.gradle.AbstractGradleBuildSpec
 import org.gradle.testkit.runner.TaskOutcome
 import spock.lang.IgnoreIf
+import spock.lang.Issue
 import spock.lang.Requires
+
+import java.util.jar.JarFile
 
 class MicronautAOTDockerSpec extends AbstractAOTPluginSpec {
 
@@ -27,6 +30,40 @@ EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "/home/app/application.jar"]
 """
 
+    }
+
+    @Issue("https://github.com/micronaut-projects/micronaut-gradle-plugin/issues/1379")
+    def "generates an optimized docker file that trains a JDK AOT cache"() {
+        withSample("aot/basic-app")
+        buildFile << """
+            micronaut.docker.jdkAotCache {
+                enabled = true
+                trainingPaths = ["/"]
+            }
+        """
+
+        when:
+        def result = build "optimizedDockerfile", "optimizedRunnerJitJar"
+
+        then:
+        result.task(":optimizedDockerfile").outcome != TaskOutcome.FAILED
+        normalizeLineEndings(file("build/docker/optimized/Dockerfile").text) == """FROM eclipse-temurin:25-jre
+WORKDIR /home/app
+COPY --link layers/libs /home/app/libs
+COPY --link layers/app /home/app/
+EXPOSE 8080
+COPY --link jdk-aot-cache/train.sh /home/app/jdk-aot-cache/train.sh
+RUN ["bash", "/home/app/jdk-aot-cache/train.sh", "--cache", "/home/app/application.aot", "--timeout", "120", "--compatible-oop-compression", "--port", "8080", "--path", "/", "--", "java", "-XX:+UseG1GC", "-jar", "/home/app/application.jar"]
+ENTRYPOINT ["java", "-XX:AOTCache=/home/app/application.aot", "-XX:+UseG1GC", "-jar", "/home/app/application.jar"]
+"""
+        file("build/docker/optimized/jdk-aot-cache/train.sh").exists()
+
+        and: "the class path has JARs only"
+        def classPath = new JarFile(file("build/libs/basic-app-0.1-optimized-runner.jar")).withCloseable {
+            it.manifest.mainAttributes.getValue("Class-Path").split(" ") as List
+        }
+        !classPath.empty
+        classPath.every { it.startsWith("libs/") && it.endsWith(".jar") }
     }
 
     @IgnoreIf({ os.windows })

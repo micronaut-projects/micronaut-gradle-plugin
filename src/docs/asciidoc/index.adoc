@@ -1282,6 +1282,96 @@ This directory is an internal Docker build artifact, not a supported application
 The plugin also produces an additional runner JAR in `build/libs` with the `runner` classifier.
 That archive is used to populate the Docker layers and is not meant to be copied or run on its own.
 
+[[docker-jdk-aot-cache]]
+==== Training a JDK AOT cache
+
+On JDK 25 and later, the JVM can start an application from an AOT cache (https://openjdk.org/jeps/483[JEP 483], https://openjdk.org/jeps/514[JEP 514] and https://openjdk.org/jeps/515[JEP 515]): a file that a training run of the application writes, and from which later launches load classes that are already parsed, verified and linked, and method profiles.
+This is the JDK AOT cache, which is different from <<Micronaut AOT Plugin,Micronaut AOT>>.
+
+A cache is valid only for the JDK build, the operating system and the CPU architecture that trained it, so the Docker image build trains it, with the image's own `java`.
+The JVM Docker images (`dockerBuild` and, with the <<Micronaut AOT Plugin,Micronaut AOT plugin>>, `optimizedDockerBuild`) do so when the option is enabled:
+
+[source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
+----
+micronaut {
+    docker {
+        jdkAotCache {
+            enabled = true
+            trainingPaths = ["/hello", "/books?page=1"]
+        }
+    }
+}
+----
+
+[source, kotlin, subs="verbatim,attributes", role="multi-language-sample"]
+----
+micronaut {
+    docker {
+        jdkAotCache {
+            enabled.set(true)
+            trainingPaths.set(listOf("/hello", "/books?page=1"))
+        }
+    }
+}
+----
+
+The generated `Dockerfile` then copies a training script into the image and runs it after the layers and the <<Adding additional instructions,additional instructions>>, and the `ENTRYPOINT` loads the cache:
+
+[source, dockerfile]
+----
+FROM eclipse-temurin:25-jre
+WORKDIR /home/app
+COPY --link layers/libs /home/app/libs
+COPY --link layers/app /home/app/
+COPY --link layers/resources /home/app/resources
+EXPOSE 8080
+COPY --link jdk-aot-cache/train.sh /home/app/jdk-aot-cache/train.sh
+RUN ["bash", "/home/app/jdk-aot-cache/train.sh", "--cache", "/home/app/application.aot", "--timeout", "120", "--compatible-oop-compression", "--port", "8080", "--path", "/hello", "--path", "/books?page=1", "--", "java", "-XX:+UseG1GC", "-jar", "/home/app/application.jar"]
+ENTRYPOINT ["java", "-XX:AOTCache=/home/app/application.aot", "-XX:+UseG1GC", "-jar", "/home/app/application.jar"]
+----
+
+The training run starts the application with the same command as the `ENTRYPOINT`, plus `-XX:AOTCacheOutput`:
+
+- If the application's Micronaut Core has the training run switch (`micronaut.application.training.enabled`), the plugin turns it on and passes the training paths as `micronaut.application.training.warmup.paths`. The application warms itself up and must exit with status 0.
+- Otherwise, the script waits until the application answers HTTP requests on the first exposed port, sends a `GET` request to each training path, which must be answered with a status below 400, and stops the application with `SIGTERM`. The JVM writes the cache as it exits.
+
+The image build fails if the training fails or writes no cache.
+At runtime, the cache is used in the JVM's default `auto` mode: if it cannot be used, the application starts without it.
+
+The following options are available:
+
+|===
+|Option |Default |Description
+
+|`enabled`
+|`false`
+|Whether the JVM images train a JDK AOT cache.
+
+|`trainingPaths`
+|none
+|The paths requested with `GET` once the application is ready, in order. Each path starts with `/`, may have a query string, and contains no whitespace and no comma. Requesting the application's hot paths makes the cache noticeably more effective than a training run that only starts the application.
+
+|`trainingTimeout`
+|`120`
+|The longest time, in seconds, that the training waits for the application to answer, or to exit once it has been asked to.
+
+|`compatibleOopCompression`
+|`true`
+|Whether the cache is created with `-XX:+AOTCompatibleOopCompression` when the base image's JDK has that diagnostic flag (JDK 27 and later). Without it, a cache can fail to load depending on where the heap is placed.
+
+|`strictProbes`
+|`0`
+|How many times the image build starts the JVM with `-XX:AOTMode=on` and the cache once it is written, to check that it loads. A failing probe fails the image build.
+|===
+
+A few things to keep in mind:
+
+- The option applies to the Dockerfiles that the plugin generates for the default build strategy: not to a <<Customized docker files,custom `Dockerfile`>>, to Lambda or Oracle Functions images, or to the CRaC images. The `jdkVersion` of the `dockerfile` task, which defaults to the target compatibility, must be 25 or later, and the base image must have a JDK 25 or later and `bash`. The build must not add its own `ENTRYPOINT`.
+- A JDK AOT cache cannot use class path directories that have content. So, in the main image, the application resources are packaged as a JAR (the `runnerResourcesJar` task) in the `resources` layer, and the runner JAR lists it before the dependencies, where it listed the `resources/` directory. The optimized image no longer lists the `resources/` and `classes/` directories. Resources are then loaded from `jar:` URLs, and editing or mounting `/home/app/resources` has no effect.
+- The cache records the garbage collector and, for large heaps, the compressed oops setting. The training run and the `ENTRYPOINT` share the JVM arguments of the `dockerfile` task, and if these select no collector, both get `-XX:+UseG1GC`, because the image builder and the production container would otherwise pick different collectors. To use another collector, add it to the arguments, for example with `args("-XX:+UseSerialGC")`.
+- The image build runs the application. An application that needs external services during startup or for the training paths needs a configuration for the training run. A build argument reaches the training run but is not kept in the image, for example `arg("MICRONAUT_ENVIRONMENTS=training")` on the `dockerfile` task. With the training run switch, a custom warm-up can be a startup event listener that requires the `micronaut.application.training.enabled` property.
+- The cache belongs to the base image's JDK build, so pin the base image by digest for reproducible images. Each platform of a multi-platform image trains its own cache, and emulated platforms train slowly. The cache adds tens of megabytes to the image.
+
 
 === Micronaut Runtimes
 
@@ -1739,6 +1829,7 @@ It will produce a docker image that you can start using `docker run`.
 Alternatively, you can call `./gradlew optimizedDockerPush` to push the generated image to your docker registry.
 
 All configuration options which apply to the standard docker image are also available to the optimized Docker images.
+The optimized image can also train a JDK AOT cache, which is a different optimization from Micronaut AOT: see <<docker-jdk-aot-cache,Training a JDK AOT cache>>.
 
 [[aot:optimized-native-docker-image]]
 === Building an optimized native Docker image
