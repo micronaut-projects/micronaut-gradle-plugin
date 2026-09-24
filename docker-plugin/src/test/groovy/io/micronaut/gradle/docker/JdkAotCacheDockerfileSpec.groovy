@@ -139,7 +139,10 @@ ENTRYPOINT ["java", "-XX:AOTCache=/home/app/application.aot", "-XX:+UseG1GC", "-
         """
 
         when:
-        build('dockerfile')
+        // Not in process: when the test JVM has a Java agent (JaCoCo on CI), an in-process build loads the
+        // plugins from the test JVM's class path, which Gradle removes from the Kotlin script class path,
+        // so the accessors of micronaut { } and docker { } are not typed and the script does not compile
+        configureRunner('dockerfile').withDebug(false).build()
 
         then:
         file("build/docker/main/Dockerfile").readLines().contains('RUN ["bash", "/home/app/jdk-aot-cache/train.sh", "--cache", "/home/app/application.aot", "--timeout", "120", "--compatible-oop-compression", "--strict-probes", "2", "--port", "8080", "--path", "/hello", "--", "java", "-XX:+UseG1GC", "-jar", "/home/app/application.jar"]')
