@@ -22,6 +22,7 @@ import io.micronaut.gradle.MicronautComponentPlugin;
 import io.micronaut.gradle.MicronautExtension;
 import io.micronaut.gradle.PluginsHelper;
 import io.micronaut.gradle.ShadowPluginSupport;
+import io.micronaut.gradle.docker.DockerExtension;
 import io.micronaut.gradle.docker.MicronautDockerPlugin;
 import io.micronaut.gradle.docker.model.LayerKind;
 import io.micronaut.gradle.docker.model.MicronautDockerImage;
@@ -207,6 +208,7 @@ public abstract class MicronautAotPlugin implements Plugin<Project> {
         MicronautExtension micronautExtension = project.getExtensions().getByType(MicronautExtension.class);
         NamedDomainObjectContainer<MicronautDockerImage> dockerImages = (NamedDomainObjectContainer<MicronautDockerImage>) micronautExtension.getExtensions().getByName("dockerImages");
         TaskContainer tasks = project.getTasks();
+        Provider<Boolean> jdkAotCache = micronautExtension.getExtensions().getByType(DockerExtension.class).getJdkAotCache().getEnabled();
         TaskProvider<Jar> optimizedRunnerJar = tasks.register("optimizedRunner" + runtime.getCapitalizedName() + "Jar", Jar.class, jar -> {
             jar.from(getArchiveOperations().zipTree(optimizedJar.map(Jar::getArchiveFile)));
             jar.getArchiveClassifier().set("optimized-runner");
@@ -222,8 +224,12 @@ public abstract class MicronautAotPlugin implements Plugin<Project> {
                     for (File file : runtimeClasspath) {
                         classpath.add("libs/" + file.getName());
                     }
-                    classpath.add("resources/");
-                    classpath.add("classes/");
+                    // These directories do not exist in the image. The JDK AOT cache accepts absent directories,
+                    // but not once a later layer or a mount fills them, so they are left out when it is enabled
+                    if (runtime != OptimizerIO.TargetRuntime.JIT || !Boolean.TRUE.equals(jdkAotCache.get())) {
+                        classpath.add("resources/");
+                        classpath.add("classes/");
+                    }
                     return String.join(" ", classpath);
                 }));
                 manifest.attributes(attrs);

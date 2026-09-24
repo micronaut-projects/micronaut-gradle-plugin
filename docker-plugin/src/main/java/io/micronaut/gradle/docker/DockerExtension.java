@@ -15,8 +15,29 @@
  */
 package io.micronaut.gradle.docker;
 
+import org.gradle.api.Action;
 import org.gradle.api.provider.Property;
+import org.gradle.api.tasks.Nested;
 
 public interface DockerExtension {
     Property<Boolean> getUseCopyLink();
+
+    /**
+     * The JDK AOT cache that the generated JVM Docker images can train.
+     *
+     * @return the JDK AOT cache options
+     * @since 5.0.3
+     */
+    @Nested
+    JdkAotCacheOptions getJdkAotCache();
+
+    /**
+     * Configures the JDK AOT cache that the generated JVM Docker images can train.
+     *
+     * @param action the configuration action
+     * @since 5.0.3
+     */
+    default void jdkAotCache(Action<? super JdkAotCacheOptions> action) {
+        action.execute(getJdkAotCache());
+    }
 }
