@@ -83,6 +83,78 @@ class MicronautDevFunctionalTest extends AbstractEagerConfiguringFunctionalTest 
 
         then:
         tasks.output.contains("mnDev - Runs the application in development mode")
+
+        when: "the configuration cache stores the manifest task and reuses it"
+        file("build/micronaut-dev").deleteDir()
+        def stored = build("mnDevManifest", "--configuration-cache")
+        def reused = build("mnDevManifest", "--configuration-cache")
+
+        then:
+        stored.output.contains("Configuration cache entry stored")
+        reused.output.contains("Reusing configuration cache")
+        reused.task(":mnDevManifest").outcome in [TaskOutcome.SUCCESS, TaskOutcome.UP_TO_DATE]
+        this.manifest()."micronaut.dev.main-class" == "example.Application"
+    }
+
+    def "the sources of the projects depended on are listed with the application's"() {
+        given:
+        settingsFile << """
+            rootProject.name = 'hello-world'
+            include 'lib'
+            include 'common'
+        """
+        buildFile << """
+            plugins {
+                id "io.micronaut.application"
+            }
+            micronaut {
+                version "$micronautVersion"
+                runtime "netty"
+            }
+            $repositoriesBlock
+            dependencies {
+                implementation(project(":lib"))
+            }
+            application { mainClass = "example.Application" }
+        """
+        file("lib").mkdirs()
+        file("lib/build.gradle") << """
+            plugins { id "java-library" }
+            $repositoriesBlock
+            dependencies { api(project(":common")) }
+        """
+        file("common").mkdirs()
+        file("common/build.gradle") << """
+            plugins { id "java-library" }
+            $repositoriesBlock
+        """
+        writeApplication("java", "src/main/java/example/Application.java", """
+            package example;
+            public class Application {
+                public static void main(String[] args) { }
+            }
+        """)
+        writeApplication("java", "lib/src/main/java/lib/Greeter.java", "package lib; public class Greeter { }")
+        writeApplication("java", "common/src/main/java/common/Greeting.java", "package common; public class Greeting { }")
+        file("common/src/main/resources").mkdirs()
+        file("common/src/main/resources/common.properties") << "a=b"
+
+        when:
+        def result = buildManifest()
+
+        then: "the application's own sources and those of lib and, through it, common"
+        result.task(":mnDevManifest").outcome == TaskOutcome.SUCCESS
+        def manifest = manifest()
+        def sources = manifest."micronaut.dev.sources.java".split(File.pathSeparator).toList()
+        sources.size() == 3
+        sources.any { it.endsWith("lib" + File.separator + "src" + File.separator + "main" + File.separator + "java") }
+        sources.any { it.endsWith("common" + File.separator + "src" + File.separator + "main" + File.separator + "java") }
+        manifest."micronaut.dev.resources.config".contains("common" + File.separator + "src" + File.separator + "main" + File.separator + "resources")
+        def reloadable = manifest."micronaut.dev.reloadable".split(File.pathSeparator).toList()
+        reloadable[0].endsWith("classes" + File.separator + "java" + File.separator + "main")
+        !reloadable[0].contains("lib" + File.separator)
+        reloadable.any { it.contains("lib" + File.separator + "build") }
+        reloadable.any { it.contains("common" + File.separator + "build") }
     }
 
     def "in build-tool mode the classes task touches the trigger the launcher watches"() {

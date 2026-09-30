@@ -139,6 +139,10 @@ public final class MicronautDevSupport {
             task.getCompileClasspath().from(main.getCompileClasspath());
             task.getJavaSources().from(main.getJava().getSrcDirs());
             task.getResourceSources().from(main.getResources().getSrcDirs());
+            // the sources of the projects depended on too: their outputs are reloadable, so an edit there compiles
+            // into this project's output, which the generation reads first
+            task.getJavaSources().from(dependencySourceDirectories(project, developmentRuntimeClasspath, "java"));
+            task.getResourceSources().from(dependencySourceDirectories(project, developmentRuntimeClasspath, "resources"));
             // the compilation is described, not run: the providers read the compile task without depending on it,
             // and mnDev builds the classes before it runs
             TaskProvider<JavaCompile> compileJava = project.getTasks().named(main.getCompileJavaTaskName(), JavaCompile.class);
@@ -151,9 +155,11 @@ public final class MicronautDevSupport {
             task.getJavaOptions().set(project.provider(() -> javacOptions(compileJava.get())));
             task.getBuildToolTrigger().set(manifestDirectory.map(dir -> new File(dir, TRIGGER_FILE_NAME).getAbsolutePath()));
             task.getManifestFile().set(project.getLayout().getBuildDirectory().file(MANIFEST_DIRECTORY + "/" + MicronautDevManifest.MANIFEST_FILE_NAME));
-            task.getArgumentFiles().from(manifestDirectory.map(dir -> List.of(new File(dir, "runtime.argfile"), new File(dir, "compile.argfile"), new File(dir, "processors.argfile"),
-                new File(dir, "java-options.argfile"), new File(dir, "kotlin-options.argfile"), new File(dir, "groovy-options.argfile"))));
-            configureGroovy(project, task, main);
+            // one provider per file of the build layout: the configuration cache stores these, not a collection a transform built
+            for (String argumentFile : List.of("runtime", "compile", "processors", "java-options", "kotlin-options", "groovy-options")) {
+                task.getArgumentFiles().from(project.getLayout().getBuildDirectory().file(MANIFEST_DIRECTORY + "/" + argumentFile + ".argfile"));
+            }
+            configureGroovy(project, task, main, developmentRuntimeClasspath);
         });
 
         project.getTasks().register(DEV_TASK_NAME, JavaExec.class, task -> {
@@ -217,6 +223,62 @@ public final class MicronautDevSupport {
         return configuration.getIncoming().artifactView(view -> view.componentFilter(id -> !(id instanceof ProjectComponentIdentifier))).getFiles();
     }
 
+    /**
+     * The main source directories of one kind, {@code java}, {@code resources}, or the name of a source
+     * directory set a language plugin adds to the source set such as {@code groovy} or {@code kotlin}, of
+     * every project of this build the configuration reaches, transitively. The projects are found in the
+     * resolution result, whose project identifiers every supported Gradle version has.
+     *
+     * @param project the project
+     * @param configuration the configuration whose graph is walked
+     * @param kind the kind of source directory
+     * @return the directories, which may not exist
+     */
+    static Provider<List<File>> dependencySourceDirectories(Project project, Configuration configuration, String kind) {
+        // a callable provider, evaluated when the configuration cache is stored, keeps only the directories: a
+        // transform of the resolution result would be stored with the project it reads
+        return project.provider(() -> {
+            org.gradle.api.artifacts.result.ResolvedComponentResult root = configuration.getIncoming().getResolutionResult().getRootComponent().get();
+            List<File> directories = new ArrayList<>();
+            java.util.Set<String> seen = new java.util.HashSet<>();
+            java.util.ArrayDeque<org.gradle.api.artifacts.result.ResolvedComponentResult> queue = new java.util.ArrayDeque<>();
+            queue.add(root);
+            while (!queue.isEmpty()) {
+                org.gradle.api.artifacts.result.ResolvedComponentResult component = queue.poll();
+                for (org.gradle.api.artifacts.result.DependencyResult dependency : component.getDependencies()) {
+                    if (!(dependency instanceof org.gradle.api.artifacts.result.ResolvedDependencyResult resolved)) {
+                        continue;
+                    }
+                    org.gradle.api.artifacts.result.ResolvedComponentResult selected = resolved.getSelected();
+                    if (selected.getId() instanceof ProjectComponentIdentifier id && seen.add(id.getProjectPath())) {
+                        Project dependencyProject = project.findProject(id.getProjectPath());
+                        // a project of an included build shares no path with this build's: the name tells them apart
+                        if (dependencyProject != null && dependencyProject != project && dependencyProject.getName().equals(id.getProjectName())) {
+                            directories.addAll(mainSourceDirectories(dependencyProject, kind));
+                        }
+                        queue.add(selected);
+                    }
+                }
+            }
+            return directories;
+        });
+    }
+
+    private static java.util.Set<File> mainSourceDirectories(Project project, String kind) {
+        SourceSetContainer sourceSets = project.getExtensions().findByType(SourceSetContainer.class);
+        SourceSet main = sourceSets == null ? null : sourceSets.findByName(SourceSet.MAIN_SOURCE_SET_NAME);
+        if (main == null) {
+            return java.util.Set.of();
+        }
+        return switch (kind) {
+            case "java" -> main.getJava().getSrcDirs();
+            case "resources" -> main.getResources().getSrcDirs();
+            default -> main.getExtensions().findByName(kind) instanceof org.gradle.api.file.SourceDirectorySet directories
+                ? directories.getSrcDirs()
+                : java.util.Set.of();
+        };
+    }
+
     private static FileCollection projectOutputs(Project project, Configuration configuration, String libraryElements) {
         return configuration.getIncoming().artifactView(view -> {
             view.componentFilter(id -> id instanceof ProjectComponentIdentifier);
@@ -225,10 +287,11 @@ public final class MicronautDevSupport {
         }).getFiles();
     }
 
-    private static void configureGroovy(Project project, MicronautDevManifest task, SourceSet main) {
+    private static void configureGroovy(Project project, MicronautDevManifest task, SourceSet main, Configuration developmentRuntimeClasspath) {
         project.getPluginManager().withPlugin("groovy", unused -> {
             org.gradle.api.file.SourceDirectorySet groovy = main.getExtensions().getByType(org.gradle.api.file.SourceDirectorySet.class);
             task.getGroovySources().from(groovy.getSrcDirs());
+            task.getGroovySources().from(dependencySourceDirectories(project, developmentRuntimeClasspath, "groovy"));
             TaskProvider<GroovyCompile> compileGroovy = project.getTasks().named(main.getCompileTaskName("groovy"), GroovyCompile.class);
             task.getGroovyOutput().set(project.provider(() -> compileGroovy.get().getDestinationDirectory().get().getAsFile().getAbsolutePath()));
             task.getGroovyOptions().set(project.provider(() -> {
