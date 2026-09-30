@@ -1450,7 +1450,93 @@ A few things to keep in mind:
 - A JDK AOT cache cannot use class path directories that have content. So, in the main image, the application resources are packaged as a JAR (the `runnerResourcesJar` task) in the `resources` layer, and the runner JAR lists it before the dependencies, where it listed the `resources/` directory. The optimized image no longer lists the `resources/` and `classes/` directories. Resources are then loaded from `jar:` URLs, and editing or mounting `/home/app/resources` has no effect.
 - The cache records the garbage collector and, for large heaps, the compressed oops setting. The training run and the `ENTRYPOINT` share the JVM arguments of the `dockerfile` task, and if these select no collector, both get `-XX:+UseG1GC`, because the image builder and the production container would otherwise pick different collectors. To use another collector, add it to the arguments, for example with `args("-XX:+UseSerialGC")`.
 - A training run that starts the application (the `start` mode, and the default on a Micronaut version without the `load` mode) runs the application in the image build. An application that needs external services during startup or for the training paths needs a configuration for the training run. A build argument reaches the training run but is not kept in the image, for example `arg("MICRONAUT_ENVIRONMENTS=training")` on the `dockerfile` task. With the training run switch, a custom warm-up can be a startup event listener that requires the `micronaut.application.training.enabled` property.
-- The cache belongs to the base image's JDK build, so pin the base image by digest for reproducible images. Each platform of a multi-platform image trains its own cache, and emulated platforms train slowly. The cache adds tens of megabytes to the image.
+- The cache belongs to the base image's JDK build, so pin the base image by digest for reproducible images. Each platform of a multi-platform image trains its own cache, and emulated platforms train slowly. The cache makes the image larger: see <<docker-jdk-aot-cache-size,Image size>>.
+
+[[docker-jdk-aot-cache-size]]
+===== Image size
+
+The option adds two layers to the image:
+
+- The layer of the training `RUN`, which holds the cache, `/home/app/application.aot`. The layer is the size of the cache file, plus less than 0.1 MB.
+- The layer of the training script, 25 kB.
+
+In the `main` image, the resources are in a JAR instead of a directory, and the runner JAR lists that JAR: this changes the image size by less than 5 kB.
+The base image and the dependency layers are the same as without the option.
+
+The following table gives the sizes of the `main` image of two example applications, in MB of 10^6^ bytes, as Docker reports them.
+The images are built on the default base image, `eclipse-temurin:25-jre` (Temurin 25.0.4.1, `linux/arm64`), with Micronaut Platform 5.0.2 and, in place of its Micronaut Core, a build of https://github.com/micronaut-projects/micronaut-core/pull/13402[micronaut-core#13402], which has the `load` mode.
+The uncompressed size is the sum of the layer sizes that `docker history` shows.
+The compressed size is the sum of the gzip-compressed layers, which a push uploads and a pull downloads.
+
+[cols="3,2,>1,>2,>2",options=header]
+|===
+|Example application |Training mode |Cache file |Uncompressed image |Compressed image
+
+.3+|Small: one controller, Micronaut Serialization and Logback
+|Option disabled
+|
+|389.6 MB
+|126.9 MB
+
+|`load`
+|33.6 MB
+|423.3 MB (+33.7 MB, +9%)
+|134.8 MB (+7.9 MB, +6%)
+
+|`start`, 2 training paths
+|48.1 MB
+|437.7 MB (+48.2 MB, +12%)
+|138.3 MB (+11.3 MB, +9%)
+
+.3+|Larger: the small application plus Micronaut Data JDBC with HikariCP and an in-memory H2 database, Micronaut Validation, Micronaut Management and the HTTP client
+|Option disabled
+|
+|397.2 MB
+|133.6 MB
+
+|`load`
+|48.4 MB
+|445.6 MB (+48.4 MB, +12%)
+|144.0 MB (+10.4 MB, +8%)
+
+|`start`, 3 training paths
+|71.2 MB
+|468.4 MB (+71.2 MB, +18%)
+|149.7 MB (+16.1 MB, +12%)
+|===
+
+The cache layer compresses to 21% to 24% of its size, and it is almost all of the compressed increase.
+The `optimized` image of the <<Micronaut AOT Plugin,Micronaut AOT plugin>> had the same sizes, to within 0.1 MB.
+With the Micronaut Core of Platform 5.0.2, which has no `load` mode and whose training run the plugin's script starts, the `start` caches of the two applications were 48.4 MB and 71.2 MB.
+
+The size of the cache depends on:
+
+- The classes that the training run loads: the cache takes about 9 to 10 kB for each, from 3,494 classes for the small application in `load` mode to 7,903 for the larger one in `start` mode. A training run in `start` mode also loads the classes that create the beans, start the server and handle the training paths, so its cache is larger. Each dependency adds the classes that the training run loads from it.
+- The JDK of the base image: the `load` cache of the small application was 33.6 MB with Temurin 25.0.4.1 (`eclipse-temurin:25-jre`), 34.8 MB with Temurin 25.0.4 (`eclipse-temurin:25-jdk`) and 31.6 MB with GraalVM Community Edition 25.0.2.
+
+For the same cache, the percentage is larger with a smaller base image.
+Two training runs of the same image wrote caches whose sizes differed by less than 0.1 MB.
+
+The training `RUN` comes after the layers of the base image, the dependencies, the application and its resources, so Docker runs it again, and writes a new cache, whenever one of these layers changes.
+With the small application and the `load` mode:
+
+- Rebuilt without a change, with the Docker build cache: Docker reused every layer, the cache layer included, and did not run the training. A push uploaded nothing.
+- Rebuilt after a change to one class: Docker reused the base image and dependency layers, rebuilt the others and ran the training again. A push uploaded the new cache layer, 7.9 MB, and 20 kB for the application, resources and script layers.
+- Rebuilt without a change and without the Docker build cache (`noCache = true` on the `dockerBuild` task): two training runs of the same image wrote caches that were not byte-identical. With or without the option, Docker gave every layer after the base image a new digest, so a push uploaded all of them again: 20.0 MB, of which 7.9 MB was the cache layer.
+
+So every image build that changes a layer before the training `RUN`, or that does not use the Docker build cache, has a new cache layer, which the next push uploads and the next pull downloads.
+The base image layers are uploaded only when they change, as without the option.
+
+To see what the cache adds to an image, list its layers:
+
+[source,bash]
+----
+docker history <image>
+----
+
+The cache is the layer created by `bash /home/app/jdk-aot-cache/train.sh`, and the size that `docker history` shows is uncompressed.
+The manifest of the image in a registry, which `docker manifest inspect <image>` prints, gives the compressed size of each layer: the cache layer is the last one.
+With the option disabled, the image has neither the cache layer nor the script layer.
 
 
 === Micronaut Runtimes
