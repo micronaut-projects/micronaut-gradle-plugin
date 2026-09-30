@@ -38,6 +38,7 @@ ENTRYPOINT ["java", "-jar", "/home/app/application.jar"]
         buildFile << """
             micronaut.docker.jdkAotCache {
                 enabled = true
+                trainingMode = "start"
                 trainingPaths = ["/"]
             }
         """

@@ -16,6 +16,7 @@
 package io.micronaut.gradle.docker;
 
 import org.gradle.api.GradleException;
+import org.gradle.api.logging.Logger;
 
 import java.io.File;
 import java.io.IOException;
@@ -24,6 +25,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
@@ -48,9 +50,25 @@ final class JdkAotCacheSupport {
 
     /**
      * The training run switch of Micronaut core (micronaut-projects/micronaut-core#13391): with it,
-     * the application exits with status 0 once it has started and warmed up.
+     * the application exits with status 0 once the training run is done.
      */
     static final String TRAINING_ENABLED_PROPERTY = "micronaut.application.training.enabled";
+
+    /**
+     * The mode of a training run of Micronaut core, {@link #MODE_LOAD} or {@link #MODE_START}.
+     * A core that has the switch does not necessarily have the mode.
+     */
+    static final String TRAINING_MODE_PROPERTY = "micronaut.application.training.mode";
+
+    /**
+     * The training mode that loads the bean definitions and does not start the application.
+     */
+    static final String MODE_LOAD = "load";
+
+    /**
+     * The training mode that starts the application and requests the training paths.
+     */
+    static final String MODE_START = "start";
 
     /**
      * The GET paths of the training run switch's warm-up, as a comma-separated list.
@@ -64,10 +82,30 @@ final class JdkAotCacheSupport {
     static final String DEFAULT_GC_FLAG = "-XX:+UseG1GC";
 
     private static final String MICRONAUT_CLASS = "io/micronaut/runtime/Micronaut.class";
+    private static final String APPLICATION_CONFIGURATION_CLASS = "io/micronaut/runtime/ApplicationConfiguration.class";
     private static final Pattern GC_FLAG = Pattern.compile("-XX:\\+Use(Serial|Parallel|ParallelOld|G1|Z|Shenandoah|Epsilon|ConcMarkSweep)GC");
     private static final Pattern INVALID_PATH_CHARACTERS = Pattern.compile("[\\s,\\p{Cntrl}]");
 
     private JdkAotCacheSupport() {
+    }
+
+    /**
+     * What the application's Micronaut core offers for a training run.
+     */
+    enum TrainingRunSupport {
+        /**
+         * No training run switch: the training script starts the application, waits for it, sends the
+         * requests and stops it.
+         */
+        NONE,
+        /**
+         * The training run switch, which starts the application, warms it up and exits.
+         */
+        SWITCH,
+        /**
+         * The training run switch and its modes, of which {@code load} does not start the application.
+         */
+        MODE
     }
 
     /**
@@ -102,16 +140,85 @@ final class JdkAotCacheSupport {
      * @param options the options
      */
     static void validate(JdkAotCacheOptions options) {
-        for (String path : options.getTrainingPaths().get()) {
+        List<String> trainingPaths = options.getTrainingPaths().get();
+        for (String path : trainingPaths) {
             if (!path.startsWith("/") || INVALID_PATH_CHARACTERS.matcher(path).find()) {
                 throw new GradleException("Invalid JDK AOT cache training path '" + path + "': a training path starts with '/' and contains no whitespace and no comma");
             }
+        }
+        String trainingMode = requestedTrainingMode(options);
+        if (!trainingPaths.isEmpty() && !MODE_START.equals(trainingMode)) {
+            // Whatever the Micronaut version: a build that sends requests says that it starts the application
+            throw new GradleException("The JDK AOT cache training paths are only requested by a training run that starts the application, but the training mode is "
+                + (trainingMode == null ? "not set" : "'" + trainingMode + "'")
+                + ": set trainingMode to '" + MODE_START + "', or remove the training paths");
         }
         if (options.getTrainingTimeout().get() <= 0) {
             throw new GradleException("The JDK AOT cache training timeout must be positive, but it is " + options.getTrainingTimeout().get());
         }
         if (options.getStrictProbes().get() < 0) {
             throw new GradleException("The number of JDK AOT cache strict probes cannot be negative, but it is " + options.getStrictProbes().get());
+        }
+    }
+
+    /**
+     * The training mode that the build asks for.
+     *
+     * @param options the options
+     * @return {@link #MODE_LOAD}, {@link #MODE_START}, or null if the build leaves the choice to the plugin
+     */
+    static String requestedTrainingMode(JdkAotCacheOptions options) {
+        String trainingMode = options.getTrainingMode().getOrNull();
+        if (trainingMode == null) {
+            return null;
+        }
+        // In any case, as Micronaut core reads its own property
+        String normalized = trainingMode.trim().toLowerCase(Locale.ROOT);
+        if (!MODE_LOAD.equals(normalized) && !MODE_START.equals(normalized)) {
+            throw new GradleException("Invalid JDK AOT cache training mode '" + trainingMode + "': the training mode is '" + MODE_LOAD + "' or '" + MODE_START + "'");
+        }
+        return normalized;
+    }
+
+    /**
+     * The mode of the training run. Unless the build asks for one, the run does not start the application
+     * if the application's Micronaut core can train without starting it, because an image build has none
+     * of the services that an application needs to start.
+     *
+     * @param options the options
+     * @param support what the application's Micronaut core offers for a training run
+     * @return {@link #MODE_LOAD} or {@link #MODE_START}
+     */
+    static String trainingMode(JdkAotCacheOptions options, TrainingRunSupport support) {
+        String requested = requestedTrainingMode(options);
+        if (requested == null) {
+            return support == TrainingRunSupport.MODE ? MODE_LOAD : MODE_START;
+        }
+        if (MODE_LOAD.equals(requested) && support != TrainingRunSupport.MODE) {
+            // Starting the application instead would do what the build asks not to do
+            throw new GradleException("The JDK AOT cache training mode is '" + MODE_LOAD + "', but the application's Micronaut version has no such mode: "
+                + "it needs a Micronaut Core with the " + TRAINING_MODE_PROPERTY + " property. "
+                + "Upgrade Micronaut, or remove trainingMode to train with a run that starts the application");
+        }
+        return requested;
+    }
+
+    /**
+     * Says which training run the image build does. A run that starts the application although the build
+     * did not ask for it is reported at lifecycle level, the others at info level.
+     *
+     * @param logger the logger of the Dockerfile task
+     * @param options the options
+     * @param support what the application's Micronaut core offers for a training run
+     */
+    static void logTrainingMode(Logger logger, JdkAotCacheOptions options, TrainingRunSupport support) {
+        if (MODE_LOAD.equals(trainingMode(options, support))) {
+            logger.info("JDK AOT cache: the training run loads the bean definitions of the application and does not start it ({}={})", TRAINING_MODE_PROPERTY, MODE_LOAD);
+        } else if (requestedTrainingMode(options) == null) {
+            logger.lifecycle("JDK AOT cache: the application's Micronaut version has no '{}' training mode ({}), so the training run starts the application in the image build, where it needs what the application needs to start",
+                MODE_LOAD, TRAINING_MODE_PROPERTY);
+        } else {
+            logger.info("JDK AOT cache: the training run starts the application in the image build");
         }
     }
 
@@ -123,14 +230,15 @@ final class JdkAotCacheSupport {
      * @param args the JVM arguments of the image
      * @param exposedPorts the ports exposed by the image, the first one being the application's HTTP port
      * @param options the JDK AOT cache options
-     * @param trainingRunSwitch whether the application's Micronaut core has the training run switch
+     * @param support what the application's Micronaut core offers for a training run
      * @return the command
      */
     static List<String> trainingCommand(String workDir,
                                         List<String> args,
                                         List<Integer> exposedPorts,
                                         JdkAotCacheOptions options,
-                                        boolean trainingRunSwitch) {
+                                        TrainingRunSupport support) {
+        String trainingMode = trainingMode(options, support);
         List<String> trainingPaths = options.getTrainingPaths().get();
         var command = new ArrayList<String>();
         command.add("bash");
@@ -149,10 +257,14 @@ final class JdkAotCacheSupport {
         }
         var java = new ArrayList<String>();
         java.add("java");
-        if (trainingRunSwitch) {
-            // The application warms itself up and exits with 0
+        if (support != TrainingRunSupport.NONE) {
+            // The application ends the training run itself and exits with 0
             command.add("--training-run");
             java.add("-D" + TRAINING_ENABLED_PROPERTY + "=true");
+            if (support == TrainingRunSupport.MODE) {
+                // Always given, so that nothing in the configuration of the application selects another mode
+                java.add("-D" + TRAINING_MODE_PROPERTY + "=" + trainingMode);
+            }
             if (!trainingPaths.isEmpty()) {
                 java.add("-D" + TRAINING_WARMUP_PATHS_PROPERTY + "=" + String.join(",", trainingPaths));
             }
@@ -190,32 +302,45 @@ final class JdkAotCacheSupport {
     }
 
     /**
-     * Whether the application's Micronaut core has the training run switch. The first JAR that contains
-     * {@code io.micronaut.runtime.Micronaut} decides, as it does on the class path: the switch is there when
-     * that class refers to the switch's property.
+     * What the application's Micronaut core offers for a training run. The first JAR that contains
+     * {@code io.micronaut.runtime.Micronaut} decides, as it does on the class path: the switch is there
+     * when that class refers to the switch's property, and the modes are there when
+     * {@code io.micronaut.runtime.ApplicationConfiguration}, in the same JAR, declares the mode's property.
      *
      * @param classpath the runtime class path of the application
-     * @return true if the application can train with the switch
+     * @return the support for a training run
      */
-    static boolean hasTrainingRunSwitch(Iterable<File> classpath) {
-        byte[] property = TRAINING_ENABLED_PROPERTY.getBytes(StandardCharsets.UTF_8);
+    static TrainingRunSupport trainingRunSupport(Iterable<File> classpath) {
         for (File file : classpath) {
             if (!file.isFile() || !file.getName().endsWith(".jar")) {
                 continue;
             }
             try (var jar = new ZipFile(file)) {
-                ZipEntry entry = jar.getEntry(MICRONAUT_CLASS);
-                if (entry != null) {
-                    try (InputStream in = jar.getInputStream(entry)) {
-                        // The property is a compile-time constant, so its UTF-8 bytes are in the class's constant pool
-                        return contains(in.readAllBytes(), property);
+                if (jar.getEntry(MICRONAUT_CLASS) != null) {
+                    // Both properties are compile-time constants, so their UTF-8 bytes are in the constant pool
+                    // of the class that uses the first one and of the class that declares the second one
+                    if (!entryContains(jar, MICRONAUT_CLASS, TRAINING_ENABLED_PROPERTY)) {
+                        return TrainingRunSupport.NONE;
                     }
+                    return entryContains(jar, APPLICATION_CONFIGURATION_CLASS, TRAINING_MODE_PROPERTY)
+                        ? TrainingRunSupport.MODE
+                        : TrainingRunSupport.SWITCH;
                 }
             } catch (IOException e) {
                 // Not a readable JAR, so it does not provide Micronaut core
             }
         }
-        return false;
+        return TrainingRunSupport.NONE;
+    }
+
+    private static boolean entryContains(ZipFile jar, String name, String constant) throws IOException {
+        ZipEntry entry = jar.getEntry(name);
+        if (entry == null) {
+            return false;
+        }
+        try (InputStream in = jar.getInputStream(entry)) {
+            return contains(in.readAllBytes(), constant.getBytes(StandardCharsets.UTF_8));
+        }
     }
 
     private static boolean contains(byte[] bytes, byte[] target) {

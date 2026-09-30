@@ -283,6 +283,7 @@ public class MicronautDockerPlugin implements Plugin<Project> {
                 task.getLayers().convention(buildLayersTask.flatMap(BuildLayersTask::getLayers));
                 JdkAotCacheOptions taskJdkAotCache = task.getJdkAotCache();
                 taskJdkAotCache.getEnabled().convention(jdkAotCache.getEnabled());
+                taskJdkAotCache.getTrainingMode().convention(jdkAotCache.getTrainingMode());
                 taskJdkAotCache.getTrainingPaths().convention(jdkAotCache.getTrainingPaths());
                 taskJdkAotCache.getTrainingTimeout().convention(jdkAotCache.getTrainingTimeout());
                 taskJdkAotCache.getCompatibleOopCompression().convention(jdkAotCache.getCompatibleOopCompression());

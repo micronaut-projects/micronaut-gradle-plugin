@@ -1283,6 +1283,71 @@ micronaut {
     docker {
         jdkAotCache {
             enabled = true
+        }
+    }
+}
+----
+
+[source, kotlin, subs="verbatim,attributes", role="multi-language-sample"]
+----
+micronaut {
+    docker {
+        jdkAotCache {
+            enabled.set(true)
+        }
+    }
+}
+----
+
+The generated `Dockerfile` then copies a training script into the image and runs it after the layers and the <<Adding additional instructions,additional instructions>>, and the `ENTRYPOINT` loads the cache.
+This is the `Dockerfile` of an application whose Micronaut version has the `load` <<docker-jdk-aot-cache-modes,training mode>>:
+
+[source, dockerfile]
+----
+FROM eclipse-temurin:25-jre
+WORKDIR /home/app
+COPY --link layers/libs /home/app/libs
+COPY --link layers/app /home/app/
+COPY --link layers/resources /home/app/resources
+EXPOSE 8080
+COPY --link jdk-aot-cache/train.sh /home/app/jdk-aot-cache/train.sh
+RUN ["bash", "/home/app/jdk-aot-cache/train.sh", "--cache", "/home/app/application.aot", "--timeout", "120", "--compatible-oop-compression", "--training-run", "--", "java", "-Dmicronaut.application.training.enabled=true", "-Dmicronaut.application.training.mode=load", "-XX:+UseG1GC", "-jar", "/home/app/application.jar"]
+ENTRYPOINT ["java", "-XX:AOTCache=/home/app/application.aot", "-XX:+UseG1GC", "-jar", "/home/app/application.jar"]
+----
+
+The training run is the command of the `ENTRYPOINT` plus `-XX:AOTCacheOutput`, and the JVM writes the cache as it exits.
+The image build fails if the training fails or writes no cache.
+At runtime, the cache is used in the JVM's default `auto` mode: if it cannot be used, the application starts without it.
+
+[[docker-jdk-aot-cache-modes]]
+===== Training modes
+
+An image build has no database, message broker or other service that the application uses, and an application that connects to one as it starts cannot start there.
+So a training run has two modes, which the `trainingMode` option selects:
+
+`load`, the default::
+The training run reads the configuration of the application, loads every enabled bean definition and the classes it names, and exits.
+It creates no bean, does not start the application and binds no port, so it needs none of the services that the application uses: an application with a datasource trains like any other.
+This is the `load` mode of the training run of Micronaut Core (`micronaut.application.training.mode`).
+What still runs is what reads the configuration: an application that loads distributed configuration as it starts also does so in the training run.
+`start`::
+The training run starts the application, sends a `GET` request to each of the `trainingPaths` and stops the application.
+The cache then also holds the classes, the linked lambdas and the method profiles of the code that creates the beans, starts the server and handles the requests.
+The application must be able to start while the image is built: see <<docker-jdk-aot-cache-notes,the notes below>>.
+
+`load` is the default because it does not depend on what the application needs to start.
+It is also the less effective of the two.
+Micronaut Core measured both when it added the mode (https://github.com/micronaut-projects/micronaut-core/pull/13402[micronaut-core#13402]): for a Netty application without a datasource, a cache trained in `load` mode kept 59% (95% confidence interval: 54% to 62%) of the startup time that a cache trained in `start` mode saves.
+That measurement has no application with a datasource, for which Micronaut Core expects a lower share.
+If the application can start in the image build, select the `start` mode and list the paths that matter:
+
+[source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
+----
+micronaut {
+    docker {
+        jdkAotCache {
+            enabled = true
+            trainingMode = "start"
             trainingPaths = ["/hello", "/books?page=1"]
         }
     }
@@ -1295,36 +1360,50 @@ micronaut {
     docker {
         jdkAotCache {
             enabled.set(true)
+            trainingMode.set("start")
             trainingPaths.set(listOf("/hello", "/books?page=1"))
         }
     }
 }
 ----
 
-The generated `Dockerfile` then copies a training script into the image and runs it after the layers and the <<Adding additional instructions,additional instructions>>, and the `ENTRYPOINT` loads the cache:
+`trainingPaths` needs `trainingMode = "start"`, because no other training run starts the application.
+Training paths with the `load` mode, or without a `trainingMode`, are a configuration error: the build never drops the requests silently, and it does not change its meaning when the Micronaut version of the application changes.
 
-[source, dockerfile]
+What a training run does depends on the Micronaut version of the application, because the `load` mode and the training run switch (`micronaut.application.training.enabled`) are features of Micronaut Core.
+The plugin looks for their properties in the application's Micronaut Core JAR:
+
+|===
+|The application's Micronaut Core has |`trainingMode` not set |`trainingMode = "load"` |`trainingMode = "start"`
+
+|the training run switch and its modes
+|`load`
+|`load`
+|The switch in `start` mode: the application starts, requests the training paths itself and exits with status 0.
+
+|the training run switch, without modes
+|As `start`
+|The `dockerfile` task fails
+|The switch: the application starts, requests the training paths itself and exits with status 0.
+
+|neither
+|As `start`
+|The `dockerfile` task fails
+|The plugin's script waits until the application answers HTTP requests on the first exposed port, sends a `GET` request to each training path, and stops the application with `SIGTERM`.
+|===
+
+So on a Micronaut version without the `load` mode, the default training run starts the application.
+The `dockerfile` task says so when it generates the `Dockerfile`:
+
 ----
-FROM eclipse-temurin:25-jre
-WORKDIR /home/app
-COPY --link layers/libs /home/app/libs
-COPY --link layers/app /home/app/
-COPY --link layers/resources /home/app/resources
-EXPOSE 8080
-COPY --link jdk-aot-cache/train.sh /home/app/jdk-aot-cache/train.sh
-RUN ["bash", "/home/app/jdk-aot-cache/train.sh", "--cache", "/home/app/application.aot", "--timeout", "120", "--compatible-oop-compression", "--port", "8080", "--path", "/hello", "--path", "/books?page=1", "--", "java", "-XX:+UseG1GC", "-jar", "/home/app/application.jar"]
-ENTRYPOINT ["java", "-XX:AOTCache=/home/app/application.aot", "-XX:+UseG1GC", "-jar", "/home/app/application.jar"]
+JDK AOT cache: the application's Micronaut version has no 'load' training mode (micronaut.application.training.mode), so the training run starts the application in the image build, where it needs what the application needs to start
 ----
 
-The training run starts the application with the same command as the `ENTRYPOINT`, plus `-XX:AOTCacheOutput`:
+When the plugin's script sends the requests, a training path that is answered with a status of 400 or above fails the image build.
+When the application sends them itself, Micronaut Core decides: a status of 500 or above fails the training run, and a status from 400 to 499 is logged as a warning.
 
-- If the application's Micronaut Core has the training run switch (`micronaut.application.training.enabled`), the plugin turns it on and passes the training paths as `micronaut.application.training.warmup.paths`. The application warms itself up and must exit with status 0.
-- Otherwise, the script waits until the application answers HTTP requests on the first exposed port, sends a `GET` request to each training path, which must be answered with a status below 400, and stops the application with `SIGTERM`. The JVM writes the cache as it exits.
-
-The image build fails if the training fails or writes no cache.
-At runtime, the cache is used in the JVM's default `auto` mode: if it cannot be used, the application starts without it.
-
-The following options are available:
+[[docker-jdk-aot-cache-options]]
+===== JDK AOT cache options
 
 |===
 |Option |Default |Description
@@ -1333,13 +1412,17 @@ The following options are available:
 |`false`
 |Whether the JVM images train a JDK AOT cache.
 
+|`trainingMode`
+|not set
+|`load` or `start`: see <<docker-jdk-aot-cache-modes,Training modes>>. When it is not set, the training mode is `load` if the application's Micronaut version has it, and otherwise the training run starts the application.
+
 |`trainingPaths`
 |none
-|The paths requested with `GET` once the application is ready, in order. Each path starts with `/`, may have a query string, and contains no whitespace and no comma. Requesting the application's hot paths makes the cache noticeably more effective than a training run that only starts the application.
+|The paths that a training run in `start` mode requests with `GET` once the application is ready, in order. Each path starts with `/`, may have a query string, and contains no whitespace and no comma. Requesting the application's hot paths makes the cache noticeably more effective than a training run that only starts the application. They need `trainingMode = "start"`.
 
 |`trainingTimeout`
 |`120`
-|The longest time, in seconds, that the training waits for the application to answer, or to exit once it has been asked to.
+|The longest time, in seconds, that the training waits for the application to answer, or to exit: on its own when the application ends the training run itself, and once it has been asked to otherwise.
 
 |`compatibleOopCompression`
 |`true`
@@ -1350,12 +1433,13 @@ The following options are available:
 |How many times the image build starts the JVM with `-XX:AOTMode=on` and the cache once it is written, to check that it loads. A failing probe fails the image build.
 |===
 
+[[docker-jdk-aot-cache-notes]]
 A few things to keep in mind:
 
 - The option applies to the Dockerfiles that the plugin generates for the default build strategy: not to a <<Customized docker files,custom `Dockerfile`>>, to Lambda or Oracle Functions images, or to the CRaC images. The `jdkVersion` of the `dockerfile` task, which defaults to the target compatibility, must be 25 or later, and the base image must have a JDK 25 or later and `bash`. The build must not add its own `ENTRYPOINT`.
 - A JDK AOT cache cannot use class path directories that have content. So, in the main image, the application resources are packaged as a JAR (the `runnerResourcesJar` task) in the `resources` layer, and the runner JAR lists it before the dependencies, where it listed the `resources/` directory. The optimized image no longer lists the `resources/` and `classes/` directories. Resources are then loaded from `jar:` URLs, and editing or mounting `/home/app/resources` has no effect.
 - The cache records the garbage collector and, for large heaps, the compressed oops setting. The training run and the `ENTRYPOINT` share the JVM arguments of the `dockerfile` task, and if these select no collector, both get `-XX:+UseG1GC`, because the image builder and the production container would otherwise pick different collectors. To use another collector, add it to the arguments, for example with `args("-XX:+UseSerialGC")`.
-- The image build runs the application. An application that needs external services during startup or for the training paths needs a configuration for the training run. A build argument reaches the training run but is not kept in the image, for example `arg("MICRONAUT_ENVIRONMENTS=training")` on the `dockerfile` task. With the training run switch, a custom warm-up can be a startup event listener that requires the `micronaut.application.training.enabled` property.
+- A training run that starts the application (the `start` mode, and the default on a Micronaut version without the `load` mode) runs the application in the image build. An application that needs external services during startup or for the training paths needs a configuration for the training run. A build argument reaches the training run but is not kept in the image, for example `arg("MICRONAUT_ENVIRONMENTS=training")` on the `dockerfile` task. With the training run switch, a custom warm-up can be a startup event listener that requires the `micronaut.application.training.enabled` property.
 - The cache belongs to the base image's JDK build, so pin the base image by digest for reproducible images. Each platform of a multi-platform image trains its own cache, and emulated platforms train slowly. The cache adds tens of megabytes to the image.
 
 

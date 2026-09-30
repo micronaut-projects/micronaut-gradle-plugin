@@ -143,6 +143,7 @@ public abstract class MicronautDockerfile extends Dockerfile implements DockerBu
         RegularFile trainingScript = getJdkAotCacheTrainingScript().getOrNull();
         if (trainingScript != null) {
             writeTrainingScript(trainingScript.getAsFile().toPath());
+            JdkAotCacheSupport.logTrainingMode(getLogger(), getJdkAotCache(), jdkAotCacheTrainingRunSupport().get());
         }
         applyStandardTransforms(getUseCopyLink(), getObjects(), this);
         if (getDockerfileTweaks().isPresent()) {
@@ -267,16 +268,23 @@ public abstract class MicronautDockerfile extends Dockerfile implements DockerBu
      */
     private void setupJdkAotCacheTraining(String workDir) {
         copyFile(new CopyFile(JdkAotCacheSupport.TRAINING_SCRIPT, workDir + "/" + JdkAotCacheSupport.TRAINING_SCRIPT));
-        // The dependencies of the image tell whether its Micronaut core has the training run switch
-        Provider<Boolean> trainingRunSwitch = getLayers().map(layers -> JdkAotCacheSupport.hasTrainingRunSwitch(layers.stream()
+        ListProperty<Integer> ports = getExposedPorts();
+        JdkAotCacheOptions options = getJdkAotCache();
+        runCommand(getArgs().zip(jdkAotCacheTrainingRunSupport(), (args, support) -> JdkAotCacheSupport.execForm(
+            JdkAotCacheSupport.trainingCommand(workDir, args, ports.get(), options, support)
+        )));
+    }
+
+    /**
+     * The dependencies of the image tell what its Micronaut core offers for a training run.
+     *
+     * @return the support for a training run
+     */
+    private Provider<JdkAotCacheSupport.TrainingRunSupport> jdkAotCacheTrainingRunSupport() {
+        return getLayers().map(layers -> JdkAotCacheSupport.trainingRunSupport(layers.stream()
             .filter(layer -> layer.getLayerKind().get() == LayerKind.LIBS || layer.getLayerKind().get() == LayerKind.SNAPSHOT_LIBS)
             .flatMap(layer -> layer.getFiles().getFiles().stream())
             .toList()));
-        ListProperty<Integer> ports = getExposedPorts();
-        JdkAotCacheOptions options = getJdkAotCache();
-        runCommand(getArgs().zip(trainingRunSwitch, (args, useSwitch) -> JdkAotCacheSupport.execForm(
-            JdkAotCacheSupport.trainingCommand(workDir, args, ports.get(), options, useSwitch)
-        )));
     }
 
     /**

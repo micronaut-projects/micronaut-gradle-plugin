@@ -11,7 +11,9 @@
 # The command after "--" is the ENTRYPOINT without -XX:AOTCache. The script runs it once with
 # -XX:AOTCacheOutput=<file>:
 # - with --training-run, the application's Micronaut core has the training run switch, which the
-#   command turns on: the application warms itself up and must exit with status 0;
+#   command turns on: the application ends the training run itself and must exit with status 0.
+#   Depending on the mode that the command selects, it loads its bean definitions without starting,
+#   or it starts and warms itself up;
 # - otherwise the application runs in the background until its HTTP server answers on port <port>.
 #   Each <path> is then requested with GET and must answer with a status below 400. SIGTERM
 #   stops the application, and the JVM writes the cache as it exits.
