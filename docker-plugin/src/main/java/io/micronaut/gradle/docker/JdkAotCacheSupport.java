@@ -205,7 +205,8 @@ final class JdkAotCacheSupport {
 
     /**
      * Says which training run the image build does. A run that starts the application although the build
-     * did not ask for it is reported at lifecycle level, the others at info level.
+     * did not ask for it is reported at lifecycle level, with what the build can do about it, the others
+     * at info level.
      *
      * @param logger the logger of the Dockerfile task
      * @param options the options
@@ -215,8 +216,10 @@ final class JdkAotCacheSupport {
         if (MODE_LOAD.equals(trainingMode(options, support))) {
             logger.info("JDK AOT cache: the training run loads the bean definitions of the application and does not start it ({}={})", TRAINING_MODE_PROPERTY, MODE_LOAD);
         } else if (requestedTrainingMode(options) == null) {
-            logger.lifecycle("JDK AOT cache: the application's Micronaut version has no '{}' training mode ({}), so the training run starts the application in the image build, where it needs what the application needs to start",
-                MODE_LOAD, TRAINING_MODE_PROPERTY);
+            logger.lifecycle("JDK AOT cache: the application's Micronaut version has no '{}' training mode ({}), so the training run starts the application while the image is built, "
+                    + "where the services it needs to start must be available. "
+                    + "Use a Micronaut version that has the '{}' mode to train without starting the application, or set trainingMode = '{}' to confirm this run",
+                MODE_LOAD, TRAINING_MODE_PROPERTY, MODE_LOAD, MODE_START);
         } else {
             logger.info("JDK AOT cache: the training run starts the application in the image build");
         }

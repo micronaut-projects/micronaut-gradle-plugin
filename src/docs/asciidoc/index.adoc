@@ -1300,7 +1300,8 @@ micronaut {
 ----
 
 The generated `Dockerfile` then copies a training script into the image and runs it after the layers and the <<Adding additional instructions,additional instructions>>, and the `ENTRYPOINT` loads the cache.
-This is the `Dockerfile` of an application whose Micronaut version has the `load` <<docker-jdk-aot-cache-modes,training mode>>:
+This is the `Dockerfile` of an application whose Micronaut version has the `load` <<docker-jdk-aot-cache-modes,training mode>>.
+No released Micronaut version has that mode yet, and without it the `RUN` instruction is another one: see <<docker-jdk-aot-cache-versions,what a training run does on each Micronaut version>>.
 
 [source, dockerfile]
 ----
@@ -1322,10 +1323,14 @@ At runtime, the cache is used in the JVM's default `auto` mode: if it cannot be 
 [[docker-jdk-aot-cache-modes]]
 ===== Training modes
 
+NOTE: The `load` mode and the training run switch that it belongs to are not in a released Micronaut version yet.
+They come with https://github.com/micronaut-projects/micronaut-core/pull/13402[micronaut-core#13402], a pull request that is still open and that documents both as `@since 5.3.0`.
+Until the application uses a Micronaut version that has the `load` mode, the default training run starts the application and `trainingMode = "load"` fails: see <<docker-jdk-aot-cache-versions,what a training run does on each Micronaut version>>.
+
 An image build has no database, message broker or other service that the application uses, and an application that connects to one as it starts cannot start there.
 So a training run has two modes, which the `trainingMode` option selects:
 
-`load`, the default::
+`load`, the default when the application's Micronaut version has it::
 The training run reads the configuration of the application, loads every enabled bean definition and the classes it names, and exits.
 It creates no bean, does not start the application and binds no port, so it needs none of the services that the application uses: an application with a datasource trains like any other.
 This is the `load` mode of the training run of Micronaut Core (`micronaut.application.training.mode`).
@@ -1337,8 +1342,8 @@ The application must be able to start while the image is built: see <<docker-jdk
 
 `load` is the default because it does not depend on what the application needs to start.
 It is also the less effective of the two.
-Micronaut Core measured both when it added the mode (https://github.com/micronaut-projects/micronaut-core/pull/13402[micronaut-core#13402]): for a Netty application without a datasource, a cache trained in `load` mode kept 59% (95% confidence interval: 54% to 62%) of the startup time that a cache trained in `start` mode saves.
-That measurement has no application with a datasource, for which Micronaut Core expects a lower share.
+The pull request that adds the mode to Micronaut Core measured both: for a Netty application without a datasource, a cache trained in `load` mode kept 59% (95% confidence interval: 54% to 62%) of the startup time that a cache trained in `start` mode saves.
+That measurement has no application with a datasource, for which the pull request expects a lower share.
 If the application can start in the image build, select the `start` mode and list the paths that matter:
 
 [source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
@@ -1370,23 +1375,19 @@ micronaut {
 `trainingPaths` needs `trainingMode = "start"`, because no other training run starts the application.
 Training paths with the `load` mode, or without a `trainingMode`, are a configuration error: the build never drops the requests silently, and it does not change its meaning when the Micronaut version of the application changes.
 
+[[docker-jdk-aot-cache-versions]]
 What a training run does depends on the Micronaut version of the application, because the `load` mode and the training run switch (`micronaut.application.training.enabled`) are features of Micronaut Core.
 The plugin looks for their properties in the application's Micronaut Core JAR:
 
 |===
-|The application's Micronaut Core has |`trainingMode` not set |`trainingMode = "load"` |`trainingMode = "start"`
+|The application's Micronaut Core |`trainingMode` not set |`trainingMode = "load"` |`trainingMode = "start"`
 
-|the training run switch and its modes
+|has the training run switch and its `load` mode
 |`load`
 |`load`
 |The switch in `start` mode: the application starts, requests the training paths itself and exits with status 0.
 
-|the training run switch, without modes
-|As `start`
-|The `dockerfile` task fails
-|The switch: the application starts, requests the training paths itself and exits with status 0.
-
-|neither
+|has neither, as every Micronaut version released so far
 |As `start`
 |The `dockerfile` task fails
 |The plugin's script waits until the application answers HTTP requests on the first exposed port, sends a `GET` request to each training path, and stops the application with `SIGTERM`.
@@ -1396,8 +1397,17 @@ So on a Micronaut version without the `load` mode, the default training run star
 The `dockerfile` task says so when it generates the `Dockerfile`:
 
 ----
-JDK AOT cache: the application's Micronaut version has no 'load' training mode (micronaut.application.training.mode), so the training run starts the application in the image build, where it needs what the application needs to start
+JDK AOT cache: the application's Micronaut version has no 'load' training mode (micronaut.application.training.mode), so the training run starts the application while the image is built, where the services it needs to start must be available. Use a Micronaut version that has the 'load' mode to train without starting the application, or set trainingMode = 'start' to confirm this run
 ----
+
+Gradle does not run that task again when the `Dockerfile` is up to date, so the image build says it as well when the application that the plugin's script started does not answer:
+
+----
+[jdk-aot-cache] ERROR: the application exited with status 1 before it answered on port 8080
+[jdk-aot-cache] This training run starts the application, and its Micronaut version has no 'load' training mode that trains without starting it: the services that the application needs to start must be available while the image is built, or a configuration for the training run must replace them
+----
+
+The <<docker-jdk-aot-cache-notes,notes below>> describe such a configuration.
 
 When the plugin's script sends the requests, a training path that is answered with a status of 400 or above fails the image build.
 When the application sends them itself, Micronaut Core decides: a status of 500 or above fails the training run, and a status from 400 to 499 is logged as a warning.
@@ -1414,7 +1424,7 @@ When the application sends them itself, Micronaut Core decides: a status of 500 
 
 |`trainingMode`
 |not set
-|`load` or `start`: see <<docker-jdk-aot-cache-modes,Training modes>>. When it is not set, the training mode is `load` if the application's Micronaut version has it, and otherwise the training run starts the application.
+|`load` or `start`: see <<docker-jdk-aot-cache-modes,Training modes>>. When it is not set, the training mode is `load` if the application's Micronaut version has it, and otherwise the training run starts the application, which is the case with every Micronaut version released so far.
 
 |`trainingPaths`
 |none

@@ -16,7 +16,8 @@
 #   or it starts and warms itself up;
 # - otherwise the application runs in the background until its HTTP server answers on port <port>.
 #   Each <path> is then requested with GET and must answer with a status below 400. SIGTERM
-#   stops the application, and the JVM writes the cache as it exits.
+#   stops the application, and the JVM writes the cache as it exits. If the application does not
+#   get to answer, the error says that this training run starts the application, and why.
 # The build fails unless the cache is written. Then <count> strict launches check the cache.
 # Only bash builtins are used to talk to the application, because JRE images have no curl.
 
@@ -28,6 +29,15 @@ log() {
 
 fail() {
   echo "[jdk-aot-cache] ERROR: $*" >&2
+  exit 1
+}
+
+# Fails because the application that this script started did not get to answer. The script only starts
+# the application of a Micronaut version that has no training run switch, and so no load mode. The task
+# that generates the Dockerfile says so, but not when it is up to date, so the failing image build says it too
+fail_start() {
+  echo "[jdk-aot-cache] ERROR: $*" >&2
+  echo "[jdk-aot-cache] This training run starts the application, and its Micronaut version has no 'load' training mode that trains without starting it: the services that the application needs to start must be available while the image is built, or a configuration for the training run must replace them" >&2
   exit 1
 }
 
@@ -108,9 +118,9 @@ else
     if ! kill -0 "$pid" 2>/dev/null; then
       status=0
       wait "$pid" || status=$?
-      fail "the application exited with status $status before it answered on port $port"
+      fail_start "the application exited with status $status before it answered on port $port"
     fi
-    ((SECONDS < deadline)) || fail "the application did not answer on port $port within ${timeout}s"
+    ((SECONDS < deadline)) || fail_start "the application did not answer on port $port within ${timeout}s"
     sleep 0.5
   done
   for path in ${paths[@]+"${paths[@]}"}; do

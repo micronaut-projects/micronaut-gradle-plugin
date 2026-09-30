@@ -175,8 +175,10 @@ class JdkAotCacheSupportSpec extends Specification {
         JdkAotCacheSupport.logTrainingMode(logger, options(requested), support)
 
         then:
-        lifecycle * logger.lifecycle("JDK AOT cache: the application's Micronaut version has no '{}' training mode ({}), so the training run starts the application in the image build, where it needs what the application needs to start",
-            "load", "micronaut.application.training.mode")
+        lifecycle * logger.lifecycle("JDK AOT cache: the application's Micronaut version has no '{}' training mode ({}), so the training run starts the application while the image is built, " +
+            "where the services it needs to start must be available. " +
+            "Use a Micronaut version that has the '{}' mode to train without starting the application, or set trainingMode = '{}' to confirm this run",
+            "load", "micronaut.application.training.mode", "load", "start")
         (1 - lifecycle) * logger.info(*_)
         0 * logger._
 

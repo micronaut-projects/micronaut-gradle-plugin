@@ -24,8 +24,11 @@ ENTRYPOINT ["java", "-jar", "/home/app/application.jar"]
 
     private static final String TRAIN = '"bash", "/home/app/jdk-aot-cache/train.sh", "--cache", "/home/app/application.aot", "--timeout", "120", "--compatible-oop-compression"'
 
+    private static final String ENTRYPOINT = 'ENTRYPOINT ["java", "-XX:AOTCache=/home/app/application.aot", "-XX:+UseG1GC", "-jar", "/home/app/application.jar"]'
+
     private static final String STARTS_THE_APPLICATION = "JDK AOT cache: the application's Micronaut version has no 'load' training mode (micronaut.application.training.mode), " +
-        "so the training run starts the application in the image build, where it needs what the application needs to start"
+        "so the training run starts the application while the image is built, where the services it needs to start must be available. " +
+        "Use a Micronaut version that has the 'load' mode to train without starting the application, or set trainingMode = 'start' to confirm this run"
 
     def "the Dockerfile and the layers are unchanged when the JDK AOT cache is disabled"() {
         given:
@@ -190,7 +193,9 @@ ENTRYPOINT ["java", "-XX:AOTCache=/home/app/application.aot", "-XX:+UseG1GC", "-
         def result = build('dockerfile')
 
         then:
-        file("build/docker/main/Dockerfile").readLines().contains("RUN [$TRAIN, $expected, \"-XX:+UseG1GC\", \"-jar\", \"/home/app/application.jar\"]" as String)
+        def lines = file("build/docker/main/Dockerfile").readLines()
+        lines.contains("RUN [$TRAIN, $expected, \"-XX:+UseG1GC\", \"-jar\", \"/home/app/application.jar\"]" as String)
+        lines.last() == ENTRYPOINT
         result.output.contains(STARTS_THE_APPLICATION) == logged
 
         where:
@@ -214,8 +219,13 @@ ENTRYPOINT ["java", "-XX:AOTCache=/home/app/application.aot", "-XX:+UseG1GC", "-
         def result = build('dockerfile')
 
         then:
-        file("build/docker/main/Dockerfile").readLines().contains("RUN [$TRAIN, \"--training-run\", \"--\", \"java\", \"-Dmicronaut.application.training.enabled=true\", $expected\"-XX:+UseG1GC\", \"-jar\", \"/home/app/application.jar\"]" as String)
+        def lines = file("build/docker/main/Dockerfile").readLines()
+        lines.contains("RUN [$TRAIN, \"--training-run\", \"--\", \"java\", \"-Dmicronaut.application.training.enabled=true\", $expected\"-XX:+UseG1GC\", \"-jar\", \"/home/app/application.jar\"]" as String)
         result.output.contains(STARTS_THE_APPLICATION) == logged
+
+        and: "the training properties are those of the training run only: the image starts the application"
+        lines.last() == ENTRYPOINT
+        lines.count { it.contains("micronaut.application.training") } == 1
 
         where:
         mode  | configuration                                                              | expected                                                                                                                                        | logged
@@ -245,7 +255,9 @@ ENTRYPOINT ["java", "-XX:AOTCache=/home/app/application.aot", "-XX:+UseG1GC", "-
         build('dockerfile')
 
         then:
-        file("build/docker/main/Dockerfile").readLines().contains("RUN [$TRAIN, \"--training-run\", \"--\", \"java\", \"-Dmicronaut.application.training.enabled=true\", \"-Dmicronaut.application.training.mode=load\", \"-XX:+UseG1GC\", \"-jar\", \"/home/app/application.jar\"]" as String)
+        def lines = file("build/docker/main/Dockerfile").readLines()
+        lines.contains("RUN [$TRAIN, \"--training-run\", \"--\", \"java\", \"-Dmicronaut.application.training.enabled=true\", \"-Dmicronaut.application.training.mode=load\", \"-XX:+UseG1GC\", \"-jar\", \"/home/app/application.jar\"]" as String)
+        lines.last() == ENTRYPOINT
     }
 
     def "the dockerfile task can select another training mode than the extension"() {
