@@ -1458,7 +1458,7 @@ A few things to keep in mind:
 The option adds two layers to the image:
 
 - The layer of the training `RUN`, which holds the cache, `/home/app/application.aot`. The layer is the size of the cache file, plus less than 0.1 MB.
-- The layer of the training script, 25 kB.
+- The layer of the training script, 25 kB (3 kB compressed).
 
 In the `main` image, the resources are in a JAR instead of a directory, and the runner JAR lists that JAR: this changes the image size by less than 5 kB.
 The base image and the dependency layers are the same as without the option.
@@ -1467,6 +1467,8 @@ The following table gives the sizes of the `main` image of two example applicati
 The images are built on the default base image, `eclipse-temurin:25-jre` (Temurin 25.0.4.1, `linux/arm64`), with Micronaut Platform 5.0.2 and, in place of its Micronaut Core, a build of https://github.com/micronaut-projects/micronaut-core/pull/13402[micronaut-core#13402], which has the `load` mode.
 The uncompressed size is the sum of the layer sizes that `docker history` shows.
 The compressed size is the sum of the gzip-compressed layers, which a push uploads and a pull downloads.
+The images were measured with Docker's containerd image store, where the size that `docker images` shows is the sum of the two: 517 MB and 558 MB for the small application without the option and in `load` mode.
+Use `docker history` to compare images.
 
 [cols="3,2,>1,>2,>2",options=header]
 |===
@@ -1488,7 +1490,7 @@ The compressed size is the sum of the gzip-compressed layers, which a push uploa
 |437.7 MB (+48.2 MB, +12%)
 |138.3 MB (+11.3 MB, +9%)
 
-.3+|Larger: the small application plus Micronaut Data JDBC with HikariCP and an in-memory H2 database, Micronaut Validation, Micronaut Management and the HTTP client
+.3+|Larger: one controller backed by a Micronaut Data JDBC repository (HikariCP, in-memory H2 database) and a declarative HTTP client, with Micronaut Serialization, Validation, Management and Logback
 |Option disabled
 |
 |397.2 MB
@@ -1505,24 +1507,24 @@ The compressed size is the sum of the gzip-compressed layers, which a push uploa
 |149.7 MB (+16.1 MB, +12%)
 |===
 
-The cache layer compresses to 21% to 24% of its size, and it is almost all of the compressed increase.
+The cache layer compresses to 21% to 24% of its size, and its compressed size is the compressed increase less about 3 kB.
 The `optimized` image of the <<Micronaut AOT Plugin,Micronaut AOT plugin>> had the same sizes, to within 0.1 MB.
 With the Micronaut Core of Platform 5.0.2, which has no `load` mode and whose training run the plugin's script starts, the `start` caches of the two applications were 48.4 MB and 71.2 MB.
 
 The size of the cache depends on:
 
-- The classes that the training run loads: the cache takes about 9 to 10 kB for each, from 3,494 classes for the small application in `load` mode to 7,903 for the larger one in `start` mode. A training run in `start` mode also loads the classes that create the beans, start the server and handle the training paths, so its cache is larger. Each dependency adds the classes that the training run loads from it.
-- The JDK of the base image: the `load` cache of the small application was 33.6 MB with Temurin 25.0.4.1 (`eclipse-temurin:25-jre`), 34.8 MB with Temurin 25.0.4 (`eclipse-temurin:25-jdk`) and 31.6 MB with GraalVM Community Edition 25.0.2.
+- The classes that the training run loads: the cache takes about 9 to 10 kB for each, from 3,494 classes for the small application in `load` mode to 7,903 for the larger one in `start` mode. A training run in `start` mode also loads the classes that create the beans, start the server and handle the training paths, so its cache is larger. Each dependency adds the classes that the training run loads from it. `-Xlog:class+load` on the `java` command logs one line for each class that a run loads: for the example applications, the number of lines was within 15% of the number of classes in the cache.
+- The base image's JDK: the `load` cache of the small application held from 3,492 to 3,513 classes on three base images, but was 33.6 MB on `eclipse-temurin:25-jre` (Temurin 25.0.4.1), 34.8 MB on `eclipse-temurin:25-jdk` (Temurin 25.0.4) and 31.6 MB on GraalVM Community Edition 25.0.2, where it held no method profiles.
 
 For the same cache, the percentage is larger with a smaller base image.
-Two training runs of the same image wrote caches whose sizes differed by less than 0.1 MB.
+Two training runs of the same inputs wrote caches that were not byte-identical and whose sizes differed by less than 0.1 MB.
 
 The training `RUN` comes after the layers of the base image, the dependencies, the application and its resources, so Docker runs it again, and writes a new cache, whenever one of these layers changes.
 With the small application and the `load` mode:
 
 - Rebuilt without a change, with the Docker build cache: Docker reused every layer, the cache layer included, and did not run the training. A push uploaded nothing.
 - Rebuilt after a change to one class: Docker reused the base image and dependency layers, rebuilt the others and ran the training again. A push uploaded the new cache layer, 7.9 MB, and 20 kB for the application, resources and script layers.
-- Rebuilt without a change and without the Docker build cache (`noCache = true` on the `dockerBuild` task): two training runs of the same image wrote caches that were not byte-identical. With or without the option, Docker gave every layer after the base image a new digest, so a push uploaded all of them again: 20.0 MB, of which 7.9 MB was the cache layer.
+- Rebuilt without a change and without the Docker build cache (`noCache = true` on the `dockerBuild` task): the training ran again and wrote a cache that was not byte-identical to the previous one. With or without the option, the builder that `dockerBuild` uses (Docker's legacy builder) gave every layer after the base image a new digest, so a push uploaded all of them again: 20.0 MB, of which 7.8 MB to 7.9 MB was the cache layer.
 
 So every image build that changes a layer before the training `RUN`, or that does not use the Docker build cache, has a new cache layer, which the next push uploads and the next pull downloads.
 The base image layers are uploaded only when they change, as without the option.
@@ -1536,6 +1538,7 @@ docker history <image>
 
 The cache is the layer created by `bash /home/app/jdk-aot-cache/train.sh`, and the size that `docker history` shows is uncompressed.
 The manifest of the image in a registry, which `docker manifest inspect <image>` prints, gives the compressed size of each layer: the cache layer is the last one.
+For a multi-platform image, `docker manifest inspect -v <image>` prints the layers of each platform.
 With the option disabled, the image has neither the cache layer nor the script layer.
 
 
