@@ -15,6 +15,8 @@ class JdkAotCacheDockerFunctionalTest extends AbstractFunctionalTest {
 
     private static final String CACHE = "/home/app/application.aot"
 
+    private static final String LABEL = "io.micronaut.gradle.jdk-aot-cache-test"
+
     private static final String STARTS_THE_APPLICATION = "JDK AOT cache: the application's Micronaut version has no 'load' training mode (micronaut.application.training.mode), " +
         "so the training run starts the application in the image build, where it needs what the application needs to start"
 
@@ -31,13 +33,15 @@ class JdkAotCacheDockerFunctionalTest extends AbstractFunctionalTest {
 
     def cleanup() {
         docker("rmi", "-f", "$image:main", "$image:optimized")
-        // A failed image build leaves the container of the failed step behind
-        def containers = docker("ps", "-a", "--no-trunc", "--filter", "status=exited", "--format", "{{.ID}} {{.Command}}").output
-            .readLines()
-            .findAll { it.contains(id) }
-            .collect { it.split(" ")[0] }
+        // A failed image build leaves the container of the failed step and the image of the step before it behind.
+        // Both have the label that the Dockerfile of the test application sets
+        def containers = docker("ps", "-a", "-q", "--filter", "label=$LABEL=$id").output.readLines()
         if (containers) {
-            docker("rm", *containers)
+            docker("rm", "-f", *containers)
+        }
+        def images = docker("images", "-a", "-q", "--filter", "label=$LABEL=$id").output.readLines().unique()
+        if (images) {
+            docker("rmi", "-f", *images)
         }
     }
 
@@ -236,6 +240,10 @@ class JdkAotCacheDockerFunctionalTest extends AbstractFunctionalTest {
 
             tasks.withType(com.bmuschko.gradle.docker.tasks.image.DockerBuildImage).configureEach {
                 images = ["$image:\${name == 'dockerBuild' ? 'main' : 'optimized'}"]
+            }
+
+            tasks.withType(io.micronaut.gradle.docker.MicronautDockerfile).configureEach {
+                label(["$LABEL": "$id"])
             }
         """
         file("src/main/java/example/Application.java").tap {
