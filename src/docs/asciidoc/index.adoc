@@ -1327,7 +1327,7 @@ The training script, its options and the paths of the script and of the cache in
 ===== Training modes
 
 NOTE: The `load` mode and the training run switch that it belongs to are not in a released Micronaut version yet.
-They come with https://github.com/micronaut-projects/micronaut-core/pull/13402[micronaut-core#13402], a pull request that is still open and that documents both as `@since 5.3.0`.
+They come with https://github.com/micronaut-projects/micronaut-core/pull/13402[micronaut-core#13402], which is merged into the `5.3.x` branch of Micronaut Core and ships with Micronaut Core 5.3.0, not released yet.
 Until the application uses a Micronaut version that has the `load` mode, the default training run starts the application and `trainingMode = "load"` fails: see <<docker-jdk-aot-cache-versions,what a training run does on each Micronaut version>>.
 
 An image build has no database, message broker or other service that the application uses, and an application that connects to one as it starts cannot start there.

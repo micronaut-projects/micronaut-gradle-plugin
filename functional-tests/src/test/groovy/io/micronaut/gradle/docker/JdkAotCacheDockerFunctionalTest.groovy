@@ -26,9 +26,9 @@ class JdkAotCacheDockerFunctionalTest extends AbstractFunctionalTest {
         "the services that the application needs to start must be available while the image is built, or a configuration for the training run must replace them"
 
     /**
-     * Until a released Micronaut has the load training mode (micronaut-projects/micronaut-core#13402), these point
-     * the test application at a build of Micronaut core that has it: a Maven repository directory and the version
-     * of the core modules in it. Without them, the application uses the core of the Micronaut Platform under test.
+     * Until a released Micronaut has the load training mode (micronaut-projects/micronaut-core#13402, which ships
+     * with Micronaut Core 5.3.0), these point the test application at a build of Micronaut core that has it: a Maven
+     * repository directory and the version of the core modules in it. Without them, the application uses the core of the Micronaut Platform under test.
      * The functional test task declares both as inputs.
      */
     private static final String CORE_REPOSITORY = System.getenv("JDK_AOT_CACHE_TEST_CORE_REPOSITORY")
