@@ -65,9 +65,16 @@ public interface JdkAotCacheOptions {
     /**
      * The paths that the training run sends a GET request to, in order, once the application is ready.
      * They need the {@code start} {@link #getTrainingMode() training mode}, because no other run
-     * starts the application. Each path starts with {@code /} and must be answered with a status
-     * below 400. It may carry a query string, but no whitespace and no comma. Defaults to no path,
-     * so a {@code start} training run only starts and stops the application.
+     * starts the application. Each path starts with {@code /}. It may carry a query string, but no
+     * whitespace and no comma. Defaults to no path, so a {@code start} training run only starts and
+     * stops the application.
+     *
+     * <p>A path answered with an error status does not have the same effect in the two training runs
+     * that send the requests. When the application sends them itself, with Micronaut's training run
+     * switch in {@code start} mode, a status from 400 to 499 is logged as a warning and does not fail
+     * the image build, while a status of 500 or above, or a request that gets no response, does.
+     * When the plugin's script sends them, on a Micronaut version without that switch, a status of
+     * 400 or above fails the image build.</p>
      *
      * @return the training paths
      */
@@ -76,8 +83,9 @@ public interface JdkAotCacheOptions {
 
     /**
      * The longest time, in seconds, that the training run waits for the application to answer HTTP
-     * requests, or to exit: on its own in a {@code load} run, and once it has been asked to stop in
-     * a {@code start} run. Defaults to 120.
+     * requests, or to exit: on its own when the application ends the training run itself, with
+     * Micronaut's training run switch in either training mode, and once it has been asked to stop
+     * otherwise. Defaults to 120.
      *
      * @return the training timeout, in seconds
      */
