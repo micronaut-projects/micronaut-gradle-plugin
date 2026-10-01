@@ -79,7 +79,7 @@ public abstract class MicronautDockerfile extends Dockerfile implements DockerBu
      * {@code micronaut.docker.jdkAotCache} options by default, and the cache is enabled there,
      * because the image layers depend on it.
      * @return the JDK AOT cache options
-     * @since 5.0.3
+     * @since 5.1.0
      */
     @Nested
     public abstract JdkAotCacheOptions getJdkAotCache();

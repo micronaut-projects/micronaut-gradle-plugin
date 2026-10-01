@@ -26,7 +26,7 @@ public interface DockerExtension {
      * The JDK AOT cache that the generated JVM Docker images can train.
      *
      * @return the JDK AOT cache options
-     * @since 5.0.3
+     * @since 5.1.0
      */
     @Nested
     JdkAotCacheOptions getJdkAotCache();
@@ -35,7 +35,7 @@ public interface DockerExtension {
      * Configures the JDK AOT cache that the generated JVM Docker images can train.
      *
      * @param action the configuration action
-     * @since 5.0.3
+     * @since 5.1.0
      */
     default void jdkAotCache(Action<? super JdkAotCacheOptions> action) {
         action.execute(getJdkAotCache());

@@ -28,7 +28,7 @@ import org.gradle.api.tasks.Optional;
  *
  * <p>This is not Micronaut AOT, which is configured with {@code micronaut { aot { } }}.</p>
  *
- * @since 5.0.3
+ * @since 5.1.0
  */
 public interface JdkAotCacheOptions {
 
