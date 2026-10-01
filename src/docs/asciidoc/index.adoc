@@ -1321,6 +1321,7 @@ The training run and the other JVMs that the training script starts also get `-X
 The `ENTRYPOINT` keeps the performance data, which `jps` and `jstat` read.
 The image build fails if the training fails or writes no cache.
 At runtime, the cache is used in the JVM's default `auto` mode: if it cannot be used, the application starts without it.
+The training script, its options and the paths of the script and of the cache in the image are an implementation detail of the plugin, which can change from one release to the next: do not depend on them, for example in a <<Customized docker files,custom `Dockerfile`>> copied from the generated one.
 
 [[docker-jdk-aot-cache-modes]]
 ===== Training modes

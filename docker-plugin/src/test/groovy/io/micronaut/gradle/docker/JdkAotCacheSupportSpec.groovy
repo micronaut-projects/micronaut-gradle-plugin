@@ -61,30 +61,24 @@ class JdkAotCacheSupportSpec extends Specification {
         JdkAotCacheSupport.trainingRunSupport(classpath(modeWithoutSwitch, withMode)) == NONE
     }
 
-    def "the training mode is #mode when the build asks for #requested and Micronaut core offers #support"() {
-        given:
-        def options = options(requested)
-
+    def "on a Micronaut core that has the modes, the training run is in the #mode mode when the build asks for #requested"() {
         expect:
-        JdkAotCacheSupport.requestedTrainingMode(options) == requested?.trim()?.toLowerCase()
-        JdkAotCacheSupport.trainingMode(options, support) == mode
+        JdkAotCacheSupport.trainingCommand("/home/app", [], [8080], options(requested), MODE)
+            .contains("-Dmicronaut.application.training.mode=$mode" as String)
 
         where:
-        requested | support | mode
-        null      | MODE    | "load"
-        null      | SWITCH  | "start"
-        null      | NONE    | "start"
-        "load"    | MODE    | "load"
-        "LOAD"    | MODE    | "load"
-        " Load "  | MODE    | "load"
-        "start"   | MODE    | "start"
-        "start"   | SWITCH  | "start"
-        "START"   | NONE    | "start"
+        requested | mode
+        null      | "load"
+        "load"    | "load"
+        "LOAD"    | "load"
+        " Load "  | "load"
+        "start"   | "start"
+        "START"   | "start"
     }
 
-    def "the load mode fails when Micronaut core offers #support"() {
+    def "the #requested mode fails when Micronaut core offers #support"() {
         when:
-        JdkAotCacheSupport.trainingMode(options("load"), support)
+        JdkAotCacheSupport.trainingCommand("/home/app", [], [8080], options(requested), support)
 
         then:
         def e = thrown(GradleException)
@@ -93,7 +87,11 @@ class JdkAotCacheSupportSpec extends Specification {
             "Upgrade Micronaut, or remove trainingMode to train with a run that starts the application"
 
         where:
-        support << [SWITCH, NONE]
+        requested | support
+        "load"    | SWITCH
+        "load"    | NONE
+        " LOAD "  | SWITCH
+        " LOAD "  | NONE
     }
 
     def "an unknown training mode fails"() {
@@ -191,6 +189,27 @@ class JdkAotCacheSupportSpec extends Specification {
         "start"   | SWITCH  | 0
         null      | NONE    | 1
         "start"   | NONE    | 0
+        "START"   | NONE    | 0
+    }
+
+    def "the training run #message when the build asks for #requested and Micronaut core offers #support"() {
+        given:
+        def logger = Mock(Logger)
+
+        when:
+        JdkAotCacheSupport.logTrainingMode(logger, options(requested), support)
+
+        then:
+        1 * logger.info({ it.contains(message) }, *_)
+        0 * logger._
+
+        where:
+        requested | support | message
+        null      | MODE    | "loads the bean definitions of the application and does not start it"
+        " Load "  | MODE    | "loads the bean definitions of the application and does not start it"
+        "start"   | MODE    | "starts the application in the image build"
+        "start"   | SWITCH  | "starts the application in the image build"
+        "START"   | NONE    | "starts the application in the image build"
     }
 
     private JdkAotCacheOptions options(String trainingMode, List<String> trainingPaths = []) {

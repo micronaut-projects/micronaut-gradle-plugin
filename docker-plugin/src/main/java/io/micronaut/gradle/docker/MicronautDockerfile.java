@@ -16,7 +16,6 @@ import org.gradle.api.plugins.JavaPluginExtension;
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Property;
 import org.gradle.api.provider.Provider;
-import org.gradle.api.provider.ProviderFactory;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.Nested;
 import org.gradle.api.tasks.Optional;
@@ -58,6 +57,8 @@ public abstract class MicronautDockerfile extends Dockerfile implements DockerBu
     @Input
     private final Property<String> targetWorkingDirectory;
 
+    private final JdkAotCacheOptions jdkAotCacheOptions;
+
     /**
      * The layers to copy to the image.
      * @return the layers
@@ -74,16 +75,6 @@ public abstract class MicronautDockerfile extends Dockerfile implements DockerBu
     @Optional
     public abstract Property<Boolean> getUseCopyLink();
 
-    /**
-     * The JDK AOT cache that the image trains while it is built. The generated images get the
-     * {@code micronaut.docker.jdkAotCache} options by default, and the cache is enabled there,
-     * because the image layers depend on it.
-     * @return the JDK AOT cache options
-     * @since 5.1.0
-     */
-    @Nested
-    public abstract JdkAotCacheOptions getJdkAotCache();
-
     public MicronautDockerfile() {
         Project project = getProject();
         setGroup(BasePlugin.BUILD_GROUP);
@@ -99,7 +90,8 @@ public abstract class MicronautDockerfile extends Dockerfile implements DockerBu
         this.targetWorkingDirectory = objects.property(String.class).convention(DEFAULT_WORKING_DIR);
         JavaPluginExtension javaExtension = PluginsHelper.javaPluginExtensionOf(project);
         getJdkVersion().convention(javaExtension.getTargetCompatibility());
-        JdkAotCacheSupport.configureDefaults(getJdkAotCache());
+        this.jdkAotCacheOptions = objects.newInstance(JdkAotCacheOptions.class);
+        JdkAotCacheSupport.configureDefaults(jdkAotCacheOptions);
     }
 
     @Override
@@ -115,8 +107,19 @@ public abstract class MicronautDockerfile extends Dockerfile implements DockerBu
     @Inject
     protected abstract ObjectFactory getObjects();
 
-    @Inject
-    protected abstract ProviderFactory getProviders();
+    /**
+     * The JDK AOT cache that the image trains while it is built. It is not an option of the task:
+     * {@link MicronautDockerPlugin} sets its conventions from {@code micronaut.docker.jdkAotCache}, which
+     * users configure, because the image layers depend on it. The getter is concrete, because Gradle
+     * cannot implement an abstract package-private getter for a subclass in another package, such as
+     * the final Dockerfile task of the CRaC plugin.
+     *
+     * @return the JDK AOT cache options of this task
+     */
+    @Nested
+    JdkAotCacheOptions getJdkAotCache() {
+        return jdkAotCacheOptions;
+    }
 
     /**
      * The training script of the JDK AOT cache, next to the Dockerfile in the Docker context.
@@ -124,10 +127,10 @@ public abstract class MicronautDockerfile extends Dockerfile implements DockerBu
      */
     @OutputFile
     @Optional
-    protected Provider<RegularFile> getJdkAotCacheTrainingScript() {
+    Provider<RegularFile> getJdkAotCacheTrainingScript() {
         return getJdkAotCache().getEnabled().flatMap(enabled -> Boolean.TRUE.equals(enabled)
             ? getDestDir().map(dir -> dir.file(JdkAotCacheSupport.TRAINING_SCRIPT))
-            : getProviders().provider(() -> null));
+            : getObjects().fileProperty());
     }
 
     @Input
@@ -247,7 +250,8 @@ public abstract class MicronautDockerfile extends Dockerfile implements DockerBu
     private void validateJdkAotCache(DockerBuildStrategy buildStrategy) {
         DockerExtension docker = PluginsHelper.findMicronautExtension(getProject()).getExtensions().findByType(DockerExtension.class);
         if (docker == null || !Boolean.TRUE.equals(docker.getJdkAotCache().getEnabled().get())) {
-            // The runner JARs and the resources layer only have a class path of JARs when the extension enables the cache
+            // The runner JARs and the resources layer only have a class path of JARs when the extension enables the cache.
+            // The options of the task are not public, but a Groovy build script can still reach them
             throw new GradleException("The JDK AOT cache is enabled on the " + getName() + " task, but it must be enabled with micronaut.docker.jdkAotCache.enabled, because the image layers depend on it");
         }
         if (buildStrategy != DockerBuildStrategy.DEFAULT) {

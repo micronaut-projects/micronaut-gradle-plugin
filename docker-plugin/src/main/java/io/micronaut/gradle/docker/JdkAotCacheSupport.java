@@ -52,34 +52,34 @@ final class JdkAotCacheSupport {
      * The training run switch of Micronaut core (micronaut-projects/micronaut-core#13391): with it,
      * the application exits with status 0 once the training run is done.
      */
-    static final String TRAINING_ENABLED_PROPERTY = "micronaut.application.training.enabled";
+    private static final String TRAINING_ENABLED_PROPERTY = "micronaut.application.training.enabled";
 
     /**
      * The mode of a training run of Micronaut core, {@link #MODE_LOAD} or {@link #MODE_START}.
      * A core that has the switch does not necessarily have the mode.
      */
-    static final String TRAINING_MODE_PROPERTY = "micronaut.application.training.mode";
+    private static final String TRAINING_MODE_PROPERTY = "micronaut.application.training.mode";
 
     /**
      * The training mode that loads the bean definitions and does not start the application.
      */
-    static final String MODE_LOAD = "load";
+    private static final String MODE_LOAD = "load";
 
     /**
      * The training mode that starts the application and requests the training paths.
      */
-    static final String MODE_START = "start";
+    private static final String MODE_START = "start";
 
     /**
      * The GET paths of the training run switch's warm-up, as a comma-separated list.
      */
-    static final String TRAINING_WARMUP_PATHS_PROPERTY = "micronaut.application.training.warmup.paths";
+    private static final String TRAINING_WARMUP_PATHS_PROPERTY = "micronaut.application.training.warmup.paths";
 
     /**
      * The collector pinned when the JVM arguments select none. Builders usually get G1 by ergonomics
      * while small pods get SerialGC, and a cache records the collector that trained it.
      */
-    static final String DEFAULT_GC_FLAG = "-XX:+UseG1GC";
+    private static final String DEFAULT_GC_FLAG = "-XX:+UseG1GC";
 
     private static final String MICRONAUT_CLASS = "io/micronaut/runtime/Micronaut.class";
     private static final String APPLICATION_CONFIGURATION_CLASS = "io/micronaut/runtime/ApplicationConfiguration.class";
@@ -167,7 +167,7 @@ final class JdkAotCacheSupport {
      * @param options the options
      * @return {@link #MODE_LOAD}, {@link #MODE_START}, or null if the build leaves the choice to the plugin
      */
-    static String requestedTrainingMode(JdkAotCacheOptions options) {
+    private static String requestedTrainingMode(JdkAotCacheOptions options) {
         String trainingMode = options.getTrainingMode().getOrNull();
         if (trainingMode == null) {
             return null;
@@ -189,7 +189,7 @@ final class JdkAotCacheSupport {
      * @param support what the application's Micronaut core offers for a training run
      * @return {@link #MODE_LOAD} or {@link #MODE_START}
      */
-    static String trainingMode(JdkAotCacheOptions options, TrainingRunSupport support) {
+    private static String trainingMode(JdkAotCacheOptions options, TrainingRunSupport support) {
         String requested = requestedTrainingMode(options);
         if (requested == null) {
             return support == TrainingRunSupport.MODE ? MODE_LOAD : MODE_START;

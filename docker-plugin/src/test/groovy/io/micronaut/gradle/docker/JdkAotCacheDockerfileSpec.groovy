@@ -260,24 +260,6 @@ ENTRYPOINT ["java", "-XX:AOTCache=/home/app/application.aot", "-XX:+UseG1GC", "-
         lines.last() == ENTRYPOINT
     }
 
-    def "the dockerfile task can select another training mode than the extension"() {
-        given:
-        withApplication("""
-            micronaut.docker.jdkAotCache.enabled = true
-
-            tasks.named("dockerfile") {
-                jdkAotCache.trainingMode = "start"
-            }
-        """)
-        withFakeCore(true)
-
-        when:
-        build('dockerfile')
-
-        then:
-        file("build/docker/main/Dockerfile").readLines().any { it.startsWith("RUN [") && it.contains('"-Dmicronaut.application.training.mode=start"') }
-    }
-
     def "the load mode fails on a Micronaut core that has the switch but not the load mode"() {
         given:
         withApplication("""
@@ -317,6 +299,41 @@ ENTRYPOINT ["java", "-XX:AOTCache=/home/app/application.aot", "-XX:+UseG1GC", "-
         file("build/docker/main/jdk-aot-cache/train.sh").exists()
     }
 
+    def "the dockerfile task tracks the JDK AOT cache options and writes the training script again when it is deleted"() {
+        given:
+        withApplication("""
+            micronaut.docker.jdkAotCache {
+                enabled = true
+                trainingTimeout = (findProperty("trainingTimeout") ?: "120") as Integer
+            }
+        """)
+        def script = file("build/docker/main/jdk-aot-cache/train.sh")
+
+        when:
+        def first = build('dockerfile')
+        def second = build('dockerfile')
+
+        then:
+        first.task(":dockerfile").outcome == TaskOutcome.SUCCESS
+        second.task(":dockerfile").outcome == TaskOutcome.UP_TO_DATE
+        script.exists()
+
+        when:
+        script.delete()
+        def afterDelete = build('dockerfile')
+
+        then:
+        afterDelete.task(":dockerfile").outcome == TaskOutcome.SUCCESS
+        script.exists()
+
+        when:
+        def afterChange = build('dockerfile', '-PtrainingTimeout=300')
+
+        then:
+        afterChange.task(":dockerfile").outcome == TaskOutcome.SUCCESS
+        file("build/docker/main/Dockerfile").readLines().any { it.startsWith("RUN [" + TRAIN.replace('"120"', '"300"')) }
+    }
+
     def "fails when #description"() {
         given:
         withApplication("""
@@ -344,8 +361,8 @@ ENTRYPOINT ["java", "-XX:AOTCache=/home/app/application.aot", "-XX:+UseG1GC", "-
         "the image exposes no port"                  | 'tasks.named("dockerfile") { exposedPorts = [] }'                                               | "the image exposes no port"
     }
 
-    def "fails when the JDK AOT cache is only enabled on the task"() {
-        given:
+    def "fails when a Groovy build script enables the JDK AOT cache on the task only"() {
+        given: "the options of the task are not public, but Groovy reaches the package-private getter"
         withApplication('tasks.named("dockerfile") { jdkAotCache.enabled = true }')
 
         when:

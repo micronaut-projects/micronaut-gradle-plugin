@@ -8,6 +8,9 @@
 #            [--training-run] [--compatible-oop-compression] [--strict-probes <count>]
 #            -- java [jvm options] -jar <application jar>
 #
+# This script, its options and the paths of the script and of the cache in the image are an
+# implementation detail of the plugin, which can change from one release to the next.
+#
 # The command after "--" is the ENTRYPOINT without -XX:AOTCache. The script runs it once with
 # -XX:-UsePerfData and -XX:AOTCacheOutput=<file>:
 # - with --training-run, the application's Micronaut core has the training run switch, which the
