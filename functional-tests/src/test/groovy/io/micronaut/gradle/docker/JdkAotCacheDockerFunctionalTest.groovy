@@ -72,8 +72,8 @@ class JdkAotCacheDockerFunctionalTest extends AbstractFunctionalTest {
     }
 
     def "the default training run trains an application that cannot start while the image is built"() {
-        given:
-        withApplication(database: true)
+        given: "no strict probe, as by default, so that no later JVM removes a performance data file that a JVM of the training left behind"
+        withApplication(database: true, strictProbes: 0)
 
         when:
         def dockerfile = build("dockerfile", "buildLayers")
@@ -95,7 +95,10 @@ class JdkAotCacheDockerFunctionalTest extends AbstractFunctionalTest {
         !result.output.contains("Cannot connect to the database")
         !result.output.contains("Startup completed")
         result.output.contains("[jdk-aot-cache] Wrote $CACHE")
-        result.output.contains("[jdk-aot-cache] 3 strict probes passed")
+        !result.output.contains("strict probes passed")
+
+        and: "no JVM of the training left its performance data file in the image, not even the one that created the cache"
+        noPerformanceDataFile()
 
         when: "the application starts in strict mode, without its database"
         def strict = startApplication("$image:main", "-XX:AOTMode=on", "-XX:AOTCache=$CACHE", "-XX:+UseG1GC", "-Xlog:class+load=info")
@@ -145,9 +148,7 @@ class JdkAotCacheDockerFunctionalTest extends AbstractFunctionalTest {
         result.output.contains("[jdk-aot-cache] Wrote $CACHE")
 
         and: "no JVM of the training left its performance data file in the image, not even the one that created the cache"
-        def perfData = docker("run", "--rm", "--entrypoint", "find", "$image:main", "/tmp", "-path", "*/hsperfdata_*/*")
-        perfData.exitCode == 0
-        perfData.output.trim().empty
+        noPerformanceDataFile()
 
         when: "the application starts in strict mode"
         def strict = startApplication("$image:main", "-XX:AOTMode=on", "-XX:AOTCache=$CACHE", "-XX:+UseG1GC", "-Xlog:class+load=info")
@@ -195,6 +196,7 @@ class JdkAotCacheDockerFunctionalTest extends AbstractFunctionalTest {
         then:
         result.task(":optimizedDockerBuild").outcome == TaskOutcome.SUCCESS
         requestsOf(["/hello"], "optimized").every { result.output.contains(it) }
+        result.output.contains("[jdk-aot-cache] 3 strict probes passed")
 
         when:
         def strict = startApplication("$image:optimized", "-XX:AOTMode=on", "-XX:AOTCache=$CACHE", "-XX:+UseG1GC", "-Xlog:class+load=info")
@@ -241,6 +243,18 @@ class JdkAotCacheDockerFunctionalTest extends AbstractFunctionalTest {
             assert loadMode: "JDK_AOT_CACHE_TEST_CORE_REPOSITORY and JDK_AOT_CACHE_TEST_CORE_VERSION must point at a Micronaut core that has the load training mode, but the application got ${cores[0].name}"
         }
         loadMode
+    }
+
+    /**
+     * Whether no JVM of the training left a performance data file in the image. The JVM that creates the cache
+     * leaves its file behind unless the training disables performance data. The image must be built without strict
+     * probes: a strict probe with performance data on would remove that file and hide it.
+     */
+    private boolean noPerformanceDataFile(String imageName = "main") {
+        def perfData = docker("run", "--rm", "--entrypoint", "find", "$image:$imageName", "/tmp", "-path", "*/hsperfdata_*/*")
+        assert perfData.exitCode == 0
+        assert perfData.output.trim().empty
+        true
     }
 
     /**
