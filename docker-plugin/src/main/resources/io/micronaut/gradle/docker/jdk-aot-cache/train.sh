@@ -9,7 +9,7 @@
 #            -- java [jvm options] -jar <application jar>
 #
 # The command after "--" is the ENTRYPOINT without -XX:AOTCache. The script runs it once with
-# -XX:AOTCacheOutput=<file>:
+# -XX:-UsePerfData and -XX:AOTCacheOutput=<file>:
 # - with --training-run, the application's Micronaut core has the training run switch, which the
 #   command turns on: the application ends the training run itself and must exit with status 0.
 #   Depending on the mode that the command selects, it loads its bean definitions without starting,
@@ -20,6 +20,10 @@
 #   get to answer, the error says that this training run starts the application, and why.
 # The build fails unless the cache is written. Then <count> strict launches check the cache.
 # Only bash builtins are used to talk to the application, because JRE images have no curl.
+# Every JVM that the script starts gets -XX:-UsePerfData, so that no JVM writes a performance data
+# file (/tmp/hsperfdata_<user>/<pid>) into the layer of the training. The JVM that the training JVM
+# launches to create the cache gets the training JVM's options, and it exits without removing its
+# file. The ENTRYPOINT keeps the performance data, which jps and jstat read.
 
 set -euo pipefail
 
@@ -68,7 +72,7 @@ shift
 jvm_command=("$@")
 
 # One run of the JVM tells whether it can write a cache and whether it has the JDK 27 creation flag
-flags=$("$java" -XX:+UnlockDiagnosticVMOptions -XX:+PrintFlagsFinal -version 2>/dev/null) || fail "$java -version failed"
+flags=$("$java" -XX:-UsePerfData -XX:+UnlockDiagnosticVMOptions -XX:+PrintFlagsFinal -version 2>/dev/null) || fail "$java -version failed"
 [[ $flags == *" AOTCacheOutput "* ]] || fail "$java has no -XX:AOTCacheOutput: the JDK AOT cache needs JDK 25 or later in the base image"
 if $compatible_oop_compression && [[ $flags == *" AOTCompatibleOopCompression "* ]]; then
   # Only the JVM that creates the cache reads JDK_AOT_VM_OPTIONS
@@ -77,7 +81,7 @@ if $compatible_oop_compression && [[ $flags == *" AOTCompatibleOopCompression "*
 fi
 
 rm -f "$cache"
-training_command=("$java" "-XX:AOTCacheOutput=$cache" "${jvm_command[@]}")
+training_command=("$java" -XX:-UsePerfData "-XX:AOTCacheOutput=$cache" "${jvm_command[@]}")
 log "Training: ${training_command[*]}"
 "${training_command[@]}" &
 pid=$!
@@ -140,7 +144,7 @@ log "Wrote $cache ($(wc -c <"$cache") bytes)"
 
 if ((strict_probes > 0)); then
   # A strict launch of the same JVM options and class path, which stops after printing the version
-  probe=("$java" -XX:AOTMode=on "-XX:AOTCache=$cache")
+  probe=("$java" -XX:-UsePerfData -XX:AOTMode=on "-XX:AOTCache=$cache")
   jar=""
   for ((i = 0; i < ${#jvm_command[@]}; i++)); do
     if [[ ${jvm_command[i]} == -jar ]]; then

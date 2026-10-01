@@ -133,8 +133,8 @@ class JdkAotCacheDockerFunctionalTest extends AbstractFunctionalTest {
     }
 
     def "the main image trains a JDK AOT cache that serves application and dependency classes, with #description"() {
-        given:
-        withApplication(trainingPaths: ["/hello", "/hello?name=training"], micronaut: version)
+        given: "no strict probe, as by default, so that no later JVM removes a performance data file that a JVM of the training left behind"
+        withApplication(trainingPaths: ["/hello", "/hello?name=training"], micronaut: version, strictProbes: 0)
 
         when:
         def result = build("dockerBuild")
@@ -143,6 +143,11 @@ class JdkAotCacheDockerFunctionalTest extends AbstractFunctionalTest {
         result.task(":dockerBuild").outcome == TaskOutcome.SUCCESS
         requestsOf(["/hello", "/hello?name=training"]).every { result.output.contains(it) }
         result.output.contains("[jdk-aot-cache] Wrote $CACHE")
+
+        and: "no JVM of the training left its performance data file in the image, not even the one that created the cache"
+        def perfData = docker("run", "--rm", "--entrypoint", "find", "$image:main", "/tmp", "-path", "*/hsperfdata_*/*")
+        perfData.exitCode == 0
+        perfData.output.trim().empty
 
         when: "the application starts in strict mode"
         def strict = startApplication("$image:main", "-XX:AOTMode=on", "-XX:AOTCache=$CACHE", "-XX:+UseG1GC", "-Xlog:class+load=info")
@@ -273,6 +278,7 @@ class JdkAotCacheDockerFunctionalTest extends AbstractFunctionalTest {
      *
      * @param options trainingPaths: the paths of a training run in start mode, none for the default training mode;
      * extraPlugin: another plugin to apply; database: whether the application connects to a database as it starts;
+     * strictProbes: the number of strict probes of the image build, 3 if there is none;
      * micronaut: the Micronaut Platform version, which is the one under test if there is none
      */
     private void withApplication(Map<String, Object> options) {
@@ -307,7 +313,7 @@ class JdkAotCacheDockerFunctionalTest extends AbstractFunctionalTest {
                         enabled = true
                         ${trainingPaths ? "trainingMode = 'start'" : ""}
                         trainingPaths = [${trainingPaths.collect { "'$it'" }.join(", ")}]
-                        strictProbes = 3
+                        strictProbes = ${options.containsKey("strictProbes") ? options.strictProbes : 3}
                     }
                 }
             }

@@ -1317,6 +1317,8 @@ ENTRYPOINT ["java", "-XX:AOTCache=/home/app/application.aot", "-XX:+UseG1GC", "-
 ----
 
 The training run is the command of the `ENTRYPOINT` plus `-XX:AOTCacheOutput`, and the JVM writes the cache as it exits.
+The training run and the other JVMs that the training script starts also get `-XX:-UsePerfData`, so that no performance data file of a JVM (`/tmp/hsperfdata_root/<pid>`) ends up in the image.
+The `ENTRYPOINT` keeps the performance data, which `jps` and `jstat` read.
 The image build fails if the training fails or writes no cache.
 At runtime, the cache is used in the JVM's default `auto` mode: if it cannot be used, the application starts without it.
 
@@ -1457,9 +1459,10 @@ A few things to keep in mind:
 
 The option adds two layers to the image:
 
-- The layer of the training `RUN`, which holds the cache, `/home/app/application.aot`. The layer is the size of the cache file, plus less than 0.1 MB.
+- The layer of the training `RUN`, which holds the cache, `/home/app/application.aot`, and nothing else: the layer is the size of the cache file. The training script starts its JVMs without performance data (`-XX:-UsePerfData`), so the layer has no `/tmp/hsperfdata_root/<pid>` file (32 kB), which the JVM that creates the cache would otherwise leave behind.
 - The layer of the training script, 25 kB (3 kB compressed).
 
+Apart from the cache and the script, the option adds no file to the image.
 In the `main` image, the resources are in a JAR instead of a directory, and the runner JAR lists that JAR: this changes the image size by less than 5 kB.
 The base image and the dependency layers are the same as without the option.
 
