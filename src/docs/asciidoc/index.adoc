@@ -1411,8 +1411,10 @@ Gradle does not run that task again when the `Dockerfile` is up to date, so the 
 
 The <<docker-jdk-aot-cache-notes,notes below>> describe such a configuration.
 
-When the plugin's script sends the requests, a training path that is answered with a status of 400 or above fails the image build.
-When the application sends them itself, Micronaut Core decides: a status of 500 or above fails the training run, and a status from 400 to 499 is logged as a warning.
+A training path that is answered with an error status does not have the same effect in the two training runs that send the requests:
+
+- When the application sends them itself, with the training run switch in `start` mode, the rule of Micronaut Core applies. A status from 400 to 499 is logged as a warning with the URL and the status, the training run goes on and writes the cache, and the image build does not fail. A status of 500 or above, or a request that gets no response, fails the training run and the image build.
+- When the plugin's script sends the requests, a status of 400 or above fails the image build.
 
 [[docker-jdk-aot-cache-options]]
 ===== JDK AOT cache options
@@ -1430,7 +1432,7 @@ When the application sends them itself, Micronaut Core decides: a status of 500 
 
 |`trainingPaths`
 |none
-|The paths that a training run in `start` mode requests with `GET` once the application is ready, in order. Each path starts with `/`, may have a query string, and contains no whitespace and no comma. Requesting the application's hot paths makes the cache noticeably more effective than a training run that only starts the application. They need `trainingMode = "start"`.
+|The paths that a training run in `start` mode requests with `GET` once the application is ready, in order. Each path starts with `/`, may have a query string, and contains no whitespace and no comma. Requesting the application's hot paths makes the cache noticeably more effective than a training run that only starts the application. They need `trainingMode = "start"`. With the training run switch, a path answered with a status from 400 to 499 is logged as a warning and does not fail the image build: see <<docker-jdk-aot-cache-versions,what a training run does on each Micronaut version>>.
 
 |`trainingTimeout`
 |`120`
