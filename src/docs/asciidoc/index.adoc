@@ -713,6 +713,57 @@ micronaut {
 
 With `compile = "build-tool"` the launcher compiles nothing and watches `build/micronaut-dev/reload`, which the `mnDevTrigger` task touches after every `classes`: run `./gradlew classes -t` in another terminal, and every completed compilation is applied. Kotlin needs Kotlin 2.3 or later to compile embedded, and a KAPT project cannot; both fall back to Gradle compiling Kotlin, with `mnDevTrigger` telling the launcher. The plugin passes the compiler plugins of the Kotlin compilation and the all-open annotations to the embedded compiler; the options of another compiler plugin go through `kotlinCompilerArgs("-P", "plugin:<id>:<key>=<value>")`. The `run` task and continuous build are unchanged.
 
+==== Test Mode
+
+Test mode runs the tests the same way: it watches the sources, compiles a change inside the running JVM, and runs the tests the change can affect on a fresh class loader, so the libraries, the compilers and the JIT stay warm from one run to the next. The task is called `mnTest` since `-t` is Gradle's own continuous build:
+
+[source, bash]
+----
+$ ./gradlew mnTest
+----
+
+The `mnTest` task runs `io.micronaut.dev.MicronautDevMain` with the `testRuntimeClasspath` plus the launcher, `micronaut-dev-test-report` and `junit-platform-launcher`, at the version of the `junit-platform-engine` the tests resolve, on the `mnTestRuntime` configuration. The `mnTestManifest` task writes the manifest into `build/micronaut-dev/test/dev.properties`: everything `mnDevManifest` writes, plus the test sources, resources, classpaths and compiler options, with the outputs of the test and main source sets as the reloadable tier. A change runs the test classes that reference a changed class, directly or not, together with those that failed last; a change of resources or configuration runs every test. On a terminal, space runs the last tests again, `a` every test, `f` the failures, `w` turns watching on or off, and `q` exits; the task fails when the last run did.
+
+Results are written as JUnit XML into `build/test-results/mnTest`, and as an HTML report into `build/reports/tests/mnTest`, which the LiveReload server also serves at `http://localhost:35729/tests/` and updates test by test. The path is set by `reportPath`; the launcher adds the leading and trailing slashes, and rejects `/`, `..` and the LiveReload server's own paths.
+
+[source, bash]
+----
+$ ./gradlew mnTest --tests 'example.*Controller*'  # only the tests that match
+$ ./gradlew mnTest --once                          # run the tests once and exit with their status, as on CI
+----
+
+Any `micronaut.dev.*` system property of the build, such as `-Dmicronaut.dev.test.selection=all`, is passed on to the launcher and overrides the manifest's entry.
+
+[source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
+----
+micronaut {
+    dev {
+        test {
+            selection = "affected" // affected, or all to run every test on each change
+            initialRun = true      // run every test once at startup
+            reportPath = "/tests/" // the path of the live report on the LiveReload server
+            parameters.put("junit.jupiter.execution.parallel.enabled", "true")
+        }
+    }
+}
+----
+
+[source, kotlin, subs="verbatim,attributes", role="multi-language-sample"]
+----
+micronaut {
+    dev {
+        test {
+            selection.set("affected")
+            initialRun.set(true)
+            reportPath.set("/tests/")
+            parameters.put("junit.jupiter.execution.parallel.enabled", "true")
+        }
+    }
+}
+----
+
+With `compile = "build-tool"`, `mnDevTrigger` also runs after every `testClasses`, so `./gradlew testClasses -t` in another terminal drives the runs.
+
 === Development-only Dependencies
 
 The application plugin creates a `developmentOnly` configuration for dependencies that are needed only while running the application locally.
