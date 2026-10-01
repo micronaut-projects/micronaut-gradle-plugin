@@ -1461,10 +1461,10 @@ A few things to keep in mind:
 
 The option adds two layers to the image:
 
-- The layer of the training `RUN`, which holds the cache, `/home/app/application.aot`, and nothing else: the layer is the size of the cache file. The training script starts its JVMs without performance data (`-XX:-UsePerfData`), so the layer has no `/tmp/hsperfdata_root/<pid>` file (32 kB), which the JVM that creates the cache would otherwise leave behind.
+- The layer of the training `RUN`, which holds the cache, `/home/app/application.aot`. The training script adds nothing else to it, so for an application that writes no file during the training run, the layer is the size of the cache file. The training script starts its JVMs without performance data (`-XX:-UsePerfData`), so the layer has no `/tmp/hsperfdata_root/<pid>` file (32 kB), which the JVM that creates the cache would otherwise leave behind. Files that the application itself writes during the training run also land in this layer, for example the file of a file appender in its logging configuration or, in `start` mode, a file-based database.
 - The layer of the training script, 25 kB (3 kB compressed).
 
-Apart from the cache and the script, the option adds no file to the image.
+Apart from the cache, the script and the files that the application writes during the training run, the option adds no file to the image.
 In the `main` image, the resources are in a JAR instead of a directory, and the runner JAR lists that JAR: this changes the image size by less than 5 kB.
 The base image and the dependency layers are the same as without the option.
 
