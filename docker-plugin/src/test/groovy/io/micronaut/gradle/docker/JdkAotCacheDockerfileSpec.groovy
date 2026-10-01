@@ -304,9 +304,12 @@ ENTRYPOINT ["java", "-XX:AOTCache=/home/app/application.aot", "-XX:+UseG1GC", "-
         withApplication("""
             micronaut.docker.jdkAotCache {
                 enabled = true
-                trainingTimeout = (findProperty("trainingTimeout") ?: "120") as Integer
+                if (findProperty("mode")) {
+                    trainingMode = findProperty("mode")
+                }
             }
         """)
+        def dockerfile = file("build/docker/main/Dockerfile")
         def script = file("build/docker/main/jdk-aot-cache/train.sh")
 
         when:
@@ -315,6 +318,7 @@ ENTRYPOINT ["java", "-XX:AOTCache=/home/app/application.aot", "-XX:+UseG1GC", "-
 
         then:
         first.task(":dockerfile").outcome == TaskOutcome.SUCCESS
+        first.output.contains(STARTS_THE_APPLICATION)
         second.task(":dockerfile").outcome == TaskOutcome.UP_TO_DATE
         script.exists()
 
@@ -326,12 +330,14 @@ ENTRYPOINT ["java", "-XX:AOTCache=/home/app/application.aot", "-XX:+UseG1GC", "-
         afterDelete.task(":dockerfile").outcome == TaskOutcome.SUCCESS
         script.exists()
 
-        when:
-        def afterChange = build('dockerfile', '-PtrainingTimeout=300')
+        when: "an option changes, but not the Dockerfile: the training run of this Micronaut version is the same in the default mode and in the start mode"
+        def instructions = dockerfile.text
+        def afterChange = build('dockerfile', '-Pmode=start')
 
-        then:
+        then: "the task runs again because the options are a nested input, not only because they are in the instructions"
         afterChange.task(":dockerfile").outcome == TaskOutcome.SUCCESS
-        file("build/docker/main/Dockerfile").readLines().any { it.startsWith("RUN [" + TRAIN.replace('"120"', '"300"')) }
+        !afterChange.output.contains(STARTS_THE_APPLICATION)
+        dockerfile.text == instructions
     }
 
     def "fails when #description"() {
