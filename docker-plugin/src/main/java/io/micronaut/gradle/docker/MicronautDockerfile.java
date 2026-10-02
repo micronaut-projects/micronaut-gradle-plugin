@@ -122,14 +122,16 @@ public abstract class MicronautDockerfile extends Dockerfile implements DockerBu
     protected void setupInstructions(List<Instruction> additionalInstructions) {
         String workDir = getTargetWorkingDirectory().get();
         DockerBuildStrategy buildStrategy = this.buildStrategy.getOrElse(DockerBuildStrategy.DEFAULT);
-        JavaApplication javaApplication = getProject().getExtensions().getByType(JavaApplication.class);
         String from = getBaseImage().getOrNull();
         if ("none".equalsIgnoreCase(from)) {
             from = null;
         }
         switch (buildStrategy) {
             case ORACLE_FUNCTION:
-                javaApplication.getMainClass().set("com.fnproject.fn.runtime.EntryPoint");
+                JavaApplication javaApplication = getProject().getExtensions().findByType(JavaApplication.class);
+                if (javaApplication != null) {
+                    javaApplication.getMainClass().set("com.fnproject.fn.runtime.EntryPoint");
+                }
                 from(new From("fnproject/fn-java-fdk:jre17-latest").withStage("fnfdk"));
                 from(new Dockerfile.From(from != null ? from : DEFAULT_BASE_IMAGE + getDockerDefaultImageJavaTag()));
                 copyFile(new CopyFile("/function/", "./function").withStage("fnfdk"));
