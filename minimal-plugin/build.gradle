@@ -16,6 +16,7 @@ micronautPlugins {
 dependencies {
     compileOnly libs.bundles.optionalPlugins
     compileOnly libs.shadowPlugin
+    compileOnly libs.cyclonedxPlugin
 
     testFixturesImplementation gradleTestKit()
     testFixturesImplementation libs.groovy.core
