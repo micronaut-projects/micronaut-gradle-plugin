@@ -16,6 +16,7 @@ functionalTesting {
     pluginUnderTest('minimal')
     pluginUnderTest('graalvm')
     pluginUnderTest('docker')
+    pluginUnderTest('buildpacks')
     pluginUnderTest('aot')
     pluginUnderTest('gradle')
     pluginUnderTest('openapi')
