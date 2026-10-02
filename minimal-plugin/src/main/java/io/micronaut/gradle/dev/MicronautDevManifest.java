@@ -59,7 +59,7 @@ public abstract class MicronautDevManifest extends DefaultTask {
      */
     public static final String MANIFEST_FILE_NAME = "dev.properties";
 
-    private static final String PREFIX = "micronaut.dev.";
+    static final String PREFIX = "micronaut.dev.";
 
     /**
      * @return the application's main class
@@ -277,6 +277,7 @@ public abstract class MicronautDevManifest extends DefaultTask {
         }
         entries.put(PREFIX + "livereload.port", String.valueOf(getLiveReloadPort().get()));
         entries.put(PREFIX + "livereload.inject-script", String.valueOf(getLiveReloadInjectScript().get()));
+        putEntries(entries, directory);
         Properties properties = new Properties();
         properties.putAll(entries);
         try (OutputStream out = Files.newOutputStream(manifest.toPath())) {
@@ -286,11 +287,24 @@ public abstract class MicronautDevManifest extends DefaultTask {
         }
     }
 
-    private static void putSources(Map<String, String> entries, String language, Set<File> directories) {
+    /**
+     * Adds the entries of a subclass, such as those of test mode, before the manifest is written.
+     *
+     * @param entries the entries
+     * @param directory the manifest directory, where argument files go
+     */
+    void putEntries(Map<String, String> entries, Path directory) {
+    }
+
+    static void putSources(Map<String, String> entries, String prefix, String language, Set<File> directories) {
         Set<File> existing = existing(directories);
         if (!existing.isEmpty()) {
-            entries.put(PREFIX + "sources." + language, join(existing));
+            entries.put(prefix + "sources." + language, join(existing));
         }
+    }
+
+    private static void putSources(Map<String, String> entries, String language, Set<File> directories) {
+        putSources(entries, PREFIX, language, directories);
     }
 
     private static void putResourceKind(Map<String, String> entries, String kind, Set<File> resources, String... names) {
@@ -309,20 +323,29 @@ public abstract class MicronautDevManifest extends DefaultTask {
     }
 
     private static void putCompilation(Map<String, String> entries, Path directory, String language, Set<File> sources, Property<String> output, Property<String> generatedSources, List<String> options) {
+        putCompilation(entries, directory, PREFIX, "", language, sources, output, generatedSources, options);
+    }
+
+    /**
+     * The entries of one compilation under a prefix, {@code micronaut.dev.} or {@code micronaut.dev.test.}, with its
+     * options in an argument file whose name starts with another, so that the two compilations of a language keep
+     * one file each.
+     */
+    static void putCompilation(Map<String, String> entries, Path directory, String prefix, String argfilePrefix, String language, Set<File> sources, Property<String> output, Property<String> generatedSources, List<String> options) {
         if (existing(sources).isEmpty() || !output.isPresent()) {
             return;
         }
-        entries.put(PREFIX + "compile." + language + ".output", output.get());
+        entries.put(prefix + "compile." + language + ".output", output.get());
         if (generatedSources != null && generatedSources.isPresent()) {
-            entries.put(PREFIX + "compile." + language + ".generated-sources", generatedSources.get());
+            entries.put(prefix + "compile." + language + ".generated-sources", generatedSources.get());
         }
         if (!options.isEmpty()) {
             // one option per line: a comma inside an option, as in -Xlint:unchecked,deprecation, survives
-            entries.put(PREFIX + "compile." + language + ".options", "@" + argfile(directory, language + "-options.argfile", options));
+            entries.put(prefix + "compile." + language + ".options", "@" + argfile(directory, argfilePrefix + language + "-options.argfile", options));
         }
     }
 
-    private static Set<File> existing(Set<File> directories) {
+    static Set<File> existing(Set<File> directories) {
         Set<File> existing = new LinkedHashSet<>();
         for (File directory : directories) {
             if (directory.isDirectory()) {
@@ -332,7 +355,7 @@ public abstract class MicronautDevManifest extends DefaultTask {
         return existing;
     }
 
-    private static String join(Set<File> files) {
+    static String join(Set<File> files) {
         List<String> paths = new ArrayList<>(files.size());
         for (File file : files) {
             paths.add(file.getAbsolutePath());
@@ -340,7 +363,7 @@ public abstract class MicronautDevManifest extends DefaultTask {
         return String.join(File.pathSeparator, paths);
     }
 
-    private static String argfile(Path directory, String name, Set<File> files) {
+    static String argfile(Path directory, String name, Set<File> files) {
         List<String> lines = new ArrayList<>(files.size());
         for (File file : files) {
             lines.add(file.getAbsolutePath());
