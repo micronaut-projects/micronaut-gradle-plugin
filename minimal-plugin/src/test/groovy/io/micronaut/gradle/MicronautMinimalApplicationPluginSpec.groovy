@@ -128,6 +128,122 @@ class Application {
         result.output.contains("test.flag=from-application")
     }
 
+    @Issue("https://github.com/micronaut-projects/micronaut-gradle-plugin/issues/1388")
+    def "run task does not start the JMX agent by default"() {
+        given:
+        settingsFile << "rootProject.name = 'hello-world'"
+        buildFile << """
+            plugins {
+                id "io.micronaut.minimal.application"
+            }
+
+            micronaut {
+                version "$micronautVersion"
+                runtime "netty"
+            }
+
+            $repositoriesBlock
+
+            application {
+                mainClass = "example.Application"
+                applicationDefaultJvmArgs = ["-Dtest.flag=from-application"]
+            }
+        """
+        writeJmxReportingApplication()
+
+        when:
+        def result = build('run')
+
+        then:
+        result.task(":run").outcome == TaskOutcome.SUCCESS
+        result.output.contains("jmxremote=[null]")
+        result.output.contains("rmi.listener=false")
+        result.output.contains("test.flag=from-application")
+    }
+
+    @Issue("https://github.com/micronaut-projects/micronaut-gradle-plugin/issues/1388")
+    def "run task starts the JMX agent when the system property is set with the #dsl DSL"() {
+        given:
+        settingsFile << "rootProject.name = 'hello-world'"
+        if (dsl == 'groovy') {
+            buildFile << """
+                plugins {
+                    id "io.micronaut.minimal.application"
+                }
+
+                micronaut {
+                    version "$micronautVersion"
+                    runtime "netty"
+                }
+
+                $repositoriesBlock
+
+                application {
+                    mainClass = "example.Application"
+                    applicationDefaultJvmArgs = ["-Dtest.flag=from-application"]
+                }
+
+                tasks.named('run') {
+                    systemProperty 'com.sun.management.jmxremote', ''
+                }
+            """
+        } else {
+            kotlinBuildFile << """
+                plugins {
+                    id("io.micronaut.minimal.application")
+                }
+
+                micronaut {
+                    version("$micronautVersion")
+                    runtime("netty")
+                }
+
+                ${getRepositoriesBlock('kotlin')}
+
+                application {
+                    mainClass = "example.Application"
+                    applicationDefaultJvmArgs = listOf("-Dtest.flag=from-application")
+                }
+
+                tasks.named<JavaExec>("run") {
+                    systemProperty("com.sun.management.jmxremote", "")
+                }
+            """
+        }
+        writeJmxReportingApplication()
+
+        when:
+        def result = build('run')
+
+        then:
+        result.task(":run").outcome == TaskOutcome.SUCCESS
+        result.output.contains("jmxremote=[]")
+        result.output.contains("rmi.listener=true")
+        result.output.contains("test.flag=from-application")
+
+        where:
+        dsl << ['groovy', 'kotlin']
+    }
+
+    private void writeJmxReportingApplication() {
+        def javaFile = file("src/main/java/example/Application.java")
+        javaFile.parentFile.mkdirs()
+        javaFile << """
+package example;
+
+public class Application {
+    public static void main(String... args) {
+        System.out.println("jmxremote=[" + System.getProperty("com.sun.management.jmxremote") + "]");
+        // The JMX agent starts its local connector, an RMI server, before main
+        boolean rmiListener = Thread.getAllStackTraces().keySet().stream()
+                .anyMatch(t -> t.getName().startsWith("RMI TCP Accept"));
+        System.out.println("rmi.listener=" + rmiListener);
+        System.out.println("test.flag=" + System.getProperty("test.flag"));
+    }
+}
+"""
+    }
+
     @Issue("https://github.com/micronaut-projects/micronaut-gradle-plugin/issues/594")
     def "can detect that SnakeYAML is missing from classpath"() {
         settingsFile << "rootProject.name = 'hello-world'"
