@@ -1,6 +1,5 @@
 package io.micronaut.gradle;
 
-import com.diffplug.gradle.eclipse.apt.AptEclipsePlugin;
 import io.micronaut.gradle.docker.MicronautDockerPlugin;
 import io.micronaut.gradle.graalvm.MicronautGraalPlugin;
 import org.gradle.api.Project;
@@ -19,7 +18,7 @@ public class MicronautApplicationPlugin extends MicronautLibraryPlugin {
     public void apply(Project project) {
         PluginManager pluginManager = project.getPluginManager();
         pluginManager.apply(MicronautMinimalApplicationPlugin.class);
-        pluginManager.apply(AptEclipsePlugin.class);
+        applyEclipseAptPlugin(project);
         pluginManager.apply(MicronautDockerPlugin.class);
         pluginManager.apply(MicronautGraalPlugin.class);
     }
