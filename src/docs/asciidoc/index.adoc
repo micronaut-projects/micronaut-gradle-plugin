@@ -655,7 +655,7 @@ The `run` task honors Gradle `application.applicationDefaultJvmArgs`. Micronaut-
 === JMX and the `run` task
 
 The `run` task does not start the JMX management agent with the application.
-Local tools such as JConsole, VisualVM, JDK Mission Control and `jcmd` start the agent on demand through the Attach API when they connect, so they need no configuration.
+JConsole, VisualVM and JDK Mission Control start the agent on demand through the Attach API when they connect, and `jcmd` uses the Attach API directly, so none of them needs any configuration.
 
 To start the agent with the application anyway, for example when the JVM runs with `-XX:+DisableAttachMechanism`, set the `com.sun.management.jmxremote` system property on the `run` task:
 
