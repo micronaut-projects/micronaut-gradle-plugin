@@ -158,7 +158,11 @@ final class RunClassDataSharingAction implements Action<Task> {
                     logger.info("The CDS archive of the run task is not AOT-linked, because {}.", blocker);
                 }
             }
-            run.jvmArgs(archive.launchArguments(mode, options, launchClasspath));
+            List<String> arguments = archive.launchArguments(mode, options, launchClasspath);
+            if (!arguments.isEmpty()) {
+                // jvmArgs(...) would replace the application's default JVM arguments, which are a convention
+                run.getJvmArgumentProviders().add(() -> arguments);
+            }
             logger.info("Prepared class data sharing for {} dependency JARs in {} ms (duplicate check of {} class path entries: {} ms)",
                 archived.size(), TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start), changing.size(), duplicateCheckMillis);
         } catch (InterruptedIOException e) {

@@ -166,17 +166,46 @@ class RunClassDataSharingSpec extends AbstractGradleBuildSpec {
         loadSource(afterTouched, 'dep.Dep') == 'shared objects file'
     }
 
-    def "dumps with the module graph of the launch"() {
+    @Issue("https://github.com/micronaut-projects/micronaut-gradle-plugin/issues/765")
+    def "keeps the application's default JVM arguments"() {
         given:
         withProject("""
             micronaut.runClassDataSharing.enabled = true
+            application {
+                applicationDefaultJvmArgs = ['-Dtest.flag=from-application']
+            }
+        """)
+        file('app/src/main/java/example/Application.java').text = """package example;
+public class Application {
+    public static void main(String... args) {
+        System.out.println("test.flag=" + System.getProperty("test.flag"));
+    }
+}
+"""
+
+        when:
+        def recording = build(':app:run', '--info')
+        def archived = build(':app:run', '--info')
+
+        then:
+        runCommand(recording).contains('-XX:DumpLoadedClassList=')
+        recording.output.contains('test.flag=from-application')
+        runCommand(archived).contains('-XX:SharedArchiveFile=')
+        archived.output.contains('test.flag=from-application')
+    }
+
+    def "dumps with the module graph of the launch"() {
+        given: 'a launch with a -Dcom.sun.management.* property, which HotSpot turns into --add-modules=jdk.management.agent'
+        withProject("""
+            micronaut.runClassDataSharing.enabled = true
+            tasks.named('run') { jvmArgs '-Dcom.sun.management.jmxremote' }
         """)
         build(':app:run')
 
         when:
         def dumped = build(':app:run', '--info')
 
-        then: 'the run task passes -Dcom.sun.management.jmxremote, so the dump adds the JMX agent module and no system property'
+        then: 'the dump adds the JMX agent module and no system property'
         runCommand(dumped).contains('-Dcom.sun.management.jmxremote')
         def dumpArgs = argumentFile('dump-plain.args')
         dumpArgs.any { it.startsWith('--add-modules=') && it.contains('jdk.management.agent') }
