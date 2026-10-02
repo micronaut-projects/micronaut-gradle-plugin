@@ -764,6 +764,8 @@ micronaut {
 
 With `compile = "build-tool"`, `mnDevTrigger` also runs after every `testClasses`, so `./gradlew testClasses -t` in another terminal drives the runs.
 
+With <<test-resources,Micronaut Test Resources>>, `mnDev` and `mnTest` get what `run` and `test` get: the server starts before the launch, from the project itself with `io.micronaut.test-resources` or from the project a consumer declares with `io.micronaut.test-resources-consumer`, the client is on the launch classpath, and its connection settings are system properties of the launcher's JVM. The server stays up while the task runs, through every reload and test run, and stops at the end of the build unless it was started standalone or is shared.
+
 === Development-only Dependencies
 
 The application plugin creates a `developmentOnly` configuration for dependencies that are needed only while running the application locally.
