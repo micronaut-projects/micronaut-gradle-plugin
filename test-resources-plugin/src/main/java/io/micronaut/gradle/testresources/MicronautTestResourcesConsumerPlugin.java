@@ -17,6 +17,7 @@ package io.micronaut.gradle.testresources;
 
 import io.micronaut.gradle.MicronautBasePlugin;
 import io.micronaut.gradle.PluginsHelper;
+import io.micronaut.gradle.dev.MicronautDevSupport;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.InvalidUserDataException;
 import org.gradle.api.Plugin;
@@ -94,6 +95,14 @@ public class MicronautTestResourcesConsumerPlugin implements Plugin<Project> {
                         t.getJvmArgumentProviders().add(jvmArgumentsConfiguration)
                 )
         );
+        // development and test mode launch JVMs that stay up across reloads and test runs, and resolve their
+        // properties through the provider's server as run and the tests do
+        project.getTasks().withType(JavaExec.class).configureEach(t -> {
+            if (MicronautDevSupport.DEV_TASK_NAME.equals(t.getName()) || MicronautDevSupport.TEST_TASK_NAME.equals(t.getName())) {
+                t.dependsOn(copyServerConfiguration);
+                t.getJvmArgumentProviders().add(jvmArgumentsConfiguration);
+            }
+        });
         return testResourcesConfiguration;
     }
 

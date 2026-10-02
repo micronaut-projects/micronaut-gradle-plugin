@@ -25,7 +25,9 @@ import org.gradle.api.artifacts.Dependency;
 import org.gradle.api.artifacts.ModuleVersionIdentifier;
 import org.gradle.api.artifacts.component.ProjectComponentIdentifier;
 import org.gradle.api.artifacts.dsl.DependencyHandler;
+import org.gradle.api.attributes.Attribute;
 import org.gradle.api.attributes.LibraryElements;
+import org.gradle.api.attributes.Usage;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.plugins.JavaApplication;
 import org.gradle.api.provider.Provider;
@@ -97,6 +99,11 @@ public final class MicronautDevSupport {
     private static final String LIVERELOAD_ARTIFACT = "io.micronaut:micronaut-dev-livereload";
     private static final String TEST_REPORT_ARTIFACT = "io.micronaut:micronaut-dev-test-report";
     private static final String JUNIT_PLATFORM_GROUP = "org.junit.platform";
+    /**
+     * The usage of the test resources server's settings, which {@code io.micronaut.test-resources} publishes and
+     * {@code io.micronaut.test-resources-consumer} resolves on the development and test runtime classpaths.
+     */
+    private static final String TEST_RESOURCES_USAGE = "micronaut.test.resources";
     private static final String MANIFEST_DIRECTORY = "micronaut-dev";
     private static final String TEST_MANIFEST_DIRECTORY = MANIFEST_DIRECTORY + "/test";
     private static final String TRIGGER_FILE_NAME = "reload";
@@ -324,8 +331,8 @@ public final class MicronautDevSupport {
      * manifest describes the outputs, and the task that launches builds them before it runs.
      */
     private static void addProjectOutputs(Project project, MicronautDevManifest task, Configuration classpath) {
-        task.getReloadableRoots().addAll(project.provider(() -> paths(projectOutputs(project, classpath, LibraryElements.CLASSES).getFiles())));
-        task.getReloadableRoots().addAll(project.provider(() -> paths(projectOutputs(project, classpath, LibraryElements.RESOURCES).getFiles())));
+        task.getReloadableRoots().addAll(project.provider(() -> projectCodeOutputs(project, classpath, LibraryElements.CLASSES)));
+        task.getReloadableRoots().addAll(project.provider(() -> projectCodeOutputs(project, classpath, LibraryElements.RESOURCES)));
     }
 
     /**
@@ -396,6 +403,11 @@ public final class MicronautDevSupport {
                     if (!(dependency instanceof org.gradle.api.artifacts.result.ResolvedDependencyResult resolved)) {
                         continue;
                     }
+                    if (!isCodeVariant(resolved.getResolvedVariant().getAttributes())) {
+                        // a project depended on for something else than its code, such as the provider of the test
+                        // resources server, whose settings a consumer resolves
+                        continue;
+                    }
                     org.gradle.api.artifacts.result.ResolvedComponentResult selected = resolved.getSelected();
                     if (selected.getId() instanceof ProjectComponentIdentifier id && seen.add(id.getProjectPath())) {
                         Project dependencyProject = project.findProject(id.getProjectPath());
@@ -409,6 +421,19 @@ public final class MicronautDevSupport {
             }
             return directories;
         });
+    }
+
+    /**
+     * Whether a resolved variant holds a project's code, as any variant does but the settings of the test resources
+     * server, which a consumer of the server resolves from the project that provides it.
+     */
+    private static boolean isCodeVariant(org.gradle.api.attributes.AttributeContainer attributes) {
+        for (Attribute<?> attribute : attributes.keySet()) {
+            if (Usage.USAGE_ATTRIBUTE.getName().equals(attribute.getName())) {
+                return !TEST_RESOURCES_USAGE.equals(String.valueOf(attributes.getAttribute(attribute)));
+            }
+        }
+        return true;
     }
 
     private static java.util.Set<File> mainSourceDirectories(Project project, String kind) {
@@ -427,11 +452,30 @@ public final class MicronautDevSupport {
     }
 
     private static FileCollection projectOutputs(Project project, Configuration configuration, String libraryElements) {
+        return projectOutputView(project, configuration, libraryElements).getFiles();
+    }
+
+    /**
+     * The outputs of the projects depended on that hold their code: not those of another variant, such as the
+     * settings of the test resources server a consumer resolves from the project that provides it, which name no
+     * library elements and so match any.
+     */
+    private static List<String> projectCodeOutputs(Project project, Configuration configuration, String libraryElements) {
+        List<String> paths = new ArrayList<>();
+        for (org.gradle.api.artifacts.result.ResolvedArtifactResult artifact : projectOutputView(project, configuration, libraryElements).getArtifacts().getArtifacts()) {
+            if (isCodeVariant(artifact.getVariant().getAttributes())) {
+                paths.add(artifact.getFile().getAbsolutePath());
+            }
+        }
+        return paths;
+    }
+
+    private static org.gradle.api.artifacts.ArtifactView projectOutputView(Project project, Configuration configuration, String libraryElements) {
         return configuration.getIncoming().artifactView(view -> {
             view.componentFilter(id -> id instanceof ProjectComponentIdentifier);
             view.attributes(attributes -> attributes.attribute(LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE, project.getObjects().named(LibraryElements.class, libraryElements)));
             view.lenient(true);
-        }).getFiles();
+        });
     }
 
     private static void configureGroovy(Project project, MicronautDevManifest task, SourceSet main, Configuration developmentRuntimeClasspath) {
