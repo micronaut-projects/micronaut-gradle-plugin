@@ -15,7 +15,7 @@ import java.util.Map;
  */
 public enum MicronautTestRuntime {
     /**
-     * JUnit 5.
+     * JUnit runtime support.
      */
     JUNIT_5(MicronautExtension.mapOf(
             JavaPlugin.TEST_IMPLEMENTATION_CONFIGURATION_NAME, List.of("org.junit.jupiter:junit-jupiter-api", "io.micronaut.test:micronaut-test-junit5"),
@@ -92,7 +92,7 @@ public enum MicronautTestRuntime {
         if (str != null) {
             str = str.toUpperCase(Locale.ENGLISH);
             switch (str) {
-                case "JUNIT", "JUNIT5", "JUNIT_5" -> {
+                case "JUNIT", "JUNIT5", "JUNIT_5", "JUNIT6", "JUNIT_6" -> {
                     return MicronautTestRuntime.JUNIT_5;
                 }
                 case "SPOCK", "SPOCK2", "SPOCK_2" -> {

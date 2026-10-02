@@ -17,6 +17,11 @@ class AbstractOpenApiWithKotlinSpec extends AbstractEagerConfiguringFunctionalTe
     @Shared
     protected final String ksp2Version = System.getProperty("ksp2Version")
 
+    @Override
+    protected boolean usesDebugRunner() {
+        false
+    }
+
     protected void withPetstore() {
         file("petstore.json").text = this.class.getResourceAsStream("/petstore.json").getText("UTF-8")
     }

@@ -15,7 +15,7 @@ dependencies {
 }
 
 micronaut {
-    testRuntime("junit5")
+    testRuntime("junit")
     processing {
         incremental(true)
         annotations("demo.*")
