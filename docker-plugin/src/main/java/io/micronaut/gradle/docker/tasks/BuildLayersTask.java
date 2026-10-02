@@ -12,6 +12,7 @@ import org.gradle.api.internal.file.FileOperations;
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Property;
 import org.gradle.api.provider.Provider;
+import org.gradle.api.provider.SetProperty;
 import org.gradle.api.tasks.CacheableTask;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.Nested;
@@ -35,6 +36,10 @@ public abstract class BuildLayersTask extends DefaultTask {
     @Input
     @Optional
     public abstract Property<DuplicatesStrategy> getDuplicatesStrategy();
+
+    @Input
+    @Optional
+    public abstract SetProperty<String> getExcludes();
 
     @OutputDirectory
     public abstract DirectoryProperty getOutputDir();
@@ -67,6 +72,7 @@ public abstract class BuildLayersTask extends DefaultTask {
         Map<Path, Path> copiedFiles = new LinkedHashMap<>();
         fileOperations.copy(copy -> {
             configureDuplicatesStrategy(copy);
+            configureExcludes(copy);
             copy.from(layer.getFiles()).into(destination);
             customizer.execute(copy);
             copy.eachFile(details -> recordCopiedFile(copiedFiles, destinationPath.resolve(relativePathOf(details)), details.getFile().toPath()));
@@ -105,6 +111,12 @@ public abstract class BuildLayersTask extends DefaultTask {
     private void configureDuplicatesStrategy(CopySpec copy) {
         if (getDuplicatesStrategy().isPresent()) {
             copy.setDuplicatesStrategy(getDuplicatesStrategy().get());
+        }
+    }
+
+    private void configureExcludes(CopySpec copy) {
+        if (getExcludes().isPresent()) {
+            copy.exclude(getExcludes().get());
         }
     }
 
