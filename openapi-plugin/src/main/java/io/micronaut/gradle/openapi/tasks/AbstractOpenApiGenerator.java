@@ -28,6 +28,7 @@ import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.Classpath;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.InputFile;
+import org.gradle.api.tasks.InputFiles;
 import org.gradle.api.tasks.Internal;
 import org.gradle.api.tasks.Optional;
 import org.gradle.api.tasks.OutputDirectory;
@@ -40,10 +41,17 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
+import java.util.List;
 
 import javax.inject.Inject;
 
 public abstract class AbstractOpenApiGenerator<W extends AbstractOpenApiWorkAction<P>, P extends AbstractOpenApiWorkAction.OpenApiParameters> extends DefaultTask {
+
+    private final ConfigurableFileCollection referencedDefinitionFiles;
+
+    protected AbstractOpenApiGenerator() {
+        referencedDefinitionFiles = getProject().files((java.util.concurrent.Callable<List<File>>) this::resolveReferencedDefinitionFiles);
+    }
 
     @Classpath
     public abstract ConfigurableFileCollection getClasspath();
@@ -51,6 +59,12 @@ public abstract class AbstractOpenApiGenerator<W extends AbstractOpenApiWorkActi
     @InputFile
     @PathSensitive(PathSensitivity.NONE)
     public abstract RegularFileProperty getDefinitionFile();
+
+    @InputFiles
+    @PathSensitive(PathSensitivity.NONE)
+    public ConfigurableFileCollection getReferencedDefinitionFiles() {
+        return referencedDefinitionFiles;
+    }
 
     @Optional
     @Input
@@ -321,6 +335,14 @@ public abstract class AbstractOpenApiGenerator<W extends AbstractOpenApiWorkActi
     protected abstract Class<W> getWorkerAction();
 
     protected abstract void configureWorkerParameters(P params);
+
+    private List<File> resolveReferencedDefinitionFiles() {
+        var definitionFile = getDefinitionFile().getOrNull();
+        if (definitionFile == null) {
+            return List.of();
+        }
+        return OpenApiReferenceResolver.referencedFiles(definitionFile.getAsFile(), getClasspath().getFiles());
+    }
 
     @TaskAction
     public final void execute() {
