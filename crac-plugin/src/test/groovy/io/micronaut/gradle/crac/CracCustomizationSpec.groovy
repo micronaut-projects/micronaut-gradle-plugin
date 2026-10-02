@@ -203,4 +203,98 @@ class CracCustomizationSpec extends BaseCracGradleBuildSpec {
         fileTextContents("build/docker/main/Dockerfile.CRaCCheckpoint").readLines().head() == "I am checkpoint dockerfile"
         fileTextContents("build/docker/main/Dockerfile").readLines().head() == "I am the main dockerfile"
     }
+
+    void "restore verification tasks are registered and wired with default CRaC restore settings"() {
+        given:
+        settingsFile << "rootProject.name = 'hello-world'"
+        buildFile << buildFileBlock
+
+        when:
+        def result = build('tasks', '--all')
+
+        then:
+        result.output.contains('dockerVerifyCrac - Verifies the restored CRaC Docker Image')
+        result.output.contains('postRestoreCreateContainer - Creates the CRaC restored-image verification container')
+        result.output.contains('postRestoreDockerRun - Runs the CRaC restored-image verification container')
+        result.output.contains('postRestoreLogs - Shows logs from the CRaC restored-image verification container')
+        result.output.contains('postRestoreRemoveContainer - Removes the CRaC restored-image verification container')
+    }
+
+    void "restore verification task uses configurable readiness and docker runtime settings"() {
+        given:
+        settingsFile << "rootProject.name = 'hello-world'"
+        buildFile << getBuildFileBlockWithMicronautConfig(getMicronautConfigBlock("""crac {
+    preCheckpointReadinessCommand.set("curl --fail http://localhost:8080/health")
+    postRestoreReadinessCommand.set("curl --fail http://localhost:8080/ready")
+    postRestoreReadinessTimeout.set(java.time.Duration.ofSeconds(12))
+    postRestoreReadinessRetryDelay.set(java.time.Duration.ofSeconds(2))
+    postRestoreNetwork.set("ci-network")
+    postRestorePortBindings.add("18080:8080")
+    postRestoreEnvironment.put("MICRONAUT_ENVIRONMENTS", "test")
+    postRestoreArgs.add("--micronaut.server.port=8080")
+    retainPostRestoreContainer.set(true)
+}"""))
+        buildFile << """
+
+tasks.register("printCracRestoreVerification") {
+    doLast {
+        def create = tasks.named("postRestoreCreateContainer").get()
+        def verify = tasks.named("dockerVerifyCrac").get()
+        def remove = tasks.named("postRestoreRemoveContainer").get()
+        println("verify.commands=" + verify.commands.get().collect { it.join(' ') })
+        println("verify.probe=" + verify.execProbe.pollTime + ":" + verify.execProbe.pollInterval)
+        println("create.network=" + create.hostConfig.network.get())
+        println("create.ports=" + create.hostConfig.portBindings.get())
+        println("create.envKeys=" + create.envVars.get().keySet())
+        println("create.cmd=" + create.cmd.get())
+        println("create.capAdd=" + create.hostConfig.capAdd.get())
+        println("remove.onlyIf=" + remove.onlyIf.isSatisfiedBy(remove))
+    }
+}
+"""
+
+        when:
+        def result = build('printCracRestoreVerification')
+
+        then:
+        result.output.contains('verify.commands=[/bin/sh -c curl --fail http://localhost:8080/ready]')
+        result.output.contains('verify.probe=12000:2000')
+        result.output.contains('create.network=ci-network')
+        result.output.contains('create.ports=[18080:8080]')
+        result.output.contains('create.envKeys=[MICRONAUT_ENVIRONMENTS]')
+        result.output.contains('create.cmd=[--micronaut.server.port=8080]')
+        result.output.contains('create.capAdd=[SYS_PTRACE]')
+        result.output.contains('remove.onlyIf=false')
+    }
+
+    void "restore verification failure and cleanup behavior is wired"() {
+        given:
+        settingsFile << "rootProject.name = 'hello-world'"
+        buildFile << buildFileBlock
+        buildFile << """
+
+tasks.register("printCracRestoreFailureWiring") {
+    doLast {
+        def start = tasks.named("postRestoreDockerRun").get()
+        def verify = tasks.named("dockerVerifyCrac").get()
+        def remove = tasks.named("postRestoreRemoveContainer").get()
+        println("verify.successCodes=" + verify.successOnExitCodes.get())
+        println("verify.probe=" + verify.execProbe.pollTime + ":" + verify.execProbe.pollInterval)
+        println("verify.finalizedBy=" + verify.finalizedBy.getDependencies(verify).collect { it.name }.sort())
+        println("start.finalizedBy=" + start.finalizedBy.getDependencies(start).collect { it.name }.sort())
+        println("remove.onlyIf=" + remove.onlyIf.isSatisfiedBy(remove))
+    }
+}
+"""
+
+        when:
+        def result = build('printCracRestoreFailureWiring')
+
+        then:
+        result.output.contains('verify.successCodes=[0]')
+        result.output.contains('verify.probe=120000:2000')
+        result.output.contains('verify.finalizedBy=[postRestoreLogs, postRestoreRemoveContainer]')
+        result.output.contains('start.finalizedBy=[postRestoreLogs, postRestoreRemoveContainer]')
+        result.output.contains('remove.onlyIf=true')
+    }
 }
