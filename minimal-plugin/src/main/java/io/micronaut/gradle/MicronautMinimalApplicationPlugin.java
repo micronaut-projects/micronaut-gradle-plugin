@@ -69,11 +69,20 @@ public class MicronautMinimalApplicationPlugin implements Plugin<Project> {
         Configuration developmentOnly = createDevelopmentOnlyConfiguration(project);
         configureLogging(project);
         configureMicronautRuntime(project);
-        configureJavaExecTasks(project, developmentOnly);
+        RunClassDataSharing runClassDataSharing = createRunClassDataSharing(project);
+        configureJavaExecTasks(project, developmentOnly, runClassDataSharing);
     }
 
+    private static RunClassDataSharing createRunClassDataSharing(Project project) {
+        RunClassDataSharing runClassDataSharing = PluginsHelper.findMicronautExtension(project)
+            .getExtensions()
+            .create("runClassDataSharing", RunClassDataSharing.class);
+        runClassDataSharing.getEnabled().convention(false);
+        runClassDataSharing.getAotClassLinking().convention(false);
+        return runClassDataSharing;
+    }
 
-    private void configureJavaExecTasks(Project project, Configuration developmentOnlyConfiguration) {
+    private void configureJavaExecTasks(Project project, Configuration developmentOnlyConfiguration, RunClassDataSharing runClassDataSharing) {
         final TaskContainer tasks = project.getTasks();
         ConfigurationContainer configurations = project.getConfigurations();
         Configuration developmentRuntimeClasspath = configurations.create("developmentRuntimeClasspath", conf -> {
@@ -98,6 +107,13 @@ public class MicronautMinimalApplicationPlugin implements Plugin<Project> {
                     cp.from(sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME).getOutput());
                     cp.from(developmentRuntimeClasspath);
                 }
+                // Added first, so that it runs after the actions that builds and IDEs add with doFirst
+                javaExec.doFirst("Prepare the CDS archive of the dependencies", new RunClassDataSharingAction(
+                    runClassDataSharing.getEnabled(),
+                    runClassDataSharing.getAotClassLinking(),
+                    developmentRuntimeClasspath.getIncoming().getArtifacts().getResolvedArtifacts(),
+                    project.getLayout().getBuildDirectory().dir("run-class-data-sharing")
+                ));
             }
 
             // If -t (continuous mode) is enabled feed parameters to the JVM

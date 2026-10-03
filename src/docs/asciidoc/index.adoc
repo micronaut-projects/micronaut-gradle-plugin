@@ -680,6 +680,60 @@ Set these properties with `systemProperty(...)` or `jvmArgumentProviders` on the
 * `application.applicationDefaultJvmArgs`, which also goes into the start scripts and, by default, into the Docker image;
 * `jvmArgs(...)` on the `run` task, which replaces the `application.applicationDefaultJvmArgs` defaults instead of adding to them.
 
+=== Class data sharing for the `run` task
+
+WARNING: This setting is incubating: its name and behavior may change in a future version.
+
+On every start, the `run` task loads, parses and verifies the classes of all the dependency JARs again.
+With `runClassDataSharing`, it starts them from a https://docs.oracle.com/en/java/javase/25/vm/class-data-sharing.html[class data sharing (CDS)] archive of the dependency JARs instead. On two sample applications with 44 and 52 dependency JARs, that brought the time to the first HTTP response down by about 43%, and by about 47% with `aotClassLinking`.
+The setting is off by default:
+
+[source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
+----
+micronaut {
+    runClassDataSharing {
+        enabled = true
+        // optional: also link the archived classes ahead of time
+        aotClassLinking = true
+    }
+}
+----
+
+[source, kotlin, subs="verbatim,attributes", role="multi-language-sample"]
+----
+micronaut {
+    runClassDataSharing {
+        enabled = true
+        // optional: also link the archived classes ahead of time
+        aotClassLinking = true
+    }
+}
+----
+
+It needs the `run` task to launch the application with JDK 25 or later. With an older launcher, the `run` task starts the application as it does without the setting, and logs one line.
+
+When it is enabled, the `run` task works as follows:
+
+* The class path starts with the JARs of the external dependencies (the modules of `developmentRuntimeClasspath`). The project's classes and resources, the JARs of the other projects of the build, file dependencies and anything else the build adds come after them, in their usual order. Only the external dependencies go into the archive, so changing the project, or another project of the build, does not change it.
+* The first run after a dependency change records the classes that it loads, without an archive.
+* The next run dumps the archive from that list, checks it once with the run's JDK and JVM options, and starts with it. That takes a few seconds, once.
+* The following runs start with the archive, without checking it again, until the dependency JARs, the JDK or the module and `-XX` options of the launch change. A change to the launch's JVM options dumps and checks another archive next to the first. A `com.sun.management.*` system property, for example the one that starts the JMX agent (see <<#run-task-jmx,JMX and the `run` task>>), counts as a module option: the JVM adds the `jdk.management.agent` module for it, so the archive is dumped with that module only while the launch has such a property.
+
+With `aotClassLinking`, the archive is dumped with `-XX:+AOTClassLinking`, which also links the archived classes ahead of time and adds a few percent to the gain. It applies to JDK 25 and 26, and to launches without a debugger (such as `--debug-jvm` or an IDE's debugger), without an agent (`-javaagent`, `-agentlib` or `-agentpath`, including in `JAVA_TOOL_OPTIONS`), and without module options such as `--add-opens`, `--add-exports`, `--patch-module` or `--illegal-native-access`: the JVM cannot use an AOT-linked archive with any of them. Other launches use a plain archive. `--enable-native-access` does not prevent it: the archive is dumped with the launch's value.
+
+The archive and the files it is made from are under `build/run-class-data-sharing`, which takes about 55 MB per archive for an application with 50 dependency JARs. They are local files: they are never stored in, or loaded from, a build cache. To record the class list again, for example after a run that stopped early, delete that directory or run `clean`.
+
+To check that the dependencies come from the archive, add `-Xlog:class+load` to the JVM arguments of `run`: their classes show `source: shared objects file`.
+
+The setting leaves a run without an archive, as it would be without the setting, in these cases:
+
+* The project and a dependency JAR have a class or a resource at the same path, such as a `logback.xml`. With the dependencies first, the dependency's copy would win, so the `run` task keeps the usual class path order and logs the paths. Service files and Micronaut metadata under `META-INF` are not compared, because they are merged.
+* The launch already configures class data sharing or a JDK AOT cache, for example with `-Xshare:off`, `-XX:SharedArchiveFile` or `-XX:AOTCache`, or it launches a main module.
+
+If the archive cannot be dumped or its check fails, the log file is named once, and runs start without an archive until the key changes. The dependencies stay first on the class path, so the note on bean order below still applies.
+
+IMPORTANT: With the dependencies first, the bean definitions and service providers of the application (under `META-INF/micronaut` and `META-INF/services`) are found after those of its dependencies, as they are in a fat JAR. An application whose behavior depends on that order, for example one with several beans of the same type and neither `@Primary` nor `@Order`, may behave differently with this setting. The duplicate check cannot detect this.
+
 === Development-only Dependencies
 
 The application plugin creates a `developmentOnly` configuration for dependencies that are needed only while running the application locally.
