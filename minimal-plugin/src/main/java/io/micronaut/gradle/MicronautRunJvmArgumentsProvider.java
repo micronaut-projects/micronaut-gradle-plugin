@@ -35,8 +35,9 @@ final class MicronautRunJvmArgumentsProvider implements CommandLineArgumentProvi
 
     @Override
     public Iterable<String> asArguments() {
+        // No -Dcom.sun.management.jmxremote: it starts the JMX agent before main, while
+        // local JMX tools start it on demand through the Attach API.
         var jvmArgs = new ArrayList<String>();
-        jvmArgs.add("-Dcom.sun.management.jmxremote");
         if (!graalJvm) {
             // graal doesn't support this
             jvmArgs.add("-XX:TieredStopAtLevel=1");

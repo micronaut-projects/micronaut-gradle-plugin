@@ -1,5 +1,6 @@
 package io.micronaut.gradle
 
+import spock.lang.Issue
 import spock.lang.Specification
 
 class RunCdsJvmOptionsSpec extends Specification {
@@ -72,6 +73,26 @@ class RunCdsJvmOptionsSpec extends Specification {
         runtimeVersion           | jvmciModule
         '25.0.4.1'               | ''
         '25.0.3+9-LTS-jvmci-b01' | ',jdk.internal.vm.ci'
+    }
+
+    @Issue("https://github.com/micronaut-projects/micronaut-gradle-plugin/issues/1388")
+    def "the run task's own JVM arguments add no JMX agent module (GraalVM JVM: #graalJvm)"() {
+        given:
+        def arguments = new MicronautRunJvmArgumentsProvider(graalJvm).asArguments().toList()
+        def launch = RunCdsJvmOptions.of(arguments, [:], runtimeVersion)
+        def withJmx = RunCdsJvmOptions.of(arguments + '-Dcom.sun.management.jmxremote', [:], runtimeVersion)
+
+        expect:
+        launch.dumpModules().toList() == modules
+        launch.probeOptions() == arguments
+        withJmx.dumpModules().toList() == ['jdk.management.agent'] + modules
+        withJmx.probeOptions() == ['--add-modules=jdk.management.agent'] + arguments
+        withJmx.keyOptions() != launch.keyOptions()
+
+        where:
+        graalJvm | runtimeVersion           | modules
+        false    | '25.0.4.1'               | []
+        true     | '25.0.3+9-LTS-jvmci-b01' | ['jdk.internal.vm.ci']
     }
 
     def "the dump leaves out JVMCI flags, and the probe keeps the module options of the launch"() {

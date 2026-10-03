@@ -651,6 +651,35 @@ $ ./gradlew run -t
 
 The `run` task honors Gradle `application.applicationDefaultJvmArgs`. Micronaut-specific JVM arguments are added in addition to those defaults.
 
+[[run-task-jmx]]
+=== JMX and the `run` task
+
+The `run` task does not start the JMX management agent with the application.
+JConsole, VisualVM and JDK Mission Control start the agent on demand through the Attach API when they connect, and `jcmd` uses the Attach API directly, so none of them needs any configuration.
+
+To start the agent with the application anyway, for example when the JVM runs with `-XX:+DisableAttachMechanism`, set the `com.sun.management.jmxremote` system property on the `run` task:
+
+[source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
+----
+tasks.named('run') {
+    systemProperty 'com.sun.management.jmxremote', ''
+}
+----
+
+[source, kotlin, subs="verbatim,attributes", role="multi-language-sample"]
+----
+tasks.named<JavaExec>("run") {
+    systemProperty("com.sun.management.jmxremote", "")
+}
+----
+
+For remote JMX, set `com.sun.management.jmxremote.port`, and the authentication and SSL properties it needs, the same way. The `com.sun.management.jmxremote` property itself is not needed for that.
+
+Set these properties with `systemProperty(...)` or `jvmArgumentProviders` on the `run` task, not with:
+
+* `application.applicationDefaultJvmArgs`, which also goes into the start scripts and, by default, into the Docker image;
+* `jvmArgs(...)` on the `run` task, which replaces the `application.applicationDefaultJvmArgs` defaults instead of adding to them.
+
 === Class data sharing for the `run` task
 
 WARNING: This setting is incubating: its name and behavior may change in a future version.
@@ -688,7 +717,7 @@ When it is enabled, the `run` task works as follows:
 * The class path starts with the JARs of the external dependencies (the modules of `developmentRuntimeClasspath`). The project's classes and resources, the JARs of the other projects of the build, file dependencies and anything else the build adds come after them, in their usual order. Only the external dependencies go into the archive, so changing the project, or another project of the build, does not change it.
 * The first run after a dependency change records the classes that it loads, without an archive.
 * The next run dumps the archive from that list, checks it once with the run's JDK and JVM options, and starts with it. That takes a few seconds, once.
-* The following runs start with the archive, without checking it again, until the dependency JARs, the JDK or the module and `-XX` options of the launch change. A change to the launch's JVM options dumps and checks another archive next to the first.
+* The following runs start with the archive, without checking it again, until the dependency JARs, the JDK or the module and `-XX` options of the launch change. A change to the launch's JVM options dumps and checks another archive next to the first. A `com.sun.management.*` system property, for example the one that starts the JMX agent (see <<#run-task-jmx,JMX and the `run` task>>), counts as a module option: the JVM adds the `jdk.management.agent` module for it, so the archive is dumped with that module only while the launch has such a property.
 
 With `aotClassLinking`, the archive is dumped with `-XX:+AOTClassLinking`, which also links the archived classes ahead of time and adds a few percent to the gain. It applies to JDK 25 and 26, and to launches without a debugger (such as `--debug-jvm` or an IDE's debugger), without an agent (`-javaagent`, `-agentlib` or `-agentpath`, including in `JAVA_TOOL_OPTIONS`), and without module options such as `--add-opens`, `--add-exports`, `--patch-module` or `--illegal-native-access`: the JVM cannot use an AOT-linked archive with any of them. Other launches use a plain archive. `--enable-native-access` does not prevent it: the archive is dumped with the launch's value.
 
@@ -2612,6 +2641,12 @@ tasks.withType<JavaCompile>().configureEach {
 
 
 == Upgrade notes
+
+=== Upgrading to 5.1
+
+The `run` task no longer passes `-Dcom.sun.management.jmxremote`, so it no longer starts the JMX management agent before the application's `main` method.
+Local JMX tools still connect, because they start the agent on demand.
+To start the agent with the application again, see <<#run-task-jmx,JMX and the `run` task>>.
 
 === Upgrading from 2.x
 

@@ -245,24 +245,26 @@ public class Application {
         archived.output.contains('test.flag=from-application')
     }
 
-    def "dumps with the module graph of the launch"() {
-        given: 'a launch with a -Dcom.sun.management.* property, which HotSpot turns into --add-modules=jdk.management.agent'
+    @Issue("https://github.com/micronaut-projects/micronaut-gradle-plugin/issues/1388")
+    def "dumps with the module graph of the launch (JMX agent started: #jmx)"() {
+        given: 'HotSpot turns a -Dcom.sun.management.* property into --add-modules=jdk.management.agent, and the run task sets none by default'
         withProject("""
             micronaut.runClassDataSharing.enabled = true
-            tasks.named('run') { jvmArgs '-Dcom.sun.management.jmxremote' }
+            $configuration
         """)
         build(':app:run')
 
         when:
         def dumped = build(':app:run', '--info')
 
-        then: 'the dump adds the JMX agent module and no system property'
-        runCommand(dumped).contains('-Dcom.sun.management.jmxremote')
+        then: 'the dump and the probe add the JMX agent module only with such a property, and have no system property'
+        count(dumped.output, DUMPING) == 1
+        runCommand(dumped).contains('-Dcom.sun.management.') == jmx
         def dumpArgs = argumentFile('dump-plain.args')
-        dumpArgs.any { it.startsWith('--add-modules=') && it.contains('jdk.management.agent') }
+        dumpArgs.any { it.startsWith('--add-modules=') && it.contains('jdk.management.agent') } == jmx
         !dumpArgs.any { it.startsWith('-D') }
         def probeArgs = argumentFile('probe-plain.args')
-        probeArgs.any { it.startsWith('--add-modules=') && it.contains('jdk.management.agent') }
+        probeArgs.any { it.startsWith('--add-modules=') && it.contains('jdk.management.agent') } == jmx
         !probeArgs.any { it.startsWith('-D') }
 
         when: 'a launch logs CDS'
@@ -277,6 +279,12 @@ public class Application {
         logged.output.contains('[cds]')
         !logged.output.contains('Mismatched values for property jdk.module.addmods')
         !logged.output.contains('[error][cds]')
+
+        where:
+        jmx   | configuration
+        false | ''
+        // the way the guide documents to start the JMX agent with the application
+        true  | "tasks.named('run') { systemProperty 'com.sun.management.jmxremote', '' }"
     }
 
     def "uses the default order without the archive when the project and a dependency have the same path"() {
