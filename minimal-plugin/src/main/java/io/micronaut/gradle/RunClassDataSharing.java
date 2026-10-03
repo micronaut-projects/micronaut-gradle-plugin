@@ -46,8 +46,8 @@ public interface RunClassDataSharing {
     /**
      * Whether the archive is dumped with {@code -XX:+AOTClassLinking}, which also links the archived
      * classes ahead of time. Defaults to {@code false}. It applies only where an AOT-linked archive can be
-     * used: on JDK 25 and 26, and for launches without a debugger, an agent or a module option that opens,
-     * exports or patches modules. Other launches use a plain archive.
+     * used: on JDK 25 and 26, and for launches without a debugger, an agent, a module option that opens,
+     * exports or patches modules, or {@code --illegal-native-access}. Other launches use a plain archive.
      *
      * @return the AOT class linking property
      */

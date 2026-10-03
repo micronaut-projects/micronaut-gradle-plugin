@@ -22,6 +22,7 @@ class RunClassDataSharingSpec extends AbstractGradleBuildSpec {
     private static final String DUMPING = "Dumping a "
     private static final String PROBING = "Probing the "
     private static final String RECORDING = "Recording the classes that this run loads"
+    private static final String ARCHIVED_CONSTANT = "archived-constant-5e1f"
 
     // An in-process build cannot store the configuration cache on JDK 25 without --add-opens
     private boolean daemon
@@ -69,6 +70,56 @@ class RunClassDataSharingSpec extends AbstractGradleBuildSpec {
         result.task(':app:run').outcome == TaskOutcome.SUCCESS
         result.output.contains("needs JDK 25 or later, and the run task's launcher is JDK ${olderJdkVersion()}: it starts without one.")
         launchClasspath(result).first().endsWith('app/build/classes/java/main')
+        !runCommand(result).contains('SharedArchiveFile')
+        !runCommand(result).contains('DumpLoadedClassList')
+        !file('app/build/run-class-data-sharing').exists()
+    }
+
+    def "run is unchanged when the launch configures class data sharing itself"() {
+        given:
+        withProject("""
+            micronaut.runClassDataSharing.enabled = true
+            tasks.named('run') { jvmArgs '$option' }
+        """)
+
+        when:
+        def result = build(':app:run', '--info')
+
+        then:
+        result.task(':app:run').outcome == TaskOutcome.SUCCESS
+        result.output.contains('The run task configures class data sharing itself, so it starts without a CDS archive of its dependencies.')
+        launchClasspath(result).first().endsWith('app/build/classes/java/main')
+        runCommand(result).count('SharedArchiveFile') == (option.contains('SharedArchiveFile') ? 1 : 0)
+        !runCommand(result).contains('DumpLoadedClassList')
+        !runCommand(result).contains('-Xlog:cds')
+        !file('app/build/run-class-data-sharing').exists()
+
+        where:
+        option << ['-Xshare:off', '-XX:SharedArchiveFile=own.jsa']
+    }
+
+    def "run is unchanged when it launches a main module"() {
+        given:
+        withProject("""
+            micronaut.runClassDataSharing.enabled = true
+            application { mainModule = 'example' }
+        """)
+        file('app/src/main/java/module-info.java').text = 'module example { }'
+        file('app/src/main/java/example/Application.java').text = """package example;
+public class Application {
+    public static void main(String... args) {
+        System.out.println("module=" + Application.class.getModule().getName());
+    }
+}
+"""
+
+        when:
+        def result = build(':app:run', '--info')
+
+        then:
+        result.task(':app:run').outcome == TaskOutcome.SUCCESS
+        result.output.contains('module=example')
+        result.output.contains('The run task launches a main module, so it starts without a CDS archive of its dependencies.')
         !runCommand(result).contains('SharedArchiveFile')
         !runCommand(result).contains('DumpLoadedClassList')
         !file('app/build/run-class-data-sharing').exists()
@@ -267,21 +318,29 @@ public class Application {
     }
 
     def "a corrupt archive fails the probe once, and later launches neither probe nor print CDS messages"() {
-        given:
+        given: 'a dependency with a string constant that only the application reads'
         withProject("""
             micronaut.runClassDataSharing.enabled = true
             tasks.named('run') { jvmArgs '-Xlog:class+load' }
         """)
+        publishJar('dep', '1.0', ['dep/Dep.java': "package dep; public class Dep { public static String hello() { return \"$ARCHIVED_CONSTANT\"; } }".toString()])
         build(':app:run')
         build(':app:run')
         def archive = archiveFiles()[0]
         // an archive without a verdict is probed rather than dumped again
         Files.delete(archive.resolveSibling('verdict.properties'))
+        // `java -version` does not read the constant, so only -XX:+VerifySharedSpaces finds this corruption,
+        // and without it the application would print the corrupt constant
         def bytes = Files.readAllBytes(archive)
-        int middle = bytes.length.intdiv(2)
-        for (int i = middle; i < middle + 4096; i++) {
-            bytes[i] = (byte) (bytes[i] ^ 0x5a)
+        def constant = ARCHIVED_CONSTANT.getBytes('US-ASCII')
+        int corrupted = 0
+        for (int i = 0; i + constant.length <= bytes.length; i++) {
+            if (Arrays.equals(bytes, i, i + constant.length, constant, 0, constant.length)) {
+                bytes[i] = (byte) 'X'
+                corrupted++
+            }
         }
+        assert corrupted > 0
         Files.write(archive, bytes)
 
         when:
@@ -294,6 +353,7 @@ public class Application {
         !Files.exists(archive)
         !runCommand(probed).contains('SharedArchiveFile')
         loadSource(probed, 'dep.Dep').startsWith('file:')
+        probed.output.contains("app=v1 dep=$ARCHIVED_CONSTANT lib=lib-v1")
 
         when:
         def later = build(':app:run', '--info')
@@ -303,7 +363,7 @@ public class Application {
         !later.output.contains(DUMPING)
         !later.output.contains('could not create a CDS archive')
         !later.output.contains('[cds]')
-        later.output.contains('app=v1 dep=dep-1.0 lib=lib-v1')
+        later.output.contains("app=v1 dep=$ARCHIVED_CONSTANT lib=lib-v1")
     }
 
     def "a launch with which the JVM turns sharing off gets no archive"() {
@@ -381,6 +441,38 @@ public class Application {
         'agent'        | 'an agent (-javaagent)'
         'tool-options' | 'an agent (-javaagent)'
         'add-opens'    | '--add-opens'
+    }
+
+    def "the archive matches the native access options of the launch"() {
+        given:
+        withProject("""
+            micronaut.runClassDataSharing {
+                enabled = true
+                aotClassLinking = true
+            }
+            tasks.named('run') { jvmArgs '-Xlog:class+load', '-Xlog:cds', '$option' }
+        """)
+        build(':app:run')
+
+        when:
+        def result = build(':app:run', '--info')
+
+        then:
+        verdictModes() == [mode]
+        argumentFile("dump-${mode}.args").contains(option) == inDump
+        argumentFile("probe-${mode}.args").contains(option)
+        result.output.contains("is not AOT-linked, because the launch has --illegal-native-access") == (mode == 'plain')
+        loadSource(result, 'java.lang.Object') == 'shared objects file'
+        loadSource(result, 'dep.Dep') == 'shared objects file'
+        !result.output.contains('Mismatched values for property')
+        !result.output.contains('[error][cds]')
+        result.output.contains('app=v1 dep=dep-1.0 lib=lib-v1')
+
+        where:
+        option                               | mode     | inDump
+        '--enable-native-access=ALL-UNNAMED' | 'linked' | true
+        // the JVM turns the archived module graph off with it, which an AOT-linked archive needs
+        '--illegal-native-access=warn'       | 'plain'  | false
     }
 
     @Requires({ jdk27() != null })

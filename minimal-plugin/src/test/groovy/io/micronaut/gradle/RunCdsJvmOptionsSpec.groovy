@@ -50,6 +50,9 @@ class RunCdsJvmOptionsSpec extends Specification {
         ['--add-exports=java.base/sun.nio.ch=ALL-UNNAMED']                | [:]                                               | 'the launch has --add-exports'
         ['--patch-module', 'java.base=patch']                             | [:]                                               | 'the launch has --patch-module'
         ['-p', 'mods']                                                    | [:]                                               | 'the launch has --module-path'
+        ['--illegal-native-access=warn']                                  | [:]                                               | 'the launch has --illegal-native-access'
+        []                                                                | [_JAVA_OPTIONS: '--illegal-native-access=deny']   | 'the launch has --illegal-native-access'
+        ['--enable-native-access', 'ALL-UNNAMED']                         | [:]                                               | null
     }
 
     def "the dump adds the modules that the launch's module graph has, and no system property"() {
@@ -83,6 +86,17 @@ class RunCdsJvmOptionsSpec extends Specification {
                                   '-Xbootclasspath/a:extra.jar']
     }
 
+    def "the dump keeps the enabled native access of the launch, and the probe both native access options"() {
+        given:
+        def launch = options(['--enable-native-access', 'ALL-UNNAMED', '--illegal-native-access=warn', '-XX:TieredStopAtLevel=1'],
+                [JAVA_TOOL_OPTIONS: '--enable-native-access=other.module'])
+
+        expect:
+        launch.dumpOptions() == ['--enable-native-access=other.module', '--enable-native-access=ALL-UNNAMED', '-XX:TieredStopAtLevel=1']
+        launch.probeOptions() == ['--enable-native-access=other.module', '--enable-native-access=ALL-UNNAMED', '--illegal-native-access=warn',
+                                  '-XX:TieredStopAtLevel=1']
+    }
+
     def "the key covers the module and -XX options, but not system properties, agents or logging"() {
         expect:
         options(first).keyOptions() == options(second).keyOptions()
@@ -106,6 +120,8 @@ class RunCdsJvmOptionsSpec extends Specification {
         ['-XX:+UseG1GC']                         | ['-XX:+UseZGC']
         ['-Dcom.sun.management.jmxremote']       | []
         []                                       | ['--add-opens=java.base/java.lang=ALL-UNNAMED']
+        []                                       | ['--enable-native-access=ALL-UNNAMED']
+        []                                       | ['--illegal-native-access=warn']
     }
 
     def "finds logging of the cds and aot tags"() {

@@ -50,6 +50,19 @@ final class RunCdsJvmOptions {
     static final String JVMCI_MODULE = "jdk.internal.vm.ci";
 
     /**
+     * The module option whose value the JVM compares between the dump and the launch: without the
+     * launch's value in the dump, the JVM cannot use an AOT-linked archive, and a plain one loses its
+     * module graph.
+     */
+    private static final String ENABLE_NATIVE_ACCESS = "--enable-native-access";
+
+    /**
+     * The module option that turns the archived module graph off, with or without it in the dump. It is
+     * only accepted as {@code --illegal-native-access=value}.
+     */
+    private static final String ILLEGAL_NATIVE_ACCESS = "--illegal-native-access";
+
+    /**
      * The module options that take a value, as {@code --option=value} or as {@code --option value}.
      */
     private static final Set<String> MODULE_OPTIONS = Set.of(
@@ -61,12 +74,13 @@ final class RunCdsJvmOptions {
         "--add-opens",
         "--add-exports",
         "--add-reads",
-        "--enable-native-access"
+        ENABLE_NATIVE_ACCESS
     );
 
     /**
      * The module options with which the JVM cannot use an AOT-linked archive: they change the module
-     * graph that the archive was linked against, and the JVM then turns all CDS off.
+     * graph that the archive was linked against, and the JVM then turns all CDS off. A dump with
+     * {@code --illegal-native-access} writes no AOT-linked class.
      */
     private static final Set<String> AOT_LINKING_BLOCKERS = Set.of(
         "--limit-modules",
@@ -75,7 +89,8 @@ final class RunCdsJvmOptions {
         "--patch-module",
         "--add-opens",
         "--add-exports",
-        "--add-reads"
+        "--add-reads",
+        ILLEGAL_NATIVE_ACCESS
     );
 
     /**
@@ -239,9 +254,10 @@ final class RunCdsJvmOptions {
 
     /**
      * The options of the dump, besides the ones that make it a dump: the modules of
-     * {@link #dumpModules()}, and the options the archive must agree on with the launch (collector,
-     * compressed oops and object headers, maximum heap size, boot class path, preview features). It has no
-     * system property: with {@code -Dcom.sun.management.*}, the dump would start the JMX agent.
+     * {@link #dumpModules()}, the {@code --enable-native-access} of the launch, and the options the archive
+     * must agree on with the launch (collector, compressed oops and object headers, maximum heap size, boot
+     * class path, preview features). It has no system property: with {@code -Dcom.sun.management.*}, the
+     * dump would start the JMX agent.
      *
      * @return the options of the dump
      */
@@ -258,7 +274,7 @@ final class RunCdsJvmOptions {
                 if (isArchiveFlag(flag) && !flag.contains("JVMCI")) {
                     result.add(option);
                 }
-            } else if (isHeapOrBootOption(option)) {
+            } else if (isHeapOrBootOption(option) || optionName(option, '=').equals(ENABLE_NATIVE_ACCESS)) {
                 result.add(option);
             }
         }
@@ -266,10 +282,10 @@ final class RunCdsJvmOptions {
     }
 
     /**
-     * The options of the probe, besides the ones that make it a probe: the module options of the launch,
-     * with {@code --add-modules=jdk.management.agent} in place of the {@code -Dcom.sun.management.*}
-     * properties, and its {@code -XX}, heap and boot class path options. It has no system property and no
-     * agent.
+     * The options of the probe, besides the ones that make it a probe: the module options of the launch
+     * (native access included), with {@code --add-modules=jdk.management.agent} in place of the
+     * {@code -Dcom.sun.management.*} properties, and its {@code -XX}, heap and boot class path options. It
+     * has no system property and no agent.
      *
      * @return the options of the probe
      */
@@ -289,7 +305,7 @@ final class RunCdsJvmOptions {
                 result.add(option);
             } else {
                 String name = optionName(option, '=');
-                if (MODULE_OPTIONS.contains(name) && !name.equals("--add-modules")) {
+                if ((MODULE_OPTIONS.contains(name) && !name.equals("--add-modules")) || name.equals(ILLEGAL_NATIVE_ACCESS)) {
                     result.add(option);
                 }
             }
