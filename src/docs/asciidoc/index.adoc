@@ -651,6 +651,35 @@ $ ./gradlew run -t
 
 The `run` task honors Gradle `application.applicationDefaultJvmArgs`. Micronaut-specific JVM arguments are added in addition to those defaults.
 
+[[run-task-jmx]]
+=== JMX and the `run` task
+
+The `run` task does not start the JMX management agent with the application.
+JConsole, VisualVM and JDK Mission Control start the agent on demand through the Attach API when they connect, and `jcmd` uses the Attach API directly, so none of them needs any configuration.
+
+To start the agent with the application anyway, for example when the JVM runs with `-XX:+DisableAttachMechanism`, set the `com.sun.management.jmxremote` system property on the `run` task:
+
+[source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
+----
+tasks.named('run') {
+    systemProperty 'com.sun.management.jmxremote', ''
+}
+----
+
+[source, kotlin, subs="verbatim,attributes", role="multi-language-sample"]
+----
+tasks.named<JavaExec>("run") {
+    systemProperty("com.sun.management.jmxremote", "")
+}
+----
+
+For remote JMX, set `com.sun.management.jmxremote.port`, and the authentication and SSL properties it needs, the same way. The `com.sun.management.jmxremote` property itself is not needed for that.
+
+Set these properties with `systemProperty(...)` or `jvmArgumentProviders` on the `run` task, not with:
+
+* `application.applicationDefaultJvmArgs`, which also goes into the start scripts and, by default, into the Docker image;
+* `jvmArgs(...)` on the `run` task, which replaces the `application.applicationDefaultJvmArgs` defaults instead of adding to them.
+
 === Development-only Dependencies
 
 The application plugin creates a `developmentOnly` configuration for dependencies that are needed only while running the application locally.
@@ -2558,6 +2587,12 @@ tasks.withType<JavaCompile>().configureEach {
 
 
 == Upgrade notes
+
+=== Upgrading to 5.1
+
+The `run` task no longer passes `-Dcom.sun.management.jmxremote`, so it no longer starts the JMX management agent before the application's `main` method.
+Local JMX tools still connect, because they start the agent on demand.
+To start the agent with the application again, see <<#run-task-jmx,JMX and the `run` task>>.
 
 === Upgrading from 2.x
 
