@@ -28,3 +28,11 @@ dependencies {
     testImplementation gradleTestKit()
     testImplementation testFixtures(projects.micronautMinimalPlugin)
 }
+
+tasks.withType(Test).configureEach {
+    // a repository with the core that has development mode, for the tests that launch it: they are skipped without
+    def devRepository = providers.gradleProperty("micronautDevRepository")
+    if (devRepository.present) {
+        systemProperty "micronautDevRepository", file(devRepository.get()).absolutePath
+    }
+}
