@@ -15,6 +15,7 @@
  */
 package io.micronaut.gradle;
 
+import io.micronaut.gradle.dev.MicronautDevSupport;
 import io.micronaut.gradle.graalvm.GraalUtil;
 import io.micronaut.gradle.internal.AutomaticDependency;
 import org.apache.tools.ant.taskdefs.condition.Os;
@@ -93,6 +94,7 @@ public class MicronautMinimalApplicationPlugin implements Plugin<Project> {
             conf.extendsFrom(developmentOnlyConfiguration);
             AttributeUtils.copyAttributes(project.getProviders(), runtimeClasspath, conf);
         });
+        MicronautDevSupport.configure(project, developmentRuntimeClasspath);
         tasks.withType(JavaExec.class).configureEach(javaExec -> {
             var sourceSets = PluginsHelper.findSourceSets(project);
             if (javaExec.getName().equals("run")) {

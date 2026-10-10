@@ -665,6 +665,54 @@ micronaut {
 }
 ----
 
+=== Development Mode
+
+Development mode keeps the application running while you edit it: sources are compiled inside the running JVM and the application is restarted on a fresh class loader, with the expensive singletons a retention policy names kept alive, or, for an edit that only changed method bodies, the classes are redefined in place and nothing restarts. It is provided by `micronaut-dev` in Micronaut Core 5.3 and later, and the plugin drives it:
+
+[source, bash]
+----
+$ ./gradlew mnDev
+----
+
+The `mnDev` task runs `io.micronaut.dev.MicronautDevMain` with the `developmentRuntimeClasspath` plus the launcher, and the `mnDevManifest` task it depends on writes the manifest the launcher reads into `build/micronaut-dev/dev.properties`: the runtime, compile and processor classpaths, the source and resource directories by language and kind, the compiler options as the build passes them, and the settings below. The project's own outputs, and those of the projects it depends on, are the reloadable tier; the modules are the parent tier. The launcher compiles Java with `javac`, Groovy with the project's Groovy, and Kotlin with the Kotlin Build Tools implementation and KSP at the project's versions, which the plugin adds to the `mnDevCompiler` configuration when the Kotlin plugin is applied. A KAPT project has its Kotlin compiled by Gradle instead, since KAPT cannot run embedded.
+
+[source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
+----
+micronaut {
+    dev {
+        strategy = "auto"          // restart, reload or auto
+        compile = "embedded"       // embedded, or build-tool to let Gradle compile
+        incremental = true
+        retain("javax.sql.DataSource")
+        kotlinCompilerArgs("-P", "plugin:org.jetbrains.kotlin.noarg:annotation=example.NoArg")
+        liveReload {
+            enabled = true         // adds micronaut-dev-livereload to the development runtime classpath
+            port = 35729
+            injectScript = true    // false for users of a browser extension
+        }
+    }
+}
+----
+
+[source, kotlin, subs="verbatim,attributes", role="multi-language-sample"]
+----
+micronaut {
+    dev {
+        strategy.set("auto")
+        compile.set("embedded")
+        incremental.set(true)
+        retain("javax.sql.DataSource")
+        liveReload {
+            enabled.set(true)
+            port.set(35729)
+            injectScript.set(true)
+        }
+    }
+}
+----
+
+With `compile = "build-tool"` the launcher compiles nothing and watches `build/micronaut-dev/reload`, which the `mnDevTrigger` task touches after every `classes`: run `./gradlew classes -t` in another terminal, and every completed compilation is applied. Kotlin needs Kotlin 2.3 or later to compile embedded, and a KAPT project cannot; both fall back to Gradle compiling Kotlin, with `mnDevTrigger` telling the launcher. The plugin passes the compiler plugins of the Kotlin compilation and the all-open annotations to the embedded compiler; the options of another compiler plugin go through `kotlinCompilerArgs("-P", "plugin:<id>:<key>=<value>")`. The `run` task and continuous build are unchanged.
+
 === Development-only Dependencies
 
 The application plugin creates a `developmentOnly` configuration for dependencies that are needed only while running the application locally.
