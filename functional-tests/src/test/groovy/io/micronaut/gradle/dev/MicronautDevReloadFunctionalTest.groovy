@@ -42,9 +42,21 @@ class MicronautDevReloadFunctionalTest extends AbstractFunctionalTest {
     }
 
     def cleanup() {
-        // a failed run leaves nothing behind
-        launcher?.descendants()?.forEach { it.destroyForcibly() }
-        launcher?.destroyForcibly()
+        // a failed run leaves nothing behind: the launcher of this project, which the build running in this JVM started,
+        // whether or not the application answered
+        String project = baseDir.fileName.toString()
+        List<ProcessHandle> launchers = new ArrayList<>(ProcessHandle.current().descendants().filter { process ->
+            process.info().arguments().map { arguments ->
+                arguments.any { it.contains("MicronautDevMain") } && arguments.any { it.contains(project) }
+            }.orElse(false)
+        }.toList())
+        if (launcher != null) {
+            launchers << launcher
+        }
+        launchers.each { process ->
+            process.descendants().forEach { it.destroyForcibly() }
+            process.destroyForcibly()
+        }
     }
 
     def "mnDev reloads an edited controller and a new one in the same process, and stops cleanly"() {
