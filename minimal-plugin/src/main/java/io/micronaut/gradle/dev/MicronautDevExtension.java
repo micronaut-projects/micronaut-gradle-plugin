@@ -17,12 +17,14 @@ package io.micronaut.gradle.dev;
 
 import org.gradle.api.Action;
 import org.gradle.api.provider.ListProperty;
+import org.gradle.api.provider.MapProperty;
 import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.Nested;
 
 /**
  * Configures development mode, {@code ./gradlew mnDev}: the reload strategy, how sources are
- * compiled, what survives a restart, and the LiveReload server.
+ * compiled, what survives a restart, and the LiveReload server; and test mode, {@code ./gradlew mnTest}:
+ * which tests a change runs.
  *
  * <pre>
  * micronaut {
@@ -34,6 +36,11 @@ import org.gradle.api.tasks.Nested;
  *         liveReload {
  *             enabled = true
  *             port = 35729
+ *         }
+ *         test {
+ *             selection = "affected" // affected or all
+ *             initialRun = true
+ *             reportPath = "/tests/" // where LiveReload serves the live report
  *         }
  *     }
  * }
@@ -116,6 +123,25 @@ public abstract class MicronautDevExtension {
     }
 
     /**
+     * Test mode.
+     *
+     * @return the test mode settings
+     * @since 5.0.3
+     */
+    @Nested
+    public abstract TestMode getTest();
+
+    /**
+     * Configures test mode.
+     *
+     * @param action the configuration
+     * @since 5.0.3
+     */
+    public void test(Action<? super TestMode> action) {
+        action.execute(getTest());
+    }
+
+    /**
      * The LiveReload server the launcher starts when {@code micronaut-dev-livereload} is on the
      * development runtime classpath.
      */
@@ -142,5 +168,45 @@ public abstract class MicronautDevExtension {
          * @return the flag
          */
         public abstract Property<Boolean> getInjectScript();
+    }
+
+    /**
+     * Test mode, {@code ./gradlew mnTest}: the tests a change affects run on a new generation in the
+     * development JVM.
+     *
+     * @since 5.0.3
+     */
+    public abstract static class TestMode {
+
+        /**
+         * Which tests a change runs: {@code affected}, those that reference a changed class and those that
+         * failed last, or {@code all}. Defaults to {@code affected}.
+         *
+         * @return the selection
+         */
+        public abstract Property<String> getSelection();
+
+        /**
+         * Whether every test runs once at startup. Defaults to true.
+         *
+         * @return the flag
+         */
+        public abstract Property<Boolean> getInitialRun();
+
+        /**
+         * The JUnit Platform configuration parameters, such as {@code junit.jupiter.execution.parallel.enabled}.
+         *
+         * @return the parameters
+         */
+        public abstract MapProperty<String, String> getParameters();
+
+        /**
+         * The path the LiveReload server serves the live HTML report at. Defaults to {@code /tests/}; the
+         * launcher adds the leading and trailing slashes, and rejects {@code /}, {@code ..} and the server's
+         * own paths.
+         *
+         * @return the path
+         */
+        public abstract Property<String> getReportPath();
     }
 }

@@ -50,6 +50,7 @@ final class MicronautDevKotlinSupport {
     private static final Logger LOGGER = LoggerFactory.getLogger(MicronautDevKotlinSupport.class);
     private static final String KSP_GROUP = "com.google.devtools.ksp";
     private static final String KSP_PROCESSORS_CONFIGURATION = "mnDevKspProcessors";
+    private static final String KSP_TEST_PROCESSORS_CONFIGURATION = "mnTestKspProcessors";
 
     private MicronautDevKotlinSupport() {
     }
@@ -60,12 +61,12 @@ final class MicronautDevKotlinSupport {
      */
     static final String MINIMUM_EMBEDDED_KOTLIN = "2.3.0";
 
-    static void configure(Project project, MicronautDevExtension dev, TaskProvider<MicronautDevManifest> manifest, Configuration compilers) {
+    static void configure(Project project, MicronautDevExtension dev, TaskProvider<MicronautDevManifest> manifest, TaskProvider<MicronautTestManifest> testManifest, Configuration compilers) {
         project.getPluginManager().withPlugin("org.jetbrains.kotlin.jvm", unused -> {
             if (!isKotlinPluginPresent()) {
                 return;
             }
-            configureKotlin(project, dev, manifest, compilers);
+            configureKotlin(project, dev, manifest, testManifest, compilers);
         });
     }
 
@@ -78,7 +79,7 @@ final class MicronautDevKotlinSupport {
         }
     }
 
-    private static void configureKotlin(Project project, MicronautDevExtension dev, TaskProvider<MicronautDevManifest> manifest, Configuration compilers) {
+    private static void configureKotlin(Project project, MicronautDevExtension dev, TaskProvider<MicronautDevManifest> manifest, TaskProvider<MicronautTestManifest> testManifest, Configuration compilers) {
         String kotlinVersion = KotlinPluginWrapperKt.getKotlinPluginVersion(project);
         boolean embedded = isAtLeast(kotlinVersion, MINIMUM_EMBEDDED_KOTLIN);
         if (embedded) {
@@ -86,6 +87,7 @@ final class MicronautDevKotlinSupport {
         } else {
             LOGGER.info("Kotlin {} is older than {}, which the embedded compilation needs: Kotlin sources are compiled by Gradle in development mode", kotlinVersion, MINIMUM_EMBEDDED_KOTLIN);
             manifest.configure(task -> task.getKotlinCompileMode().set("build-tool"));
+            testManifest.configure(task -> task.getKotlinCompileMode().set("build-tool"));
         }
         project.getPluginManager().withPlugin("com.google.devtools.ksp", ksp -> {
             // ksp itself cannot be resolved: a resolvable view of it holds the processors and tells the KSP version
@@ -102,26 +104,54 @@ final class MicronautDevKotlinSupport {
                 compilers.getDependencies().addLater(kspVersion.map(version -> project.getDependencies().create(KSP_GROUP + ":symbol-processing-aa-embeddable:" + version)));
             }
             manifest.configure(task -> task.getProcessorPath().from(kspProcessors));
+            testManifest.configure(task -> task.getProcessorPath().from(kspProcessors));
+            // the symbol processors of the tests, from kspTest, which is resolvable through a view as ksp is
+            Configuration kspTestProcessors = project.getConfigurations().create(KSP_TEST_PROCESSORS_CONFIGURATION, conf -> {
+                conf.setCanBeConsumed(false);
+                conf.setCanBeResolved(true);
+                conf.setDescription("The symbol processors of the kspTest configuration, for test mode");
+                conf.extendsFrom(project.getConfigurations().getByName("kspTest"));
+            });
+            testManifest.configure(task -> task.getTestProcessorPath().from(kspTestProcessors));
         });
         project.getPluginManager().withPlugin("org.jetbrains.kotlin.kapt", kapt -> {
             LOGGER.info("KAPT cannot run inside the development JVM: Kotlin sources are compiled by Gradle in development mode");
             manifest.configure(task -> task.getKotlinCompileMode().set("build-tool"));
+            testManifest.configure(task -> task.getKotlinCompileMode().set("build-tool"));
         });
         SourceSet main = PluginsHelper.findSourceSets(project).getByName(SourceSet.MAIN_SOURCE_SET_NAME);
         KotlinJvmProjectExtension kotlin = project.getExtensions().getByType(KotlinJvmProjectExtension.class);
         // captured while the project is still being configured: a task's configuration runs too late for afterEvaluate
         Provider<List<String>> allOpen = MicronautKotlinSupport.isKotlinAllOpenSupportPresent() ? AllOpenOptions.captured(project) : null;
-        manifest.configure(task -> {
-            task.getKotlinSources().from(kotlin.getSourceSets().getByName(SourceSet.MAIN_SOURCE_SET_NAME).getKotlin().getSrcDirs());
-            task.getKotlinSources().from(MicronautDevSupport.dependencySourceDirectories(project, project.getConfigurations().getByName("developmentRuntimeClasspath"), "kotlin"));
-            TaskProvider<KotlinJvmCompile> compileKotlin = project.getTasks().named(main.getCompileTaskName("kotlin"), KotlinJvmCompile.class);
-            task.getKotlinOutput().set(project.provider(() -> compileKotlin.get().getDestinationDirectory().get().getAsFile().getAbsolutePath()));
-            task.getKotlinOptions().set(project.provider(() -> kotlincOptions(compileKotlin.get())));
+        manifest.configure(task -> configureMainKotlin(project, dev, task, kotlin, main, allOpen, "developmentRuntimeClasspath"));
+        SourceSet test = PluginsHelper.findSourceSets(project).getByName(SourceSet.TEST_SOURCE_SET_NAME);
+        testManifest.configure(task -> {
+            // the application's projects alone, as for the Java sources: a project only the tests depend on is not recompiled
+            configureMainKotlin(project, dev, task, kotlin, main, allOpen, main.getRuntimeClasspathConfigurationName());
+            task.getTestKotlinSources().from(kotlin.getSourceSets().getByName(SourceSet.TEST_SOURCE_SET_NAME).getKotlin().getSrcDirs());
+            TaskProvider<KotlinJvmCompile> compileTestKotlin = project.getTasks().named(test.getCompileTaskName("kotlin"), KotlinJvmCompile.class);
+            task.getTestKotlinOutput().set(project.provider(() -> compileTestKotlin.get().getDestinationDirectory().get().getAsFile().getAbsolutePath()));
+            task.getTestKotlinOptions().set(project.provider(() -> kotlincOptions(compileTestKotlin.get())));
             if (allOpen != null) {
-                task.getKotlinOptions().addAll(allOpen);
+                task.getTestKotlinOptions().addAll(allOpen);
             }
-            task.getKotlinOptions().addAll(dev.getKotlinCompilerArgs());
+            task.getTestKotlinOptions().addAll(dev.getKotlinCompilerArgs());
         });
+    }
+
+    /**
+     * The Kotlin sources of the application and the projects it depends on, found in a classpath, and their compilation.
+     */
+    private static void configureMainKotlin(Project project, MicronautDevExtension dev, MicronautDevManifest task, KotlinJvmProjectExtension kotlin, SourceSet main, Provider<List<String>> allOpen, String classpath) {
+        task.getKotlinSources().from(kotlin.getSourceSets().getByName(SourceSet.MAIN_SOURCE_SET_NAME).getKotlin().getSrcDirs());
+        task.getKotlinSources().from(MicronautDevSupport.dependencySourceDirectories(project, project.getConfigurations().getByName(classpath), "kotlin"));
+        TaskProvider<KotlinJvmCompile> compileKotlin = project.getTasks().named(main.getCompileTaskName("kotlin"), KotlinJvmCompile.class);
+        task.getKotlinOutput().set(project.provider(() -> compileKotlin.get().getDestinationDirectory().get().getAsFile().getAbsolutePath()));
+        task.getKotlinOptions().set(project.provider(() -> kotlincOptions(compileKotlin.get())));
+        if (allOpen != null) {
+            task.getKotlinOptions().addAll(allOpen);
+        }
+        task.getKotlinOptions().addAll(dev.getKotlinCompilerArgs());
     }
 
     /**
