@@ -72,7 +72,7 @@ class MicronautDevFunctionalTest extends AbstractEagerConfiguringFunctionalTest 
         manifest."micronaut.dev.reloadable".contains("resources" + File.separator + "main")
         manifest."micronaut.dev.runtime-classpath" == "@runtime.argfile"
         def runtime = file("build/micronaut-dev/runtime.argfile").readLines()
-        runtime.any { it.contains("micronaut-runtime-") }
+        runtime.any { it.contains("micronaut-http-server-netty-") }
         runtime.every { !it.contains("hello-world") }
         manifest."micronaut.dev.processor-path" == "@processors.argfile"
         file("build/micronaut-dev/processors.argfile").readLines().any { it.contains("micronaut-inject-java") }
