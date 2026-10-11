@@ -30,6 +30,7 @@ import org.gradle.api.attributes.LibraryElements;
 import org.gradle.api.attributes.Usage;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.plugins.JavaApplication;
+import org.gradle.api.provider.Property;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.JavaExec;
 import org.gradle.api.tasks.SourceSet;
@@ -73,6 +74,23 @@ public final class MicronautDevSupport {
      * implementation and KSP at the project's versions.
      */
     public static final String DEV_COMPILER_CONFIGURATION = "mnDevCompiler";
+
+    /**
+     * The configuration holding the Micronaut Control Panel modules of development mode, which the plugin infers
+     * from the modules the application uses.
+     */
+    public static final String DEV_CONTROL_PANEL_CONFIGURATION = "mnDevControlPanel";
+
+    /**
+     * The modules the application sees in development mode: the development runtime classpath plus Micronaut
+     * Control Panel, resolved together so that the platform aligns their versions.
+     */
+    public static final String DEV_APPLICATION_CLASSPATH_CONFIGURATION = "mnDevApplicationClasspath";
+
+    /**
+     * The name of the task that writes the defaults of Micronaut Control Panel in development mode.
+     */
+    public static final String CONTROL_PANEL_DEFAULTS_TASK_NAME = "mnDevControlPanelDefaults";
 
     /**
      * The name of the task that runs the tests in test mode. Not {@code test -t}, which is Gradle's continuous build.
@@ -127,8 +145,38 @@ public final class MicronautDevSupport {
         dev.getLiveReload().getEnabled().convention(true);
         dev.getLiveReload().getPort().convention(35729);
         dev.getLiveReload().getInjectScript().convention(true);
+        dev.getBindLoopback().convention(true);
+        dev.getControlPanel().getEnabled().convention(true);
+        Provider<Boolean> controlPanelEnabled = MicronautDevControlPanel.enabled(project, dev);
 
         ConfigurationContainer configurations = project.getConfigurations();
+        Configuration controlPanel = configurations.create(DEV_CONTROL_PANEL_CONFIGURATION, conf -> {
+            conf.setCanBeConsumed(false);
+            conf.setCanBeResolved(false);
+            conf.setDescription("The Micronaut Control Panel modules of development mode, inferred from the modules the application uses");
+            DependencyHandler dependencies = project.getDependencies();
+            // the panels of the modules the development runtime classpath resolves, at the versions of the platform it holds
+            conf.getDependencies().addAllLater(controlPanelEnabled.map(enabled ->
+                Boolean.TRUE.equals(enabled) ? MicronautDevControlPanel.dependencies(dependencies, developmentRuntimeClasspath) : List.of()));
+        });
+        // the application's modules and Control Panel resolved together, apart from the runtime classpath of production
+        Configuration applicationClasspath = configurations.create(DEV_APPLICATION_CLASSPATH_CONFIGURATION, conf -> {
+            conf.setCanBeConsumed(false);
+            conf.setCanBeResolved(true);
+            conf.setDescription("The modules the application sees in development mode: the development runtime classpath plus Micronaut Control Panel");
+            conf.extendsFrom(developmentRuntimeClasspath, controlPanel);
+            AttributeUtils.copyAttributes(project.getProviders(), conf, developmentRuntimeClasspath);
+        });
+        TaskProvider<MicronautDevControlPanelDefaults> controlPanelDefaults = project.getTasks().register(CONTROL_PANEL_DEFAULTS_TASK_NAME, MicronautDevControlPanelDefaults.class, task -> {
+            task.setDescription("Writes the defaults of Micronaut Control Panel in development mode");
+            // none while Control Panel is off: an application that adds Control Panel itself keeps its own defaults
+            // with Micronaut Security on the classpath, the application's security decides who opens the panels
+            task.getProperties().putAll(controlPanelEnabled.map(enabled -> Boolean.TRUE.equals(enabled)
+                ? MicronautDevControlPanel.defaults(MicronautDevControlPanel.moduleKeys(developmentRuntimeClasspath))
+                : java.util.Map.of()));
+            task.getOutputDirectory().set(project.getLayout().getBuildDirectory().dir(MANIFEST_DIRECTORY + "/control-panel"));
+        });
+        FileCollection controlPanelResources = project.files(controlPanelDefaults.flatMap(MicronautDevControlPanelDefaults::getOutputDirectory));
         Configuration compilers = configurations.create(DEV_COMPILER_CONFIGURATION, conf -> {
             conf.setCanBeConsumed(false);
             conf.setCanBeResolved(true);
@@ -138,7 +186,7 @@ public final class MicronautDevSupport {
             conf.setCanBeConsumed(false);
             conf.setCanBeResolved(true);
             conf.setDescription("The development runtime classpath plus the development mode launcher");
-            conf.extendsFrom(developmentRuntimeClasspath, compilers);
+            conf.extendsFrom(applicationClasspath, compilers);
             conf.getDependencies().add(project.getDependencies().create(LAUNCHER_ARTIFACT));
             conf.getDependencies().addAllLater(dev.getLiveReload().getEnabled().map(enabled ->
                 Boolean.TRUE.equals(enabled) ? List.of(project.getDependencies().create(LIVERELOAD_ARTIFACT)) : List.of()));
@@ -151,7 +199,12 @@ public final class MicronautDevSupport {
         TaskProvider<MicronautDevManifest> manifest = project.getTasks().register(MANIFEST_TASK_NAME, MicronautDevManifest.class, task -> {
             task.setGroup("application");
             task.setDescription("Writes the manifest development mode reads");
-            configureManifest(project, task, dev, main, developmentRuntimeClasspath, developmentRuntimeClasspath, MANIFEST_DIRECTORY, manifestDirectory);
+            configureManifest(project, task, dev, main, lenientExternalArtifacts(applicationClasspath), developmentRuntimeClasspath, MANIFEST_DIRECTORY, manifestDirectory);
+            task.dependsOn(controlPanelDefaults);
+            task.getRuntimeClasspath().from(controlPanelResources);
+            task.doFirst(new MicronautDevControlPanel.VerifyResolution(MicronautDevControlPanel.unresolved(project, applicationClasspath)));
+            // the launcher binds the server to localhost unless this is off or the application sets a host
+            task.getBindLoopback().set(bindLoopback(project, dev));
             task.getReloadableRoots().addAll(project.provider(() -> paths(main.getOutput().getFiles())));
             addProjectOutputs(project, task, developmentRuntimeClasspath);
         });
@@ -159,12 +212,14 @@ public final class MicronautDevSupport {
         project.getTasks().register(DEV_TASK_NAME, JavaExec.class, task -> {
             task.setGroup("application");
             task.setDescription("Runs the application in development mode: sources are compiled and the application reloaded as they change");
-            task.dependsOn(manifest, main.getClassesTaskName());
+            task.dependsOn(manifest, main.getClassesTaskName(), controlPanelDefaults);
             // the reloadable tier holds the outputs of the projects depended on too: built before the launch
             task.dependsOn(projectOutputs(project, developmentRuntimeClasspath, LibraryElements.CLASSES), projectOutputs(project, developmentRuntimeClasspath, LibraryElements.RESOURCES));
             task.getMainClass().set(LAUNCHER_MAIN_CLASS);
-            FileCollection launcherClasspath = externalArtifacts(devRuntime);
-            task.setClasspath(launcherClasspath);
+            // lenient for the Control Panel modules alone, which development mode does without when they are not published
+            FileCollection launcherClasspath = lenientExternalArtifacts(devRuntime);
+            task.doFirst(new MicronautDevControlPanel.VerifyResolution(MicronautDevControlPanel.unresolved(project, devRuntime)));
+            task.setClasspath(launcherClasspath.plus(controlPanelResources));
             task.getArgumentProviders().add(new ManifestArgument(manifest.flatMap(MicronautDevManifest::getManifestFile).map(file -> file.getAsFile().getAbsolutePath())));
             task.getJvmArgumentProviders().add(new AgentArgument(launcherClasspath));
             task.getOutputs().upToDateWhen(t -> false);
@@ -212,7 +267,7 @@ public final class MicronautDevSupport {
         TaskProvider<MicronautTestManifest> manifest = project.getTasks().register(TEST_MANIFEST_TASK_NAME, MicronautTestManifest.class, task -> {
             task.setGroup("verification");
             task.setDescription("Writes the manifest test mode reads");
-            configureManifest(project, task, dev, main, testRuntimeClasspath, applicationRuntimeClasspath, TEST_MANIFEST_DIRECTORY, triggerDirectory);
+            configureManifest(project, task, dev, main, externalArtifacts(testRuntimeClasspath), applicationRuntimeClasspath, TEST_MANIFEST_DIRECTORY, triggerDirectory);
             // the tests' outputs ahead of the application's, as on the build's test runtime classpath
             task.getReloadableRoots().addAll(project.provider(() -> paths(test.getOutput().getFiles())));
             task.getReloadableRoots().addAll(project.provider(() -> paths(main.getOutput().getFiles())));
@@ -283,11 +338,11 @@ public final class MicronautDevSupport {
 
     /**
      * Describes the application to a manifest, of development or test mode: the settings, the classpaths, the
-     * sources, and the compilations of the main source set. The modules come from one classpath, the sources of the projects
+     * sources, and the compilations of the main source set. The modules are given, the sources of the projects
      * depended on from another: those of the application alone, since a project only the tests depend on cannot compile with
      * the application's classpath.
      */
-    private static void configureManifest(Project project, MicronautDevManifest task, MicronautDevExtension dev, SourceSet main, Configuration classpath, Configuration sources, String directory, Provider<File> triggerDirectory) {
+    private static void configureManifest(Project project, MicronautDevManifest task, MicronautDevExtension dev, SourceSet main, FileCollection modules, Configuration sources, String directory, Provider<File> triggerDirectory) {
         JavaApplication application = project.getExtensions().getByType(JavaApplication.class);
         task.getMainClass().set(application.getMainClass());
         task.getProjectDirectory().set(project.getProjectDir().getAbsolutePath());
@@ -299,7 +354,7 @@ public final class MicronautDevSupport {
         task.getLiveReloadInjectScript().set(dev.getLiveReload().getInjectScript());
         // the modules of the parent loader, never the project's own outputs or those of the projects it depends on;
         // the launcher itself is on the JVM's classpath and needs no naming here
-        task.getRuntimeClasspath().from(externalArtifacts(classpath));
+        task.getRuntimeClasspath().from(modules);
         task.getCompileClasspath().from(main.getCompileClasspath());
         task.getJavaSources().from(main.getJava().getSrcDirs());
         task.getResourceSources().from(main.getResources().getSrcDirs());
@@ -375,6 +430,35 @@ public final class MicronautDevSupport {
      */
     private static FileCollection externalArtifacts(Configuration configuration) {
         return configuration.getIncoming().artifactView(view -> view.componentFilter(id -> !(id instanceof ProjectComponentIdentifier))).getFiles();
+    }
+
+    /**
+     * Whether the application listens on {@code localhost} by default in development mode: the Gradle property
+     * {@code micronaut.dev.bind-loopback} if it is set, else the DSL.
+     *
+     * @param project the project
+     * @param dev the extension
+     * @return the flag
+     */
+    static Provider<Boolean> bindLoopback(Project project, MicronautDevExtension dev) {
+        Provider<String> property = project.getProviders().gradleProperty(MicronautDevManifest.BIND_LOOPBACK);
+        Property<Boolean> dsl = dev.getBindLoopback();
+        // a callable provider, which the configuration cache stores as its value
+        return project.provider(() -> {
+            String value = property.getOrNull();
+            return value != null ? Boolean.parseBoolean(value.trim()) : dsl.getOrElse(true);
+        });
+    }
+
+    /**
+     * As {@link #externalArtifacts(Configuration)}, without the modules that do not resolve: the task that uses them
+     * runs {@link MicronautDevControlPanel.VerifyResolution} first, which fails for any but a Control Panel module.
+     */
+    private static FileCollection lenientExternalArtifacts(Configuration configuration) {
+        return configuration.getIncoming().artifactView(view -> {
+            view.componentFilter(id -> !(id instanceof ProjectComponentIdentifier));
+            view.lenient(true);
+        }).getFiles();
     }
 
     /**
