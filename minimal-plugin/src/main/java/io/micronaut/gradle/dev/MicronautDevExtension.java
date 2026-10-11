@@ -37,6 +37,9 @@ import org.gradle.api.tasks.Nested;
  *             enabled = true
  *             port = 35729
  *         }
+ *         controlPanel {
+ *             enabled = true         // or -Pmicronaut.dev.control-panel=false
+ *         }
  *         test {
  *             selection = "affected" // affected or all
  *             initialRun = true
@@ -123,6 +126,25 @@ public abstract class MicronautDevExtension {
     }
 
     /**
+     * Micronaut Control Panel.
+     *
+     * @return the Control Panel settings
+     * @since 5.0.3
+     */
+    @Nested
+    public abstract ControlPanel getControlPanel();
+
+    /**
+     * Configures Micronaut Control Panel.
+     *
+     * @param action the configuration
+     * @since 5.0.3
+     */
+    public void controlPanel(Action<? super ControlPanel> action) {
+        action.execute(getControlPanel());
+    }
+
+    /**
      * Test mode.
      *
      * @return the test mode settings
@@ -168,6 +190,25 @@ public abstract class MicronautDevExtension {
          * @return the flag
          */
         public abstract Property<Boolean> getInjectScript();
+    }
+
+    /**
+     * Micronaut Control Panel in development mode: {@code micronaut-control-panel-ui},
+     * {@code micronaut-control-panel-management} and {@code micronaut-control-panel-testing}, plus the panels of the
+     * modules the application uses, such as {@code micronaut-control-panel-kafka} for {@code micronaut-kafka}, at the
+     * versions of the Micronaut platform, on the development runtime classpath of {@code mnDev} alone.
+     *
+     * @since 5.0.3
+     */
+    public abstract static class ControlPanel {
+
+        /**
+         * Whether Micronaut Control Panel is added to the development runtime classpath of {@code mnDev}. Defaults to
+         * true; the Gradle property {@code micronaut.dev.control-panel} overrides it.
+         *
+         * @return the flag
+         */
+        public abstract Property<Boolean> getEnabled();
     }
 
     /**
