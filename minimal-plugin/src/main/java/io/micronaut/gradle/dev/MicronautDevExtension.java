@@ -32,6 +32,7 @@ import org.gradle.api.tasks.Nested;
  *         strategy = "auto"          // restart, reload or auto
  *         compile = "embedded"       // embedded or build-tool
  *         incremental = true
+ *         bindLoopback = true        // or -Pmicronaut.dev.bind-loopback=false
  *         retain("javax.sql.DataSource")
  *         liveReload {
  *             enabled = true
@@ -74,6 +75,17 @@ public abstract class MicronautDevExtension {
      * @return the flag
      */
     public abstract Property<Boolean> getIncremental();
+
+    /**
+     * Whether the application listens on {@code localhost} alone by default, so that a development server is not
+     * reachable from other machines. Defaults to true; set it to false to reach the application from a phone or a
+     * container. A {@code micronaut.server.host} the application sets in its configuration, as an environment variable
+     * or as a system property wins either way. The Gradle property {@code micronaut.dev.bind-loopback} overrides it.
+     *
+     * @return the flag
+     * @since 5.0.3
+     */
+    public abstract Property<Boolean> getBindLoopback();
 
     /**
      * The types whose singletons are kept across a restart.

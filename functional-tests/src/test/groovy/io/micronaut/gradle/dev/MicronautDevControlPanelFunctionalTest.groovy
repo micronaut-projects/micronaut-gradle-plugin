@@ -26,6 +26,9 @@ class MicronautDevControlPanelFunctionalTest extends AbstractEagerConfiguringFun
         defaults."micronaut.control-panel.path" == "/control-panel"
         defaults."micronaut.control-panel.security.access" == "ANONYMOUS"
 
+        and: "the launcher is told to bind the application to localhost by default"
+        manifest()."micronaut.dev.bind-loopback" == "true"
+
         and: "the runtime classpath of production has no Control Panel"
         !result.output.contains("micronaut-control-panel-management")
         !result.output.contains("micronaut-control-panel-ui")
@@ -91,6 +94,49 @@ class MicronautDevControlPanelFunctionalTest extends AbstractEagerConfiguringFun
         !defaultsFile().exists()
     }
 
+    def "with Micronaut Security the defaults do not open Control Panel to anonymous users"() {
+        given:
+        application('implementation("io.micronaut.security:micronaut-security")')
+
+        when:
+        def result = build("mnDevManifest")
+
+        then:
+        result.task(":mnDevManifest").outcome == TaskOutcome.SUCCESS
+        def defaults = defaults()
+        defaults."micronaut.control-panel.enabled" == "true"
+        defaults."micronaut.control-panel.path" == "/control-panel"
+        !defaults.containsKey("micronaut.control-panel.security.access")
+    }
+
+    def "binding to localhost is turned off with the DSL or the Gradle property, which wins"() {
+        given:
+        application("", """
+            dev {
+                bindLoopback = false
+            }
+        """)
+
+        when:
+        build("mnDevManifest")
+
+        then:
+        manifest()."micronaut.dev.bind-loopback" == "false"
+
+        when: "the Gradle property turns it on over the DSL"
+        build("mnDevManifest", "-Pmicronaut.dev.bind-loopback=true")
+
+        then:
+        manifest()."micronaut.dev.bind-loopback" == "true"
+
+        when: "and off, whatever the DSL says"
+        buildFile.text = buildFile.text.replace("bindLoopback = false", "bindLoopback = true")
+        build("mnDevManifest", "-Pmicronaut.dev.bind-loopback=false")
+
+        then:
+        manifest()."micronaut.dev.bind-loopback" == "false"
+    }
+
     private void application(String dependencies = "", String dev = "") {
         settingsFile << "rootProject.name = 'hello-world'"
         buildFile << """
@@ -125,6 +171,12 @@ class MicronautDevControlPanelFunctionalTest extends AbstractEagerConfiguringFun
     private Properties defaults() {
         Properties properties = new Properties()
         defaultsFile().withInputStream { properties.load(it) }
+        properties
+    }
+
+    private Properties manifest() {
+        Properties properties = new Properties()
+        file("build/micronaut-dev/dev.properties").withInputStream { properties.load(it) }
         properties
     }
 

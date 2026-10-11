@@ -46,6 +46,19 @@ class MicronautDevControlPanelSpec extends Specification {
             "micronaut.control-panel.path"           : "/control-panel",
             "micronaut.control-panel.security.access": "ANONYMOUS"
         ]
+        MicronautDevControlPanel.defaults(["io.micronaut:micronaut-http-server-netty"]) == MicronautDevControlPanel.DEFAULTS
+    }
+
+    def "with Micronaut Security the defaults leave the access to the application's security"() {
+        when:
+        def defaults = MicronautDevControlPanel.defaults(["io.micronaut:micronaut-http-server-netty", "io.micronaut.security:micronaut-security"])
+
+        then:
+        defaults == [
+            "micronaut.control-panel.enabled": "true",
+            "micronaut.control-panel.path"   : "/control-panel"
+        ]
+        !defaults.containsKey("micronaut.control-panel.security.access")
     }
 
     def "the dependencies are inferred from the resolved classpath, without versions"() {
@@ -82,5 +95,21 @@ class MicronautDevControlPanelSpec extends Specification {
 
         then:
         !MicronautDevControlPanel.enabled(project, dev).get()
+    }
+
+    def "the application listens on localhost by default, turned off with the DSL"() {
+        given:
+        def project = ProjectBuilder.builder().build()
+        def dev = project.objects.newInstance(MicronautDevExtension)
+        dev.bindLoopback.convention(true)
+
+        expect:
+        MicronautDevSupport.bindLoopback(project, dev).get()
+
+        when:
+        dev.bindLoopback.set(false)
+
+        then:
+        !MicronautDevSupport.bindLoopback(project, dev).get()
     }
 }

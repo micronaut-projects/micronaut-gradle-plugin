@@ -30,6 +30,7 @@ import org.gradle.api.attributes.LibraryElements;
 import org.gradle.api.attributes.Usage;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.plugins.JavaApplication;
+import org.gradle.api.provider.Property;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.JavaExec;
 import org.gradle.api.tasks.SourceSet;
@@ -144,6 +145,7 @@ public final class MicronautDevSupport {
         dev.getLiveReload().getEnabled().convention(true);
         dev.getLiveReload().getPort().convention(35729);
         dev.getLiveReload().getInjectScript().convention(true);
+        dev.getBindLoopback().convention(true);
         dev.getControlPanel().getEnabled().convention(true);
         Provider<Boolean> controlPanelEnabled = MicronautDevControlPanel.enabled(project, dev);
 
@@ -168,7 +170,10 @@ public final class MicronautDevSupport {
         TaskProvider<MicronautDevControlPanelDefaults> controlPanelDefaults = project.getTasks().register(CONTROL_PANEL_DEFAULTS_TASK_NAME, MicronautDevControlPanelDefaults.class, task -> {
             task.setDescription("Writes the defaults of Micronaut Control Panel in development mode");
             // none while Control Panel is off: an application that adds Control Panel itself keeps its own defaults
-            task.getProperties().putAll(controlPanelEnabled.map(enabled -> Boolean.TRUE.equals(enabled) ? MicronautDevControlPanel.DEFAULTS : java.util.Map.of()));
+            // with Micronaut Security on the classpath, the application's security decides who opens the panels
+            task.getProperties().putAll(controlPanelEnabled.map(enabled -> Boolean.TRUE.equals(enabled)
+                ? MicronautDevControlPanel.defaults(MicronautDevControlPanel.moduleKeys(developmentRuntimeClasspath))
+                : java.util.Map.of()));
             task.getOutputDirectory().set(project.getLayout().getBuildDirectory().dir(MANIFEST_DIRECTORY + "/control-panel"));
         });
         FileCollection controlPanelResources = project.files(controlPanelDefaults.flatMap(MicronautDevControlPanelDefaults::getOutputDirectory));
@@ -198,6 +203,8 @@ public final class MicronautDevSupport {
             task.dependsOn(controlPanelDefaults);
             task.getRuntimeClasspath().from(controlPanelResources);
             task.doFirst(new MicronautDevControlPanel.VerifyResolution(MicronautDevControlPanel.unresolved(project, applicationClasspath)));
+            // the launcher binds the server to localhost unless this is off or the application sets a host
+            task.getBindLoopback().set(bindLoopback(project, dev));
             task.getReloadableRoots().addAll(project.provider(() -> paths(main.getOutput().getFiles())));
             addProjectOutputs(project, task, developmentRuntimeClasspath);
         });
@@ -423,6 +430,24 @@ public final class MicronautDevSupport {
      */
     private static FileCollection externalArtifacts(Configuration configuration) {
         return configuration.getIncoming().artifactView(view -> view.componentFilter(id -> !(id instanceof ProjectComponentIdentifier))).getFiles();
+    }
+
+    /**
+     * Whether the application listens on {@code localhost} by default in development mode: the Gradle property
+     * {@code micronaut.dev.bind-loopback} if it is set, else the DSL.
+     *
+     * @param project the project
+     * @param dev the extension
+     * @return the flag
+     */
+    static Provider<Boolean> bindLoopback(Project project, MicronautDevExtension dev) {
+        Provider<String> property = project.getProviders().gradleProperty(MicronautDevManifest.BIND_LOOPBACK);
+        Property<Boolean> dsl = dev.getBindLoopback();
+        // a callable provider, which the configuration cache stores as its value
+        return project.provider(() -> {
+            String value = property.getOrNull();
+            return value != null ? Boolean.parseBoolean(value.trim()) : dsl.getOrElse(true);
+        });
     }
 
     /**

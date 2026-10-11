@@ -36,6 +36,7 @@ import org.gradle.api.provider.Provider;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -74,21 +75,35 @@ final class MicronautDevControlPanel {
 
     /**
      * The defaults of development mode, read by Control Panel from its {@code micronaut-control-panel.properties}
-     * resources as the property source of the lowest precedence.
+     * resources as the property source of the lowest precedence. Without Micronaut Security, which is how Control
+     * Panel is open in the development environment anyway.
      */
     static final Map<String, String> DEFAULTS;
+
+    /**
+     * The defaults of development mode for an application that resolves Micronaut Security: no access setting, so that
+     * the application's security decides who opens the panels.
+     */
+    static final Map<String, String> SECURED_DEFAULTS;
 
     /**
      * The resource Control Panel reads its defaults from.
      */
     static final String DEFAULTS_RESOURCE = "micronaut-control-panel/micronaut-control-panel.properties";
 
+    /**
+     * The module whose presence on the runtime classpath leaves the access to Control Panel to the application.
+     */
+    static final String SECURITY_MODULE = "io.micronaut.security:micronaut-security";
+
     static {
-        Map<String, String> defaults = new LinkedHashMap<>();
-        defaults.put("micronaut.control-panel.enabled", "true");
-        defaults.put("micronaut.control-panel.path", "/control-panel");
+        Map<String, String> secured = new LinkedHashMap<>();
+        secured.put("micronaut.control-panel.enabled", "true");
+        secured.put("micronaut.control-panel.path", "/control-panel");
+        SECURED_DEFAULTS = Collections.unmodifiableMap(secured);
+        Map<String, String> defaults = new LinkedHashMap<>(secured);
         defaults.put("micronaut.control-panel.security.access", "ANONYMOUS");
-        DEFAULTS = java.util.Collections.unmodifiableMap(defaults);
+        DEFAULTS = Collections.unmodifiableMap(defaults);
     }
 
     private static final Logger LOGGER = Logging.getLogger(MicronautDevControlPanel.class);
@@ -173,6 +188,34 @@ final class MicronautDevControlPanel {
     }
 
     /**
+     * The defaults of development mode for the modules of an application: with Micronaut Security, none that opens
+     * the panels to anonymous users.
+     *
+     * @param moduleKeys the modules of the application, as {@code group:name}
+     * @return the defaults
+     */
+    static Map<String, String> defaults(Collection<String> moduleKeys) {
+        return moduleKeys.contains(SECURITY_MODULE) ? SECURED_DEFAULTS : DEFAULTS;
+    }
+
+    /**
+     * The modules a configuration resolves.
+     *
+     * @param configuration the configuration
+     * @return the modules, as {@code group:name}
+     */
+    static Set<String> moduleKeys(Configuration configuration) {
+        Set<String> moduleKeys = new HashSet<>();
+        for (ResolvedComponentResult component : configuration.getIncoming().getResolutionResult().getAllComponents()) {
+            ModuleVersionIdentifier id = component.getModuleVersion();
+            if (id != null) {
+                moduleKeys.add(id.getGroup() + ":" + id.getName());
+            }
+        }
+        return moduleKeys;
+    }
+
+    /**
      * The dependencies on Control Panel for the modules a runtime classpath resolves.
      *
      * @param dependencies the dependency handler
@@ -180,15 +223,8 @@ final class MicronautDevControlPanel {
      * @return the dependencies
      */
     static List<Dependency> dependencies(DependencyHandler dependencies, Configuration runtimeClasspath) {
-        Set<String> moduleKeys = new HashSet<>();
-        for (ResolvedComponentResult component : runtimeClasspath.getIncoming().getResolutionResult().getAllComponents()) {
-            ModuleVersionIdentifier id = component.getModuleVersion();
-            if (id != null) {
-                moduleKeys.add(id.getGroup() + ":" + id.getName());
-            }
-        }
         List<Dependency> result = new ArrayList<>();
-        for (String module : modules(moduleKeys)) {
+        for (String module : modules(moduleKeys(runtimeClasspath))) {
             result.add(dependencies.create(module));
         }
         return result;
