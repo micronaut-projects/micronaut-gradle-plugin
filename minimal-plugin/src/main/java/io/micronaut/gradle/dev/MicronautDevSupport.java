@@ -18,6 +18,7 @@ package io.micronaut.gradle.dev;
 import io.micronaut.gradle.AttributeUtils;
 import io.micronaut.gradle.MicronautExtension;
 import io.micronaut.gradle.PluginsHelper;
+import io.micronaut.gradle.internal.MicronautDevOutputLocks;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.ConfigurationContainer;
@@ -29,6 +30,7 @@ import org.gradle.api.attributes.Attribute;
 import org.gradle.api.attributes.LibraryElements;
 import org.gradle.api.attributes.Usage;
 import org.gradle.api.file.FileCollection;
+import org.gradle.api.plugins.BasePlugin;
 import org.gradle.api.plugins.JavaApplication;
 import org.gradle.api.provider.Property;
 import org.gradle.api.provider.Provider;
@@ -113,6 +115,17 @@ public final class MicronautDevSupport {
      */
     public static final String LAUNCHER_MAIN_CLASS = "io.micronaut.dev.MicronautDevMain";
 
+    /**
+     * The LiveReload port of {@code mnDev} by default.
+     */
+    static final int DEFAULT_LIVERELOAD_PORT = 35729;
+
+    /**
+     * The LiveReload port of {@code mnTest} by default, the next one, so that its live report is served while
+     * {@code mnDev} runs.
+     */
+    static final int DEFAULT_TEST_LIVERELOAD_PORT = 35730;
+
     private static final String LAUNCHER_ARTIFACT = "io.micronaut:micronaut-dev";
     private static final String LIVERELOAD_ARTIFACT = "io.micronaut:micronaut-dev-livereload";
     private static final String TEST_REPORT_ARTIFACT = "io.micronaut:micronaut-dev-test-report";
@@ -126,6 +139,9 @@ public final class MicronautDevSupport {
     private static final String TEST_MANIFEST_DIRECTORY = MANIFEST_DIRECTORY + "/test";
     private static final String TRIGGER_FILE_NAME = "reload";
     private static final String TRIGGER_TASK_NAME = "mnDevTrigger";
+    private static final String GENERATIONS_DIRECTORY = "generations";
+    private static final String LOCK_TASK_NAME = "mnDevLockOutputs";
+    private static final String UNLOCK_TASK_NAME = "mnDevUnlockOutputs";
 
     private MicronautDevSupport() {
     }
@@ -143,7 +159,7 @@ public final class MicronautDevSupport {
         dev.getCompile().convention("embedded");
         dev.getIncremental().convention(true);
         dev.getLiveReload().getEnabled().convention(true);
-        dev.getLiveReload().getPort().convention(35729);
+        dev.getLiveReload().getPort().convention(DEFAULT_LIVERELOAD_PORT);
         dev.getLiveReload().getInjectScript().convention(true);
         dev.getBindLoopback().convention(true);
         dev.getControlPanel().getEnabled().convention(true);
@@ -231,6 +247,71 @@ public final class MicronautDevSupport {
         TaskProvider<MicronautTestManifest> testManifest = configureTestMode(project, dev, compilers, sourceSets, manifestDirectory);
         MicronautDevKotlinSupport.configure(project, dev, manifest, testManifest, compilers);
         configureTrigger(project, dev, manifest, manifestDirectory, sourceSets.getByName(SourceSet.TEST_SOURCE_SET_NAME));
+        configureOutputLocks(project, main, sourceSets.getByName(SourceSet.TEST_SOURCE_SET_NAME));
+    }
+
+    /**
+     * Holds the locks of the class outputs, those {@code micronaut-dev} takes, while the compile tasks of the main and
+     * test source sets, and {@code clean}, run: {@code mnDevLockOutputs} takes them before, {@code mnDevUnlockOutputs} releases them after,
+     * as their finalizer, and the launch of {@code mnDev} and {@code mnTest} releases them before its JVM takes them.
+     * Development mode beside test mode, or beside any build of the project, then never compiles into an output Gradle
+     * is checking or writing.
+     */
+    private static void configureOutputLocks(Project project, SourceSet main, SourceSet test) {
+        Provider<MicronautDevOutputLocks> locks = project.getGradle().getSharedServices().registerIfAbsent(MicronautDevOutputLocks.SERVICE_NAME, MicronautDevOutputLocks.class, spec -> { });
+        // named, not built: a callable provider the configuration cache stores as its value
+        Provider<List<String>> classOutputs = project.provider(() -> {
+            List<String> outputs = new ArrayList<>(paths(main.getOutput().getClassesDirs().getFiles()));
+            outputs.addAll(paths(test.getOutput().getClassesDirs().getFiles()));
+            return outputs;
+        });
+        TaskProvider<MicronautDevOutputLocks.LockTask> lock = project.getTasks().register(LOCK_TASK_NAME, MicronautDevOutputLocks.LockTask.class, task -> {
+            task.setDescription("Takes the locks development and test mode hold while they compile the class outputs, waiting for them");
+            task.getLocks().set(locks);
+            task.usesService(locks);
+            task.getClassOutputs().set(classOutputs);
+            task.getRelease().set(false);
+        });
+        java.util.Set<String> compileTasks = new java.util.HashSet<>();
+        for (SourceSet sourceSet : List.of(main, test)) {
+            compileTasks.add(sourceSet.getCompileJavaTaskName());
+            compileTasks.add(sourceSet.getCompileTaskName("groovy"));
+            compileTasks.add(sourceSet.getCompileTaskName("kotlin"));
+        }
+        TaskProvider<MicronautDevOutputLocks.LockTask> unlock = project.getTasks().register(UNLOCK_TASK_NAME, MicronautDevOutputLocks.LockTask.class, task -> {
+            task.setDescription("Releases the locks of the class outputs once they are compiled");
+            task.getLocks().set(locks);
+            task.usesService(locks);
+            task.getClassOutputs().set(classOutputs);
+            task.getRelease().set(true);
+            // after every compile task, and clean, the build runs, whichever finishes last; found by name when the graph is built
+            org.gradle.api.tasks.TaskContainer tasks = project.getTasks();
+            task.mustRunAfter((java.util.concurrent.Callable<List<TaskProvider<org.gradle.api.Task>>>) () -> java.util.stream.Stream.concat(compileTasks.stream(), java.util.stream.Stream.of(BasePlugin.CLEAN_TASK_NAME))
+                .filter(tasks.getNames()::contains)
+                .map(tasks::named)
+                .toList());
+        });
+        project.getTasks().configureEach(task -> {
+            boolean clean = BasePlugin.CLEAN_TASK_NAME.equals(task.getName());
+            if (compileTasks.contains(task.getName()) || clean) {
+                // before the task, not in its actions: Gradle checks the outputs, and removes stale ones, before them
+                task.dependsOn(lock);
+                task.finalizedBy(unlock);
+            }
+            if (clean) {
+                // clean deleted the files the build locked: the files at their paths are locked, before the old ones go
+                task.usesService(locks);
+                task.doLast(new MicronautDevOutputLocks.LockAction(locks, classOutputs, false));
+            }
+        });
+        for (String launch : List.of(DEV_TASK_NAME, TEST_TASK_NAME)) {
+            project.getTasks().named(launch, JavaExec.class, task -> {
+                // the launcher's JVM takes the locks while the build waits for it: they must be free by then
+                task.mustRunAfter(unlock);
+                task.usesService(locks);
+                task.doFirst(new MicronautDevOutputLocks.LockAction(locks, classOutputs, true));
+            });
+        }
     }
 
     /**
@@ -242,6 +323,8 @@ public final class MicronautDevSupport {
         dev.getTest().getSelection().convention("affected");
         dev.getTest().getInitialRun().convention(true);
         dev.getTest().getReportPath().convention("/tests/");
+        // not mnDev's port: with both running, the live report is served beside the application's LiveReload server
+        dev.getTest().getLiveReloadPort().convention(DEFAULT_TEST_LIVERELOAD_PORT);
         SourceSet main = sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME);
         SourceSet test = sourceSets.getByName(SourceSet.TEST_SOURCE_SET_NAME);
         ConfigurationContainer configurations = project.getConfigurations();
@@ -290,6 +373,7 @@ public final class MicronautDevSupport {
             task.getTestInitialRun().set(dev.getTest().getInitialRun());
             task.getTestParameters().set(dev.getTest().getParameters());
             task.getTestHtmlReportPath().set(dev.getTest().getReportPath());
+            task.getLiveReloadPort().set(dev.getTest().getLiveReloadPort());
             task.getTestReports().set(project.getLayout().getBuildDirectory().dir("test-results/" + TEST_TASK_NAME).map(dir -> dir.getAsFile().getAbsolutePath()));
             task.getTestHtmlReport().set(project.getLayout().getBuildDirectory().dir("reports/tests/" + TEST_TASK_NAME).map(dir -> dir.getAsFile().getAbsolutePath()));
             for (String argumentFile : List.of("test-compile", "test-processors", "test-java-options", "test-kotlin-options", "test-groovy-options")) {
@@ -374,6 +458,8 @@ public final class MicronautDevSupport {
         task.getJavaOptions().set(project.provider(() -> javacOptions(compileJava.get())));
         task.getBuildToolTrigger().set(triggerDirectory.map(dir -> new File(dir, TRIGGER_FILE_NAME).getAbsolutePath()));
         task.getManifestFile().set(project.getLayout().getBuildDirectory().file(directory + "/" + MicronautDevManifest.MANIFEST_FILE_NAME));
+        // apart for development and test mode, which may run at once
+        task.getGenerations().set(project.getLayout().getBuildDirectory().dir(directory + "/" + GENERATIONS_DIRECTORY).map(dir -> dir.getAsFile().getAbsolutePath()));
         // one provider per file of the build layout: the configuration cache stores these, not a collection a transform built
         for (String argumentFile : List.of("runtime", "compile", "processors", "java-options", "kotlin-options", "groovy-options")) {
             task.getArgumentFiles().from(project.getLayout().getBuildDirectory().file(directory + "/" + argumentFile + ".argfile"));

@@ -27,6 +27,7 @@ class MicronautTestModeFunctionalTest extends AbstractEagerConfiguringFunctional
                     selection = "all"
                     initialRun = false
                     reportPath = "/reports/tests/"
+                    liveReloadPort = 35740
                     parameters.put("junit.jupiter.execution.parallel.enabled", "false")
                 }
             }
@@ -52,6 +53,8 @@ class MicronautTestModeFunctionalTest extends AbstractEagerConfiguringFunctional
         manifest."micronaut.dev.test.selection" == "all"
         manifest."micronaut.dev.test.initial-run" == "false"
         manifest."micronaut.dev.test.html-report-path" == "/reports/tests/"
+        manifest."micronaut.dev.livereload.port" == "35740"
+        manifest."micronaut.dev.generations" == file("build/micronaut-dev/test/generations").canonicalPath
         manifest."micronaut.dev.test.parameters.junit.jupiter.execution.parallel.enabled" == "false"
         manifest."micronaut.dev.test.reports".endsWith(path("build", "test-results", "mnTest"))
         manifest."micronaut.dev.test.html-report".endsWith(path("build", "reports", "tests", "mnTest"))
@@ -79,6 +82,38 @@ class MicronautTestModeFunctionalTest extends AbstractEagerConfiguringFunctional
         stored.output.contains("Configuration cache entry stored")
         reused.output.contains("Reusing configuration cache")
         this.manifest()."micronaut.dev.mode" == "test"
+    }
+
+    def "test mode has its own LiveReload port and generations, apart from development mode's, so that both run at once"() {
+        given:
+        writeProject()
+
+        when:
+        build("mnDevManifest", "mnTestManifest")
+        def dev = new Properties()
+        file("build/micronaut-dev/dev.properties").withInputStream { dev.load(it) }
+        def test = manifest()
+
+        then:
+        dev."micronaut.dev.livereload.port" == "35729"
+        test."micronaut.dev.livereload.port" == "35730"
+        dev."micronaut.dev.generations" == file("build/micronaut-dev/generations").canonicalPath
+        test."micronaut.dev.generations" == file("build/micronaut-dev/test/generations").canonicalPath
+
+        when: "each port is set on its own"
+        buildFile << """
+            micronaut.dev {
+                liveReload { port = 35801 }
+                test { liveReloadPort = 35802 }
+            }
+        """
+        build("mnDevManifest", "mnTestManifest")
+        file("build/micronaut-dev/dev.properties").withInputStream { dev.load(it) }
+        test = manifest()
+
+        then:
+        dev."micronaut.dev.livereload.port" == "35801"
+        test."micronaut.dev.livereload.port" == "35802"
     }
 
     @Requires({ isTestModeAvailable() })

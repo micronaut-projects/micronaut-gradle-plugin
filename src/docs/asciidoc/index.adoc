@@ -778,7 +778,7 @@ $ ./gradlew mnTest
 
 The `mnTest` task runs `io.micronaut.dev.MicronautDevMain` with the `testRuntimeClasspath` plus the launcher, `micronaut-dev-test-report` and `junit-platform-launcher`, at the version of the `junit-platform-engine` the tests resolve, on the `mnTestRuntime` configuration. The `mnTestManifest` task writes the manifest into `build/micronaut-dev/test/dev.properties`: everything `mnDevManifest` writes, plus the test sources, resources, classpaths and compiler options, with the outputs of the test and main source sets as the reloadable tier. A change runs the test classes that reference a changed class, directly or not, together with those that failed last; a change of resources or configuration runs every test. On a terminal, space runs the last tests again, `a` every test, `f` the failures, `w` turns watching on or off, and `q` exits; the task fails when the last run did.
 
-Results are written as JUnit XML into `build/test-results/mnTest`, and as an HTML report into `build/reports/tests/mnTest`, which the LiveReload server also serves at `http://localhost:35729/tests/` and updates test by test. The path is set by `reportPath`; the launcher adds the leading and trailing slashes, and rejects `/`, `..` and the LiveReload server's own paths.
+Results are written as JUnit XML into `build/test-results/mnTest`, and as an HTML report into `build/reports/tests/mnTest`, which test mode's LiveReload server also serves at `http://localhost:35730/tests/` and updates test by test. The port is set by `liveReloadPort`, apart from `mnDev`'s `liveReload.port`, 35729, so that the report is served while `mnDev` runs; the path is set by `reportPath`; the launcher adds the leading and trailing slashes, and rejects `/`, `..` and the LiveReload server's own paths.
 
 [source, bash]
 ----
@@ -796,6 +796,7 @@ micronaut {
             selection = "affected" // affected, or all to run every test on each change
             initialRun = true      // run every test once at startup
             reportPath = "/tests/" // the path of the live report on the LiveReload server
+            liveReloadPort = 35730 // test mode's LiveReload server, apart from mnDev's
             parameters.put("junit.jupiter.execution.parallel.enabled", "true")
         }
     }
@@ -810,6 +811,7 @@ micronaut {
             selection.set("affected")
             initialRun.set(true)
             reportPath.set("/tests/")
+            liveReloadPort.set(35730)
             parameters.put("junit.jupiter.execution.parallel.enabled", "true")
         }
     }
@@ -817,6 +819,12 @@ micronaut {
 ----
 
 With `compile = "build-tool"`, `mnDevTrigger` also runs after every `testClasses`, so `./gradlew testClasses -t` in another terminal drives the runs.
+
+===== Running mnDev and mnTest at once
+
+`mnDev` and `mnTest` of one project can run at the same time, in two terminals, and so can either beside another build of the project. Both compile the application into the same class outputs, `build/classes/<language>/main`, and `micronaut-dev` takes a file lock beside the first of them, such as `build/classes/java/main.micronaut-dev.lock`, for each compilation and each read of the outputs as a whole, so that one process waits while the other writes. The build takes the same lock: the `mnDevLockOutputs` task runs before the compile tasks of the main and test source sets and `clean`, and `mnDevUnlockOutputs` after them, so Gradle never checks, cleans or writes an output while development or test mode compiles into it, and waits, saying so, when one does. `mnDev` and `mnTest` launch once the lock is released. Each has its own LiveReload port, 35729 and 35730, and its own generations directory, `build/micronaut-dev/generations` and `build/micronaut-dev/test/generations`, which the manifests name as `micronaut.dev.generations`.
+
+The build holds the lock around the compile tasks and `clean` of the application project alone: a task that reads the class outputs afterwards, such as `jar` or `test`, may see a compilation of development mode in progress, and the compile tasks of a project the application depends on, run on their own, do not wait for it.
 
 With <<test-resources,Micronaut Test Resources>>, `mnDev` and `mnTest` get what `run` and `test` get: the server starts before the launch, from the project itself with `io.micronaut.test-resources` or from the project a consumer declares with `io.micronaut.test-resources-consumer`, the client is on the launch classpath, and its connection settings are system properties of the launcher's JVM. The server stays up while the task runs, through every reload and test run, and stops at the end of the build unless it was started standalone or is shared.
 
