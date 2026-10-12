@@ -59,6 +59,7 @@ class MicronautDevFunctionalTest extends AbstractEagerConfiguringFunctionalTest 
         manifest."micronaut.dev.retain" == "javax.sql.DataSource"
         manifest."micronaut.dev.livereload.port" == "35730"
         manifest."micronaut.dev.livereload.inject-script" == "false"
+        manifest."micronaut.dev.generations" == file("build/micronaut-dev/generations").canonicalPath
         manifest."micronaut.dev.sources.java".endsWith("src" + File.separator + "main" + File.separator + "java")
         manifest."micronaut.dev.resources.config".endsWith("src" + File.separator + "main" + File.separator + "resources")
         manifest."micronaut.dev.resources.static".endsWith("static")
