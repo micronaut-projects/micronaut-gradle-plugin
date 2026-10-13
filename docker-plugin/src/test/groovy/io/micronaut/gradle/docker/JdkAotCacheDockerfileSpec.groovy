@@ -26,9 +26,9 @@ ENTRYPOINT ["java", "-jar", "/home/app/application.jar"]
 
     private static final String ENTRYPOINT = 'ENTRYPOINT ["java", "-XX:AOTCache=/home/app/application.aot", "-XX:+UseG1GC", "-jar", "/home/app/application.jar"]'
 
-    private static final String STARTS_THE_APPLICATION = "JDK AOT cache: the application's Micronaut version has no 'load' training mode (micronaut.application.training.mode), " +
+    private static final String STARTS_THE_APPLICATION = "JDK AOT cache: the application's Micronaut version has no LOAD training mode (micronaut.application.training.mode), " +
         "so the training run starts the application while the image is built, where the services it needs to start must be available. " +
-        "Use a Micronaut version that has the 'load' mode to train without starting the application, or set trainingMode = 'start' to confirm this run"
+        "Use a Micronaut version that has the LOAD mode to train without starting the application, or set trainingMode to START to confirm this run"
 
     def "the Dockerfile and the layers are unchanged when the JDK AOT cache is disabled"() {
         given:
@@ -60,7 +60,7 @@ ENTRYPOINT ["java", "-jar", "/home/app/application.jar"]
                 docker {
                     jdkAotCache {
                         enabled = true
-                        trainingMode = "start"
+                        trainingMode = JdkAotCacheTrainingMode.START
                         trainingPaths = ["/hello", "/hello?name=training"]
                     }
                 }
@@ -99,7 +99,7 @@ ENTRYPOINT ["java", "-XX:AOTCache=/home/app/application.aot", "-XX:+UseG1GC", "-
                 docker {
                     jdkAotCache {
                         enabled = true
-                        trainingMode = "start"
+                        trainingMode = JdkAotCacheTrainingMode.START
                         trainingPaths = ["/hello"]
                         trainingTimeout = 300
                         compatibleOopCompression = false
@@ -127,6 +127,8 @@ ENTRYPOINT ["java", "-XX:AOTCache=/home/app/application.aot", "-XX:+UseG1GC", "-
         given:
         settingsFile << "rootProject.name = 'hello-world'"
         kotlinBuildFile << """
+            import io.micronaut.gradle.docker.JdkAotCacheTrainingMode
+
             plugins {
                 id("io.micronaut.minimal.application")
                 id("io.micronaut.docker")
@@ -137,7 +139,7 @@ ENTRYPOINT ["java", "-XX:AOTCache=/home/app/application.aot", "-XX:+UseG1GC", "-
                 docker {
                     jdkAotCache {
                         enabled.set(true)
-                        trainingMode.set("start")
+                        trainingMode.set(JdkAotCacheTrainingMode.START)
                         trainingPaths.set(listOf("/hello"))
                         strictProbes.set(2)
                     }
@@ -199,10 +201,10 @@ ENTRYPOINT ["java", "-XX:AOTCache=/home/app/application.aot", "-XX:+UseG1GC", "-
         result.output.contains(STARTS_THE_APPLICATION) == logged
 
         where:
-        configuration                                         | expected                                                       | logged
-        ''                                                    | '"--port", "8080", "--", "java"'                               | true
-        'trainingMode = "start"'                              | '"--port", "8080", "--", "java"'                               | false
-        'trainingMode = "START"; trainingPaths = ["/hello"]'  | '"--port", "8080", "--path", "/hello", "--", "java"'           | false
+        configuration                                                            | expected                                             | logged
+        ''                                                                       | '"--port", "8080", "--", "java"'                     | true
+        'trainingMode = JdkAotCacheTrainingMode.START'                           | '"--port", "8080", "--", "java"'                     | false
+        'trainingMode = JdkAotCacheTrainingMode.START; trainingPaths = ["/hello"]' | '"--port", "8080", "--path", "/hello", "--", "java"' | false
     }
 
     def "on a Micronaut core that has #core, the training run of [#configuration] gets [#expected]"() {
@@ -228,14 +230,14 @@ ENTRYPOINT ["java", "-XX:AOTCache=/home/app/application.aot", "-XX:+UseG1GC", "-
         lines.count { it.contains("micronaut.application.training") } == 1
 
         where:
-        mode  | configuration                                                              | expected                                                                                                                                        | logged
-        true  | ''                                                                         | '"-Dmicronaut.application.training.mode=load", '                                                                                                | false
-        true  | 'trainingMode = "load"'                                                    | '"-Dmicronaut.application.training.mode=load", '                                                                                                | false
-        true  | 'trainingMode = "start"'                                                   | '"-Dmicronaut.application.training.mode=start", '                                                                                               | false
-        true  | 'trainingMode = "start"; trainingPaths = ["/hello", "/hello?name=training"]' | '"-Dmicronaut.application.training.mode=start", "-Dmicronaut.application.training.warmup.paths=/hello,/hello?name=training", '                  | false
-        false | ''                                                                         | ''                                                                                                                                              | true
-        false | 'trainingMode = "start"'                                                   | ''                                                                                                                                              | false
-        false | 'trainingMode = "start"; trainingPaths = ["/hello", "/hello?name=training"]' | '"-Dmicronaut.application.training.warmup.paths=/hello,/hello?name=training", '                                                                 | false
+        mode  | configuration                                                                                    | expected                                                                                                                       | logged
+        true  | ''                                                                                               | '"-Dmicronaut.application.training.mode=load", '                                                                               | false
+        true  | 'trainingMode = JdkAotCacheTrainingMode.LOAD'                                                    | '"-Dmicronaut.application.training.mode=load", '                                                                               | false
+        true  | 'trainingMode = JdkAotCacheTrainingMode.START'                                                   | '"-Dmicronaut.application.training.mode=start", '                                                                              | false
+        true  | 'trainingMode = JdkAotCacheTrainingMode.START; trainingPaths = ["/hello", "/hello?name=training"]' | '"-Dmicronaut.application.training.mode=start", "-Dmicronaut.application.training.warmup.paths=/hello,/hello?name=training", ' | false
+        false | ''                                                                                               | ''                                                                                                                             | true
+        false | 'trainingMode = JdkAotCacheTrainingMode.START'                                                   | ''                                                                                                                             | false
+        false | 'trainingMode = JdkAotCacheTrainingMode.START; trainingPaths = ["/hello", "/hello?name=training"]' | '"-Dmicronaut.application.training.warmup.paths=/hello,/hello?name=training", '                                                | false
 
         core = mode ? "the switch and the load mode" : "the switch but not the load mode"
     }
@@ -265,7 +267,7 @@ ENTRYPOINT ["java", "-XX:AOTCache=/home/app/application.aot", "-XX:+UseG1GC", "-
         withApplication("""
             micronaut.docker.jdkAotCache {
                 enabled = true
-                trainingMode = "load"
+                trainingMode = JdkAotCacheTrainingMode.LOAD
             }
         """)
         withFakeCore(false)
@@ -274,7 +276,7 @@ ENTRYPOINT ["java", "-XX:AOTCache=/home/app/application.aot", "-XX:+UseG1GC", "-
         def result = fails('dockerfile')
 
         then:
-        result.output.contains("The JDK AOT cache training mode is 'load', but the application's Micronaut version has no such mode")
+        result.output.contains("The JDK AOT cache training mode is LOAD, but the application's Micronaut version has no such mode")
     }
 
     def "is compatible with the configuration cache"() {
@@ -282,7 +284,7 @@ ENTRYPOINT ["java", "-XX:AOTCache=/home/app/application.aot", "-XX:+UseG1GC", "-
         withApplication("""
             micronaut.docker.jdkAotCache {
                 enabled = true
-                trainingMode = "start"
+                trainingMode = JdkAotCacheTrainingMode.START
                 trainingPaths = ["/hello"]
             }
         """)
@@ -305,7 +307,7 @@ ENTRYPOINT ["java", "-XX:AOTCache=/home/app/application.aot", "-XX:+UseG1GC", "-
             micronaut.docker.jdkAotCache {
                 enabled = true
                 if (findProperty("mode")) {
-                    trainingMode = findProperty("mode")
+                    trainingMode = JdkAotCacheTrainingMode.valueOf(findProperty("mode"))
                 }
             }
         """)
@@ -332,7 +334,7 @@ ENTRYPOINT ["java", "-XX:AOTCache=/home/app/application.aot", "-XX:+UseG1GC", "-
 
         when: "an option changes, but not the Dockerfile: the training run of this Micronaut version is the same in the default mode and in the start mode"
         def instructions = dockerfile.text
-        def afterChange = build('dockerfile', '-Pmode=start')
+        def afterChange = build('dockerfile', '-Pmode=START')
 
         then: "the task runs again because the options are a nested input, not only because they are in the instructions"
         afterChange.task(":dockerfile").outcome == TaskOutcome.SUCCESS
@@ -354,17 +356,16 @@ ENTRYPOINT ["java", "-XX:AOTCache=/home/app/application.aot", "-XX:+UseG1GC", "-
         result.output.contains(message)
 
         where:
-        description                                  | configuration                                                                                   | message
-        "the JDK is older than 25"                   | 'tasks.named("dockerfile") { jdkVersion = JavaVersion.VERSION_21 }'                             | "The JDK AOT cache needs JDK 25 or later, but the jdkVersion of the dockerfile task is 21"
-        "the build strategy is not the default"      | 'micronaut.runtime("lambda_provided")'                                                          | "The JDK AOT cache only supports the DEFAULT Docker build strategy, but the dockerfile task uses LAMBDA"
-        "the build adds its own entrypoint"          | 'tasks.named("dockerfile") { entryPoint("java", "-jar", "app.jar") }'                           | "The JDK AOT cache needs the ENTRYPOINT generated by the dockerfile task"
-        "a training path is not absolute"            | 'micronaut.docker.jdkAotCache { trainingMode = "start"; trainingPaths = ["hello"] }'            | "Invalid JDK AOT cache training path 'hello'"
-        "a training path has a comma"                | 'micronaut.docker.jdkAotCache { trainingMode = "start"; trainingPaths = ["/hello?a=1,2"] }'     | "Invalid JDK AOT cache training path '/hello?a=1,2'"
-        "the training mode is unknown"               | 'micronaut.docker.jdkAotCache.trainingMode = "laod"'                                            | "Invalid JDK AOT cache training mode 'laod': the training mode is 'load' or 'start'"
-        "training paths are set without a mode"      | 'micronaut.docker.jdkAotCache.trainingPaths = ["/hello"]'                                       | "The JDK AOT cache training paths are only requested by a training run that starts the application, but the training mode is not set: set trainingMode to 'start', or remove the training paths"
-        "training paths are set in the load mode"    | 'micronaut.docker.jdkAotCache { trainingMode = "load"; trainingPaths = ["/hello"] }'            | "The JDK AOT cache training paths are only requested by a training run that starts the application, but the training mode is 'load': set trainingMode to 'start', or remove the training paths"
-        "the Micronaut version has no load mode"     | 'micronaut.docker.jdkAotCache.trainingMode = "load"'                                            | "The JDK AOT cache training mode is 'load', but the application's Micronaut version has no such mode: it needs a Micronaut Core with the micronaut.application.training.mode property. Upgrade Micronaut, or remove trainingMode to train with a run that starts the application"
-        "the image exposes no port"                  | 'tasks.named("dockerfile") { exposedPorts = [] }'                                               | "the image exposes no port"
+        description                                  | configuration                                                                                                | message
+        "the JDK is older than 25"                   | 'tasks.named("dockerfile") { jdkVersion = JavaVersion.VERSION_21 }'                                          | "The JDK AOT cache needs JDK 25 or later, but the jdkVersion of the dockerfile task is 21"
+        "the build strategy is not the default"      | 'micronaut.runtime("lambda_provided")'                                                                       | "The JDK AOT cache only supports the DEFAULT Docker build strategy, but the dockerfile task uses LAMBDA"
+        "the build adds its own entrypoint"          | 'tasks.named("dockerfile") { entryPoint("java", "-jar", "app.jar") }'                                        | "The JDK AOT cache needs the ENTRYPOINT generated by the dockerfile task"
+        "a training path is not absolute"            | 'micronaut.docker.jdkAotCache { trainingMode = JdkAotCacheTrainingMode.START; trainingPaths = ["hello"] }'        | "Invalid JDK AOT cache training path 'hello'"
+        "a training path has a comma"                | 'micronaut.docker.jdkAotCache { trainingMode = JdkAotCacheTrainingMode.START; trainingPaths = ["/hello?a=1,2"] }' | "Invalid JDK AOT cache training path '/hello?a=1,2'"
+        "training paths are set without a mode"      | 'micronaut.docker.jdkAotCache.trainingPaths = ["/hello"]'                                                    | "The JDK AOT cache training paths are only requested by a training run that starts the application, but the training mode is not set: set trainingMode to START, or remove the training paths"
+        "training paths are set in the load mode"    | 'micronaut.docker.jdkAotCache { trainingMode = JdkAotCacheTrainingMode.LOAD; trainingPaths = ["/hello"] }'   | "The JDK AOT cache training paths are only requested by a training run that starts the application, but the training mode is LOAD: set trainingMode to START, or remove the training paths"
+        "the Micronaut version has no load mode"     | 'micronaut.docker.jdkAotCache.trainingMode = JdkAotCacheTrainingMode.LOAD'                                   | "The JDK AOT cache training mode is LOAD, but the application's Micronaut version has no such mode: it needs a Micronaut Core with the micronaut.application.training.mode property. Upgrade Micronaut, or remove trainingMode to train with a run that starts the application"
+        "the image exposes no port"                  | 'tasks.named("dockerfile") { exposedPorts = [] }'                                                            | "the image exposes no port"
     }
 
     def "fails when a Groovy build script enables the JDK AOT cache on the task only"() {
@@ -407,6 +408,8 @@ ENTRYPOINT ["java", "-XX:AOTCache=/home/app/application.aot", "-XX:+UseG1GC", "-
     private void withApplication(String configuration) {
         settingsFile << "rootProject.name = 'hello-world'"
         buildFile << """
+            import io.micronaut.gradle.docker.JdkAotCacheTrainingMode
+
             plugins {
                 id "io.micronaut.minimal.application"
                 id "io.micronaut.docker"

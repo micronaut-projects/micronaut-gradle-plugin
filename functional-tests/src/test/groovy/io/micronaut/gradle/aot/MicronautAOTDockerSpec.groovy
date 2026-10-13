@@ -38,7 +38,7 @@ ENTRYPOINT ["java", "-jar", "/home/app/application.jar"]
         buildFile << """
             micronaut.docker.jdkAotCache {
                 enabled = true
-                trainingMode = "start"
+                trainingMode = io.micronaut.gradle.docker.JdkAotCacheTrainingMode.START
                 trainingPaths = ["/"]
             }
         """

@@ -43,38 +43,26 @@ public interface JdkAotCacheOptions {
     Property<Boolean> getEnabled();
 
     /**
-     * How the training run trains the cache:
-     * <ul>
-     *     <li>{@code load}: the run loads the bean definitions of the application and the classes they
-     *     name, creates no bean and does not start the application, so it needs none of the services
-     *     the application uses, such as a database. It needs a Micronaut version that has this mode
-     *     ({@code micronaut.application.training.mode}).</li>
-     *     <li>{@code start}: the run starts the application, requests the {@link #getTrainingPaths()
-     *     training paths} and stops it. The cache is more complete, but the application must be able
-     *     to start while the image is built.</li>
-     * </ul>
-     * Not set by default: the training mode is then {@code load} if the application's Micronaut
-     * version has it, and otherwise a run that starts the application.
+     * How the training run trains the cache: {@link JdkAotCacheTrainingMode#LOAD} or
+     * {@link JdkAotCacheTrainingMode#START}. Not set by default: the training mode is then {@code LOAD} if the
+     * application's Micronaut version has it, and {@code START} otherwise.
      *
      * @return the training mode
      */
     @Input
     @Optional
-    Property<String> getTrainingMode();
+    Property<JdkAotCacheTrainingMode> getTrainingMode();
 
     /**
      * The paths that the training run sends a GET request to, in order, once the application is ready.
-     * They need the {@code start} {@link #getTrainingMode() training mode}, because no other run
-     * starts the application. Each path starts with {@code /}. It may carry a query string, but no
-     * whitespace and no comma. Defaults to no path, so a {@code start} training run only starts and
-     * stops the application.
+     * They need the {@link JdkAotCacheTrainingMode#START START} {@link #getTrainingMode() training mode},
+     * because no other run starts the application. Each path starts with {@code /}. It may carry a query
+     * string, but no whitespace and no comma. Defaults to no path, so a {@code START} training run only
+     * starts and stops the application.
      *
-     * <p>A path answered with an error status does not have the same effect in the two training runs
-     * that send the requests. When the application sends them itself, with Micronaut's training run
-     * switch in {@code start} mode, a status from 400 to 499 is logged as a warning and does not fail
-     * the image build, while a status of 500 or above, or a request that gets no response, does.
-     * When the plugin's script sends them, on a Micronaut version without that switch, a status of
-     * 400 or above fails the image build.</p>
+     * <p>A path answered with a status of 500 or above, or not answered, fails the image build. A status
+     * from 400 to 499 is logged as a warning with Micronaut Core 5.3.0 or later, and fails the image
+     * build with older versions.</p>
      *
      * @return the training paths
      */
@@ -83,9 +71,7 @@ public interface JdkAotCacheOptions {
 
     /**
      * The longest time, in seconds, that the training run waits for the application to answer HTTP
-     * requests, or to exit: on its own when the application ends the training run itself, with
-     * Micronaut's training run switch in either training mode, and once it has been asked to stop
-     * otherwise. Defaults to 120.
+     * requests or to exit. Defaults to 120.
      *
      * @return the training timeout, in seconds
      */

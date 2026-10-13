@@ -10,6 +10,7 @@ import java.util.concurrent.TimeUnit
 
 import static io.micronaut.gradle.docker.JdkAotCacheSupport.TrainingRunSupport.MODE
 import static io.micronaut.gradle.docker.JdkAotCacheSupport.TrainingRunSupport.NONE
+import static io.micronaut.gradle.docker.JdkAotCacheTrainingMode.START
 
 /**
  * Runs the training script with the training commands that the plugin generates, and with a stub in place of
@@ -106,8 +107,8 @@ exit 1
         where:
         description                           | mode    | paths  | support | expected
         "load training run"                   | null    | []     | MODE    | ["-Dmicronaut.application.training.enabled=true", "-Dmicronaut.application.training.mode=load"]
-        "training run switch in start mode"   | "start" | ["/a"] | MODE    | ["-Dmicronaut.application.training.enabled=true", "-Dmicronaut.application.training.mode=start", "-Dmicronaut.application.training.warmup.paths=/a"]
-        "training run that the script drives" | "start" | ["/"]  | NONE    | ["-XX:+UseG1GC", "-Xmx64m", "-jar"]
+        "training run switch in start mode"   | START   | ["/a"] | MODE    | ["-Dmicronaut.application.training.enabled=true", "-Dmicronaut.application.training.mode=start", "-Dmicronaut.application.training.warmup.paths=/a"]
+        "training run that the script drives" | START   | ["/"]  | NONE    | ["-XX:+UseG1GC", "-Xmx64m", "-jar"]
     }
 
     private static int freePort() {

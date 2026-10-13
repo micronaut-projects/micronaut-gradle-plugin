@@ -55,20 +55,10 @@ final class JdkAotCacheSupport {
     private static final String TRAINING_ENABLED_PROPERTY = "micronaut.application.training.enabled";
 
     /**
-     * The mode of a training run of Micronaut core, {@link #MODE_LOAD} or {@link #MODE_START}.
+     * The mode of a training run of Micronaut core, {@code load} or {@code start}.
      * A core that has the switch does not necessarily have the mode.
      */
     private static final String TRAINING_MODE_PROPERTY = "micronaut.application.training.mode";
-
-    /**
-     * The training mode that loads the bean definitions and does not start the application.
-     */
-    private static final String MODE_LOAD = "load";
-
-    /**
-     * The training mode that starts the application and requests the training paths.
-     */
-    private static final String MODE_START = "start";
 
     /**
      * The GET paths of the training run switch's warm-up, as a comma-separated list.
@@ -146,12 +136,12 @@ final class JdkAotCacheSupport {
                 throw new GradleException("Invalid JDK AOT cache training path '" + path + "': a training path starts with '/' and contains no whitespace and no comma");
             }
         }
-        String trainingMode = requestedTrainingMode(options);
-        if (!trainingPaths.isEmpty() && !MODE_START.equals(trainingMode)) {
+        JdkAotCacheTrainingMode trainingMode = options.getTrainingMode().getOrNull();
+        if (!trainingPaths.isEmpty() && trainingMode != JdkAotCacheTrainingMode.START) {
             // Whatever the Micronaut version: a build that sends requests says that it starts the application
             throw new GradleException("The JDK AOT cache training paths are only requested by a training run that starts the application, but the training mode is "
-                + (trainingMode == null ? "not set" : "'" + trainingMode + "'")
-                + ": set trainingMode to '" + MODE_START + "', or remove the training paths");
+                + (trainingMode == null ? "not set" : trainingMode)
+                + ": set trainingMode to " + JdkAotCacheTrainingMode.START + ", or remove the training paths");
         }
         if (options.getTrainingTimeout().get() <= 0) {
             throw new GradleException("The JDK AOT cache training timeout must be positive, but it is " + options.getTrainingTimeout().get());
@@ -162,41 +152,22 @@ final class JdkAotCacheSupport {
     }
 
     /**
-     * The training mode that the build asks for.
-     *
-     * @param options the options
-     * @return {@link #MODE_LOAD}, {@link #MODE_START}, or null if the build leaves the choice to the plugin
-     */
-    private static String requestedTrainingMode(JdkAotCacheOptions options) {
-        String trainingMode = options.getTrainingMode().getOrNull();
-        if (trainingMode == null) {
-            return null;
-        }
-        // In any case, as Micronaut core reads its own property
-        String normalized = trainingMode.trim().toLowerCase(Locale.ROOT);
-        if (!MODE_LOAD.equals(normalized) && !MODE_START.equals(normalized)) {
-            throw new GradleException("Invalid JDK AOT cache training mode '" + trainingMode + "': the training mode is '" + MODE_LOAD + "' or '" + MODE_START + "'");
-        }
-        return normalized;
-    }
-
-    /**
      * The mode of the training run. Unless the build asks for one, the run does not start the application
      * if the application's Micronaut core can train without starting it, because an image build has none
      * of the services that an application needs to start.
      *
      * @param options the options
      * @param support what the application's Micronaut core offers for a training run
-     * @return {@link #MODE_LOAD} or {@link #MODE_START}
+     * @return the training mode
      */
-    private static String trainingMode(JdkAotCacheOptions options, TrainingRunSupport support) {
-        String requested = requestedTrainingMode(options);
+    private static JdkAotCacheTrainingMode trainingMode(JdkAotCacheOptions options, TrainingRunSupport support) {
+        JdkAotCacheTrainingMode requested = options.getTrainingMode().getOrNull();
         if (requested == null) {
-            return support == TrainingRunSupport.MODE ? MODE_LOAD : MODE_START;
+            return support == TrainingRunSupport.MODE ? JdkAotCacheTrainingMode.LOAD : JdkAotCacheTrainingMode.START;
         }
-        if (MODE_LOAD.equals(requested) && support != TrainingRunSupport.MODE) {
+        if (requested == JdkAotCacheTrainingMode.LOAD && support != TrainingRunSupport.MODE) {
             // Starting the application instead would do what the build asks not to do
-            throw new GradleException("The JDK AOT cache training mode is '" + MODE_LOAD + "', but the application's Micronaut version has no such mode: "
+            throw new GradleException("The JDK AOT cache training mode is " + JdkAotCacheTrainingMode.LOAD + ", but the application's Micronaut version has no such mode: "
                 + "it needs a Micronaut Core with the " + TRAINING_MODE_PROPERTY + " property. "
                 + "Upgrade Micronaut, or remove trainingMode to train with a run that starts the application");
         }
@@ -213,13 +184,13 @@ final class JdkAotCacheSupport {
      * @param support what the application's Micronaut core offers for a training run
      */
     static void logTrainingMode(Logger logger, JdkAotCacheOptions options, TrainingRunSupport support) {
-        if (MODE_LOAD.equals(trainingMode(options, support))) {
-            logger.info("JDK AOT cache: the training run loads the bean definitions of the application and does not start it ({}={})", TRAINING_MODE_PROPERTY, MODE_LOAD);
-        } else if (requestedTrainingMode(options) == null) {
-            logger.lifecycle("JDK AOT cache: the application's Micronaut version has no '{}' training mode ({}), so the training run starts the application while the image is built, "
+        if (trainingMode(options, support) == JdkAotCacheTrainingMode.LOAD) {
+            logger.info("JDK AOT cache: the training run loads the bean definitions of the application and does not start it ({}={})", TRAINING_MODE_PROPERTY, micronautValue(JdkAotCacheTrainingMode.LOAD));
+        } else if (!options.getTrainingMode().isPresent()) {
+            logger.lifecycle("JDK AOT cache: the application's Micronaut version has no {} training mode ({}), so the training run starts the application while the image is built, "
                     + "where the services it needs to start must be available. "
-                    + "Use a Micronaut version that has the '{}' mode to train without starting the application, or set trainingMode = '{}' to confirm this run",
-                MODE_LOAD, TRAINING_MODE_PROPERTY, MODE_LOAD, MODE_START);
+                    + "Use a Micronaut version that has the {} mode to train without starting the application, or set trainingMode to {} to confirm this run",
+                JdkAotCacheTrainingMode.LOAD, TRAINING_MODE_PROPERTY, JdkAotCacheTrainingMode.LOAD, JdkAotCacheTrainingMode.START);
         } else {
             logger.info("JDK AOT cache: the training run starts the application in the image build");
         }
@@ -241,7 +212,7 @@ final class JdkAotCacheSupport {
                                         List<Integer> exposedPorts,
                                         JdkAotCacheOptions options,
                                         TrainingRunSupport support) {
-        String trainingMode = trainingMode(options, support);
+        JdkAotCacheTrainingMode trainingMode = trainingMode(options, support);
         List<String> trainingPaths = options.getTrainingPaths().get();
         var command = new ArrayList<String>();
         command.add("bash");
@@ -266,7 +237,7 @@ final class JdkAotCacheSupport {
             java.add("-D" + TRAINING_ENABLED_PROPERTY + "=true");
             if (support == TrainingRunSupport.MODE) {
                 // Always given, so that nothing in the configuration of the application selects another mode
-                java.add("-D" + TRAINING_MODE_PROPERTY + "=" + trainingMode);
+                java.add("-D" + TRAINING_MODE_PROPERTY + "=" + micronautValue(trainingMode));
             }
             if (!trainingPaths.isEmpty()) {
                 java.add("-D" + TRAINING_WARMUP_PATHS_PROPERTY + "=" + String.join(",", trainingPaths));
@@ -290,6 +261,16 @@ final class JdkAotCacheSupport {
         command.add("--");
         command.addAll(java);
         return command;
+    }
+
+    /**
+     * The value of a training mode in Micronaut core's property.
+     *
+     * @param mode the training mode
+     * @return the value
+     */
+    private static String micronautValue(JdkAotCacheTrainingMode mode) {
+        return mode.name().toLowerCase(Locale.ROOT);
     }
 
     /**

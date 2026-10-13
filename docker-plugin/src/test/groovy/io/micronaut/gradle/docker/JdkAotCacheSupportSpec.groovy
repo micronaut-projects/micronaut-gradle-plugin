@@ -12,6 +12,8 @@ import java.util.jar.JarOutputStream
 import static io.micronaut.gradle.docker.JdkAotCacheSupport.TrainingRunSupport.MODE
 import static io.micronaut.gradle.docker.JdkAotCacheSupport.TrainingRunSupport.NONE
 import static io.micronaut.gradle.docker.JdkAotCacheSupport.TrainingRunSupport.SWITCH
+import static io.micronaut.gradle.docker.JdkAotCacheTrainingMode.LOAD
+import static io.micronaut.gradle.docker.JdkAotCacheTrainingMode.START
 
 class JdkAotCacheSupportSpec extends Specification {
 
@@ -69,11 +71,8 @@ class JdkAotCacheSupportSpec extends Specification {
         where:
         requested | mode
         null      | "load"
-        "load"    | "load"
-        "LOAD"    | "load"
-        " Load "  | "load"
-        "start"   | "start"
-        "START"   | "start"
+        LOAD      | "load"
+        START     | "start"
     }
 
     def "the #requested mode fails when Micronaut core offers #support"() {
@@ -82,25 +81,14 @@ class JdkAotCacheSupportSpec extends Specification {
 
         then:
         def e = thrown(GradleException)
-        e.message == "The JDK AOT cache training mode is 'load', but the application's Micronaut version has no such mode: " +
+        e.message == "The JDK AOT cache training mode is LOAD, but the application's Micronaut version has no such mode: " +
             "it needs a Micronaut Core with the micronaut.application.training.mode property. " +
             "Upgrade Micronaut, or remove trainingMode to train with a run that starts the application"
 
         where:
         requested | support
-        "load"    | SWITCH
-        "load"    | NONE
-        " LOAD "  | SWITCH
-        " LOAD "  | NONE
-    }
-
-    def "an unknown training mode fails"() {
-        when:
-        JdkAotCacheSupport.validate(options("laod"))
-
-        then:
-        def e = thrown(GradleException)
-        e.message == "Invalid JDK AOT cache training mode 'laod': the training mode is 'load' or 'start'"
+        LOAD      | SWITCH
+        LOAD      | NONE
     }
 
     def "training paths fail when the training mode is #description"() {
@@ -110,13 +98,12 @@ class JdkAotCacheSupportSpec extends Specification {
         then:
         def e = thrown(GradleException)
         e.message == "The JDK AOT cache training paths are only requested by a training run that starts the application, " +
-            "but the training mode is $description: set trainingMode to 'start', or remove the training paths"
+            "but the training mode is $description: set trainingMode to START, or remove the training paths"
 
         where:
         requested | description
         null      | "not set"
-        "load"    | "'load'"
-        "LOAD"    | "'load'"
+        LOAD      | "LOAD"
     }
 
     def "training paths are valid in the start mode, and no path is valid in every mode"() {
@@ -128,10 +115,9 @@ class JdkAotCacheSupportSpec extends Specification {
 
         where:
         requested | paths
-        "start"   | ["/hello", "/books?page=1"]
-        "Start"   | ["/hello"]
-        "start"   | []
-        "load"    | []
+        START     | ["/hello", "/books?page=1"]
+        START     | []
+        LOAD      | []
         null      | []
     }
 
@@ -147,13 +133,13 @@ class JdkAotCacheSupportSpec extends Specification {
         where:
         requested | paths             | ports  | support | expected
         null      | []                | []     | MODE    | ["--training-run", "--", "java", "-Dmicronaut.application.training.enabled=true", "-Dmicronaut.application.training.mode=load"]
-        "load"    | []                | [8080] | MODE    | ["--training-run", "--", "java", "-Dmicronaut.application.training.enabled=true", "-Dmicronaut.application.training.mode=load"]
-        "start"   | []                | []     | MODE    | ["--training-run", "--", "java", "-Dmicronaut.application.training.enabled=true", "-Dmicronaut.application.training.mode=start"]
-        "start"   | ["/a", "/b?c=d"]  | [8080] | MODE    | ["--training-run", "--", "java", "-Dmicronaut.application.training.enabled=true", "-Dmicronaut.application.training.mode=start", "-Dmicronaut.application.training.warmup.paths=/a,/b?c=d"]
+        LOAD      | []                | [8080] | MODE    | ["--training-run", "--", "java", "-Dmicronaut.application.training.enabled=true", "-Dmicronaut.application.training.mode=load"]
+        START     | []                | []     | MODE    | ["--training-run", "--", "java", "-Dmicronaut.application.training.enabled=true", "-Dmicronaut.application.training.mode=start"]
+        START     | ["/a", "/b?c=d"]  | [8080] | MODE    | ["--training-run", "--", "java", "-Dmicronaut.application.training.enabled=true", "-Dmicronaut.application.training.mode=start", "-Dmicronaut.application.training.warmup.paths=/a,/b?c=d"]
         null      | []                | []     | SWITCH  | ["--training-run", "--", "java", "-Dmicronaut.application.training.enabled=true"]
-        "start"   | ["/a"]            | [8080] | SWITCH  | ["--training-run", "--", "java", "-Dmicronaut.application.training.enabled=true", "-Dmicronaut.application.training.warmup.paths=/a"]
+        START     | ["/a"]            | [8080] | SWITCH  | ["--training-run", "--", "java", "-Dmicronaut.application.training.enabled=true", "-Dmicronaut.application.training.warmup.paths=/a"]
         null      | []                | [9090] | NONE    | ["--port", "9090", "--", "java"]
-        "start"   | ["/a", "/b?c=d"]  | [9090] | NONE    | ["--port", "9090", "--path", "/a", "--path", "/b?c=d", "--", "java"]
+        START     | ["/a", "/b?c=d"]  | [9090] | NONE    | ["--port", "9090", "--path", "/a", "--path", "/b?c=d", "--", "java"]
     }
 
     def "a training run that the script drives needs an exposed port"() {
@@ -173,23 +159,22 @@ class JdkAotCacheSupportSpec extends Specification {
         JdkAotCacheSupport.logTrainingMode(logger, options(requested), support)
 
         then:
-        lifecycle * logger.lifecycle("JDK AOT cache: the application's Micronaut version has no '{}' training mode ({}), so the training run starts the application while the image is built, " +
+        lifecycle * logger.lifecycle("JDK AOT cache: the application's Micronaut version has no {} training mode ({}), so the training run starts the application while the image is built, " +
             "where the services it needs to start must be available. " +
-            "Use a Micronaut version that has the '{}' mode to train without starting the application, or set trainingMode = '{}' to confirm this run",
-            "load", "micronaut.application.training.mode", "load", "start")
+            "Use a Micronaut version that has the {} mode to train without starting the application, or set trainingMode to {} to confirm this run",
+            LOAD, "micronaut.application.training.mode", LOAD, START)
         (1 - lifecycle) * logger.info(*_)
         0 * logger._
 
         where:
         requested | support | lifecycle
         null      | MODE    | 0
-        "load"    | MODE    | 0
-        "start"   | MODE    | 0
+        LOAD      | MODE    | 0
+        START     | MODE    | 0
         null      | SWITCH  | 1
-        "start"   | SWITCH  | 0
+        START     | SWITCH  | 0
         null      | NONE    | 1
-        "start"   | NONE    | 0
-        "START"   | NONE    | 0
+        START     | NONE    | 0
     }
 
     def "the training run #message when the build asks for #requested and Micronaut core offers #support"() {
@@ -206,13 +191,13 @@ class JdkAotCacheSupportSpec extends Specification {
         where:
         requested | support | message
         null      | MODE    | "loads the bean definitions of the application and does not start it"
-        " Load "  | MODE    | "loads the bean definitions of the application and does not start it"
-        "start"   | MODE    | "starts the application in the image build"
-        "start"   | SWITCH  | "starts the application in the image build"
-        "START"   | NONE    | "starts the application in the image build"
+        LOAD      | MODE    | "loads the bean definitions of the application and does not start it"
+        START     | MODE    | "starts the application in the image build"
+        START     | SWITCH  | "starts the application in the image build"
+        START     | NONE    | "starts the application in the image build"
     }
 
-    private JdkAotCacheOptions options(String trainingMode, List<String> trainingPaths = []) {
+    private JdkAotCacheOptions options(JdkAotCacheTrainingMode trainingMode, List<String> trainingPaths = []) {
         def options = ProjectBuilder.builder().withProjectDir(dir).build().objects.newInstance(JdkAotCacheOptions)
         JdkAotCacheSupport.configureDefaults(options)
         options.trainingMode.set(trainingMode)

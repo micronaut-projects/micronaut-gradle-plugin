@@ -18,9 +18,9 @@ class JdkAotCacheDockerFunctionalTest extends AbstractFunctionalTest {
 
     private static final String LABEL = "io.micronaut.gradle.jdk-aot-cache-test"
 
-    private static final String STARTS_THE_APPLICATION = "JDK AOT cache: the application's Micronaut version has no 'load' training mode (micronaut.application.training.mode), " +
+    private static final String STARTS_THE_APPLICATION = "JDK AOT cache: the application's Micronaut version has no LOAD training mode (micronaut.application.training.mode), " +
         "so the training run starts the application while the image is built, where the services it needs to start must be available. " +
-        "Use a Micronaut version that has the 'load' mode to train without starting the application, or set trainingMode = 'start' to confirm this run"
+        "Use a Micronaut version that has the LOAD mode to train without starting the application, or set trainingMode to START to confirm this run"
 
     private static final String APPLICATION_DID_NOT_START = "[jdk-aot-cache] This training run starts the application, and its Micronaut version has no 'load' training mode that trains without starting it: " +
         "the services that the application needs to start must be available while the image is built, or a configuration for the training run must replace them"
@@ -325,7 +325,7 @@ class JdkAotCacheDockerFunctionalTest extends AbstractFunctionalTest {
                 docker {
                     jdkAotCache {
                         enabled = true
-                        ${trainingPaths ? "trainingMode = 'start'" : ""}
+                        ${trainingPaths ? "trainingMode = io.micronaut.gradle.docker.JdkAotCacheTrainingMode.START" : ""}
                         trainingPaths = [${trainingPaths.collect { "'$it'" }.join(", ")}]
                         strictProbes = ${options.containsKey("strictProbes") ? options.strictProbes : 3}
                     }
