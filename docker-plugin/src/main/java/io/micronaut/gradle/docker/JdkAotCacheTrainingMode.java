@@ -26,7 +26,7 @@ public enum JdkAotCacheTrainingMode {
     /**
      * The training run loads the bean definitions of the application and the classes they name, without
      * starting the application, so it needs none of the services the application uses, such as a database.
-     * It needs a Micronaut version that has this mode.
+     * It needs Micronaut Core 5.3.0 or later.
      */
     LOAD,
 

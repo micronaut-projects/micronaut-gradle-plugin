@@ -44,8 +44,8 @@ public interface JdkAotCacheOptions {
 
     /**
      * How the training run trains the cache: {@link JdkAotCacheTrainingMode#LOAD} or
-     * {@link JdkAotCacheTrainingMode#START}. Not set by default: the training mode is then {@code LOAD} if the
-     * application's Micronaut version has it, and {@code START} otherwise.
+     * {@link JdkAotCacheTrainingMode#START}. Not set by default: the training mode is then {@code LOAD} with
+     * Micronaut Core 5.3.0 or later, and {@code START} otherwise.
      *
      * @return the training mode
      */

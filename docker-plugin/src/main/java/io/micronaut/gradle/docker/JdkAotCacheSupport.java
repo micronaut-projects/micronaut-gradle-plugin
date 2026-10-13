@@ -168,7 +168,7 @@ final class JdkAotCacheSupport {
         if (requested == JdkAotCacheTrainingMode.LOAD && support != TrainingRunSupport.MODE) {
             // Starting the application instead would do what the build asks not to do
             throw new GradleException("The JDK AOT cache training mode is " + JdkAotCacheTrainingMode.LOAD + ", but the application's Micronaut version has no such mode: "
-                + "it needs a Micronaut Core with the " + TRAINING_MODE_PROPERTY + " property. "
+                + "it needs Micronaut Core 5.3.0 or later. "
                 + "Upgrade Micronaut, or remove trainingMode to train with a run that starts the application");
         }
         return requested;

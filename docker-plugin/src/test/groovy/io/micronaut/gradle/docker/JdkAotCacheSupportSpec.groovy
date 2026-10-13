@@ -82,7 +82,7 @@ class JdkAotCacheSupportSpec extends Specification {
         then:
         def e = thrown(GradleException)
         e.message == "The JDK AOT cache training mode is LOAD, but the application's Micronaut version has no such mode: " +
-            "it needs a Micronaut Core with the micronaut.application.training.mode property. " +
+            "it needs Micronaut Core 5.3.0 or later. " +
             "Upgrade Micronaut, or remove trainingMode to train with a run that starts the application"
 
         where:
