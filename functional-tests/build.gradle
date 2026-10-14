@@ -28,3 +28,10 @@ dependencies {
     testImplementation gradleTestKit()
     testImplementation testFixtures(projects.micronautMinimalPlugin)
 }
+
+tasks.withType(Test).configureEach {
+    // JdkAotCacheDockerFunctionalTest reads them to choose the Micronaut core of its test application
+    ["JDK_AOT_CACHE_TEST_CORE_REPOSITORY", "JDK_AOT_CACHE_TEST_CORE_VERSION"].each { name ->
+        inputs.property(name, providers.environmentVariable(name).orElse(""))
+    }
+}
