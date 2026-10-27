@@ -683,12 +683,16 @@ micronaut {
         strategy = "auto"          // restart, reload or auto
         compile = "embedded"       // embedded, or build-tool to let Gradle compile
         incremental = true
+        bindLoopback = true        // false to reach the application from another machine
         retain("javax.sql.DataSource")
         kotlinCompilerArgs("-P", "plugin:org.jetbrains.kotlin.noarg:annotation=example.NoArg")
         liveReload {
             enabled = true         // adds micronaut-dev-livereload to the development runtime classpath
             port = 35729
             injectScript = true    // false for users of a browser extension
+        }
+        controlPanel {
+            enabled = true         // adds Micronaut Control Panel to the development runtime classpath
         }
     }
 }
@@ -701,17 +705,69 @@ micronaut {
         strategy.set("auto")
         compile.set("embedded")
         incremental.set(true)
+        bindLoopback.set(true)
         retain("javax.sql.DataSource")
         liveReload {
             enabled.set(true)
             port.set(35729)
             injectScript.set(true)
         }
+        controlPanel {
+            enabled.set(true)
+        }
     }
 }
 ----
 
 With `compile = "build-tool"` the launcher compiles nothing and watches `build/micronaut-dev/reload`, which the `mnDevTrigger` task touches after every `classes`: run `./gradlew classes -t` in another terminal, and every completed compilation is applied. Kotlin needs Kotlin 2.3 or later to compile embedded, and a KAPT project cannot; both fall back to Gradle compiling Kotlin, with `mnDevTrigger` telling the launcher. The plugin passes the compiler plugins of the Kotlin compilation and the all-open annotations to the embedded compiler; the options of another compiler plugin go through `kotlinCompilerArgs("-P", "plugin:<id>:<key>=<value>")`. The `run` task and continuous build are unchanged.
+
+==== Listening on localhost
+
+`mnDev` runs the application listening on `localhost` alone, so that a development server, with its development settings and tools, is not reachable from other machines on the network. The `mnDevManifest` task writes `micronaut.dev.bind-loopback=true` to the manifest, and the launcher applies `micronaut.server.host=localhost` as the property source of the lowest precedence: a `micronaut.server.host` the application sets in its configuration files, as the `MICRONAUT_SERVER_HOST` environment variable or as a `-Dmicronaut.server.host` system property wins. `mnTest` is unchanged.
+
+To reach the application from a phone or a container, turn it off in the build with `bindLoopback = false`, or for one invocation with the `micronaut.dev.bind-loopback` Gradle property, which wins over the DSL:
+
+[source, bash]
+----
+$ ./gradlew mnDev -Pmicronaut.dev.bind-loopback=false
+----
+
+==== Micronaut Control Panel
+
+`mnDev` runs the application with https://micronaut-projects.github.io/micronaut-control-panel/latest/guide/[Micronaut Control Panel] at `/control-panel`. The plugin adds `micronaut-control-panel-ui`, `micronaut-control-panel-management` and `micronaut-control-panel-testing` to the `mnDevControlPanel` configuration, together with the panels of the modules the application uses, found in what the `developmentRuntimeClasspath` resolves:
+
+[cols="1,2"]
+|===
+|Panel |Added when the application resolves
+
+|`micronaut-control-panel-datasource`
+|`io.micronaut.sql:micronaut-jdbc`
+
+|`micronaut-control-panel-hibernate`
+|`org.hibernate.orm:hibernate-core`
+
+|`micronaut-control-panel-kafka`
+|`io.micronaut.kafka:micronaut-kafka`
+
+|`micronaut-control-panel-object-storage`
+|`io.micronaut.objectstorage:micronaut-object-storage-core`
+
+|`micronaut-control-panel-cache`
+|`io.micronaut.cache:micronaut-cache-caffeine`, `micronaut-cache-ehcache`, `micronaut-cache-hazelcast` or `micronaut-cache-infinispan`
+|===
+
+The modules have no version: the `mnDevApplicationClasspath` configuration resolves them together with the `developmentRuntimeClasspath`, so the Micronaut platform aligns them with the application's. Only `mnDev` sees them: the `runtimeClasspath`, the `run` task, `mnTest` and what the build packages are unchanged. A module the repositories do not have, or the platform does not manage, is left out.
+
+Control Panel requires Micronaut Platform 5.2.4 or later. On an older platform, or without the Micronaut platform on the `developmentRuntimeClasspath`, `mnDev` does not add it and logs a line saying so.
+
+The `mnDevControlPanelDefaults` task writes the defaults of development mode, `micronaut.control-panel.enabled=true` and `micronaut.control-panel.path=/control-panel`, to `build/micronaut-dev/control-panel/micronaut-control-panel/micronaut-control-panel.properties` on the `mnDev` classpath. Without Micronaut Security it adds `micronaut.control-panel.security.access=ANONYMOUS`; when the `developmentRuntimeClasspath` resolves `io.micronaut.security:micronaut-security`, it sets no access, and the application's security decides who opens the panels. Control Panel reads them as its property source of the lowest precedence: a value the application sets in its configuration files, as an environment variable or as a system property wins.
+
+Turn Control Panel off in the build, or for one invocation with the `micronaut.dev.control-panel` Gradle property, which wins over the DSL:
+
+[source, bash]
+----
+$ ./gradlew mnDev -Pmicronaut.dev.control-panel=false
+----
 
 ==== Test Mode
 
