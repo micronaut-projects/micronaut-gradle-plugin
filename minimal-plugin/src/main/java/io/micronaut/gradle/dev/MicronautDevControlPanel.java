@@ -42,7 +42,10 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Micronaut Control Panel in development mode: the modules {@code mnDev} adds to the development runtime classpath,
@@ -95,6 +98,19 @@ final class MicronautDevControlPanel {
      * The module whose presence on the runtime classpath leaves the access to Control Panel to the application.
      */
     static final String SECURITY_MODULE = "io.micronaut.security:micronaut-security";
+
+    /**
+     * The Micronaut platform, whose resolved version decides whether development mode adds Control Panel.
+     */
+    static final String PLATFORM_MODULE = "io.micronaut.platform:micronaut-platform";
+
+    /**
+     * The oldest Micronaut platform development mode adds Control Panel for: Control Panel requires Micronaut
+     * Platform 5.2.4 or later.
+     */
+    static final String MINIMUM_PLATFORM_VERSION = "5.2.4";
+
+    private static final Pattern NUMERIC_PREFIX = Pattern.compile("^(\\d+(?:\\.\\d+)*)(.*)$");
 
     static {
         Map<String, String> secured = new LinkedHashMap<>();
@@ -170,6 +186,87 @@ final class MicronautDevControlPanel {
         return project.getProviders().gradleProperty(ENABLED_PROPERTY)
             .map(value -> Boolean.parseBoolean(value.trim()))
             .orElse(dev.getControlPanel().getEnabled());
+    }
+
+    /**
+     * Whether development mode adds Control Panel: when it is on, and the development runtime classpath resolves
+     * Micronaut Platform {@value #MINIMUM_PLATFORM_VERSION} or later. Otherwise a single line says why it is left out.
+     *
+     * @param project the project
+     * @param dev the extension
+     * @param runtimeClasspath the application's development runtime classpath
+     * @return the flag
+     */
+    static Provider<Boolean> active(Project project, MicronautDevExtension dev, Configuration runtimeClasspath) {
+        PlatformCheck check = new PlatformCheck(runtimeClasspath);
+        return enabled(project, dev).map(enabled -> Boolean.TRUE.equals(enabled) && check.supported());
+    }
+
+    /**
+     * The version of the Micronaut platform a configuration resolves.
+     *
+     * @param configuration the configuration
+     * @return the version, if the configuration resolves the platform
+     */
+    static Optional<String> platformVersion(Configuration configuration) {
+        for (ResolvedComponentResult component : configuration.getIncoming().getResolutionResult().getAllComponents()) {
+            ModuleVersionIdentifier id = component.getModuleVersion();
+            if (id != null && PLATFORM_MODULE.equals(id.getGroup() + ":" + id.getName())) {
+                return Optional.of(id.getVersion());
+            }
+        }
+        return Optional.empty();
+    }
+
+    /**
+     * Whether a version is the same as or later than another: the numeric segments compared as numbers, a missing
+     * one counting as zero, and a version with a qualifier, such as {@code 5.2.4-SNAPSHOT}, before the release.
+     *
+     * @param version the version
+     * @param minimum the minimum
+     * @return whether the version is at least the minimum
+     */
+    static boolean isAtLeast(String version, String minimum) {
+        Matcher v = NUMERIC_PREFIX.matcher(version.trim());
+        Matcher m = NUMERIC_PREFIX.matcher(minimum.trim());
+        if (!v.matches() || !m.matches()) {
+            return false;
+        }
+        String[] vs = v.group(1).split("\\.");
+        String[] ms = m.group(1).split("\\.");
+        for (int i = 0; i < Math.max(vs.length, ms.length); i++) {
+            long a = i < vs.length ? Long.parseLong(vs[i]) : 0;
+            long b = i < ms.length ? Long.parseLong(ms[i]) : 0;
+            if (a != b) {
+                return a > b;
+            }
+        }
+        return v.group(2).isEmpty() || !m.group(2).isEmpty();
+    }
+
+    /**
+     * Checks the resolved platform once per project, so that the line explaining why Control Panel is left out is
+     * logged once.
+     */
+    private static final class PlatformCheck {
+        private final Configuration runtimeClasspath;
+        private Boolean supported;
+
+        private PlatformCheck(Configuration runtimeClasspath) {
+            this.runtimeClasspath = runtimeClasspath;
+        }
+
+        synchronized boolean supported() {
+            if (supported == null) {
+                Optional<String> version = platformVersion(runtimeClasspath);
+                supported = version.map(v -> isAtLeast(v, MINIMUM_PLATFORM_VERSION)).orElse(false);
+                if (!supported) {
+                    LOGGER.warn("Micronaut Control Panel requires Micronaut Platform {} or later; not adding it (the build uses {})",
+                        MINIMUM_PLATFORM_VERSION, version.orElse("no Micronaut Platform"));
+                }
+            }
+            return supported;
+        }
     }
 
     /**

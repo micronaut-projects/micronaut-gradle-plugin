@@ -147,7 +147,8 @@ public final class MicronautDevSupport {
         dev.getLiveReload().getInjectScript().convention(true);
         dev.getBindLoopback().convention(true);
         dev.getControlPanel().getEnabled().convention(true);
-        Provider<Boolean> controlPanelEnabled = MicronautDevControlPanel.enabled(project, dev);
+        // Control Panel requires Micronaut Platform 5.2.4 or later: on an older platform it is left out
+        Provider<Boolean> controlPanelEnabled = MicronautDevControlPanel.active(project, dev, developmentRuntimeClasspath);
 
         ConfigurationContainer configurations = project.getConfigurations();
         Configuration controlPanel = configurations.create(DEV_CONTROL_PANEL_CONFIGURATION, conf -> {
