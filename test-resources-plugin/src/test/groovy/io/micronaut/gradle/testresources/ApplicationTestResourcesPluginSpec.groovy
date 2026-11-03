@@ -144,7 +144,7 @@ class ApplicationTestResourcesPluginSpec extends AbstractGradleBuildSpec {
         def stopResult = build 'stopTestResourcesService'
 
         then:
-        startResult.task(':internalStartTestResourcesService').outcome == TaskOutcome.SUCCESS
+        startResult.task(':startTestResourcesService').outcome == TaskOutcome.SUCCESS
         secondRun.task(':run').outcome == TaskOutcome.SUCCESS
         standalonePort == reusedPort
         stopResult.task(':stopTestResourcesService').outcome == TaskOutcome.SUCCESS

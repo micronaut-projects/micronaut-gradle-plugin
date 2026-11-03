@@ -1,11 +1,25 @@
 package io.micronaut.gradle.testresources
 
 import io.micronaut.gradle.AbstractGradleBuildSpec
+import org.gradle.util.GradleVersion
 import org.gradle.testkit.runner.TaskOutcome
 import spock.lang.Requires
 
 @Requires({ !os.windows })
 class MultiProjectTestResourcePluginSpec extends AbstractGradleBuildSpec {
+
+    @Requires({ GradleVersion.current() >= GradleVersion.version("9.7") })
+    def "supports the configuration cache with isolated projects"() {
+        withSample("test-resources/isolated-multiproject")
+
+        when:
+        def result = build '--isolated-projects', '--configuration-cache', ':app1:internalStartTestResourcesService', ':app2:help', '--dry-run'
+
+        then:
+        def output = result.output.toLowerCase()
+        output.contains('configuration cache entry stored') ||
+                output.contains('support for using a java agent with testkit builds is not yet implemented with the configuration cache')
+    }
 
     def "can share a test resources service in a multiproject"() {
         withSample("test-resources/multiproject")
