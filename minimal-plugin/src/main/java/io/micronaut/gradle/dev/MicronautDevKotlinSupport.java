@@ -129,7 +129,7 @@ final class MicronautDevKotlinSupport {
         testManifest.configure(task -> {
             // the application's projects alone, as for the Java sources: a project only the tests depend on is not recompiled
             configureMainKotlin(project, dev, task, kotlin, main, allOpen, main.getRuntimeClasspathConfigurationName());
-            task.getTestKotlinSources().from(kotlin.getSourceSets().getByName(SourceSet.TEST_SOURCE_SET_NAME).getKotlin().getSrcDirs());
+            task.getTestKotlinSources().from(MicronautDevSupport.editedDirectories(project, kotlin.getSourceSets().getByName(SourceSet.TEST_SOURCE_SET_NAME).getKotlin().getSrcDirs()));
             TaskProvider<KotlinJvmCompile> compileTestKotlin = project.getTasks().named(test.getCompileTaskName("kotlin"), KotlinJvmCompile.class);
             task.getTestKotlinOutput().set(project.provider(() -> compileTestKotlin.get().getDestinationDirectory().get().getAsFile().getAbsolutePath()));
             task.getTestKotlinOptions().set(project.provider(() -> kotlincOptions(compileTestKotlin.get())));
@@ -146,7 +146,7 @@ final class MicronautDevKotlinSupport {
      * The Kotlin sources of the application and the projects it depends on, found in a classpath, and their compilation.
      */
     private static void configureMainKotlin(Project project, MicronautDevExtension dev, MicronautDevManifest task, KotlinJvmProjectExtension kotlin, SourceSet main, Provider<List<String>> allOpen, String classpath) {
-        task.getKotlinSources().from(kotlin.getSourceSets().getByName(SourceSet.MAIN_SOURCE_SET_NAME).getKotlin().getSrcDirs());
+        task.getKotlinSources().from(MicronautDevSupport.editedDirectories(project, kotlin.getSourceSets().getByName(SourceSet.MAIN_SOURCE_SET_NAME).getKotlin().getSrcDirs()));
         task.getKotlinSources().from(MicronautDevSupport.dependencySourceDirectories(project, project.getConfigurations().getByName(classpath), "kotlin"));
         TaskProvider<KotlinJvmCompile> compileKotlin = project.getTasks().named(main.getCompileTaskName("kotlin"), KotlinJvmCompile.class);
         task.getKotlinOutput().set(project.provider(() -> compileKotlin.get().getDestinationDirectory().get().getAsFile().getAbsolutePath()));
