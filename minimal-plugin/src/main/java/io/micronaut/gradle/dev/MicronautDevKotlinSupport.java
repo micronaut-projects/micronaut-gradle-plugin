@@ -50,6 +50,7 @@ final class MicronautDevKotlinSupport {
     private static final Logger LOGGER = LoggerFactory.getLogger(MicronautDevKotlinSupport.class);
     private static final String KSP_GROUP = "com.google.devtools.ksp";
     private static final String KSP_PLUGIN = "com.google.devtools.ksp";
+    private static final String KOTLIN_COMPILER_ARTIFACT = "io.micronaut:micronaut-inject-kotlin";
     private static final String KSP_PROCESSORS_CONFIGURATION = "mnDevKspProcessors";
 
     private MicronautDevKotlinSupport() {
@@ -101,6 +102,9 @@ final class MicronautDevKotlinSupport {
                 Provider<String> kspVersion = project.provider(() -> kspPluginVersion().orElse(null))
                     .orElse(kspProcessors.getIncoming().getResolutionResult().getRootComponent().map(MicronautDevKotlinSupport::kspVersionOf));
                 compilers.getDependencies().addLater(kspVersion.map(version -> project.getDependencies().create(KSP_GROUP + ":symbol-processing-aa-embeddable:" + version)));
+                // in the launcher's own loader, the parent of the symbol processors': the writers they use reach package-private
+                // members of micronaut-inject, which a class of a child loader cannot
+                compilers.getDependencies().add(project.getDependencies().create(KOTLIN_COMPILER_ARTIFACT));
             }
             manifest.configure(task -> task.getProcessorPath().from(kspProcessors));
         });
