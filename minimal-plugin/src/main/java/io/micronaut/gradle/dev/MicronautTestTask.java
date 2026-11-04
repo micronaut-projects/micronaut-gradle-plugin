@@ -16,10 +16,8 @@
 package io.micronaut.gradle.dev;
 
 import org.gradle.api.provider.ListProperty;
-import org.gradle.api.provider.MapProperty;
 import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.Input;
-import org.gradle.api.tasks.JavaExec;
 import org.gradle.api.tasks.Optional;
 import org.gradle.api.tasks.options.Option;
 import org.gradle.process.CommandLineArgumentProvider;
@@ -37,13 +35,13 @@ import java.util.Map;
  *
  * @since 5.0.3
  */
-public abstract class MicronautTestTask extends JavaExec {
+public abstract class MicronautTestTask extends MicronautDevTask {
 
     /**
-     * Passes the options and the overrides to the launcher.
+     * Passes the options to the launcher.
      */
     public MicronautTestTask() {
-        getJvmArgumentProviders().add(new SystemProperties(getTestFilter(), getOnce(), getOverrides()));
+        getJvmArgumentProviders().add(new SystemProperties(getTestFilter(), getOnce()));
     }
 
     /**
@@ -66,21 +64,13 @@ public abstract class MicronautTestTask extends JavaExec {
     public abstract Property<Boolean> getOnce();
 
     /**
-     * The {@code micronaut.dev.*} system properties of the build, passed on to the launcher.
-     *
-     * @return the properties
+     * The options as system properties of the launcher.
      */
-    @Input
-    public abstract MapProperty<String, String> getOverrides();
-
-    /**
-     * The options and overrides as system properties of the launcher.
-     */
-    private record SystemProperties(ListProperty<String> filter, Property<Boolean> once, MapProperty<String, String> overrides) implements CommandLineArgumentProvider {
+    private record SystemProperties(ListProperty<String> filter, Property<Boolean> once) implements CommandLineArgumentProvider {
 
         @Override
         public Iterable<String> asArguments() {
-            Map<String, String> properties = new LinkedHashMap<>(overrides.get());
+            Map<String, String> properties = new LinkedHashMap<>();
             if (!filter.get().isEmpty()) {
                 properties.put(MicronautDevManifest.PREFIX + "test.filter", String.join(",", filter.get()));
             }
