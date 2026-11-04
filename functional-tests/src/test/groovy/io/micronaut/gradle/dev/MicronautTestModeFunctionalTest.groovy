@@ -2,6 +2,7 @@ package io.micronaut.gradle.dev
 
 import io.micronaut.gradle.fixtures.AbstractEagerConfiguringFunctionalTest
 import org.gradle.testkit.runner.TaskOutcome
+import spock.lang.Requires
 import spock.lang.Shared
 
 class MicronautTestModeFunctionalTest extends AbstractEagerConfiguringFunctionalTest {
@@ -73,6 +74,18 @@ class MicronautTestModeFunctionalTest extends AbstractEagerConfiguringFunctional
         this.manifest()."micronaut.dev.mode" == "test"
     }
 
+    @Requires({ os.macOs })
+    def "mnTest watches through the native macOS service"() {
+        given:
+        writeProject()
+
+        when:
+        def result = build("dependencies", "--configuration", "mnTestRuntime")
+
+        then:
+        result.output.contains("io.micronaut:micronaut-runtime-osx")
+    }
+
     def "mnTest runs the tests once, fails with a failing test, and passes once the application is fixed"() {
         given:
         writeProject()
@@ -83,6 +96,7 @@ class MicronautTestModeFunctionalTest extends AbstractEagerConfiguringFunctional
 
         then:
         failed.task(":mnTest").outcome == TaskOutcome.FAILED
+        !failed.output.contains("A restricted method")
         def failure = file("build/test-results/mnTest/TEST-example.CalculatorTest.xml")
         failure.text.contains("<failure")
         !file("build/test-results/mnTest/TEST-example.GreetingTest.xml").text.contains("<failure")

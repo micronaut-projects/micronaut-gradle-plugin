@@ -18,6 +18,7 @@ package io.micronaut.gradle.dev;
 import io.micronaut.gradle.AttributeUtils;
 import io.micronaut.gradle.MicronautExtension;
 import io.micronaut.gradle.PluginsHelper;
+import org.apache.tools.ant.taskdefs.condition.Os;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.ConfigurationContainer;
@@ -98,6 +99,7 @@ public final class MicronautDevSupport {
     private static final String LAUNCHER_ARTIFACT = "io.micronaut:micronaut-dev";
     private static final String LIVERELOAD_ARTIFACT = "io.micronaut:micronaut-dev-livereload";
     private static final String TEST_REPORT_ARTIFACT = "io.micronaut:micronaut-dev-test-report";
+    private static final String RUNTIME_OSX_ARTIFACT = "io.micronaut:micronaut-runtime-osx";
     private static final String JUNIT_PLATFORM_GROUP = "org.junit.platform";
     /**
      * The usage of the test resources server's settings, which {@code io.micronaut.test-resources} publishes and
@@ -208,6 +210,10 @@ public final class MicronautDevSupport {
             DependencyHandler dependencies = project.getDependencies();
             conf.getDependencies().add(dependencies.create(LAUNCHER_ARTIFACT));
             conf.getDependencies().add(dependencies.create(TEST_REPORT_ARTIFACT));
+            // as developmentOnly has it for mnDev: the tests' classpath does not, and the launcher watches through it on macOS
+            if (Os.isFamily(Os.FAMILY_MAC)) {
+                conf.getDependencies().add(dependencies.create(RUNTIME_OSX_ARTIFACT));
+            }
             conf.getDependencies().addAllLater(dev.getLiveReload().getEnabled().map(enabled ->
                 Boolean.TRUE.equals(enabled) ? List.of(dependencies.create(LIVERELOAD_ARTIFACT)) : List.of()));
             // at the version of the engine API the tests' engines resolved to, which the launcher must match
