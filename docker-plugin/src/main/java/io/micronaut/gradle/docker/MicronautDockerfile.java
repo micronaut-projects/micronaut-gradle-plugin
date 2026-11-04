@@ -16,6 +16,7 @@ import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.Optional;
 import org.gradle.api.tasks.TaskAction;
+import org.gradle.work.DisableCachingByDefault;
 
 import javax.inject.Inject;
 import java.io.IOException;
@@ -24,6 +25,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+@DisableCachingByDefault(because = "Dockerfile generation is inexpensive")
 public abstract class MicronautDockerfile extends Dockerfile implements DockerBuildOptions {
     public static final String DEFAULT_WORKING_DIR = "/home/app";
     public static final String DEFAULT_BASE_IMAGE = "eclipse-temurin:";

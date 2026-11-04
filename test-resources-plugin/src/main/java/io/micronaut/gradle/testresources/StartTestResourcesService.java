@@ -37,6 +37,7 @@ import org.gradle.api.tasks.TaskAction;
 import org.gradle.api.tasks.options.Option;
 import org.gradle.jvm.toolchain.JavaLauncher;
 import org.gradle.process.ExecOperations;
+import org.gradle.work.DisableCachingByDefault;
 import org.gradle.work.Incremental;
 
 import javax.inject.Inject;
@@ -54,6 +55,7 @@ import java.util.List;
  * The test resources server can be started for a single
  * build, for a continuous build, or outlive a single build.
  */
+@DisableCachingByDefault(because = "Starting an external test resources service is not cacheable")
 public abstract class StartTestResourcesService extends DefaultTask {
 
     /**
