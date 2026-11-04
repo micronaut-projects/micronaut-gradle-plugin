@@ -159,6 +159,110 @@ class MicronautDevFunctionalTest extends AbstractEagerConfiguringFunctionalTest 
         reloadable.any { it.contains("common" + File.separator + "build") }
     }
 
+    def "an edit of a project depended on compiles against what that project compiles against"() {
+        given: "projects with dependencies the application's compile classpath and processor path do not hold"
+        settingsFile << """
+            rootProject.name = 'hello-world'
+            include 'lib'
+            include 'common'
+            include 'compile-only'
+        """
+        buildFile << """
+            plugins {
+                id "io.micronaut.application"
+            }
+            micronaut {
+                version "$micronautVersion"
+                runtime "netty"
+            }
+            $repositoriesBlock
+            dependencies {
+                implementation(project(":lib"))
+            }
+            application { mainClass = "example.Application" }
+        """
+        file("lib").mkdirs()
+        file("lib/build.gradle") << """
+            plugins { id "java-library" }
+            $repositoriesBlock
+            dependencies {
+                implementation(project(":common"))
+                implementation("org.apache.commons:commons-lang3:3.17.0")
+                compileOnly(project(":compile-only"))
+                compileOnly("org.jetbrains:annotations:26.0.1")
+                annotationProcessor("org.mapstruct:mapstruct-processor:1.6.3")
+            }
+        """
+        file("common").mkdirs()
+        file("common/build.gradle") << """
+            plugins { id "java-library" }
+            $repositoriesBlock
+            dependencies {
+                implementation("org.apache.commons:commons-text:1.13.0")
+                annotationProcessor("org.immutables:value:2.10.1")
+            }
+        """
+        file("compile-only").mkdirs()
+        file("compile-only/build.gradle") << """
+            plugins { id "java-library" }
+            $repositoriesBlock
+        """
+        writeApplication("java", "src/main/java/example/Application.java", """
+            package example;
+            public class Application {
+                public static void main(String[] args) { }
+            }
+        """)
+        writeApplication("java", "lib/src/main/java/lib/Greeter.java", "package lib; public class Greeter { }")
+        writeApplication("java", "common/src/main/java/common/Greeting.java", "package common; public class Greeting { }")
+        writeApplication("java", "compile-only/src/main/java/provided/Provided.java", "package provided; public class Provided { }")
+
+        when:
+        def result = buildManifest()
+
+        then: "the classpath holds what lib and, through it, common compile against, after the application's own"
+        result.task(":mnDevManifest").outcome == TaskOutcome.SUCCESS
+        def classpath = file("build/micronaut-dev/compile.argfile").readLines()
+        classpath.any { it.contains("commons-lang3-") }
+        classpath.any { it.contains("annotations-26") }
+        classpath.any { it.contains("commons-text-") }
+        classpath.findIndexOf { it.contains("micronaut-inject-") } < classpath.findIndexOf { it.contains("commons-lang3-") }
+
+        and: "the outputs of a project lib alone compiles against are built, for the compilation to read"
+        result.task(":compile-only:compileJava").outcome == TaskOutcome.SUCCESS
+        classpath.any { it.contains("compile-only" + File.separator + "build") }
+
+        and: "the processor path holds their processors, after the application's own"
+        def processors = file("build/micronaut-dev/processors.argfile").readLines()
+        processors.any { it.contains("mapstruct-processor-") }
+        processors.any { it.contains("value-2.10.1") }
+        processors.findIndexOf { it.contains("micronaut-inject-java") } < processors.findIndexOf { it.contains("mapstruct-processor-") }
+
+        and: "the runtime classpath is left as it was"
+        def runtime = file("build/micronaut-dev/runtime.argfile").readLines()
+        !runtime.any { it.contains("annotations-26") || it.contains("mapstruct-processor-") }
+
+        when: "test mode writes its manifest"
+        build("mnTestManifest")
+
+        then: "its compilation of the main sources holds them too"
+        file("build/micronaut-dev/test/compile.argfile").readLines().any { it.contains("commons-lang3-") }
+        file("build/micronaut-dev/test/processors.argfile").readLines().any { it.contains("mapstruct-processor-") }
+
+        when: "the configuration cache stores the manifest task and reuses it"
+        file("build/micronaut-dev").deleteDir()
+        // a daemon, whose JVM the arguments of the fixture open what storing a compile task of these projects needs
+        def stored = configureRunner("mnDevManifest", "--configuration-cache").withDebug(false).build()
+        file("build/micronaut-dev").deleteDir()
+        def reused = configureRunner("mnDevManifest", "--configuration-cache").withDebug(false).build()
+
+        then:
+        stored.output.contains("Configuration cache entry stored")
+        reused.output.contains("Reusing configuration cache")
+        file("build/micronaut-dev/compile.argfile").readLines() == classpath
+        file("build/micronaut-dev/processors.argfile").readLines() == processors
+    }
+
     def "in build-tool mode the classes task touches the trigger the launcher watches"() {
         given:
         settingsFile << "rootProject.name = 'hello-world'"
