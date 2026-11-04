@@ -2,22 +2,14 @@ package io.micronaut.gradle.dev
 
 import io.micronaut.gradle.fixtures.AbstractEagerConfiguringFunctionalTest
 import org.gradle.testkit.runner.TaskOutcome
-import spock.lang.Requires
 import spock.lang.Shared
 
 class MicronautTestModeFunctionalTest extends AbstractEagerConfiguringFunctionalTest {
-
-    // test mode is in micronaut-dev 5.3: until it is released the run needs it in the local repository, and is skipped without
-    private static final String CORE_VERSION = System.getProperty("micronautDevCoreVersion", "5.3.0-SNAPSHOT")
 
     @Shared
     private final String kotlin2Version = System.getProperty("kotlin2Version")
     @Shared
     private final String ksp2Version = System.getProperty("ksp2Version")
-
-    static boolean isTestModeAvailable() {
-        new File(System.getProperty("user.home"), ".m2/repository/io/micronaut/micronaut-dev-test-report/$CORE_VERSION").isDirectory()
-    }
 
     def "the manifest of test mode describes the tests and the mnTest task is registered"() {
         given:
@@ -116,10 +108,8 @@ class MicronautTestModeFunctionalTest extends AbstractEagerConfiguringFunctional
         test."micronaut.dev.livereload.port" == "35802"
     }
 
-    @Requires({ isTestModeAvailable() })
     def "mnTest runs the tests once, fails with a failing test, and passes once the application is fixed"() {
         given:
-        allowMavenLocal = true
         writeProject()
         writeCalculator("a - b")
 
@@ -216,8 +206,9 @@ class MicronautTestModeFunctionalTest extends AbstractEagerConfiguringFunctional
                 $dev
             }
             $repositoriesBlock
+            $DEV_CORE_REPOSITORY
             dependencies {
-                mnTestRuntime(platform("io.micronaut:micronaut-core-bom:$CORE_VERSION"))
+                mnTestRuntime(platform("io.micronaut:micronaut-core-bom:$DEV_CORE_VERSION"))
             }
             application { mainClass = "example.Application" }
         """

@@ -238,6 +238,7 @@ class MicronautDevFunctionalTest extends AbstractEagerConfiguringFunctionalTest 
         options.contains("-java-parameters")
         options.any { it.startsWith("-Xplugin=") && it.contains("allopen") }
         options.contains("plugin:org.jetbrains.kotlin.allopen:annotation=io.micronaut.aop.Around")
+        options.containsAll(["-Amicronaut.processing.module=hello-kotlin", "-Amicronaut.processing.incremental=true"])
         file("build/micronaut-dev/processors.argfile").readLines().any { it.contains("micronaut-inject-kotlin") }
         result.output.contains("org.jetbrains.kotlin:kotlin-build-tools-impl:$kotlin2Version")
         result.output.contains("com.google.devtools.ksp:symbol-processing-aa-embeddable:$ksp2Version")
