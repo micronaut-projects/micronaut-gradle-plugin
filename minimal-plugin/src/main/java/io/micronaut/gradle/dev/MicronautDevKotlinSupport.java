@@ -48,8 +48,12 @@ import java.util.List;
 final class MicronautDevKotlinSupport {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MicronautDevKotlinSupport.class);
+    private static final String KOTLIN_GROUP = "org.jetbrains.kotlin";
+    private static final List<String> COMPILER_MODULE_PREFIXES = List.of("kotlin-build-tools", "kotlin-compiler", "kotlin-daemon", "kotlin-script");
+    private static final List<String> LAUNCH_CONFIGURATIONS = List.of(MicronautDevSupport.DEV_RUNTIME_CONFIGURATION, MicronautDevSupport.TEST_RUNTIME_CONFIGURATION);
     private static final String KSP_GROUP = "com.google.devtools.ksp";
     private static final String KSP_PLUGIN = "com.google.devtools.ksp";
+    private static final String KOTLIN_COMPILER_ARTIFACT = "io.micronaut:micronaut-inject-kotlin";
     private static final String KSP_PROCESSORS_CONFIGURATION = "mnDevKspProcessors";
     private static final String KSP_TEST_PROCESSORS_CONFIGURATION = "mnTestKspProcessors";
 
@@ -58,9 +62,9 @@ final class MicronautDevKotlinSupport {
 
     /**
      * The Kotlin version the embedded compilation needs: the one where the Build Tools API the launcher
-     * uses, {@code KotlinToolchains}, appeared.
+     * uses, {@code BaseCompilationOperation}, appeared.
      */
-    static final String MINIMUM_EMBEDDED_KOTLIN = "2.3.0";
+    static final String MINIMUM_EMBEDDED_KOTLIN = "2.4.0";
 
     static void configure(Project project, MicronautDevExtension dev, TaskProvider<MicronautDevManifest> manifest, TaskProvider<MicronautTestManifest> testManifest, Configuration compilers) {
         project.getPluginManager().withPlugin("org.jetbrains.kotlin.jvm", unused -> {
@@ -84,7 +88,8 @@ final class MicronautDevKotlinSupport {
         String kotlinVersion = KotlinPluginWrapperKt.getKotlinPluginVersion(project);
         boolean embedded = isAtLeast(kotlinVersion, MINIMUM_EMBEDDED_KOTLIN);
         if (embedded) {
-            compilers.getDependencies().add(project.getDependencies().create("org.jetbrains.kotlin:kotlin-build-tools-impl:" + kotlinVersion));
+            compilers.getDependencies().add(project.getDependencies().create(KOTLIN_GROUP + ":kotlin-build-tools-impl:" + kotlinVersion));
+            pinCompiler(project, kotlinVersion);
         } else {
             LOGGER.info("Kotlin {} is older than {}, which the embedded compilation needs: Kotlin sources are compiled by Gradle in development mode", kotlinVersion, MINIMUM_EMBEDDED_KOTLIN);
             manifest.configure(task -> task.getKotlinCompileMode().set("build-tool"));
@@ -103,6 +108,9 @@ final class MicronautDevKotlinSupport {
                 Provider<String> kspVersion = project.provider(() -> kspPluginVersion().orElse(null))
                     .orElse(kspProcessors.getIncoming().getResolutionResult().getRootComponent().map(MicronautDevKotlinSupport::kspVersionOf));
                 compilers.getDependencies().addLater(kspVersion.map(version -> project.getDependencies().create(KSP_GROUP + ":symbol-processing-aa-embeddable:" + version)));
+                // in the launcher's own loader, the parent of the symbol processors': the writers they use reach package-private
+                // members of micronaut-inject, which a class of a child loader cannot
+                compilers.getDependencies().add(project.getDependencies().create(KOTLIN_COMPILER_ARTIFACT));
             }
             manifest.configure(task -> task.getProcessorPath().from(kspProcessors));
             testManifest.configure(task -> task.getProcessorPath().from(kspProcessors));
@@ -157,6 +165,21 @@ final class MicronautDevKotlinSupport {
         task.getKotlinOptions().addAll(dev.getKotlinCompilerArgs());
         // the arguments of the symbol processors, which the launcher passes to KSP as the -A options of the language
         task.getKotlinOptions().addAll(project.provider(() -> kspOptions(project)));
+    }
+
+    /**
+     * Keeps the compiler on the launch classpath at the project's Kotlin version: a platform that manages a later one
+     * would raise it, and the compiler plugins of the compilation, which the options name, are of the project's version
+     * and do not link against another.
+     */
+    private static void pinCompiler(Project project, String kotlinVersion) {
+        project.getConfigurations().matching(conf -> LAUNCH_CONFIGURATIONS.contains(conf.getName())).configureEach(conf ->
+            conf.getResolutionStrategy().eachDependency(details -> {
+                String name = details.getRequested().getName();
+                if (KOTLIN_GROUP.equals(details.getRequested().getGroup()) && COMPILER_MODULE_PREFIXES.stream().anyMatch(name::startsWith)) {
+                    details.useVersion(kotlinVersion);
+                }
+            }));
     }
 
     /**

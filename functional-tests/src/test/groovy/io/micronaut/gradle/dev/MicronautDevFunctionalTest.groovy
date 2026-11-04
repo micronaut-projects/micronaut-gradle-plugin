@@ -10,6 +10,8 @@ class MicronautDevFunctionalTest extends AbstractEagerConfiguringFunctionalTest 
     private final String kotlin2Version = System.getProperty("kotlin2Version")
     @Shared
     private final String ksp2Version = System.getProperty("ksp2Version")
+    // the Kotlin the launcher compiles with, the Build Tools API it uses being of Kotlin 2.4
+    private static final String EMBEDDED_KOTLIN_VERSION = "2.4.10"
 
     def "the manifest describes a Java project and the mnDev task is registered"() {
         given:
@@ -204,9 +206,9 @@ class MicronautDevFunctionalTest extends AbstractEagerConfiguringFunctionalTest 
         settingsFile << "rootProject.name = 'hello-kotlin'"
         buildFile << """
             plugins {
-                id("org.jetbrains.kotlin.jvm") version "$kotlin2Version"
+                id("org.jetbrains.kotlin.jvm") version "$EMBEDDED_KOTLIN_VERSION"
                 id("com.google.devtools.ksp") version "$ksp2Version"
-                id("org.jetbrains.kotlin.plugin.allopen") version "$kotlin2Version"
+                id("org.jetbrains.kotlin.plugin.allopen") version "$EMBEDDED_KOTLIN_VERSION"
                 id "io.micronaut.application"
             }
             group = "example"
@@ -240,8 +242,39 @@ class MicronautDevFunctionalTest extends AbstractEagerConfiguringFunctionalTest 
         options.contains("plugin:org.jetbrains.kotlin.allopen:annotation=io.micronaut.aop.Around")
         options.containsAll(["-Amicronaut.processing.module=hello-kotlin", "-Amicronaut.processing.incremental=true"])
         file("build/micronaut-dev/processors.argfile").readLines().any { it.contains("micronaut-inject-kotlin") }
-        result.output.contains("org.jetbrains.kotlin:kotlin-build-tools-impl:$kotlin2Version")
+        result.output.contains("org.jetbrains.kotlin:kotlin-build-tools-impl:$EMBEDDED_KOTLIN_VERSION")
         result.output.contains("com.google.devtools.ksp:symbol-processing-aa-embeddable:$ksp2Version")
+    }
+
+    def "a project on a Kotlin older than the launcher compiles with has its Kotlin compiled by Gradle"() {
+        given:
+        settingsFile << "rootProject.name = 'hello-kotlin'"
+        buildFile << """
+            plugins {
+                id("org.jetbrains.kotlin.jvm") version "$kotlin2Version"
+                id "io.micronaut.application"
+            }
+            micronaut {
+                version "$micronautVersion"
+                runtime "netty"
+            }
+            $repositoriesBlock
+            application { mainClass = "example.Application" }
+        """
+        writeApplication("kotlin", "src/main/kotlin/example/Application.kt", """
+            package example
+            object Application {
+                @JvmStatic fun main(args: Array<String>) { }
+            }
+        """)
+
+        when:
+        def result = buildManifest("dependencies", "--configuration", "mnDevCompiler")
+
+        then:
+        result.task(":mnDevManifest")?.outcome == TaskOutcome.SUCCESS
+        manifest()."micronaut.dev.compile.kotlin.mode" == "build-tool"
+        !result.output.contains("kotlin-build-tools-impl")
     }
 
     def "a KAPT project has its Kotlin compiled by Gradle"() {
