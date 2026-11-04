@@ -96,6 +96,7 @@ class MicronautDevReloadFunctionalTest extends AbstractFunctionalTest {
         launcher.onExit().get(30, TimeUnit.SECONDS) != null
         processes.every { !it.alive }
         !result.output.contains("Exception in thread")
+        !result.output.contains("A restricted method")
         result.output.contains("Development Mode Active")
         result.output.contains("Development pages: http://localhost:$port/dev?token=")
         portIsFree(port)
