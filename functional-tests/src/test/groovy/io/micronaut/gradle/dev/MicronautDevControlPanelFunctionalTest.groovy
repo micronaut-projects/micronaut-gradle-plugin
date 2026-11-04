@@ -168,6 +168,72 @@ class MicronautDevControlPanelFunctionalTest extends AbstractEagerConfiguringFun
 
     @Requires({ !os.windows })
     @Timeout(value = 5, unit = TimeUnit.MINUTES)
+    def "mnDev fails when the artifact of a module does not resolve"() {
+        given: "a module whose metadata is published without its jar"
+        application('runtimeOnly("example:without-jar:1.0")')
+        publishedWithoutJar("example", "without-jar")
+        localRepository()
+
+        when:
+        def result = fails("mnDevManifest")
+
+        then: "the graph has no unresolved dependency, and the launch is stopped rather than missing the jar"
+        result.output.contains("Could not resolve the classpath of :mnDevManifest")
+        result.output.contains("without-jar-1.0.jar")
+    }
+
+    def "a Control Panel module that does not resolve, or whose artifact does not, is left out"() {
+        given:
+        application('''
+            mnDevControlPanel("io.micronaut.controlpanel:micronaut-control-panel-without-jar:1.0")
+            mnDevControlPanel("io.micronaut.controlpanel:micronaut-control-panel-unpublished:1.0")
+        ''')
+        publishedWithoutJar("io.micronaut.controlpanel", "micronaut-control-panel-without-jar")
+        localRepository()
+
+        when:
+        def result = build("mnDevManifest")
+
+        then:
+        result.task(":mnDevManifest").outcome == TaskOutcome.SUCCESS
+        runtimeClasspath().every { !it.contains("micronaut-control-panel-without-jar") && !it.contains("micronaut-control-panel-unpublished") }
+        runtimeClasspath().any { it.contains("micronaut-control-panel-management-") }
+    }
+
+    def "a module that does not resolve is reported once"() {
+        given:
+        application('runtimeOnly("example:unpublished:1.0")')
+        localRepository()
+
+        when:
+        def result = fails("mnDevManifest")
+
+        then:
+        result.output.contains("Could not resolve the classpath of :mnDevManifest")
+        result.output.substring(result.output.indexOf("* What went wrong"), result.output.indexOf("* Try")).count("Could not find example:unpublished:1.0.") == 1
+    }
+
+    def "an artifact that resolves after a failure is picked up with the configuration cache"() {
+        given:
+        application('runtimeOnly("example:without-jar:1.0")')
+        publishedWithoutJar("example", "without-jar")
+        localRepository()
+
+        when:
+        def failed = fails("mnDevManifest", "--configuration-cache")
+
+        then:
+        failed.output.contains("without-jar-1.0.jar")
+
+        when: "the jar is published"
+        file("local-repository/example/without-jar/1.0/without-jar-1.0.jar").bytes = minimalJar()
+        def result = build("mnDevManifest", "--configuration-cache")
+
+        then:
+        result.task(":mnDevManifest").outcome == TaskOutcome.SUCCESS
+        runtimeClasspath().any { it.contains("without-jar-1.0.jar") }
+    }
+
     def "mnDev serves Control Panel behind the access token of the launch"() {
         given:
         int port
@@ -245,6 +311,36 @@ class MicronautDevControlPanelFunctionalTest extends AbstractEagerConfiguringFun
             }.orElse(false)
         }.forEach { it.destroyForcibly() }
         run?.get(60, TimeUnit.SECONDS)
+    }
+
+    private void publishedWithoutJar(String group, String name) {
+        File directory = file("local-repository/${group.replace('.', '/')}/$name/1.0")
+        directory.mkdirs()
+        new File(directory, "$name-1.0.pom").text = """
+            <project>
+                <modelVersion>4.0.0</modelVersion>
+                <groupId>$group</groupId>
+                <artifactId>$name</artifactId>
+                <version>1.0</version>
+            </project>
+        """.stripIndent().trim()
+    }
+
+    private void localRepository() {
+        buildFile << """
+            repositories {
+                maven { url = uri("local-repository") }
+            }
+        """
+    }
+
+    private static byte[] minimalJar() {
+        def bytes = new ByteArrayOutputStream()
+        new java.util.zip.ZipOutputStream(bytes).withCloseable { zip ->
+            zip.putNextEntry(new java.util.zip.ZipEntry("META-INF/MANIFEST.MF"))
+            zip.closeEntry()
+        }
+        bytes.toByteArray()
     }
 
     private void application(String dependencies = "", String dev = "", String platformVersion = PLATFORM_VERSION) {

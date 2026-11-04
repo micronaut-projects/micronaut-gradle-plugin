@@ -23,7 +23,9 @@ import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.Dependency;
 import org.gradle.api.artifacts.ModuleVersionIdentifier;
 import org.gradle.api.artifacts.component.ComponentSelector;
+import org.gradle.api.artifacts.component.ModuleComponentIdentifier;
 import org.gradle.api.artifacts.component.ModuleComponentSelector;
+import org.gradle.api.artifacts.component.ProjectComponentIdentifier;
 import org.gradle.api.artifacts.dsl.DependencyHandler;
 import org.gradle.api.artifacts.result.DependencyResult;
 import org.gradle.api.artifacts.result.ResolvedComponentResult;
@@ -336,8 +338,9 @@ final class MicronautDevControlPanel {
     }
 
     /**
-     * The dependencies of a configuration that do not resolve, but the Control Panel modules, which development mode
-     * does without: a callable provider, which the configuration cache stores as its value, the descriptions alone.
+     * The dependencies of a configuration that do not resolve, and the artifacts of its modules that do not, but those of
+     * the Control Panel modules, which development mode does without: a callable provider, which the configuration cache
+     * stores as its value, the descriptions alone.
      *
      * @param project the project
      * @param configuration the configuration, resolved leniently by the task
@@ -347,6 +350,7 @@ final class MicronautDevControlPanel {
         return project.provider(() -> {
             List<String> failures = new ArrayList<>();
             List<String> skipped = new ArrayList<>();
+            Set<String> graphFailures = new HashSet<>();
             ArrayDeque<ResolvedComponentResult> queue = new ArrayDeque<>();
             Set<Object> seen = new HashSet<>();
             queue.add(configuration.getIncoming().getResolutionResult().getRootComponent().get());
@@ -358,6 +362,7 @@ final class MicronautDevControlPanel {
                 for (DependencyResult dependency : component.getDependencies()) {
                     if (dependency instanceof UnresolvedDependencyResult unresolved) {
                         String name = unresolved.getAttempted().getDisplayName();
+                        graphFailures.add(firstLine(unresolved.getFailure()));
                         if (isControlPanel(unresolved.getAttempted())) {
                             skipped.add(name);
                         } else {
@@ -368,6 +373,13 @@ final class MicronautDevControlPanel {
                     }
                 }
             }
+            // a module whose metadata resolves and whose artifact does not is no unresolved dependency of the graph; the
+            // view reports those too, with what requires them after the first line
+            for (Throwable failure : artifactFailures(configuration)) {
+                if (!graphFailures.contains(firstLine(failure))) {
+                    failures.add(failure.getMessage());
+                }
+            }
             if (!skipped.isEmpty()) {
                 LOGGER.info("Micronaut Control Panel modules not available for {}, development mode runs without them: {}", configuration.getName(), skipped);
             }
@@ -376,8 +388,26 @@ final class MicronautDevControlPanel {
     }
 
     /**
-     * Fails the task when a dependency of its classpath does not resolve, unless it is a Control Panel module: the
-     * classpaths of development mode are resolved leniently so that Control Panel modules may be missing.
+     * The failures of a lenient view of a configuration's modules, but the Control Panel modules: those of its
+     * dependencies that do not resolve, whichever they are, and those of the artifacts of the modules it selects.
+     */
+    private static Collection<Throwable> artifactFailures(Configuration configuration) {
+        return configuration.getIncoming().artifactView(view -> {
+            view.componentFilter(id -> !(id instanceof ProjectComponentIdentifier)
+                && !(id instanceof ModuleComponentIdentifier module && GROUP.equals(module.getGroup())));
+            view.lenient(true);
+        }).getArtifacts().getFailures();
+    }
+
+    private static String firstLine(Throwable failure) {
+        String message = String.valueOf(failure.getMessage());
+        int end = message.indexOf('\n');
+        return end < 0 ? message : message.substring(0, end);
+    }
+
+    /**
+     * Fails the task when a dependency or artifact of its classpath does not resolve, unless it is a Control Panel
+     * module's: the classpaths of development mode are resolved leniently so that Control Panel modules may be missing.
      */
     static final class VerifyResolution implements Action<Task> {
         private final Provider<List<String>> failures;

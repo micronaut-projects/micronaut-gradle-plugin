@@ -452,6 +452,8 @@ public final class MicronautDevSupport {
         // the launcher itself is on the JVM's classpath and needs no naming here
         task.getRuntimeClasspath().from(modules);
         task.getCompileClasspath().from(main.getCompileClasspath());
+        // what an edit of a project depended on compiles against, after the application's own
+        task.getCompileClasspath().from(dependencyPaths(project, sources, SourceSet::getCompileClasspath));
         task.getJavaSources().from(editedDirectories(project, main.getJava().getSrcDirs()));
         task.getResourceSources().from(editedDirectories(project, main.getResources().getSrcDirs()));
         // the sources of the projects depended on too: their outputs are reloadable, so an edit there compiles
@@ -462,6 +464,7 @@ public final class MicronautDevSupport {
         // and mnDev or mnTest builds the classes before it runs
         TaskProvider<JavaCompile> compileJava = project.getTasks().named(main.getCompileJavaTaskName(), JavaCompile.class);
         task.getProcessorPath().from(project.provider(() -> compileJava.get().getOptions().getAnnotationProcessorPath() != null ? compileJava.get().getOptions().getAnnotationProcessorPath() : project.files()));
+        task.getProcessorPath().from(dependencyPaths(project, sources, SourceSet::getAnnotationProcessorPath));
         task.getJavaOutput().set(project.provider(() -> compileJava.get().getDestinationDirectory().get().getAsFile().getAbsolutePath()));
         task.getJavaGeneratedSources().set(project.provider(() -> {
             File generated = compileJava.get().getOptions().getGeneratedSourceOutputDirectory().getAsFile().getOrNull();
@@ -574,32 +577,9 @@ public final class MicronautDevSupport {
         // a callable provider, evaluated when the configuration cache is stored, keeps only the directories: a
         // transform of the resolution result would be stored with the project it reads
         return project.provider(() -> {
-            org.gradle.api.artifacts.result.ResolvedComponentResult root = configuration.getIncoming().getResolutionResult().getRootComponent().get();
             List<File> directories = new ArrayList<>();
-            java.util.Set<String> seen = new java.util.HashSet<>();
-            java.util.ArrayDeque<org.gradle.api.artifacts.result.ResolvedComponentResult> queue = new java.util.ArrayDeque<>();
-            queue.add(root);
-            while (!queue.isEmpty()) {
-                org.gradle.api.artifacts.result.ResolvedComponentResult component = queue.poll();
-                for (org.gradle.api.artifacts.result.DependencyResult dependency : component.getDependencies()) {
-                    if (!(dependency instanceof org.gradle.api.artifacts.result.ResolvedDependencyResult resolved)) {
-                        continue;
-                    }
-                    if (!isCodeVariant(resolved.getResolvedVariant().getAttributes())) {
-                        // a project depended on for something else than its code, such as the provider of the test
-                        // resources server, whose settings a consumer resolves
-                        continue;
-                    }
-                    org.gradle.api.artifacts.result.ResolvedComponentResult selected = resolved.getSelected();
-                    if (selected.getId() instanceof ProjectComponentIdentifier id && seen.add(id.getProjectPath())) {
-                        Project dependencyProject = project.findProject(id.getProjectPath());
-                        // a project of an included build shares no path with this build's: the name tells them apart
-                        if (dependencyProject != null && dependencyProject != project && dependencyProject.getName().equals(id.getProjectName())) {
-                            directories.addAll(mainSourceDirectories(dependencyProject, kind));
-                        }
-                        queue.add(selected);
-                    }
-                }
+            for (Project dependencyProject : dependencyProjects(project, configuration)) {
+                directories.addAll(mainSourceDirectories(dependencyProject, kind));
             }
             return directories;
         });
@@ -618,9 +598,67 @@ public final class MicronautDevSupport {
         return true;
     }
 
-    private static java.util.Set<File> mainSourceDirectories(Project project, String kind) {
+    /**
+     * A path of the main source set of every project of this build the configuration reaches, transitively: the
+     * embedded compilation compiles the sources of those projects too, with one classpath and one processor path, and
+     * they may use what the application's own do not hold.
+     *
+     * @param project the project
+     * @param configuration the configuration whose graph is walked
+     * @param path the path of a source set
+     * @return the paths
+     */
+    private static Provider<List<FileCollection>> dependencyPaths(Project project, Configuration configuration, java.util.function.Function<SourceSet, FileCollection> path) {
+        return project.provider(() -> {
+            List<FileCollection> paths = new ArrayList<>();
+            for (Project dependencyProject : dependencyProjects(project, configuration)) {
+                SourceSet main = mainSourceSet(dependencyProject);
+                if (main != null) {
+                    paths.add(path.apply(main));
+                }
+            }
+            return paths;
+        });
+    }
+
+    private static List<Project> dependencyProjects(Project project, Configuration configuration) {
+        org.gradle.api.artifacts.result.ResolvedComponentResult root = configuration.getIncoming().getResolutionResult().getRootComponent().get();
+        List<Project> projects = new ArrayList<>();
+        java.util.Set<String> seen = new java.util.HashSet<>();
+        java.util.ArrayDeque<org.gradle.api.artifacts.result.ResolvedComponentResult> queue = new java.util.ArrayDeque<>();
+        queue.add(root);
+        while (!queue.isEmpty()) {
+            org.gradle.api.artifacts.result.ResolvedComponentResult component = queue.poll();
+            for (org.gradle.api.artifacts.result.DependencyResult dependency : component.getDependencies()) {
+                if (!(dependency instanceof org.gradle.api.artifacts.result.ResolvedDependencyResult resolved)) {
+                    continue;
+                }
+                if (!isCodeVariant(resolved.getResolvedVariant().getAttributes())) {
+                    // a project depended on for something else than its code, such as the provider of the test
+                    // resources server, whose settings a consumer resolves
+                    continue;
+                }
+                org.gradle.api.artifacts.result.ResolvedComponentResult selected = resolved.getSelected();
+                if (selected.getId() instanceof ProjectComponentIdentifier id && seen.add(id.getProjectPath())) {
+                    Project dependencyProject = project.findProject(id.getProjectPath());
+                    // a project of an included build shares no path with this build's: the name tells them apart
+                    if (dependencyProject != null && dependencyProject != project && dependencyProject.getName().equals(id.getProjectName())) {
+                        projects.add(dependencyProject);
+                    }
+                    queue.add(selected);
+                }
+            }
+        }
+        return projects;
+    }
+
+    private static SourceSet mainSourceSet(Project project) {
         SourceSetContainer sourceSets = project.getExtensions().findByType(SourceSetContainer.class);
-        SourceSet main = sourceSets == null ? null : sourceSets.findByName(SourceSet.MAIN_SOURCE_SET_NAME);
+        return sourceSets == null ? null : sourceSets.findByName(SourceSet.MAIN_SOURCE_SET_NAME);
+    }
+
+    private static java.util.Set<File> mainSourceDirectories(Project project, String kind) {
+        SourceSet main = mainSourceSet(project);
         if (main == null) {
             return java.util.Set.of();
         }
