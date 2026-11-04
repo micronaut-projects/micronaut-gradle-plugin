@@ -135,6 +135,7 @@ public final class MicronautDevSupport {
      * {@code io.micronaut.test-resources-consumer} resolves on the development and test runtime classpaths.
      */
     private static final String TEST_RESOURCES_USAGE = "micronaut.test.resources";
+    private static final String GROOVY_COMPILER_ARTIFACT = "io.micronaut:micronaut-inject-groovy";
     private static final String MANIFEST_DIRECTORY = "micronaut-dev";
     private static final String TEST_MANIFEST_DIRECTORY = MANIFEST_DIRECTORY + "/test";
     private static final String TRIGGER_FILE_NAME = "reload";
@@ -199,6 +200,9 @@ public final class MicronautDevSupport {
             conf.setCanBeResolved(true);
             conf.setDescription("The compilers the embedded compilation of development mode needs, at the project's versions");
         });
+        // in the launcher's own loader, the parent of the embedded compilation's: the writers of the AST transformations
+        // reach package-private members of micronaut-inject, which a class of a child loader cannot
+        project.getPluginManager().withPlugin("groovy", unused -> compilers.getDependencies().add(project.getDependencies().create(GROOVY_COMPILER_ARTIFACT)));
         Configuration devRuntime = configurations.create(DEV_RUNTIME_CONFIGURATION, conf -> {
             conf.setCanBeConsumed(false);
             conf.setCanBeResolved(true);
