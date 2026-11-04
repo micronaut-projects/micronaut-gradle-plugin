@@ -2,6 +2,16 @@ package io.micronaut.gradle.dev
 
 import io.micronaut.gradle.fixtures.AbstractEagerConfiguringFunctionalTest
 import org.gradle.testkit.runner.TaskOutcome
+import org.gradle.testkit.runner.UnexpectedBuildFailure
+import spock.lang.Requires
+import spock.lang.Timeout
+
+import java.net.http.HttpClient
+import java.net.http.HttpRequest
+import java.net.http.HttpResponse
+import java.time.Duration
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.TimeUnit
 
 class MicronautDevControlPanelFunctionalTest extends AbstractEagerConfiguringFunctionalTest {
 
@@ -156,6 +166,87 @@ class MicronautDevControlPanelFunctionalTest extends AbstractEagerConfiguringFun
         manifest()."micronaut.dev.bind-loopback" == "false"
     }
 
+    @Requires({ !os.windows })
+    @Timeout(value = 5, unit = TimeUnit.MINUTES)
+    def "mnDev serves Control Panel behind the access token of the launch"() {
+        given:
+        int port
+        try (ServerSocket socket = new ServerSocket(0)) {
+            port = socket.localPort
+        }
+        application('runtimeOnly("ch.qos.logback:logback-classic"); runtimeOnly("io.micronaut:micronaut-jackson-databind")', """
+            dev {
+                liveReload {
+                    enabled = false
+                }
+            }
+        """)
+        // the application on the core that has development mode, with what the platform gives it
+        buildFile << """
+            $DEV_CORE_REPOSITORY
+            configurations.configureEach {
+                resolutionStrategy.eachDependency {
+                    if (requested.group == "io.micronaut") {
+                        useVersion("$DEV_CORE_VERSION")
+                    }
+                }
+            }
+        """
+        file("src/main/resources").mkdirs()
+        file("src/main/resources/application.properties").text = "micronaut.server.port=$port\n"
+        file("src/main/java/example/Application.java").text = """
+            package example;
+            import io.micronaut.runtime.Micronaut;
+            public class Application {
+                public static void main(String[] args) {
+                    Micronaut.run(Application.class, args);
+                }
+            }
+        """.stripIndent()
+        def output = new StringWriter()
+        def forwarded = new Writer() {
+            void write(char[] chars, int off, int len) { synchronized (output) { output.write(chars, off, len) } }
+            void flush() { }
+            void close() { }
+        }
+        def text = { synchronized (output) { return output.toString() } }
+
+        when:
+        def run = CompletableFuture.supplyAsync {
+            try {
+                configureRunner("mnDev").forwardStdOutput(forwarded).run()
+            } catch (UnexpectedBuildFailure failure) {
+                failure.buildResult
+            }
+        }
+        def link = null
+        long deadline = System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(3)
+        while (link == null && !run.done && System.currentTimeMillis() < deadline) {
+            def matcher = text() =~ /Development pages: (\S+)\?token=(\S+)/
+            link = matcher.find() ? [matcher.group(1), matcher.group(2)] : null
+            Thread.sleep(250)
+        }
+        if (link == null) {
+            throw new AssertionError("mnDev logged no link to the development pages:\n" + text())
+        }
+
+        then: "the startup note links to Control Panel, on localhost, with the token"
+        link[0] == "http://localhost:$port/control-panel".toString()
+
+        and: "the panels answer the token, and nothing else"
+        status("http://localhost:$port/control-panel", [:]) == 401
+        status("http://localhost:$port/control-panel", ["X-Micronaut-Dev-Token": link[1]]) == 200
+        status("http://127.0.0.1:$port/control-panel", ["X-Micronaut-Dev-Token": link[1]]) == 200
+
+        cleanup:
+        ProcessHandle.current().descendants().filter { process ->
+            process.info().arguments().map { arguments ->
+                arguments.any { it.contains("MicronautDevMain") } && arguments.any { it.contains(baseDir.fileName.toString()) }
+            }.orElse(false)
+        }.forEach { it.destroyForcibly() }
+        run?.get(60, TimeUnit.SECONDS)
+    }
+
     private void application(String dependencies = "", String dev = "", String platformVersion = PLATFORM_VERSION) {
         settingsFile << "rootProject.name = 'hello-world'"
         buildFile << """
@@ -181,6 +272,12 @@ class MicronautDevControlPanelFunctionalTest extends AbstractEagerConfiguringFun
                 public static void main(String[] args) { }
             }
         """.stripIndent()
+    }
+
+    private static int status(String url, Map<String, String> headers) {
+        def builder = HttpRequest.newBuilder(URI.create(url)).timeout(Duration.ofSeconds(30))
+        headers.each { name, value -> builder.header(name, value) }
+        HttpClient.newHttpClient().send(builder.build(), HttpResponse.BodyHandlers.discarding()).statusCode()
     }
 
     private List<String> runtimeClasspath() {
