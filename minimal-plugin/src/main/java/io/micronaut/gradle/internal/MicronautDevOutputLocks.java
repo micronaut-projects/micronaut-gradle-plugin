@@ -34,6 +34,7 @@ import java.io.UncheckedIOException;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.BasicFileAttributes;
@@ -41,7 +42,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -145,16 +145,27 @@ public abstract class MicronautDevOutputLocks implements BuildService<BuildServi
 
     private static Held open(Path file) {
         try {
-            Path parent = file.getParent();
-            if (parent != null) {
-                Files.createDirectories(parent);
-            }
             boolean waited = false;
             while (true) {
-                FileChannel channel = FileChannel.open(file, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+                Path parent = file.getParent();
+                if (parent != null) {
+                    Files.createDirectories(parent);
+                }
+                // the identity on both sides of the open: a clean between them replaces the file at the path
+                Object before = identity(file);
+                FileChannel channel;
                 try {
-                    // the identity of the file opened, read before the wait: a clean meanwhile replaces the file at the path
-                    Object opened = fileKey(file);
+                    channel = FileChannel.open(file, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+                } catch (NoSuchFileException e) {
+                    // its directory was deleted while it was opened
+                    continue;
+                }
+                try {
+                    Object opened = identity(file);
+                    if (opened == null || (before != null && !before.equals(opened))) {
+                        channel.close();
+                        continue;
+                    }
                     FileLock taken = channel.tryLock();
                     if (taken == null) {
                         if (!waited) {
@@ -163,15 +174,10 @@ public abstract class MicronautDevOutputLocks implements BuildService<BuildServi
                         }
                         channel.lock();
                     }
-                    Object locked = fileKey(file);
-                    if (locked != null && Objects.equals(opened, locked)) {
-                        return new Held(channel, locked);
+                    // a clean while waiting deletes the file locked: the lock of an unlinked file excludes nobody
+                    if (opened.equals(identity(file))) {
+                        return new Held(channel, opened);
                     }
-                    if (opened == null && locked == null && Files.exists(file)) {
-                        // a file system without file identities: the path is all there is to check
-                        return new Held(channel, null);
-                    }
-                    // the file locked is no longer the one at the path: lock that one instead
                     channel.close();
                 } catch (IOException | RuntimeException e) {
                     channel.close();
@@ -183,24 +189,28 @@ public abstract class MicronautDevOutputLocks implements BuildService<BuildServi
         }
     }
 
-    private static Object fileKey(Path file) {
+    /**
+     * The identity of the file at a path: its file key, or where the file system has none, as on Windows, its creation
+     * time, which a file created again at the path does not share.
+     *
+     * @return the identity, null when there is no file
+     */
+    private static Object identity(Path file) {
         try {
-            return Files.readAttributes(file, BasicFileAttributes.class).fileKey();
+            BasicFileAttributes attributes = Files.readAttributes(file, BasicFileAttributes.class);
+            return attributes.fileKey() != null ? attributes.fileKey() : attributes.creationTime();
         } catch (IOException e) {
             return null;
         }
     }
 
     /**
-     * A lock held, with the identity of the file it locks where the file system has one.
+     * A lock held, with the identity of the file it locks.
      */
     private record Held(FileChannel channel, Object key) {
 
         boolean isAt(Path file) {
-            if (!Files.exists(file)) {
-                return false;
-            }
-            return key == null || Objects.equals(key, fileKey(file));
+            return key.equals(identity(file));
         }
 
         void release(Path file) {
