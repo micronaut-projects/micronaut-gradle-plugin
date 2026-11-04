@@ -5,6 +5,9 @@ import org.gradle.testkit.runner.TaskOutcome
 
 class MicronautDevControlPanelFunctionalTest extends AbstractEagerConfiguringFunctionalTest {
 
+    // Control Panel requires Micronaut Platform 5.2.4 or later, which manages Control Panel 2.2.1
+    private static final String PLATFORM_VERSION = "5.2.4"
+
     def "mnDev adds Micronaut Control Panel with its development defaults, and the production classpath is unchanged"() {
         given:
         application()
@@ -15,9 +18,10 @@ class MicronautDevControlPanelFunctionalTest extends AbstractEagerConfiguringFun
         then:
         result.task(":mnDevManifest").outcome == TaskOutcome.SUCCESS
         def runtime = runtimeClasspath()
-        runtime.any { it.contains("micronaut-control-panel-ui-") }
-        runtime.any { it.contains("micronaut-control-panel-management-") }
+        runtime.any { it.contains("micronaut-control-panel-ui-2.2.1.jar") }
+        runtime.any { it.contains("micronaut-control-panel-management-2.2.1.jar") }
         runtime.every { !it.contains("micronaut-control-panel-kafka-") }
+        !result.output.contains("Micronaut Control Panel requires Micronaut Platform")
         runtime.any { it.endsWith("micronaut-dev" + File.separator + "control-panel") }
 
         and: "the defaults are the property source Control Panel reads with the lowest precedence"
@@ -42,6 +46,21 @@ class MicronautDevControlPanelFunctionalTest extends AbstractEagerConfiguringFun
         stored.output.contains("Configuration cache entry stored")
         reused.output.contains("Reusing configuration cache")
         runtimeClasspath().any { it.contains("micronaut-control-panel-management-") }
+    }
+
+    def "Control Panel is not added on a Micronaut Platform older than 5.2.4"() {
+        given:
+        application("", "", "5.2.3")
+
+        when:
+        def result = build("mnDevManifest", "dependencies", "--configuration", "mnDevControlPanel")
+
+        then:
+        result.task(":mnDevManifest").outcome == TaskOutcome.SUCCESS
+        result.output.count("Micronaut Control Panel requires Micronaut Platform 5.2.4 or later; not adding it (the build uses 5.2.3)") == 1
+        runtimeClasspath().every { !it.contains("micronaut-control-panel") }
+        result.output.contains("No dependencies")
+        !defaultsFile().exists()
     }
 
     def "the Kafka panel is added for an application that uses Micronaut Kafka"() {
@@ -137,14 +156,14 @@ class MicronautDevControlPanelFunctionalTest extends AbstractEagerConfiguringFun
         manifest()."micronaut.dev.bind-loopback" == "false"
     }
 
-    private void application(String dependencies = "", String dev = "") {
+    private void application(String dependencies = "", String dev = "", String platformVersion = PLATFORM_VERSION) {
         settingsFile << "rootProject.name = 'hello-world'"
         buildFile << """
             plugins {
                 id "io.micronaut.application"
             }
             micronaut {
-                version "$micronautVersion"
+                version "$platformVersion"
                 runtime "netty"
                 $dev
             }

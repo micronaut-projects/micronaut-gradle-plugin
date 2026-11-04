@@ -758,6 +758,8 @@ $ ./gradlew mnDev -Pmicronaut.dev.bind-loopback=false
 
 The modules have no version: the `mnDevApplicationClasspath` configuration resolves them together with the `developmentRuntimeClasspath`, so the Micronaut platform aligns them with the application's. Only `mnDev` sees them: the `runtimeClasspath`, the `run` task, `mnTest` and what the build packages are unchanged. A module the repositories do not have, or the platform does not manage, is left out.
 
+Control Panel requires Micronaut Platform 5.2.4 or later. On an older platform, or without the Micronaut platform on the `developmentRuntimeClasspath`, `mnDev` does not add it and logs a line saying so.
+
 The `mnDevControlPanelDefaults` task writes the defaults of development mode, `micronaut.control-panel.enabled=true` and `micronaut.control-panel.path=/control-panel`, to `build/micronaut-dev/control-panel/micronaut-control-panel/micronaut-control-panel.properties` on the `mnDev` classpath. Without Micronaut Security it adds `micronaut.control-panel.security.access=ANONYMOUS`; when the `developmentRuntimeClasspath` resolves `io.micronaut.security:micronaut-security`, it sets no access, and the application's security decides who opens the panels. Control Panel reads them as its property source of the lowest precedence: a value the application sets in its configuration files, as an environment variable or as a system property wins.
 
 Turn Control Panel off in the build, or for one invocation with the `micronaut.dev.control-panel` Gradle property, which wins over the DSL:

@@ -81,6 +81,25 @@ class MicronautDevControlPanelSpec extends Specification {
         dependencies.every { it.version == null }
     }
 
+    def "Control Panel requires Micronaut Platform 5.2.4 or later"() {
+        expect:
+        MicronautDevControlPanel.isAtLeast(version, MicronautDevControlPanel.MINIMUM_PLATFORM_VERSION) == supported
+
+        where:
+        version          | supported
+        "5.2.4"          | true
+        "5.2.10"         | true
+        "5.3.0"          | true
+        "5.3.0-M1"       | true
+        "6.0.0"          | true
+        "5.2.4.1"        | true
+        "5.2.3"          | false
+        "5.2.4-SNAPSHOT" | false
+        "5.1.9"          | false
+        "4.10.0"         | false
+        "latest"         | false
+    }
+
     def "the DSL turns Control Panel off"() {
         given:
         def project = ProjectBuilder.builder().build()
