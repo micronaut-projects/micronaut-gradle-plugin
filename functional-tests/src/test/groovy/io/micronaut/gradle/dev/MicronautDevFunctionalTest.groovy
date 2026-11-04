@@ -242,6 +242,13 @@ class MicronautDevFunctionalTest extends AbstractEagerConfiguringFunctionalTest 
         def runtime = file("build/micronaut-dev/runtime.argfile").readLines()
         !runtime.any { it.contains("annotations-26") || it.contains("mapstruct-processor-") }
 
+        when: "test mode writes its manifest"
+        build("mnTestManifest")
+
+        then: "its compilation of the main sources holds them too"
+        file("build/micronaut-dev/test/compile.argfile").readLines().any { it.contains("commons-lang3-") }
+        file("build/micronaut-dev/test/processors.argfile").readLines().any { it.contains("mapstruct-processor-") }
+
         when: "the configuration cache stores the manifest task and reuses it"
         file("build/micronaut-dev").deleteDir()
         // a daemon, whose JVM the arguments of the fixture open what storing a compile task of these projects needs
