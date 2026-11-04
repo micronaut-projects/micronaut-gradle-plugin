@@ -156,7 +156,7 @@ public final class MicronautDevSupport {
             addProjectOutputs(project, task, developmentRuntimeClasspath);
         });
 
-        project.getTasks().register(DEV_TASK_NAME, JavaExec.class, task -> {
+        project.getTasks().register(DEV_TASK_NAME, MicronautDevTask.class, task -> {
             task.setGroup("application");
             task.setDescription("Runs the application in development mode: sources are compiled and the application reloaded as they change");
             task.dependsOn(manifest, main.getClassesTaskName());
@@ -168,6 +168,7 @@ public final class MicronautDevSupport {
             task.getArgumentProviders().add(new ManifestArgument(manifest.flatMap(MicronautDevManifest::getManifestFile).map(file -> file.getAsFile().getAbsolutePath())));
             task.getJvmArgumentProviders().add(new AgentArgument(launcherClasspath));
             task.getOutputs().upToDateWhen(t -> false);
+            task.getOverrides().set(project.getProviders().systemPropertiesPrefixedBy(MicronautDevManifest.PREFIX));
             task.setWorkingDir(project.getProjectDir());
             JavaApplication application = project.getExtensions().getByType(JavaApplication.class);
             task.jvmArgs(application.getApplicationDefaultJvmArgs());
