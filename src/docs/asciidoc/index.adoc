@@ -2043,6 +2043,8 @@ Therefore, it's your responsibility to stop the service when you are done by run
 
 `./gradlew stopTestResourcesService`
 
+NOTE: Running `./gradlew startTestResourcesService test` leaves the test resources service running after the build.
+
 WARNING: When keeping a test resources service alive, you must understand that any change to the test resources configuration will be ignored until you stop the service.
 
 [[sec:custom-test-resources]]

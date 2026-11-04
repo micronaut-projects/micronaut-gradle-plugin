@@ -17,8 +17,9 @@ class MultiProjectTestResourcePluginSpec extends AbstractGradleBuildSpec {
 
         then:
         def output = result.output.toLowerCase()
-        output.contains('configuration cache entry stored') ||
-                output.contains('support for using a java agent with testkit builds is not yet implemented with the configuration cache')
+        !output.contains('cannot access the tasks in the task graph that were created by other projects') &&
+                (output.contains('configuration cache entry stored') ||
+                        output.contains('support for using a java agent with testkit builds is not yet implemented with the configuration cache'))
     }
 
     def "can share a test resources service in a multiproject"() {
