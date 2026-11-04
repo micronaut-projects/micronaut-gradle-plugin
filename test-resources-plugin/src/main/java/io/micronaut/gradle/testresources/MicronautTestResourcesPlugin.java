@@ -167,8 +167,8 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
             providers.provider(() -> true),
             cdsDir
         );
+        internalStart.configure(task -> task.mustRunAfter(standaloneStart));
         standaloneStart.configure(task -> {
-            task.setOnlyIf(t -> config.getEnabled().get());
             task.setGroup(MicronautTestResourcesPlugin.GROUP);
             task.setDescription("Starts the test resources server in standalone mode");
         });
