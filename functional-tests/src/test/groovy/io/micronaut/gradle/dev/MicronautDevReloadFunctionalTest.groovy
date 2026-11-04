@@ -24,6 +24,8 @@ import java.util.concurrent.TimeUnit
 @Timeout(value = 5, unit = TimeUnit.MINUTES)
 class MicronautDevReloadFunctionalTest extends AbstractFunctionalTest {
 
+    // the Kotlin the launcher compiles with, the Build Tools API it uses being of Kotlin 2.4
+    private static final String EMBEDDED_KOTLIN_VERSION = "2.4.10"
     private static final Duration STARTUP_TIMEOUT = Duration.ofMinutes(3)
     private static final Duration RELOAD_TIMEOUT = Duration.ofSeconds(60)
 
@@ -149,9 +151,9 @@ class MicronautDevReloadFunctionalTest extends AbstractFunctionalTest {
         given:
         int port = freePort()
         writeBuild(port, """
-                id("org.jetbrains.kotlin.jvm") version "${System.getProperty("kotlin2Version")}"
+                id("org.jetbrains.kotlin.jvm") version "$EMBEDDED_KOTLIN_VERSION"
                 id("com.google.devtools.ksp") version "${System.getProperty("ksp2Version")}"
-                id("org.jetbrains.kotlin.plugin.allopen") version "${System.getProperty("kotlin2Version")}"
+                id("org.jetbrains.kotlin.plugin.allopen") version "$EMBEDDED_KOTLIN_VERSION"
         """, 'implementation("org.jetbrains.kotlin:kotlin-stdlib")')
         writeSource("src/main/kotlin/example/Application.kt", """
             package example
