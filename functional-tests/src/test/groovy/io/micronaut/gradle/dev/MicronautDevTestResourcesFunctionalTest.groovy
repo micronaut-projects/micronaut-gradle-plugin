@@ -13,13 +13,7 @@ import spock.lang.Requires
 @Requires({ !os.windows })
 class MicronautDevTestResourcesFunctionalTest extends AbstractEagerConfiguringFunctionalTest {
 
-    // development and test mode are in micronaut-dev 5.3: until it is released a launch needs it in the local repository
-    private static final String CORE_VERSION = System.getProperty("micronautDevCoreVersion", "5.3.0-SNAPSHOT")
     private static final String GREETING = "Hello from the test resources server"
-
-    static boolean isTestModeAvailable() {
-        new File(System.getProperty("user.home"), ".m2/repository/io/micronaut/micronaut-dev-test-report/$CORE_VERSION").isDirectory()
-    }
 
     def "mnDev and mnTest start the test resources server and launch with its client and settings"() {
         given:
@@ -107,10 +101,8 @@ class MicronautDevTestResourcesFunctionalTest extends AbstractEagerConfiguringFu
         reused.output.contains("Reusing configuration cache")
     }
 
-    @Requires({ isTestModeAvailable() })
     def "a test run by mnTest and the application run by mnDev read a property the server resolves"() {
         given:
-        allowMavenLocal = true
         writeProject("io.micronaut.test-resources", true)
         writeResolver("src/testResources")
 
@@ -133,10 +125,8 @@ class MicronautDevTestResourcesFunctionalTest extends AbstractEagerConfiguringFu
         developed.output.contains("greeting=" + GREETING)
     }
 
-    @Requires({ isTestModeAvailable() })
     def "a test of a consumer run by mnTest reads a property the provider's server resolves"() {
         given:
-        allowMavenLocal = true
         writeConsumerBuild(true)
 
         when:
@@ -205,10 +195,11 @@ class MicronautDevTestResourcesFunctionalTest extends AbstractEagerConfiguringFu
                 }
             }
             $repositoriesBlock
+            $DEV_CORE_REPOSITORY
             ${launch ? """
             dependencies {
-                mnDevRuntime(platform("io.micronaut:micronaut-core-bom:$CORE_VERSION"))
-                mnTestRuntime(platform("io.micronaut:micronaut-core-bom:$CORE_VERSION"))
+                mnDevRuntime(platform("io.micronaut:micronaut-core-bom:$DEV_CORE_VERSION"))
+                mnTestRuntime(platform("io.micronaut:micronaut-core-bom:$DEV_CORE_VERSION"))
             }""" : ""}
             application { mainClass = "example.Application" }
             $extra

@@ -721,6 +721,8 @@ micronaut {
 
 With `compile = "build-tool"` the launcher compiles nothing and watches `build/micronaut-dev/reload`, which the `mnDevTrigger` task touches after every `classes`: run `./gradlew classes -t` in another terminal, and every completed compilation is applied. Kotlin needs Kotlin 2.3 or later to compile embedded, and a KAPT project cannot; both fall back to Gradle compiling Kotlin, with `mnDevTrigger` telling the launcher. The plugin passes the compiler plugins of the Kotlin compilation and the all-open annotations to the embedded compiler; the options of another compiler plugin go through `kotlinCompilerArgs("-P", "plugin:<id>:<key>=<value>")`. The `run` task and continuous build are unchanged.
 
+Any `micronaut.dev.*` system property of the build is passed on to the launcher and overrides the manifest's entry, for the settings the DSL does not name: `-Dmicronaut.dev.allowed-hosts=devbox.lan` to open the development pages through another name, `-Dmicronaut.dev.livereload.allowed-origins=http://devbox.lan:8080` for the LiveReload socket of its pages, `-Dmicronaut.dev.requests.hold-timeout=60s`, or `-Dmicronaut.dev.max-generations=100`. A launcher that spends its generation budget, unlimited on the JVM, closes and exits with status 3, and the task starts it again.
+
 ==== Listening on localhost
 
 `mnDev` runs the application listening on `localhost` alone, so that a development server, with its development settings and tools, is not reachable from other machines on the network. The `mnDevManifest` task writes `micronaut.dev.bind-loopback=true` to the manifest, and the launcher applies `micronaut.server.host=localhost` as the property source of the lowest precedence: a `micronaut.server.host` the application sets in its configuration files, as the `MICRONAUT_SERVER_HOST` environment variable or as a `-Dmicronaut.server.host` system property wins. `mnTest` is unchanged.
@@ -731,6 +733,8 @@ To reach the application from a phone or a container, turn it off in the build w
 ----
 $ ./gradlew mnDev -Pmicronaut.dev.bind-loopback=false
 ----
+
+The development pages, the `dev` endpoint and Control Panel, stay guarded: they answer `localhost`, a name under `.localhost` and the loopback addresses, and need the access token of the launch, which the startup note logs as a link. To open them through another name, list it with `-Dmicronaut.dev.allowed-hosts=devbox.lan`, and the origins of its pages with `-Dmicronaut.dev.livereload.allowed-origins=http://devbox.lan:8080`.
 
 ==== Micronaut Control Panel
 
@@ -761,6 +765,8 @@ The modules have no version: the `mnDevApplicationClasspath` configuration resol
 Control Panel requires Micronaut Platform 5.2.4 or later. On an older platform, or without the Micronaut platform on the `developmentRuntimeClasspath`, `mnDev` does not add it and logs a line saying so.
 
 The `mnDevControlPanelDefaults` task writes the defaults of development mode, `micronaut.control-panel.enabled=true` and `micronaut.control-panel.path=/control-panel`, to `build/micronaut-dev/control-panel/micronaut-control-panel/micronaut-control-panel.properties` on the `mnDev` classpath. Without Micronaut Security it adds `micronaut.control-panel.security.access=ANONYMOUS`; when the `developmentRuntimeClasspath` resolves `io.micronaut.security:micronaut-security`, it sets no access, and the application's security decides who opens the panels. Control Panel reads them as its property source of the lowest precedence: a value the application sets in its configuration files, as an environment variable or as a system property wins.
+
+The launcher guards the panels as it does every development page: open the link the startup note logs, `Development pages: http://localhost:8080/control-panel?token=...`, which sets a cookie for the browser; a client that is not a browser sends the token in the `X-Micronaut-Dev-Token` header. `micronaut.control-panel.security.access=ANONYMOUS` is what Control Panel itself asks for, and the token stands in front of it. `-Dmicronaut.dev.access-token.enabled=false` turns the token off.
 
 Turn Control Panel off in the build, or for one invocation with the `micronaut.dev.control-panel` Gradle property, which wins over the DSL:
 

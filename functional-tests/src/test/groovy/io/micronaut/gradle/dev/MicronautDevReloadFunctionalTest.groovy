@@ -17,29 +17,18 @@ import java.util.concurrent.TimeUnit
  * {@code mnDev} end to end: the application is launched, a controller is edited and another added while it runs, and
  * the new code answers from the same process, which is then stopped.
  *
- * <p>Development mode is in micronaut-dev 5.3: until it is released the launch needs core published to a local
- * repository, {@code ~/.m2/repository} or the one the {@code micronautDevRepository} system property names, and is
- * skipped without it.</p>
+ * <p>Development mode is in micronaut-dev 5.3: until it is released the launch resolves core from the snapshots
+ * repository.</p>
  */
-@Requires({ !os.windows && MicronautDevReloadFunctionalTest.isDevModeAvailable() })
+@Requires({ !os.windows })
 @Timeout(value = 5, unit = TimeUnit.MINUTES)
 class MicronautDevReloadFunctionalTest extends AbstractFunctionalTest {
 
-    private static final String CORE_VERSION = System.getProperty("micronautDevCoreVersion", "5.3.0-SNAPSHOT")
     private static final Duration STARTUP_TIMEOUT = Duration.ofMinutes(3)
     private static final Duration RELOAD_TIMEOUT = Duration.ofSeconds(60)
 
     private final HttpClient client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(2)).build()
     private ProcessHandle launcher
-
-    static File devRepository() {
-        String repository = System.getProperty("micronautDevRepository")
-        repository ? new File(repository) : new File(System.getProperty("user.home"), ".m2/repository")
-    }
-
-    static boolean isDevModeAvailable() {
-        new File(devRepository(), "io/micronaut/micronaut-dev/$CORE_VERSION").isDirectory()
-    }
 
     def cleanup() {
         // a failed run leaves nothing behind: the launcher of this project, which the build running in this JVM started,
@@ -110,8 +99,55 @@ class MicronautDevReloadFunctionalTest extends AbstractFunctionalTest {
         launcher.onExit().get(30, TimeUnit.SECONDS) != null
         processes.every { !it.alive }
         !result.output.contains("Exception in thread")
+        result.output.contains("Development Mode Active")
+        result.output.contains("Development pages: http://localhost:$port/dev?token=")
         portIsFree(port)
         println "mnDev ran for ${elapsedSeconds(started)}s"
+    }
+
+    def "mnDev starts the launcher again when a system property of the build gives it a generation budget it spends"() {
+        given:
+        int port = freePort()
+        writeProject(port)
+        writeController("HelloController", "/hello", "one")
+
+        when: "mnDev runs with a budget of two generations"
+        CompletableFuture<Object> run = CompletableFuture.supplyAsync {
+            try {
+                configureRunner("mnDev", "-Dmicronaut.dev.max-generations=2").run()
+            } catch (UnexpectedBuildFailure failure) {
+                failure.buildResult
+            }
+        }
+
+        then:
+        awaitBody(run, port, "/hello", "one", STARTUP_TIMEOUT)
+        long first = Long.parseLong(awaitAny(run, port, "/pid", RELOAD_TIMEOUT))
+
+        when: "a new class starts the second generation"
+        writeController("SecondController", "/second", "second")
+
+        then: "from the same process"
+        awaitBody(run, port, "/second", "second", RELOAD_TIMEOUT)
+        awaitAny(run, port, "/pid", RELOAD_TIMEOUT) == String.valueOf(first)
+
+        when: "another would start a third"
+        writeController("ThirdController", "/third", "third")
+
+        then: "a new process serves it, and the build goes on"
+        awaitBody(run, port, "/third", "third", STARTUP_TIMEOUT)
+        long second = Long.parseLong(awaitAny(run, port, "/pid", RELOAD_TIMEOUT))
+        second != first
+        !ProcessHandle.of(first).present || !ProcessHandle.of(first).get().alive
+
+        when: "the launcher is stopped"
+        launcher = ProcessHandle.of(second).get()
+        launcher.destroy()
+        BuildResult result = run.get(60, TimeUnit.SECONDS) as BuildResult
+
+        then:
+        result.output.contains("The generation budget of the development process is spent: starting it again")
+        portIsFree(port)
     }
 
     private void writeProject(int port) {
@@ -131,18 +167,13 @@ class MicronautDevReloadFunctionalTest extends AbstractFunctionalTest {
                     }
                 }
             }
-            repositories {
-                maven {
-                    url = "${devRepository().toURI()}"
-                    content { includeGroup "io.micronaut" }
-                }
-                mavenCentral()
-            }
+            $repositoriesBlock
+            $DEV_CORE_REPOSITORY
             // the application and the launcher both on the core that has development mode
             configurations.configureEach {
                 resolutionStrategy.eachDependency {
                     if (requested.group == "io.micronaut") {
-                        useVersion("$CORE_VERSION")
+                        useVersion("$DEV_CORE_VERSION")
                     }
                 }
             }
