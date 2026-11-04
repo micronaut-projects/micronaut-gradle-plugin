@@ -45,10 +45,12 @@ public abstract class MicronautDevTask extends JavaExec {
     private static final Logger LOGGER = Logging.getLogger(MicronautDevTask.class);
 
     /**
-     * Passes the overrides to the launcher.
+     * Passes the overrides to the launcher, and allows it native access.
      */
     public MicronautDevTask() {
         getJvmArgumentProviders().add(new Overrides(getOverrides()));
+        // JNA, through which the launcher watches on macOS, loads its native library: the JVM warns without this
+        jvmArgs("--enable-native-access=ALL-UNNAMED");
     }
 
     /**
