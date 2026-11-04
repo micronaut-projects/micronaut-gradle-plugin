@@ -33,12 +33,7 @@ class MicronautDevReloadFunctionalTest extends AbstractFunctionalTest {
     def cleanup() {
         // a failed run leaves nothing behind: the launcher of this project, which the build running in this JVM started,
         // whether or not the application answered
-        String project = baseDir.fileName.toString()
-        List<ProcessHandle> launchers = new ArrayList<>(ProcessHandle.current().descendants().filter { process ->
-            process.info().arguments().map { arguments ->
-                arguments.any { it.contains("MicronautDevMain") } && arguments.any { it.contains(project) }
-            }.orElse(false)
-        }.toList())
+        List<ProcessHandle> launchers = launchers()
         if (launcher != null) {
             launchers << launcher
         }
@@ -150,10 +145,114 @@ class MicronautDevReloadFunctionalTest extends AbstractFunctionalTest {
         portIsFree(port)
     }
 
+    def "mnDev reloads a Kotlin controller, compiled with KSP"() {
+        given:
+        int port = freePort()
+        writeBuild(port, """
+                id("org.jetbrains.kotlin.jvm") version "${System.getProperty("kotlin2Version")}"
+                id("com.google.devtools.ksp") version "${System.getProperty("ksp2Version")}"
+                id("org.jetbrains.kotlin.plugin.allopen") version "${System.getProperty("kotlin2Version")}"
+        """, 'implementation("org.jetbrains.kotlin:kotlin-stdlib")')
+        writeSource("src/main/kotlin/example/Application.kt", """
+            package example
+            import io.micronaut.runtime.Micronaut
+            object Application {
+                @JvmStatic fun main(args: Array<String>) {
+                    Micronaut.run(Application::class.java, *args)
+                }
+            }
+        """)
+        def writeKotlin = { String name, String path, String body ->
+            writeSource("src/main/kotlin/example/${name}.kt", """
+                package example
+                import io.micronaut.http.MediaType
+                import io.micronaut.http.annotation.Controller
+                import io.micronaut.http.annotation.Get
+                import io.micronaut.http.annotation.Produces
+                @Controller("$path")
+                class $name {
+                    @Get
+                    @Produces(MediaType.TEXT_PLAIN)
+                    fun index(): String = "$body"
+                }
+            """)
+        }
+
+        expect:
+        reloads(port, "[JAVA, KOTLIN] compiler(s)", writeKotlin)
+    }
+
+    def "mnDev reloads a Groovy controller"() {
+        given:
+        int port = freePort()
+        writeBuild(port, 'id "groovy"', 'implementation("org.apache.groovy:groovy")')
+        writeSource("src/main/groovy/example/Application.groovy", """
+            package example
+            import io.micronaut.runtime.Micronaut
+            class Application {
+                static void main(String[] args) {
+                    Micronaut.run(Application, args)
+                }
+            }
+        """)
+        def writeGroovy = { String name, String path, String body ->
+            writeSource("src/main/groovy/example/${name}.groovy", """
+                package example
+                import io.micronaut.http.MediaType
+                import io.micronaut.http.annotation.Controller
+                import io.micronaut.http.annotation.Get
+                import io.micronaut.http.annotation.Produces
+                @Controller("$path")
+                class $name {
+                    @Get
+                    @Produces(MediaType.TEXT_PLAIN)
+                    String index() {
+                        "$body"
+                    }
+                }
+            """)
+        }
+
+        expect:
+        reloads(port, "[JAVA, GROOVY] compiler(s)", writeGroovy)
+    }
+
+    /**
+     * Runs mnDev on a project, with a controller at /hello that the writer writes, then edited, and another added.
+     */
+    private boolean reloads(int port, String compilers, Closure writer) {
+        writer("HelloController", "/hello", "one")
+        CompletableFuture<Object> run = CompletableFuture.supplyAsync {
+            try {
+                configureRunner("mnDev").run()
+            } catch (UnexpectedBuildFailure failure) {
+                failure.buildResult
+            }
+        }
+        awaitBody(run, port, "/hello", "one", STARTUP_TIMEOUT)
+        writer("HelloController", "/hello", "two")
+        awaitBody(run, port, "/hello", "two", RELOAD_TIMEOUT)
+        writer("AddedController", "/added", "added")
+        awaitBody(run, port, "/added", "added", RELOAD_TIMEOUT)
+        assert get(port, "/hello") == "two"
+        launcher = launchers().first()
+        launcher.destroy()
+        BuildResult result = run.get(60, TimeUnit.SECONDS) as BuildResult
+        assert result.output.contains(compilers)
+        assert !result.output.contains("Reload failed")
+        true
+    }
+
     private void writeProject(int port) {
+        writeBuild(port)
+        writeJavaSources()
+    }
+
+    private void writeBuild(int port, String plugins = "", String dependencies = "") {
         settingsFile << "rootProject.name = 'hello-world'"
         buildFile << """
             plugins {
+                $plugins
                 id "io.micronaut.application"
             }
             group = "example"
@@ -181,6 +280,7 @@ class MicronautDevReloadFunctionalTest extends AbstractFunctionalTest {
                 // the JSON the server answers errors with, from core
                 runtimeOnly("io.micronaut:micronaut-jackson-databind")
                 runtimeOnly("ch.qos.logback:logback-classic")
+                $dependencies
             }
             application { mainClass = "example.Application" }
         """
@@ -196,6 +296,9 @@ class MicronautDevReloadFunctionalTest extends AbstractFunctionalTest {
                 <root level="info"><appender-ref ref="STDOUT"/></root>
             </configuration>
         """)
+    }
+
+    private void writeJavaSources() {
         writeSource("src/main/java/example/Application.java", """
             package example;
             import io.micronaut.runtime.Micronaut;
@@ -220,6 +323,18 @@ class MicronautDevReloadFunctionalTest extends AbstractFunctionalTest {
                 }
             }
         """)
+    }
+
+    /**
+     * The launchers of this project among the processes this JVM started, through the build running in it.
+     */
+    private List<ProcessHandle> launchers() {
+        String project = baseDir.fileName.toString()
+        new ArrayList<>(ProcessHandle.current().descendants().filter { process ->
+            process.info().arguments().map { arguments ->
+                arguments.any { it.contains("MicronautDevMain") } && arguments.any { it.contains(project) }
+            }.orElse(false)
+        }.toList())
     }
 
     private void writeController(String name, String path, String body) {
