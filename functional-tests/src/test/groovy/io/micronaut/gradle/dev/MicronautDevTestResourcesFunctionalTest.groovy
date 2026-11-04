@@ -101,7 +101,7 @@ class MicronautDevTestResourcesFunctionalTest extends AbstractEagerConfiguringFu
         reused.output.contains("Reusing configuration cache")
     }
 
-    def "a test run by mnTest and the application run by mnDev read a property the server resolves"() {
+    def "a test run by mnTest reads a property the server resolves"() {
         given:
         writeProject("io.micronaut.test-resources", true)
         writeResolver("src/testResources")
@@ -116,6 +116,13 @@ class MicronautDevTestResourcesFunctionalTest extends AbstractEagerConfiguringFu
         report.exists()
         report.text.contains('tests="1"')
         !report.text.contains("<failure")
+    }
+
+    // a build of its own project: the server of an earlier build of the project may still be stopping when the next starts
+    def "the application run by mnDev reads a property the server resolves"() {
+        given:
+        writeProject("io.micronaut.test-resources", true)
+        writeResolver("src/testResources")
 
         when: "the application, which prints the property and exits"
         def developed = build("mnDev", "-S")
@@ -138,6 +145,11 @@ class MicronautDevTestResourcesFunctionalTest extends AbstractEagerConfiguringFu
         def report = file("app/build/test-results/mnTest/TEST-example.GreetingTest.xml")
         report.exists()
         !report.text.contains("<failure")
+    }
+
+    def "the application of a consumer run by mnDev reads a property the provider's server resolves"() {
+        given:
+        writeConsumerBuild(true)
 
         when:
         def developed = build(":app:mnDev", "-S")
