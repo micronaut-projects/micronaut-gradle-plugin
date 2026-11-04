@@ -113,7 +113,7 @@ final class MicronautDevKotlinSupport {
         // captured while the project is still being configured: a task's configuration runs too late for afterEvaluate
         Provider<List<String>> allOpen = MicronautKotlinSupport.isKotlinAllOpenSupportPresent() ? AllOpenOptions.captured(project) : null;
         manifest.configure(task -> {
-            task.getKotlinSources().from(kotlin.getSourceSets().getByName(SourceSet.MAIN_SOURCE_SET_NAME).getKotlin().getSrcDirs());
+            task.getKotlinSources().from(MicronautDevSupport.editedDirectories(project, kotlin.getSourceSets().getByName(SourceSet.MAIN_SOURCE_SET_NAME).getKotlin().getSrcDirs()));
             task.getKotlinSources().from(MicronautDevSupport.dependencySourceDirectories(project, project.getConfigurations().getByName("developmentRuntimeClasspath"), "kotlin"));
             TaskProvider<KotlinJvmCompile> compileKotlin = project.getTasks().named(main.getCompileTaskName("kotlin"), KotlinJvmCompile.class);
             task.getKotlinOutput().set(project.provider(() -> compileKotlin.get().getDestinationDirectory().get().getAsFile().getAbsolutePath()));

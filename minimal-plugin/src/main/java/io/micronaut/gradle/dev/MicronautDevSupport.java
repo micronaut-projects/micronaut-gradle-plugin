@@ -136,8 +136,8 @@ public final class MicronautDevSupport {
             task.getReloadableRoots().addAll(project.provider(() -> paths(projectOutputs(project, developmentRuntimeClasspath, LibraryElements.CLASSES).getFiles())));
             task.getReloadableRoots().addAll(project.provider(() -> paths(projectOutputs(project, developmentRuntimeClasspath, LibraryElements.RESOURCES).getFiles())));
             task.getCompileClasspath().from(main.getCompileClasspath());
-            task.getJavaSources().from(main.getJava().getSrcDirs());
-            task.getResourceSources().from(main.getResources().getSrcDirs());
+            task.getJavaSources().from(editedDirectories(project, main.getJava().getSrcDirs()));
+            task.getResourceSources().from(editedDirectories(project, main.getResources().getSrcDirs()));
             // the sources of the projects depended on too: their outputs are reloadable, so an edit there compiles
             // into this project's output, which the generation reads first
             task.getJavaSources().from(dependencySourceDirectories(project, developmentRuntimeClasspath, "java"));
@@ -270,13 +270,28 @@ public final class MicronautDevSupport {
         if (main == null) {
             return java.util.Set.of();
         }
-        return switch (kind) {
+        return editedDirectories(project, switch (kind) {
             case "java" -> main.getJava().getSrcDirs();
             case "resources" -> main.getResources().getSrcDirs();
             default -> main.getExtensions().findByName(kind) instanceof org.gradle.api.file.SourceDirectorySet directories
                 ? directories.getSrcDirs()
-                : java.util.Set.of();
-        };
+                : java.util.Set.<File>of();
+        });
+    }
+
+    /**
+     * The source directories someone edits, without those under the build directory, such as what KSP generates: another
+     * task writes those, which the manifest does not depend on, and the embedded compilation generates them itself.
+     */
+    static java.util.Set<File> editedDirectories(Project project, java.util.Set<File> directories) {
+        java.nio.file.Path build = project.getLayout().getBuildDirectory().get().getAsFile().toPath();
+        java.util.Set<File> edited = new java.util.LinkedHashSet<>();
+        for (File directory : directories) {
+            if (!directory.toPath().startsWith(build)) {
+                edited.add(directory);
+            }
+        }
+        return edited;
     }
 
     private static FileCollection projectOutputs(Project project, Configuration configuration, String libraryElements) {
@@ -290,7 +305,7 @@ public final class MicronautDevSupport {
     private static void configureGroovy(Project project, MicronautDevManifest task, SourceSet main, Configuration developmentRuntimeClasspath) {
         project.getPluginManager().withPlugin("groovy", unused -> {
             org.gradle.api.file.SourceDirectorySet groovy = main.getExtensions().getByType(org.gradle.api.file.SourceDirectorySet.class);
-            task.getGroovySources().from(groovy.getSrcDirs());
+            task.getGroovySources().from(editedDirectories(project, groovy.getSrcDirs()));
             task.getGroovySources().from(dependencySourceDirectories(project, developmentRuntimeClasspath, "groovy"));
             TaskProvider<GroovyCompile> compileGroovy = project.getTasks().named(main.getCompileTaskName("groovy"), GroovyCompile.class);
             task.getGroovyOutput().set(project.provider(() -> compileGroovy.get().getDestinationDirectory().get().getAsFile().getAbsolutePath()));
