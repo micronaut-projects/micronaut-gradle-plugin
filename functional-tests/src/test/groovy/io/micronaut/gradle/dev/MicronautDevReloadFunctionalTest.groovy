@@ -246,6 +246,66 @@ class MicronautDevReloadFunctionalTest extends AbstractFunctionalTest {
         true
     }
 
+    def "mnDev reloads an edit of a project depended on that uses what that project alone compiles against"() {
+        given: "a project whose code uses its implementation and compileOnly dependencies, which the application's compile classpath does not hold"
+        int port = freePort()
+        writeBuild(port, "", 'implementation(project(":lib"))')
+        settingsFile << "\ninclude 'lib'\n"
+        writeSource("lib/build.gradle", """
+            plugins { id "java-library" }
+            $repositoriesBlock
+            dependencies {
+                implementation("org.apache.commons:commons-lang3:3.17.0")
+                compileOnly("org.jetbrains:annotations:26.0.1")
+            }
+        """)
+        writeGreeter("one")
+        writeJavaSources()
+        writeSource("src/main/java/example/HelloController.java", """
+            package example;
+            import io.micronaut.http.MediaType;
+            import io.micronaut.http.annotation.Controller;
+            import io.micronaut.http.annotation.Get;
+            import io.micronaut.http.annotation.Produces;
+            @Controller("/hello")
+            public class HelloController {
+                @Get
+                @Produces(MediaType.TEXT_PLAIN)
+                public String index() {
+                    return lib.Greeter.greeting();
+                }
+            }
+        """)
+
+        when: "mnDev runs in the background"
+        CompletableFuture<Object> run = CompletableFuture.supplyAsync {
+            try {
+                configureRunner("mnDev").run()
+            } catch (UnexpectedBuildFailure failure) {
+                failure.buildResult
+            }
+        }
+
+        then: "the application answers with the class as written"
+        awaitBody(run, port, "/hello", "ONE", STARTUP_TIMEOUT)
+        long pid = Long.parseLong(awaitAny(run, port, "/pid", RELOAD_TIMEOUT))
+
+        when: "the class of the project depended on is edited"
+        launcher = ProcessHandle.of(pid).get()
+        writeGreeter("two")
+
+        then: "it compiles, and the edit answers from the same process"
+        awaitBody(run, port, "/hello", "TWO", RELOAD_TIMEOUT)
+        awaitAny(run, port, "/pid", RELOAD_TIMEOUT) == String.valueOf(pid)
+
+        when: "the launcher is stopped"
+        launcher.destroy()
+        run.get(60, TimeUnit.SECONDS)
+
+        then:
+        launcher.onExit().get(30, TimeUnit.SECONDS) != null
+    }
+
     private void writeProject(int port) {
         writeBuild(port)
         writeJavaSources()
@@ -355,6 +415,26 @@ class MicronautDevReloadFunctionalTest extends AbstractFunctionalTest {
                 @Produces(MediaType.TEXT_PLAIN)
                 public String index() {
                     return "$body";
+                }
+            }
+        """)
+        // a watcher comparing modification times sees the edit even within the file system's resolution
+        if (source.lastModified() <= previous) {
+            source.setLastModified(previous + 2000)
+        }
+    }
+
+    private void writeGreeter(String body) {
+        File source = file("lib/src/main/java/lib/Greeter.java")
+        long previous = source.exists() ? source.lastModified() : 0
+        writeSource(source, """
+            package lib;
+            import org.apache.commons.lang3.StringUtils;
+            import org.jetbrains.annotations.NotNull;
+            public class Greeter {
+                @NotNull
+                public static String greeting() {
+                    return StringUtils.upperCase("$body");
                 }
             }
         """)
