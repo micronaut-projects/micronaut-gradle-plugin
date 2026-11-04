@@ -62,9 +62,9 @@ final class MicronautDevKotlinSupport {
 
     /**
      * The Kotlin version the embedded compilation needs: the one where the Build Tools API the launcher
-     * uses, {@code KotlinToolchains}, appeared.
+     * uses, {@code BaseCompilationOperation}, appeared.
      */
-    static final String MINIMUM_EMBEDDED_KOTLIN = "2.3.0";
+    static final String MINIMUM_EMBEDDED_KOTLIN = "2.4.0";
 
     static void configure(Project project, MicronautDevExtension dev, TaskProvider<MicronautDevManifest> manifest, TaskProvider<MicronautTestManifest> testManifest, Configuration compilers) {
         project.getPluginManager().withPlugin("org.jetbrains.kotlin.jvm", unused -> {
