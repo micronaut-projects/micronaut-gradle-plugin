@@ -11,6 +11,12 @@ class MultiProjectTestResourcePluginSpec extends AbstractGradleBuildSpec {
     @Requires({ GradleVersion.current() >= GradleVersion.version("9.7") })
     def "supports the configuration cache with isolated projects"() {
         withSample("test-resources/isolated-multiproject")
+        buildFile.text = ""
+        settingsFile << """
+            dependencyResolutionManagement {
+                $repositoriesBlock
+            }
+        """
 
         when:
         def result = build '--isolated-projects', '--configuration-cache', ':app1:internalStartTestResourcesService', ':app2:help', '--dry-run'

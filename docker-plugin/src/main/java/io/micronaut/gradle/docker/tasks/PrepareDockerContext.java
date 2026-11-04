@@ -21,7 +21,10 @@ import org.gradle.api.file.DirectoryProperty;
 import org.gradle.api.file.FileSystemOperations;
 import org.gradle.api.tasks.InputFiles;
 import org.gradle.api.tasks.OutputDirectory;
+import org.gradle.api.tasks.PathSensitive;
+import org.gradle.api.tasks.PathSensitivity;
 import org.gradle.api.tasks.TaskAction;
+import org.gradle.work.DisableCachingByDefault;
 
 import javax.inject.Inject;
 import java.io.File;
@@ -35,11 +38,13 @@ import java.io.File;
  * <p>
  * However, using `Copy` task is considered harmful in general.
  */
+@DisableCachingByDefault(because = "Preparing a local Docker context does not benefit from build caching")
 public abstract class PrepareDockerContext extends DefaultTask {
     @Inject
     protected abstract FileSystemOperations getFileSystemOperations();
 
     @InputFiles
+    @PathSensitive(PathSensitivity.ABSOLUTE)
     public abstract ConfigurableFileCollection getInputDirectories();
 
     @OutputDirectory

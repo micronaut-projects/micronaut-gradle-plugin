@@ -12,6 +12,7 @@ import org.graalvm.buildtools.gradle.dsl.NativeImageOptions;
 import org.graalvm.buildtools.gradle.dsl.NativeResourcesOptions;
 import org.graalvm.buildtools.gradle.dsl.agent.DeprecatedAgentOptions;
 import org.graalvm.buildtools.gradle.internal.BaseNativeImageOptions;
+import org.graalvm.buildtools.gradle.internal.DelegatingCompileOptions;
 import org.graalvm.buildtools.gradle.internal.NativeImageCommandLineProvider;
 import org.graalvm.buildtools.gradle.internal.NativeImageLayerRegistry;
 import org.graalvm.buildtools.gradle.tasks.BuildNativeImageTask;
@@ -35,13 +36,18 @@ import org.gradle.api.provider.Property;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.provider.ProviderFactory;
 import org.gradle.api.tasks.Input;
+import org.gradle.api.tasks.InputFiles;
+import org.gradle.api.tasks.Internal;
 import org.gradle.api.tasks.Nested;
 import org.gradle.api.tasks.Optional;
+import org.gradle.api.tasks.PathSensitive;
+import org.gradle.api.tasks.PathSensitivity;
 import org.gradle.api.tasks.TaskAction;
 import org.gradle.internal.jvm.Jvm;
 import org.gradle.jvm.toolchain.JavaLanguageVersion;
 import org.gradle.jvm.toolchain.JavaLauncher;
 import org.gradle.jvm.toolchain.JavaToolchainService;
+import org.gradle.work.DisableCachingByDefault;
 
 import javax.inject.Inject;
 import java.io.IOException;
@@ -61,6 +67,7 @@ import static io.micronaut.gradle.docker.MicronautDockerfile.applyStandardTransf
  * @author gkrocher
  * @since 1.0.0
  */
+@DisableCachingByDefault(because = "Dockerfile generation is inexpensive")
 public abstract class NativeImageDockerfile extends Dockerfile implements DockerBuildOptions {
 
     public static final String AMAZON_LINUX_BASE_IMAGE = "public.ecr.aws/amazonlinux/amazonlinux:" + DefaultVersions.AMAZONLINUX;
@@ -130,8 +137,52 @@ public abstract class NativeImageDockerfile extends Dockerfile implements Docker
     @Input
     public abstract Property<DockerBuildStrategy> getBuildStrategy();
 
-    @Nested
+    @Internal
     public abstract Property<NativeImageOptions> getNativeImageOptions();
+
+    /**
+     * Exposes the existing native options through a locally annotated input type.
+     * Gradle validates the declared nested type, but GraalVM's {@link NativeImageOptions}
+     * lacks path normalization for configuration directories. This view adds that
+     * annotation and retains the original option values and input annotations.
+     *
+     * @return the native image options used for Gradle input validation and tracking
+     */
+    @Nested
+    public Provider<NativeImageOptionsInputs> getNativeImageOptionsInputs() {
+        return getNativeImageOptions().map(NativeImageOptionsInputs::new);
+    }
+
+    /** Internal input view preserving GraalVM's annotations with explicit path normalization. */
+    public static final class NativeImageOptionsInputs extends DelegatingCompileOptions {
+        private final NativeImageOptions delegate;
+
+        private NativeImageOptionsInputs(NativeImageOptions delegate) {
+            super(delegate);
+            this.delegate = delegate;
+        }
+
+        /** @return The existing runtime arguments */
+        @Input
+        public ListProperty<String> getRuntimeArgs() {
+            return delegate.getRuntimeArgs();
+        }
+
+        /** @return The existing required GraalVM version */
+        @Input
+        @Optional
+        @SuppressWarnings("deprecation")
+        public Property<String> getRequiredVersion() {
+            return delegate.getRequiredVersion();
+        }
+
+        @Override
+        @InputFiles
+        @PathSensitive(PathSensitivity.ABSOLUTE)
+        public ConfigurableFileCollection getConfigurationFileDirectories() {
+            return super.getConfigurationFileDirectories();
+        }
+    }
 
     @Inject
     public abstract JavaToolchainService getJavaToolchainService();

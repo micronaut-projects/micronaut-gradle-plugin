@@ -26,6 +26,7 @@ class DockerNativeImageOptionsFunctionalTest extends AbstractEagerConfiguringFun
 
             graalvmNative.binaries.main {
                 layerNames.add("base-layer")
+                debug = providers.gradleProperty("nativeDebug").map { it.toBoolean() }.orElse(false)
             }
 
             tasks.named("dockerfileNative") {
@@ -70,5 +71,17 @@ class Application {
         nativeImageLine.contains('--no-fallback')
         !nativeImageLine.contains('--color')
         nativeImageLine.endsWith('example.Application')
+
+        when:
+        def unchanged = build('dockerfileNative')
+
+        then:
+        unchanged.task(":dockerfileNative").outcome == TaskOutcome.UP_TO_DATE
+
+        when:
+        def changed = build('dockerfileNative', '-PnativeDebug=true')
+
+        then:
+        changed.task(":dockerfileNative").outcome == TaskOutcome.SUCCESS
     }
 }
