@@ -59,7 +59,7 @@ public abstract class MicronautDevManifest extends DefaultTask {
      */
     public static final String MANIFEST_FILE_NAME = "dev.properties";
 
-    private static final String PREFIX = "micronaut.dev.";
+    static final String PREFIX = "micronaut.dev.";
 
     /**
      * @return the application's main class

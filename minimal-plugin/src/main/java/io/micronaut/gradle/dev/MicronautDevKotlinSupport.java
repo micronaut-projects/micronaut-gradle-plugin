@@ -49,6 +49,7 @@ final class MicronautDevKotlinSupport {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MicronautDevKotlinSupport.class);
     private static final String KSP_GROUP = "com.google.devtools.ksp";
+    private static final String KSP_PLUGIN = "com.google.devtools.ksp";
     private static final String KSP_PROCESSORS_CONFIGURATION = "mnDevKspProcessors";
 
     private MicronautDevKotlinSupport() {
@@ -87,7 +88,7 @@ final class MicronautDevKotlinSupport {
             LOGGER.info("Kotlin {} is older than {}, which the embedded compilation needs: Kotlin sources are compiled by Gradle in development mode", kotlinVersion, MINIMUM_EMBEDDED_KOTLIN);
             manifest.configure(task -> task.getKotlinCompileMode().set("build-tool"));
         }
-        project.getPluginManager().withPlugin("com.google.devtools.ksp", ksp -> {
+        project.getPluginManager().withPlugin(KSP_PLUGIN, ksp -> {
             // ksp itself cannot be resolved: a resolvable view of it holds the processors and tells the KSP version
             Configuration kspProcessors = project.getConfigurations().create(KSP_PROCESSORS_CONFIGURATION, conf -> {
                 conf.setCanBeConsumed(false);
@@ -121,6 +122,8 @@ final class MicronautDevKotlinSupport {
                 task.getKotlinOptions().addAll(allOpen);
             }
             task.getKotlinOptions().addAll(dev.getKotlinCompilerArgs());
+            // the arguments of the symbol processors, which the launcher passes to KSP as the -A options of the language
+            task.getKotlinOptions().addAll(project.provider(() -> kspOptions(project)));
         });
     }
 
@@ -202,6 +205,18 @@ final class MicronautDevKotlinSupport {
         for (File plugin : compile.getPluginClasspath().getFiles()) {
             options.add("-Xplugin=" + plugin.getAbsolutePath());
         }
+        return options;
+    }
+
+    /**
+     * The arguments of the symbol processors as the options the launcher passes to KSP.
+     */
+    private static List<String> kspOptions(Project project) {
+        List<String> options = new ArrayList<>();
+        if (!project.getPluginManager().hasPlugin(KSP_PLUGIN)) {
+            return options;
+        }
+        project.getExtensions().getByType(KspExtension.class).getArguments().forEach((key, value) -> options.add("-A" + key + "=" + value));
         return options;
     }
 
