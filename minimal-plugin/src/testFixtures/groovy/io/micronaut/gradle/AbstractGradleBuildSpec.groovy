@@ -10,7 +10,6 @@ import org.junit.rules.TemporaryFolder
 import spock.lang.Specification
 import spock.util.environment.Jvm
 
-import java.lang.management.ManagementFactory
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -213,20 +212,6 @@ abstract class AbstractGradleBuildSpec extends Specification {
     BuildResult fails(String... args) {
         configureRunner(args)
                 .buildAndFail()
-    }
-
-    protected static void assertConfigurationCacheStoredOrAgentLimitation(BuildResult result) {
-        def output = result.output.toLowerCase()
-        // Embedded TestKit shares the test JVM, so its startup arguments identify the active JaCoCo agent.
-        def jacocoActive = ManagementFactory.runtimeMXBean.inputArguments.any {
-            it.startsWith('-javaagent:') && it.contains('jacoco')
-        }
-        assert output.contains('configuration cache entry stored') ||
-                (jacocoActive &&
-                        (output.contains('support for using a java agent with testkit builds is not yet implemented with the configuration cache') ||
-                                (output.contains('1 problem was found storing the configuration cache') &&
-                                        output.contains("gradle runtime: third-party java agents with inactive gradle's instrumentation agent are not supported by the configuration cache.") &&
-                                        output.contains('configuration cache entry discarded with 1 problem'))))
     }
 
     GradleRunner configureRunner(String... args) {
