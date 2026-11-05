@@ -24,12 +24,7 @@ class MultiProjectTestResourcePluginSpec extends AbstractGradleBuildSpec {
         then:
         def output = result.output.toLowerCase()
         !output.contains('cannot access the tasks in the task graph that were created by other projects')
-        // CI enables JaCoCo; embedded TestKit can reject cache storage because of the agent alone.
-        output.contains('configuration cache entry stored') ||
-                output.contains('support for using a java agent with testkit builds is not yet implemented with the configuration cache') ||
-                (output.contains('1 problem was found storing the configuration cache') &&
-                        output.contains("gradle runtime: third-party java agents with inactive gradle's instrumentation agent are not supported by the configuration cache.") &&
-                        output.contains('configuration cache entry discarded with 1 problem'))
+        assertConfigurationCacheStoredOrAgentLimitation(result)
     }
 
     def "can share a test resources service in a multiproject"() {
