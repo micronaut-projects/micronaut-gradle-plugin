@@ -379,11 +379,14 @@ class Application {
 """
 
         when:
-        def result = build('dockerfile', '--configuration-cache')
+        // Use a separate Gradle daemon: embedded TestKit with JaCoCo cannot store the configuration cache.
+        def result = configureRunner('dockerfile', '--configuration-cache')
+                .withDebug(false)
+                .build()
 
         then:
         result.task(":dockerfile").outcome == TaskOutcome.SUCCESS
-        assertConfigurationCacheStoredOrAgentLimitation(result)
+        result.output.contains('Configuration cache entry stored')
     }
 
     @IgnoreIf({ os.windows })

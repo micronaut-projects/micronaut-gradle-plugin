@@ -19,12 +19,15 @@ class MultiProjectTestResourcePluginSpec extends AbstractGradleBuildSpec {
         """
 
         when:
-        def result = build '--isolated-projects', '--configuration-cache', ':app1:internalStartTestResourcesService', ':app2:help', '--dry-run'
+        // Use a separate Gradle daemon: embedded TestKit with JaCoCo cannot store the configuration cache.
+        def result = configureRunner('--isolated-projects', '--configuration-cache', ':app1:internalStartTestResourcesService', ':app2:help', '--dry-run')
+                .withDebug(false)
+                .build()
 
         then:
         def output = result.output.toLowerCase()
         !output.contains('cannot access the tasks in the task graph that were created by other projects')
-        assertConfigurationCacheStoredOrAgentLimitation(result)
+        output.contains('configuration cache entry stored')
     }
 
     def "can share a test resources service in a multiproject"() {
