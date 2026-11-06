@@ -22,7 +22,6 @@ import io.micronaut.gradle.MicronautComponentPlugin;
 import io.micronaut.gradle.MicronautExtension;
 import io.micronaut.gradle.PluginsHelper;
 import io.micronaut.gradle.ShadowPluginSupport;
-import io.micronaut.gradle.docker.DockerExtension;
 import io.micronaut.gradle.docker.MicronautDockerPlugin;
 import io.micronaut.gradle.docker.model.LayerKind;
 import io.micronaut.gradle.docker.model.MicronautDockerImage;
@@ -208,7 +207,7 @@ public abstract class MicronautAotPlugin implements Plugin<Project> {
         MicronautExtension micronautExtension = project.getExtensions().getByType(MicronautExtension.class);
         NamedDomainObjectContainer<MicronautDockerImage> dockerImages = (NamedDomainObjectContainer<MicronautDockerImage>) micronautExtension.getExtensions().getByName("dockerImages");
         TaskContainer tasks = project.getTasks();
-        Provider<Boolean> jdkAotCache = micronautExtension.getExtensions().getByType(DockerExtension.class).getJdkAotCache().getEnabled();
+        Provider<Boolean> jdkAotCache = MicronautDockerPlugin.jdkAotCacheEnabled(project, "optimized");
         TaskProvider<Jar> optimizedRunnerJar = tasks.register("optimizedRunner" + runtime.getCapitalizedName() + "Jar", Jar.class, jar -> {
             jar.from(getArchiveOperations().zipTree(optimizedJar.map(Jar::getArchiveFile)));
             jar.getArchiveClassifier().set("optimized-runner");

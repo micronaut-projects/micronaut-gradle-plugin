@@ -6,7 +6,7 @@
 #
 #   train.sh --cache <file> [--port <port>] [--path <path>]... [--timeout <seconds>]
 #            [--training-run] [--compatible-oop-compression] [--strict-probes <count>]
-#            -- java [jvm options] -jar <application jar>
+#            [--fallback <argument file>] -- java [jvm options] -jar <application jar>
 #
 # This script, its options and the paths of the script and of the cache in the image are an
 # implementation detail of the plugin, which can change from one release to the next.
@@ -22,6 +22,9 @@
 #   stops the application, and the JVM writes the cache as it exits. If the application does not
 #   get to answer, the error says that this training run starts the application, and why.
 # The build fails unless the cache is written. Then <count> strict launches check the cache.
+# With --fallback, the cache is trained by default: instead of failing the build, the script prints a
+# warning, removes the cache and writes an empty <argument file>. Once the cache is written and checked,
+# it writes -XX:AOTCache=<file> into <argument file>, which the ENTRYPOINT reads with java @<argument file>.
 # Only bash builtins are used to talk to the application, because JRE images have no curl.
 # Every JVM that the script starts gets -XX:-UsePerfData, so that no JVM writes a performance data
 # file (/tmp/hsperfdata_<user>/<pid>) into the layer of the training. The JVM that the training JVM
@@ -34,7 +37,16 @@ log() {
   echo "[jdk-aot-cache] $*"
 }
 
+args_file=""
+
 fail() {
+  if [[ -n $args_file ]]; then
+    echo "[jdk-aot-cache] WARNING: $*. The image is built without a JDK AOT cache, which is trained by default: set micronaut.docker.jdkAotCache.enabled to true to make this an error, or to false to skip the training" >&2
+    kill -KILL "${pid:-}" 2>/dev/null || true
+    rm -f "${cache:-}"
+    : >"$args_file"
+    exit 0
+  fi
   echo "[jdk-aot-cache] ERROR: $*" >&2
   exit 1
 }
@@ -64,6 +76,7 @@ while (($# > 0)); do
     --training-run) training_run=true; shift ;;
     --compatible-oop-compression) compatible_oop_compression=true; shift ;;
     --strict-probes) strict_probes="$2"; shift 2 ;;
+    --fallback) args_file="$2"; shift 2 ;;
     --) shift; break ;;
     *) fail "unknown option $1" ;;
   esac
@@ -73,6 +86,10 @@ done
 java="$1"
 shift
 jvm_command=("$@")
+if [[ -n $args_file ]]; then
+  mkdir -p "$(dirname "$args_file")"
+  : >"$args_file"
+fi
 
 # One run of the JVM tells whether it can write a cache and whether it has the JDK 27 creation flag
 flags=$("$java" -XX:-UsePerfData -XX:+UnlockDiagnosticVMOptions -XX:+PrintFlagsFinal -version 2>/dev/null) || fail "$java -version failed"
@@ -162,4 +179,7 @@ if ((strict_probes > 0)); then
     output=$("${probe[@]}" 2>&1) || { echo "$output" >&2; fail "strict probe $i of $strict_probes failed: ${probe[*]}"; }
   done
   log "$strict_probes strict probes passed"
+fi
+if [[ -n $args_file ]]; then
+  printf -- '-XX:AOTCache=%s\n' "$cache" >"$args_file"
 fi

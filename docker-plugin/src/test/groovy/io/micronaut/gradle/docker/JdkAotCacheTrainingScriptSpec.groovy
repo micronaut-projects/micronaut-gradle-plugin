@@ -35,6 +35,9 @@ for arg in "$@"; do
     -XX:AOTMode=on)
       exit 0 ;;
     -XX:AOTCacheOutput=*)
+      if [[ ${STUB_JAVA_FAIL:-} == 1 ]]; then
+        exit 3
+      fi
       printf 'cache' > "${arg#-XX:AOTCacheOutput=}"
       if [[ $STUB_JAVA_PORT != 0 ]]; then
         exec "$STUB_JAVA_HOME/bin/java" -XX:-UsePerfData -m jdk.httpserver -b 127.0.0.1 -p "$STUB_JAVA_PORT" -d "$STUB_JAVA_DIR"
@@ -109,6 +112,50 @@ exit 1
         "load training run"                   | null    | []     | MODE    | ["-Dmicronaut.application.training.enabled=true", "-Dmicronaut.application.training.mode=load"]
         "training run switch in start mode"   | START   | ["/a"] | MODE    | ["-Dmicronaut.application.training.enabled=true", "-Dmicronaut.application.training.mode=start", "-Dmicronaut.application.training.warmup.paths=/a"]
         "training run that the script drives" | START   | ["/"]  | NONE    | ["-XX:+UseG1GC", "-Xmx64m", "-jar"]
+    }
+
+    def "by default, the script writes the argument file of the ENTRYPOINT, and falls back to no cache when #description"() {
+        given:
+        def script = new File(dir, JdkAotCacheSupport.TRAINING_SCRIPT)
+        script.parentFile.mkdirs()
+        script.text = MicronautDockerfile.getResourceAsStream(JdkAotCacheSupport.TRAINING_SCRIPT).text
+        def java = new File(dir, "java").tap {
+            text = STUB_JAVA
+            setExecutable(true)
+        }
+        def output = new File(dir, "output.log")
+        def cache = new File(dir, JdkAotCacheSupport.CACHE_FILE)
+        def arguments = new File(dir, JdkAotCacheSupport.CACHE_ARGUMENTS_FILE)
+
+        and: "the training command of the default, with the stub in place of java"
+        def options = ProjectBuilder.builder().withProjectDir(new File(dir, "project")).build().objects.newInstance(JdkAotCacheOptions)
+        JdkAotCacheSupport.configureDefaults(options)
+        options.trainingTimeout.set(30)
+        List<String> command = JdkAotCacheSupport.trainingCommand(dir.absolutePath, [], [8080], options, MODE, true)
+        command[command.indexOf("--") + 1] = java.absolutePath
+
+        when:
+        def builder = new ProcessBuilder(command).redirectErrorStream(true).redirectOutput(output)
+        builder.environment().putAll([
+            STUB_JAVA_LOG : new File(dir, "java.log").absolutePath,
+            STUB_JAVA_PORT: "0",
+            STUB_JAVA_FAIL: fails ? "1" : "0"
+        ])
+        def process = builder.start()
+        if (!process.waitFor(2, TimeUnit.MINUTES)) {
+            process.destroyForcibly().waitFor()
+        }
+
+        then: "the image build goes on either way"
+        process.exitValue() == 0
+        arguments.text == (fails ? "" : "-XX:AOTCache=${cache.absolutePath}\n" as String)
+        cache.exists() == !fails
+        output.text.contains("[jdk-aot-cache] WARNING: the training run exited with status 3. The image is built without a JDK AOT cache") == fails
+
+        where:
+        description              | fails
+        "the training succeeds"  | false
+        "the training run fails" | true
     }
 
     private static int freePort() {

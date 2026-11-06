@@ -49,6 +49,13 @@ final class JdkAotCacheSupport {
     static final String CACHE_FILE = "application.aot";
 
     /**
+     * The argument file of the {@code ENTRYPOINT} of a cache trained by default, relative to the image's
+     * working directory: the training script writes {@code -XX:AOTCache} into it when it writes the cache,
+     * and nothing when the training falls back to an image without a cache.
+     */
+    static final String CACHE_ARGUMENTS_FILE = "jdk-aot-cache/cache.args";
+
+    /**
      * The training run switch of Micronaut core (micronaut-projects/micronaut-core#13391): with it,
      * the application exits with status 0 once the training run is done.
      */
@@ -104,7 +111,6 @@ final class JdkAotCacheSupport {
      * @param options the options
      */
     static void configureDefaults(JdkAotCacheOptions options) {
-        options.getEnabled().convention(false);
         options.getTrainingTimeout().convention(120);
         options.getCompatibleOopCompression().convention(true);
         options.getStrictProbes().convention(0);
@@ -212,11 +218,36 @@ final class JdkAotCacheSupport {
                                         List<Integer> exposedPorts,
                                         JdkAotCacheOptions options,
                                         TrainingRunSupport support) {
+        return trainingCommand(workDir, args, exposedPorts, options, support, false);
+    }
+
+    /**
+     * Builds the command of the training {@code RUN}, see {@link #trainingCommand(String, List, List, JdkAotCacheOptions, TrainingRunSupport)}.
+     *
+     * @param workDir the working directory of the image
+     * @param args the JVM arguments of the image
+     * @param exposedPorts the ports exposed by the image, the first one being the application's HTTP port
+     * @param options the JDK AOT cache options
+     * @param support what the application's Micronaut core offers for a training run
+     * @param byDefault whether the cache is trained by default, so that a failed training gives an image
+     * without a cache
+     * @return the command
+     */
+    static List<String> trainingCommand(String workDir,
+                                        List<String> args,
+                                        List<Integer> exposedPorts,
+                                        JdkAotCacheOptions options,
+                                        TrainingRunSupport support,
+                                        boolean byDefault) {
         JdkAotCacheTrainingMode trainingMode = trainingMode(options, support);
         List<String> trainingPaths = options.getTrainingPaths().get();
         var command = new ArrayList<String>();
         command.add("bash");
         command.add(workDir + "/" + TRAINING_SCRIPT);
+        if (byDefault) {
+            command.add("--fallback");
+            command.add(workDir + "/" + CACHE_ARGUMENTS_FILE);
+        }
         command.add("--cache");
         command.add(workDir + "/" + CACHE_FILE);
         command.add("--timeout");

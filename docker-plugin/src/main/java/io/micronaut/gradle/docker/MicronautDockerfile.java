@@ -16,6 +16,7 @@ import org.gradle.api.plugins.JavaPluginExtension;
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Property;
 import org.gradle.api.provider.Provider;
+import org.gradle.api.provider.ProviderFactory;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.Nested;
 import org.gradle.api.tasks.Optional;
@@ -60,6 +61,29 @@ public abstract class MicronautDockerfile extends Dockerfile implements DockerBu
     private final JdkAotCacheOptions jdkAotCacheOptions;
 
     /**
+     * Whether the CRaC plugin is applied, whose images are built from the layers of the main image.
+     */
+    private final Property<Boolean> cracApplied;
+
+    /**
+     * The platform of the image build, when the build sets one.
+     */
+    private final Property<String> buildPlatform;
+
+    private final Provider<Boolean> jdkAotCacheActive;
+
+    /**
+     * Whether the build adds an ENTRYPOINT, known once the instructions are set up.
+     */
+    private boolean entryPointAdded;
+
+    /**
+     * Why the cache is not trained by default, or null when it is, once decided.
+     */
+    private String jdkAotCacheDefaultGuard;
+    private boolean jdkAotCacheDefaultDecided;
+
+    /**
      * The layers to copy to the image.
      * @return the layers
      */
@@ -92,6 +116,10 @@ public abstract class MicronautDockerfile extends Dockerfile implements DockerBu
         getJdkVersion().convention(javaExtension.getTargetCompatibility());
         this.jdkAotCacheOptions = objects.newInstance(JdkAotCacheOptions.class);
         JdkAotCacheSupport.configureDefaults(jdkAotCacheOptions);
+        this.cracApplied = objects.property(Boolean.class).convention(false);
+        this.buildPlatform = objects.property(String.class);
+        this.jdkAotCacheActive = jdkAotCacheOptions.getEnabled()
+            .orElse(project.getProviders().provider(() -> jdkAotCacheDefaultGuard() == null));
     }
 
     @Override
@@ -106,6 +134,9 @@ public abstract class MicronautDockerfile extends Dockerfile implements DockerBu
 
     @Inject
     protected abstract ObjectFactory getObjects();
+
+    @Inject
+    protected abstract ProviderFactory getProviders();
 
     /**
      * The JDK AOT cache that the image trains while it is built. It is not an option of the task:
@@ -128,7 +159,7 @@ public abstract class MicronautDockerfile extends Dockerfile implements DockerBu
     @OutputFile
     @Optional
     Provider<RegularFile> getJdkAotCacheTrainingScript() {
-        return getJdkAotCache().getEnabled().flatMap(enabled -> Boolean.TRUE.equals(enabled)
+        return jdkAotCacheActive().flatMap(enabled -> Boolean.TRUE.equals(enabled)
             ? getDestDir().map(dir -> dir.file(JdkAotCacheSupport.TRAINING_SCRIPT))
             : getObjects().fileProperty());
     }
@@ -146,13 +177,97 @@ public abstract class MicronautDockerfile extends Dockerfile implements DockerBu
         RegularFile trainingScript = getJdkAotCacheTrainingScript().getOrNull();
         if (trainingScript != null) {
             writeTrainingScript(trainingScript.getAsFile().toPath());
-            JdkAotCacheSupport.logTrainingMode(getLogger(), getJdkAotCache(), jdkAotCacheTrainingRunSupport().get());
         }
+        logJdkAotCache();
         applyStandardTransforms(getUseCopyLink(), getObjects(), this);
         if (getDockerfileTweaks().isPresent()) {
             DockerfileEditor.apply(getObjects(), this, getDockerfileTweaks().get());
         }
         getLogger().lifecycle("Dockerfile written to: {}", getDestFile().get().getAsFile().getAbsolutePath());
+    }
+
+    /**
+     * Whether the image trains a JDK AOT cache: the enabled option when it is set, and otherwise the
+     * default, which trains one unless a guard of {@link #jdkAotCacheDefaultGuard()} applies.
+     *
+     * @return whether the image trains a JDK AOT cache
+     */
+    Provider<Boolean> jdkAotCacheActive() {
+        return jdkAotCacheActive;
+    }
+
+    /**
+     * @return whether the CRaC plugin is applied, set by {@link MicronautDockerPlugin}
+     */
+    Property<Boolean> jdkAotCacheCracApplied() {
+        return cracApplied;
+    }
+
+    /**
+     * @return the platform of the image build, set by {@link MicronautDockerPlugin}
+     */
+    Property<String> jdkAotCacheBuildPlatform() {
+        return buildPlatform;
+    }
+
+    /**
+     * Why the image does not train a JDK AOT cache by default: the default trains one only where the
+     * plugin can do so without changing what the build asks for. Decided once, when it is first asked.
+     *
+     * @return the reason, or null when the image trains a cache by default
+     */
+    String jdkAotCacheDefaultGuard() {
+        if (!jdkAotCacheDefaultDecided) {
+            jdkAotCacheDefaultGuard = computeJdkAotCacheDefaultGuard();
+            jdkAotCacheDefaultDecided = true;
+        }
+        return jdkAotCacheDefaultGuard;
+    }
+
+    private String computeJdkAotCacheDefaultGuard() {
+        if (Boolean.TRUE.equals(cracApplied.get())) {
+            return "the CRaC plugin builds its images from the layers of the main image";
+        }
+        DockerBuildStrategy strategy = buildStrategy.getOrElse(DockerBuildStrategy.DEFAULT);
+        if (strategy != DockerBuildStrategy.DEFAULT) {
+            return "the Docker build strategy is " + strategy;
+        }
+        JavaVersion jdkVersion = getJdkVersion().get();
+        if (!jdkVersion.isCompatibleWith(JavaVersion.VERSION_25)) {
+            return "the jdkVersion is " + jdkVersion + ", and the cache needs JDK 25 or later";
+        }
+        if (!"none".equalsIgnoreCase(getBaseImage().getOrElse("none"))) {
+            return "the base image is not the default one, so the plugin cannot tell whether it has bash and JDK 25 or later";
+        }
+        if (entryPointAdded) {
+            return "the build adds an ENTRYPOINT";
+        }
+        if (buildPlatform.isPresent()) {
+            return "the image build sets a platform, which may not be the one of the Docker daemon";
+        }
+        if (jdkAotCacheOptions.getTrainingMode().isPresent() || !jdkAotCacheOptions.getTrainingPaths().get().isEmpty()) {
+            return "trainingMode or trainingPaths are set, which only apply when enabled is true";
+        }
+        if (jdkAotCacheTrainingRunSupport().get() != JdkAotCacheSupport.TrainingRunSupport.MODE) {
+            return "the application's Micronaut version has no " + JdkAotCacheTrainingMode.LOAD + " training mode, which needs Micronaut Core 5.3.0 or later";
+        }
+        return null;
+    }
+
+    private void logJdkAotCache() {
+        if (getJdkAotCache().getEnabled().isPresent()) {
+            if (Boolean.TRUE.equals(getJdkAotCache().getEnabled().get())) {
+                JdkAotCacheSupport.logTrainingMode(getLogger(), getJdkAotCache(), jdkAotCacheTrainingRunSupport().get());
+            }
+            return;
+        }
+        String guard = jdkAotCacheDefaultGuard();
+        if (guard == null) {
+            getLogger().lifecycle("JDK AOT cache: the image trains one by default, with a training run that loads the bean definitions of the application and does not start it. "
+                + "If the training fails, the image has no cache. Set micronaut.docker.jdkAotCache.enabled to false to skip it");
+        } else {
+            getLogger().info("JDK AOT cache: not trained by default, because {}. Set micronaut.docker.jdkAotCache.enabled to true to train one", guard);
+        }
     }
 
     public static void applyStandardTransforms(Provider<Boolean> useCopyLink, ObjectFactory objects, Dockerfile task) {
@@ -177,7 +292,11 @@ public abstract class MicronautDockerfile extends Dockerfile implements DockerBu
     protected void setupInstructions(List<Instruction> additionalInstructions) {
         String workDir = getTargetWorkingDirectory().get();
         DockerBuildStrategy buildStrategy = this.buildStrategy.getOrElse(DockerBuildStrategy.DEFAULT);
-        boolean jdkAotCache = Boolean.TRUE.equals(getJdkAotCache().getEnabled().get());
+        Boolean jdkAotCacheEnabled = getJdkAotCache().getEnabled().getOrNull();
+        boolean jdkAotCache = Boolean.TRUE.equals(jdkAotCacheEnabled);
+        // Not set: the default decides once the instructions are known, when the Dockerfile is written
+        boolean jdkAotCacheByDefault = jdkAotCacheEnabled == null;
+        entryPointAdded = additionalInstructions.stream().anyMatch(instruction -> EntryPointInstruction.KEYWORD.equals(instruction.getKeyword()));
         if (jdkAotCache) {
             validateJdkAotCache(buildStrategy);
         }
@@ -219,15 +338,20 @@ public abstract class MicronautDockerfile extends Dockerfile implements DockerBu
                 exposePort(exposedPorts);
                 getInstructions().addAll(additionalInstructions);
                 if (getInstructions().get().stream().noneMatch(instruction -> instruction.getKeyword().equals(EntryPointInstruction.KEYWORD))) {
-                    if (jdkAotCache) {
-                        setupJdkAotCacheTraining(workDir);
+                    if (jdkAotCache || jdkAotCacheByDefault) {
+                        setupJdkAotCacheTraining(workDir, jdkAotCacheByDefault);
                     }
                     String cache = workDir + "/" + JdkAotCacheSupport.CACHE_FILE;
-                    entryPoint(getArgs().map(strings -> {
+                    Provider<Boolean> trainsByDefault = getProviders().provider(() -> jdkAotCacheByDefault && jdkAotCacheDefaultGuard() == null);
+                    entryPoint(getArgs().zip(trainsByDefault, (strings, byDefault) -> {
                         var newList = new ArrayList<String>(strings.size() + 6);
                         newList.add("java");
                         if (jdkAotCache) {
                             newList.add("-XX:AOTCache=" + cache);
+                            newList.addAll(JdkAotCacheSupport.sharedJvmFlags(strings));
+                        } else if (Boolean.TRUE.equals(byDefault)) {
+                            // Empty when the training fell back to an image without a cache
+                            newList.add("@" + workDir + "/" + JdkAotCacheSupport.CACHE_ARGUMENTS_FILE);
                             newList.addAll(JdkAotCacheSupport.sharedJvmFlags(strings));
                         }
                         newList.addAll(strings);
@@ -249,7 +373,7 @@ public abstract class MicronautDockerfile extends Dockerfile implements DockerBu
 
     private void validateJdkAotCache(DockerBuildStrategy buildStrategy) {
         DockerExtension docker = PluginsHelper.findMicronautExtension(getProject()).getExtensions().findByType(DockerExtension.class);
-        if (docker == null || !Boolean.TRUE.equals(docker.getJdkAotCache().getEnabled().get())) {
+        if (docker == null || !Boolean.TRUE.equals(docker.getJdkAotCache().getEnabled().getOrNull())) {
             // The runner JARs and the resources layer only have a class path of JARs when the extension enables the cache.
             // The options of the task are not public, but a Groovy build script can still reach them
             throw new GradleException("The JDK AOT cache is enabled on the " + getName() + " task, but it must be enabled with micronaut.docker.jdkAotCache.enabled, because the image layers depend on it");
@@ -270,13 +394,20 @@ public abstract class MicronautDockerfile extends Dockerfile implements DockerBu
      *
      * @param workDir the working directory of the image
      */
-    private void setupJdkAotCacheTraining(String workDir) {
-        copyFile(new CopyFile(JdkAotCacheSupport.TRAINING_SCRIPT, workDir + "/" + JdkAotCacheSupport.TRAINING_SCRIPT));
+    private void setupJdkAotCacheTraining(String workDir, boolean byDefault) {
+        // By default, the instructions are only written when no guard applies
+        Provider<Boolean> trains = byDefault
+            ? getProviders().provider(() -> jdkAotCacheDefaultGuard() == null)
+            : getProviders().provider(() -> true);
+        copyFile(trains.map(on -> on
+            ? new CopyFile(JdkAotCacheSupport.TRAINING_SCRIPT, workDir + "/" + JdkAotCacheSupport.TRAINING_SCRIPT)
+            : null));
         ListProperty<Integer> ports = getExposedPorts();
         JdkAotCacheOptions options = getJdkAotCache();
-        runCommand(getArgs().zip(jdkAotCacheTrainingRunSupport(), (args, support) -> JdkAotCacheSupport.execForm(
-            JdkAotCacheSupport.trainingCommand(workDir, args, ports.get(), options, support)
-        )));
+        runCommand(trains.flatMap(on -> on
+            ? getArgs().zip(jdkAotCacheTrainingRunSupport(), (args, support) -> JdkAotCacheSupport.execForm(
+                JdkAotCacheSupport.trainingCommand(workDir, args, ports.get(), options, support, byDefault)))
+            : getProviders().provider(() -> null)));
     }
 
     /**

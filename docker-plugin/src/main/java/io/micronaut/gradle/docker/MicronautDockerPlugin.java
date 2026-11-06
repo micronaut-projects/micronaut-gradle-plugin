@@ -70,7 +70,7 @@ public class MicronautDockerPlugin implements Plugin<Project> {
             NamedDomainObjectContainer<MicronautDockerImage> dockerImages = project.getObjects().domainObjectContainer(MicronautDockerImage.class, s -> project.getObjects().newInstance(DefaultMicronautDockerImage.class, s));
             micronautExtension.getExtensions().add("dockerImages", dockerImages);
             dockerImages.all(image -> createDockerImage(project, image, dockerExtension.getJdkAotCache()));
-            Provider<Boolean> jdkAotCache = dockerExtension.getJdkAotCache().getEnabled();
+            Provider<Boolean> jdkAotCache = jdkAotCacheEnabled(project, "main");
             TaskProvider<Jar> runnerResourcesJar = createMainRunnerResourcesJar(tasks);
             TaskProvider<Jar> runnerJar = createMainRunnerJar(project, tasks, jdkAotCache, runnerResourcesJar);
             dockerImages.create("main", image -> {
@@ -83,17 +83,44 @@ public class MicronautDockerPlugin implements Plugin<Project> {
                     .getByName(SourceSet.MAIN_SOURCE_SET_NAME).getOutput().getResourcesDir();
                 image.addLayer(layer -> {
                     layer.getLayerKind().set(LayerKind.EXPANDED_RESOURCES);
+                    layer.getRuntimeKind().set(RuntimeKind.JIT);
                     // A JDK AOT cache needs a class path of JARs only, so the resources are packaged
-                    // as a JAR in the same layer when it is enabled
+                    // as a JAR in the same layer when the image trains one
                     layer.getFiles().from((Callable<Object>) () -> Boolean.TRUE.equals(jdkAotCache.get()) ? runnerResourcesJar : resourcesDir);
+                });
+                // The native image keeps the resources directory, whether or not the JVM image trains a cache
+                image.addLayer(layer -> {
+                    layer.getLayerKind().set(LayerKind.EXPANDED_RESOURCES);
+                    layer.getRuntimeKind().set(RuntimeKind.NATIVE);
+                    layer.getFiles().from(resourcesDir);
                 });
             });
         });
     }
 
+    /**
+     * Whether the JVM Docker image of the given name trains a JDK AOT cache: the value of
+     * {@code micronaut.docker.jdkAotCache.enabled} when it is set, and otherwise the default of its Dockerfile
+     * task, which the image layout follows. Internal to the Micronaut Gradle plugins.
+     *
+     * @param project the project
+     * @param imageName the name of the image, such as {@code main} or {@code optimized}
+     * @return whether the image trains a JDK AOT cache
+     */
+    public static Provider<Boolean> jdkAotCacheEnabled(Project project, String imageName) {
+        DockerExtension docker = PluginsHelper.findMicronautExtension(project).getExtensions().getByType(DockerExtension.class);
+        String dockerfileTaskName = adaptTaskName("dockerfile", imageName);
+        return docker.getJdkAotCache().getEnabled().orElse(project.getProviders().provider(() ->
+            project.getTasks().findByName(dockerfileTaskName) instanceof MicronautDockerfile dockerfile
+                && Boolean.TRUE.equals(dockerfile.jdkAotCacheActive().get())));
+    }
+
     private void configureCopyLink(DockerExtension dockerExtension, Project project) {
         var useCopyLink = dockerExtension.getUseCopyLink();
         useCopyLink.convention(true);
+        // The CRaC images are built from the layers of the main image, and the CRaC Dockerfile tasks are MicronautDockerfile tasks
+        Provider<Boolean> cracApplied = project.getProviders().provider(() -> project.getPluginManager().hasPlugin("io.micronaut.crac"));
+        project.getTasks().withType(MicronautDockerfile.class).configureEach(t -> t.jdkAotCacheCracApplied().convention(cracApplied));
         project.getTasks().withType(MicronautDockerfile.class).configureEach(t -> t.getUseCopyLink().convention(useCopyLink));
         project.getTasks().withType(NativeImageDockerfile.class).configureEach(t -> t.getUseCopyLink().convention(useCopyLink));
     }
@@ -281,6 +308,7 @@ public class MicronautDockerPlugin implements Plugin<Project> {
                 task.getDestFile().set(targetDockerFile);
                 task.setupDockerfileInstructions();
                 task.getLayers().convention(buildLayersTask.flatMap(BuildLayersTask::getLayers));
+                task.jdkAotCacheBuildPlatform().convention(tasks.named(adaptTaskName("dockerBuild", imageName), DockerBuildImage.class).flatMap(DockerBuildImage::getPlatform));
                 JdkAotCacheOptions taskJdkAotCache = task.getJdkAotCache();
                 taskJdkAotCache.getEnabled().convention(jdkAotCache.getEnabled());
                 taskJdkAotCache.getTrainingMode().convention(jdkAotCache.getTrainingMode());

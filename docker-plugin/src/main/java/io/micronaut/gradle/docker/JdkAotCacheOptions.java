@@ -33,13 +33,26 @@ import org.gradle.api.tasks.Optional;
 public interface JdkAotCacheOptions {
 
     /**
-     * Whether the JVM Docker images train a JDK AOT cache. Defaults to {@code false}.
-     * It applies to the Dockerfiles generated for the default build strategy only,
-     * and requires a {@code jdkVersion} of 25 or later.
+     * Whether the JVM Docker images train a JDK AOT cache. It applies to the Dockerfiles generated for the
+     * default build strategy only.
+     *
+     * <ul>
+     *     <li>{@code true}: the images train a cache, and anything that prevents it fails the build. It
+     *     requires a {@code jdkVersion} of 25 or later.</li>
+     *     <li>{@code false}: no cache.</li>
+     *     <li>Not set, the default: an image trains a cache, with the {@link JdkAotCacheTrainingMode#LOAD LOAD}
+     *     training mode, when the plugin can do so without changing what the build asks for: the
+     *     application's Micronaut version has that mode, the {@code jdkVersion} is 25 or later, the base
+     *     image, the build strategy, the {@code ENTRYPOINT} and the platform are the plugin's defaults,
+     *     {@link #getTrainingMode()} and {@link #getTrainingPaths()} are not set, and the CRaC plugin is not
+     *     applied. A training run that fails then gives an image without a cache, instead of failing the
+     *     build. The Dockerfile task logs whether the image trains a cache, or why not.</li>
+     * </ul>
      *
      * @return the enabled property
      */
     @Input
+    @Optional
     Property<Boolean> getEnabled();
 
     /**
