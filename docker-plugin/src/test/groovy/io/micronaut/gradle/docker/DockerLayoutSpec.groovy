@@ -96,22 +96,16 @@ class DockerLayoutSpec extends AbstractGradleBuildSpec {
         (file("build/docker/main/layers/libs").listFiles() ?: []).findAll { it.name.endsWith(".jar") }
     }
 
+    /**
+     * @return the resolved runtime class path file that the layer copied, as the build wrote it
+     */
     private File cachedJar(File copy) {
-        def roots = [System.getenv("GRADLE_USER_HOME"),
-                     new File(System.getProperty("java.io.tmpdir"), ".gradle-test-kit").absolutePath,
-                     new File(System.getProperty("user.home"), ".gradle").absolutePath].findAll { it?.trim() }
-        for (String root : roots) {
-            def cache = new File(root, "caches/modules-2/files-2.1")
-            if (cache.exists()) {
-                def found = Files.walk(cache.toPath()).withCloseable { paths ->
-                    paths.filter { it.fileName.toString() == copy.name }.findFirst().orElse(null)
-                }
-                if (found != null) {
-                    return found.toFile()
-                }
-            }
+        def resolved = file("build/runtime-classpath.txt").readLines().collect { new File(it) }
+        def source = resolved.find { it.name == copy.name }
+        if (source == null) {
+            throw new IllegalStateException("No resolved file for ${copy.name} in ${resolved}")
         }
-        throw new IllegalStateException("No cached copy of ${copy.name}")
+        source
     }
 
     private static boolean allStored(File jar) {
@@ -137,6 +131,14 @@ class DockerLayoutSpec extends AbstractGradleBuildSpec {
             }
 
             application { mainClass = "example.Application" }
+
+            tasks.register("writeRuntimeClasspath") {
+                def output = layout.buildDirectory.file("runtime-classpath.txt")
+                def files = configurations.runtimeClasspath
+                outputs.file(output)
+                doLast { output.get().asFile.text = files.files*.absolutePath.join("\\n") }
+            }
+            tasks.named("buildLayers") { finalizedBy("writeRuntimeClasspath") }
 
             $configuration
         """
