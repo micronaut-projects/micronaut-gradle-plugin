@@ -25,6 +25,8 @@ import io.micronaut.gradle.ShadowPluginSupport;
 import io.micronaut.gradle.docker.DockerExtension;
 import io.micronaut.gradle.docker.MicronautDockerPlugin;
 import io.micronaut.gradle.docker.model.LayerKind;
+import io.micronaut.gradle.internal.ClassPathTransformTask;
+import io.micronaut.gradle.internal.ClassPathTransforms;
 import io.micronaut.gradle.docker.model.MicronautDockerImage;
 import io.micronaut.gradle.docker.model.RuntimeKind;
 import org.graalvm.buildtools.gradle.NativeImagePlugin;
@@ -210,7 +212,12 @@ public abstract class MicronautAotPlugin implements Plugin<Project> {
         TaskContainer tasks = project.getTasks();
         Provider<Boolean> jdkAotCache = micronautExtension.getExtensions().getByType(DockerExtension.class).getJdkAotCache().getEnabled();
         TaskProvider<Jar> optimizedRunnerJar = tasks.register("optimizedRunner" + runtime.getCapitalizedName() + "Jar", Jar.class, jar -> {
-            jar.from(getArchiveOperations().zipTree(optimizedJar.map(Jar::getArchiveFile)));
+            if (runtime == OptimizerIO.TargetRuntime.JIT) {
+                // The rewritten copy of the optimized JAR when micronaut.classPathTransform enables a step
+                jar.from(getArchiveOperations().zipTree(ClassPathTransforms.packagedFile(project, optimizedJitTransform(project), optimizedJar.flatMap(Jar::getArchiveFile))));
+            } else {
+                jar.from(getArchiveOperations().zipTree(optimizedJar.map(Jar::getArchiveFile)));
+            }
             jar.getArchiveClassifier().set("optimized-runner");
             jar.manifest(manifest -> {
                 JavaApplication javaApplication = project.getExtensions().getByType(JavaApplication.class);
@@ -253,6 +260,10 @@ public abstract class MicronautAotPlugin implements Plugin<Project> {
                 });
             });
         }
+    }
+
+    static TaskProvider<ClassPathTransformTask> optimizedJitTransform(Project project) {
+        return project.getTasks().named(ClassPathTransforms.OPTIMIZED_JIT_TASK_NAME, ClassPathTransformTask.class);
     }
 
     private void registerOptimizedBinary(Project project, TaskProvider<Jar> optimizedJar) {
@@ -307,6 +318,9 @@ public abstract class MicronautAotPlugin implements Plugin<Project> {
             jar.from(mergeTask);
         });
         tasks.named("assemble").configure(assemble -> assemble.dependsOn(jarTask));
+        if (runtime == OptimizerIO.TargetRuntime.JIT) {
+            ClassPathTransforms.register(project, ClassPathTransforms.OPTIMIZED_JIT_TASK_NAME, jarTask);
+        }
         project.getPlugins().withType(MicronautDockerPlugin.class, p -> registerDockerImage(project, jarTask, runtime));
         return jarTask;
     }
