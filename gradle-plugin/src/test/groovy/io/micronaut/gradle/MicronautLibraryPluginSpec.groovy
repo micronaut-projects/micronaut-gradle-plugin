@@ -4,6 +4,32 @@ import org.gradle.testkit.runner.TaskOutcome
 
 class MicronautLibraryPluginSpec extends AbstractGradleBuildSpec {
 
+    def "test eclipse apt tasks are only added when eclipse plugin is applied"() {
+        given:
+        settingsFile << "rootProject.name = 'hello-world'"
+        buildFile << """
+            plugins {
+                id "io.micronaut.library"
+                ${applyEclipsePlugin ? 'id "eclipse"' : ''}
+            }
+
+            micronaut {
+                version "$micronautVersion"
+            }
+
+            $repositoriesBlock
+        """
+
+        when:
+        def result = build('tasks', '--all')
+
+        then:
+        result.output.contains('eclipseJdtApt') == applyEclipsePlugin
+
+        where:
+        applyEclipsePlugin << [false, true]
+    }
+
     def "test JUnit 5 platform excludes work"() {
         given:
         settingsFile << "rootProject.name = 'hello-world'"
