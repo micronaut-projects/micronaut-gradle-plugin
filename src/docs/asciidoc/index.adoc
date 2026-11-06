@@ -1351,6 +1351,46 @@ This directory is an internal Docker build artifact, not a supported application
 The plugin also produces an additional runner JAR in `build/libs` with the `runner` classifier.
 That archive is used to populate the Docker layers and is not meant to be copied or run on its own.
 
+[[docker-resources-jar]]
+===== The resources JAR
+
+Since 5.1.0, the `main` JVM image of the default build strategy packages the application's resources as a JAR, `<project>-<version>-runner-resources.jar`, in the `resources` layer, and the runner JAR's `Class-Path` lists it first.
+A directory first on the class path slows down every class lookup when the application starts without a JDK AOT cache.
+As a consequence, files copied or mounted into `/home/app/resources` are no longer on the class path, and `getResource` returns `jar:` URLs.
+To provide configuration at deployment time, mount it elsewhere and point `MICRONAUT_CONFIG_FILES` (or `-Dlogback.configurationFile`) at it, or go back to the directory:
+
+[source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
+----
+micronaut {
+    docker {
+        resourcesJar = false
+    }
+}
+----
+
+The JDK AOT cache needs the JAR, so `resourcesJar = false` cannot be combined with it.
+Native, Lambda (provided runtime) and Oracle Functions images keep the directory.
+
+[[docker-stored-dependencies]]
+===== STORED dependency JARs
+
+Without a JDK AOT cache, the JVM inflates every class it reads from a compressed JAR.
+The `storedDependencies` option writes the dependency JARs of the JVM layers (`libs`, `snapshot_libs` and `project_libs`) and the runner JARs with every entry STORED:
+
+[source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
+----
+micronaut {
+    docker {
+        storedDependencies = true
+    }
+}
+----
+
+- The JARs on disk get bigger, but the compressed layers that are pushed and pulled get smaller.
+- A repacked JAR keeps its entries, their order and times, so two builds give the same bytes, but it no longer has the checksum of the published artifact. Vulnerability scanners that identify JARs by checksum may not recognize it, which is why the option is off by default.
+- Signed JARs are copied unchanged, and the native image layers are never repacked.
+- With a JDK AOT cache, the option makes no measurable difference.
+
 [[docker-jdk-aot-cache]]
 ==== JDK AOT cache
 

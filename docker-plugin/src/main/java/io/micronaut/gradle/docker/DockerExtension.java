@@ -23,6 +23,28 @@ public interface DockerExtension {
     Property<Boolean> getUseCopyLink();
 
     /**
+     * Whether the JVM images write their dependency JARs and runner JARs with every entry STORED, so that the JVM
+     * does not inflate the classes it reads from them. It makes starts without a JDK AOT cache faster, and the
+     * unpacked image bigger. A repacked JAR no longer has the checksum of the published artifact, which some
+     * vulnerability scanners rely on. Signed JARs are copied unchanged. Defaults to {@code false}.
+     *
+     * @return whether the dependency JARs are stored
+     * @since 5.1.0
+     */
+    Property<Boolean> getStoredDependencies();
+
+    /**
+     * Whether the {@code main} JVM image of the {@code DEFAULT} build strategy packages its resources as a JAR in
+     * the {@code resources} layer, instead of a directory. A directory first on the class path slows down every
+     * class lookup of a start. Files copied or mounted into {@code /home/app/resources} are then no longer on
+     * the class path. The JDK AOT cache needs the JAR. Defaults to {@code true}.
+     *
+     * @return whether the resources are packaged as a JAR
+     * @since 5.1.0
+     */
+    Property<Boolean> getResourcesJar();
+
+    /**
      * The JDK AOT cache that the generated JVM Docker images can train.
      *
      * @return the JDK AOT cache options

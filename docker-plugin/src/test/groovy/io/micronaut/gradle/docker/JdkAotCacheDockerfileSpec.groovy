@@ -35,6 +35,7 @@ ENTRYPOINT ["java", "-jar", "/home/app/application.jar"]
         withApplication("""
             micronaut {
                 docker {
+                    resourcesJar = false
                     jdkAotCache {
                         trainingPaths = ["/hello"]
                     }

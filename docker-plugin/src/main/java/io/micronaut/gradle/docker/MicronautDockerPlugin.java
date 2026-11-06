@@ -41,10 +41,12 @@ import org.gradle.api.tasks.SourceSetContainer;
 import org.gradle.api.tasks.TaskContainer;
 import org.gradle.api.tasks.TaskProvider;
 import org.gradle.api.tasks.bundling.Jar;
+import org.gradle.api.tasks.bundling.ZipEntryCompression;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Optional;
@@ -66,13 +68,16 @@ public class MicronautDockerPlugin implements Plugin<Project> {
             MicronautExtension micronautExtension = extensions.getByType(MicronautExtension.class);
             var dockerExtension = micronautExtension.getExtensions().create("docker", DockerExtension.class);
             configureCopyLink(dockerExtension, project);
+            dockerExtension.getStoredDependencies().convention(false);
+            dockerExtension.getResourcesJar().convention(true);
             JdkAotCacheSupport.configureDefaults(dockerExtension.getJdkAotCache());
             NamedDomainObjectContainer<MicronautDockerImage> dockerImages = project.getObjects().domainObjectContainer(MicronautDockerImage.class, s -> project.getObjects().newInstance(DefaultMicronautDockerImage.class, s));
             micronautExtension.getExtensions().add("dockerImages", dockerImages);
-            dockerImages.all(image -> createDockerImage(project, image, dockerExtension.getJdkAotCache()));
-            Provider<Boolean> jdkAotCache = dockerExtension.getJdkAotCache().getEnabled();
+            dockerImages.all(image -> createDockerImage(project, image, dockerExtension));
+            Provider<Boolean> resourcesJar = resourcesJarLayout(project, dockerExtension);
             TaskProvider<Jar> runnerResourcesJar = createMainRunnerResourcesJar(tasks);
-            TaskProvider<Jar> runnerJar = createMainRunnerJar(project, tasks, jdkAotCache, runnerResourcesJar);
+            TaskProvider<Jar> runnerJar = createMainRunnerJar(project, tasks, resourcesJar, runnerResourcesJar);
+            storeRunnerJars(project, dockerExtension, List.of(runnerJar, runnerResourcesJar));
             dockerImages.create("main", image -> {
                 createDependencyLayers(image, project.getConfigurations().getByName(RUNTIME_CLASSPATH_CONFIGURATION_NAME));
                 image.addLayer(layer -> {
@@ -83,11 +88,44 @@ public class MicronautDockerPlugin implements Plugin<Project> {
                     .getByName(SourceSet.MAIN_SOURCE_SET_NAME).getOutput().getResourcesDir();
                 image.addLayer(layer -> {
                     layer.getLayerKind().set(LayerKind.EXPANDED_RESOURCES);
-                    // A JDK AOT cache needs a class path of JARs only, so the resources are packaged
-                    // as a JAR in the same layer when it is enabled
-                    layer.getFiles().from((Callable<Object>) () -> Boolean.TRUE.equals(jdkAotCache.get()) ? runnerResourcesJar : resourcesDir);
+                    layer.getRuntimeKind().set(RuntimeKind.JIT);
+                    // A directory first on the class path slows down every class lookup, and a JDK AOT cache needs
+                    // a class path of JARs only, so the resources are packaged as a JAR in the same layer
+                    layer.getFiles().from((Callable<Object>) () -> Boolean.TRUE.equals(resourcesJar.get()) ? runnerResourcesJar : resourcesDir);
+                });
+                // The native image build puts the resources directory on its class path
+                image.addLayer(layer -> {
+                    layer.getLayerKind().set(LayerKind.EXPANDED_RESOURCES);
+                    layer.getRuntimeKind().set(RuntimeKind.NATIVE);
+                    layer.getFiles().from(resourcesDir);
                 });
             });
+        });
+    }
+
+    /**
+     * Whether the {@code main} JVM image packages its resources as a JAR: always with the JDK AOT cache, and with
+     * {@code resourcesJar} for the {@code DEFAULT} build strategy, whose {@code ENTRYPOINT} runs the runner JAR.
+     */
+    private static Provider<Boolean> resourcesJarLayout(Project project, DockerExtension dockerExtension) {
+        Provider<Boolean> jdkAotCache = dockerExtension.getJdkAotCache().getEnabled();
+        Provider<Boolean> resourcesJar = dockerExtension.getResourcesJar();
+        return project.getProviders().provider(() -> Boolean.TRUE.equals(jdkAotCache.get())
+            || Boolean.TRUE.equals(resourcesJar.get()) && PluginsHelper.resolveRuntime(project).getBuildStrategy() == DockerBuildStrategy.DEFAULT);
+    }
+
+    /**
+     * Writes the given runner JARs with every entry STORED when {@code micronaut.docker.storedDependencies} is set.
+     *
+     * @param project the project
+     * @param dockerExtension the Docker extension
+     * @param jars the runner JARs
+     */
+    public static void storeRunnerJars(Project project, DockerExtension dockerExtension, List<TaskProvider<Jar>> jars) {
+        project.afterEvaluate(unused -> {
+            if (Boolean.TRUE.equals(dockerExtension.getStoredDependencies().get())) {
+                jars.forEach(jar -> jar.configure(task -> task.setEntryCompression(ZipEntryCompression.STORED)));
+            }
         });
     }
 
@@ -155,7 +193,9 @@ public class MicronautDockerPlugin implements Plugin<Project> {
         return context + capitalize(baseName);
     }
 
-    private void createDockerImage(Project project, MicronautDockerImage imageSpec, JdkAotCacheOptions jdkAotCache) {
+    private void createDockerImage(Project project, MicronautDockerImage imageSpec, DockerExtension dockerExtension) {
+        JdkAotCacheOptions jdkAotCache = dockerExtension.getJdkAotCache();
+        Provider<Boolean> storedDependencies = dockerExtension.getStoredDependencies();
         TaskContainer tasks = project.getTasks();
         String imageName = imageSpec.getName();
         project.getLogger().info("Creating docker tasks for image {}", imageName);
@@ -163,6 +203,7 @@ public class MicronautDockerPlugin implements Plugin<Project> {
             task.setGroup(BasePlugin.BUILD_GROUP);
             task.setDescription("Builds application layers for use in a Docker container (" + imageName + " image)");
             task.getLayers().set(imageSpec.findLayers(RuntimeKind.JIT));
+            task.getStoredJars().convention(storedDependencies);
             task.getOutputDir().convention(project.getLayout().getBuildDirectory().dir("docker/" + imageName + "/layers"));
         });
 
@@ -208,13 +249,16 @@ public class MicronautDockerPlugin implements Plugin<Project> {
 
     private TaskProvider<Jar> createMainRunnerResourcesJar(TaskContainer tasks) {
         return tasks.register("runnerResourcesJar", Jar.class, jar -> {
-            jar.setDescription("Assembles the resources of the main Docker image as a JAR, used when the JDK AOT cache is enabled");
+            jar.setDescription("Assembles the resources of the main Docker image as a JAR");
             jar.getArchiveClassifier().set("runner-resources");
+            // The JAR is a layer of its own: it keeps its digest across clean builds on every Gradle version
+            jar.setPreserveFileTimestamps(false);
+            jar.setReproducibleFileOrder(true);
             jar.from(tasks.named(JavaPlugin.PROCESS_RESOURCES_TASK_NAME));
         });
     }
 
-    private TaskProvider<Jar> createMainRunnerJar(Project project, TaskContainer tasks, Provider<Boolean> jdkAotCache, TaskProvider<Jar> runnerResourcesJar) {
+    private TaskProvider<Jar> createMainRunnerJar(Project project, TaskContainer tasks, Provider<Boolean> resourcesJar, TaskProvider<Jar> runnerResourcesJar) {
         return tasks.register("runnerJar", Jar.class, jar -> {
             jar.dependsOn(tasks.findByName("classes"));
             jar.getArchiveClassifier().set("runner");
@@ -236,7 +280,7 @@ public class MicronautDockerPlugin implements Plugin<Project> {
                     Configuration runtimeClasspath = project.getConfigurations()
                         .getByName(RUNTIME_CLASSPATH_CONFIGURATION_NAME);
 
-                    if (Boolean.TRUE.equals(jdkAotCache.get())) {
+                    if (Boolean.TRUE.equals(resourcesJar.get())) {
                         // The JDK AOT cache does not support non-empty directories on the class path
                         classpath.add("resources/" + runnerResourcesJar.get().getArchiveFileName().get());
                     } else {

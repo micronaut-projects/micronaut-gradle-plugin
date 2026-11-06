@@ -23,11 +23,15 @@ import javax.inject.Inject;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.EnumSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 
 @CacheableTask
 public abstract class BuildLayersTask extends DefaultTask {
+
+    private static final Set<LayerKind> STORED_LAYERS = EnumSet.of(LayerKind.LIBS, LayerKind.SNAPSHOT_LIBS, LayerKind.PROJECT_LIBS);
 
     @Nested
     public abstract ListProperty<Layer> getLayers();
@@ -35,6 +39,18 @@ public abstract class BuildLayersTask extends DefaultTask {
     @Input
     @Optional
     public abstract Property<DuplicatesStrategy> getDuplicatesStrategy();
+
+    /**
+     * Whether the JARs of the dependency layers are written with every entry STORED instead of copied, so that the
+     * JVM does not inflate the classes it reads from them. Signed JARs are copied unchanged. The plugin sets it from
+     * {@code micronaut.docker.storedDependencies}, for the JIT layers only.
+     *
+     * @return whether the dependency JARs are stored
+     * @since 5.1.0
+     */
+    @Input
+    @Optional
+    public abstract Property<Boolean> getStoredJars();
 
     @OutputDirectory
     public abstract DirectoryProperty getOutputDir();
@@ -71,6 +87,13 @@ public abstract class BuildLayersTask extends DefaultTask {
             customizer.execute(copy);
             copy.eachFile(details -> recordCopiedFile(copiedFiles, destinationPath.resolve(relativePathOf(details)), details.getFile().toPath()));
         });
+        if (Boolean.TRUE.equals(getStoredJars().getOrElse(false)) && STORED_LAYERS.contains(layer.getLayerKind().get())) {
+            for (Path target : copiedFiles.keySet()) {
+                if (target.getFileName().toString().endsWith(".jar") && Files.isRegularFile(target)) {
+                    StoredJars.store(target);
+                }
+            }
+        }
         restoreLastModifiedTimes(copiedFiles);
     }
 
