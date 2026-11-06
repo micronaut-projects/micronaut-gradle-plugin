@@ -1469,6 +1469,46 @@ A status from 400 to 499 is logged as a warning with Micronaut Core 5.3.0 or lat
 - The application loads its resources from JARs, so editing or mounting `/home/app/resources` in the image has no effect.
 - The cache is an extra image layer, larger in `START` mode, which changes whenever the application or its dependencies change.
 
+[[class-path-transform]]
+=== Rewriting the packaged class path
+
+WARNING: This setting is incubating, and Micronaut AOT's class path transform is experimental: their names, rules and output may change in a future version.
+
+`micronaut.classPathTransform` rewrites the class files of the class path that the plugin packages, with Micronaut AOT's `micronaut-aot-bytecode`. Both steps are off by default, and both make a start without a JDK AOT cache faster. With a trained JDK AOT cache (see <<#docker-jdk-aot-cache,JDK AOT cache>>) they make about no difference.
+
+[source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
+----
+micronaut {
+    classPathTransform {
+        // generates the lambda classes at build time
+        desugarLambdas = true
+        // drops the local-variable tables of the third-party JARs
+        stripLocalVariables = true
+    }
+}
+----
+
+[source, kotlin, subs="verbatim,attributes", role="multi-language-sample"]
+----
+micronaut {
+    classPathTransform {
+        // generates the lambda classes at build time
+        desugarLambdas = true
+        // drops the local-variable tables of the third-party JARs
+        stripLocalVariables = true
+    }
+}
+----
+
+It applies to the `shadowJar` and `optimizedJitJarAll` fat JARs and to the JVM Docker images (`buildLayers` and `optimizedBuildLayers`), and never to `run`, `optimizedRun`, tests or native images. A `transformClassPath` task rewrites the application's classes and its runtime class path, and a `transformOptimizedJitClassPath` task rewrites the `optimizedJitJar` and the runtime class path. Only the rewritten copies are packaged: a rewritten JAR keeps its file name, so the `Class-Path` of the runner JARs stays valid, and the build's other tasks keep the original files. The transform runs before the Docker image trains a JDK AOT cache.
+
+* `desugarLambdas` generates the classes that the JVM would otherwise spin at run time for the lambdas and method references of the application and of its dependencies, next to the class that holds each of them. They are ordinary synthetic classes named `<Host>$$Lambda$R<n>`, and each call through a lambda adds a frame to stack traces.
+* `stripLocalVariables` drops the local-variable tables of the third-party JARs, never of the application or of the other projects of the build. Debuggers then show no local-variable names for those JARs, and helpful `NullPointerException` messages name their locals by position. When a JAR of the class path reads local-variable tables at run time, such as Paranamer or AspectJ's weaver, nothing is stripped and the task logs a warning.
+
+The transform runs on the project's Java toolchain, which must be JDK 25 or later, and its output depends on that JDK build: run it on the feature release the application runs on. A rewritten JAR no longer has the hashes of the published artifact, which software composition analysis tools may report. The task writes what each step did to `build/micronaut/<task name>/report.txt`. The `version` property selects the version of `io.micronaut.aot:micronaut-aot-bytecode`, which is resolved from the project's repositories.
+
+See the https://micronaut-projects.github.io/micronaut-aot/latest/guide/#classPathTransform[Micronaut AOT documentation] for what each step changes.
+
 === Micronaut Runtimes
 
 A higher level concept of "runtimes" is included in the Micronaut Gradle plugin which essentially allows the plugin to decide which server runtime to include in the dependencies of the application when building the application. For example consider this minimal build:

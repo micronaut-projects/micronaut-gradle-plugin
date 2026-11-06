@@ -19,6 +19,7 @@ openrewrite = "7.32.2"
 
 micronaut-platform = "5.0.0-RC1" # This is the platform version, used in our tests
 micronaut-aot = "3.0.0"
+micronaut-aot-bytecode = "3.2.0-M1"
 micronaut-openapi = "7.0.0"
 micronaut-testresources = "4.0.0"
 micronaut-jsonschema = "2.0.0"
@@ -49,6 +50,7 @@ micronaut-aot-api = { module = "io.micronaut.aot:micronaut-aot-api", version.ref
 micronaut-aot-core = { module = "io.micronaut.aot:micronaut-aot-core", version.ref = "micronaut-aot" }
 micronaut-aot-std = { module = "io.micronaut.aot:micronaut-aot-std-optimizers", version.ref = "micronaut-aot" }
 micronaut-aot-cli = { module = "io.micronaut.aot:micronaut-aot-cli", version.ref = "micronaut-aot" }
+micronaut-aot-bytecode = { module = "io.micronaut.aot:micronaut-aot-bytecode", version.ref = "micronaut-aot-bytecode" }
 
 micronaut-openapi-generator = { module = "io.micronaut.openapi:micronaut-openapi-generator", version.ref = "micronaut-openapi" }
 

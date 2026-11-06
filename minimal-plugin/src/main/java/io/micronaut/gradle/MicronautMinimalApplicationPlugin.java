@@ -17,6 +17,8 @@ package io.micronaut.gradle;
 
 import io.micronaut.gradle.graalvm.GraalUtil;
 import io.micronaut.gradle.internal.AutomaticDependency;
+import io.micronaut.gradle.internal.ClassPathTransformShadowSupport;
+import io.micronaut.gradle.internal.ClassPathTransforms;
 import org.apache.tools.ant.taskdefs.condition.Os;
 import org.gradle.api.Action;
 import org.gradle.api.Plugin;
@@ -71,6 +73,8 @@ public class MicronautMinimalApplicationPlugin implements Plugin<Project> {
         configureMicronautRuntime(project);
         RunClassDataSharing runClassDataSharing = createRunClassDataSharing(project);
         configureJavaExecTasks(project, developmentOnly, runClassDataSharing);
+        ClassPathTransforms.main(project);
+        ShadowPluginSupport.withShadowPlugin(project, () -> ClassPathTransformShadowSupport.configureMainShadowJar(project));
     }
 
     private static RunClassDataSharing createRunClassDataSharing(Project project) {
