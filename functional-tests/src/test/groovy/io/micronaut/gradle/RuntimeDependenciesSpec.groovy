@@ -9,6 +9,31 @@ Micronaut Gradle plugin adds dependencies depending on the environment being tar
 """)
 class RuntimeDependenciesSpec extends AbstractEagerConfiguringFunctionalTest {
 
+    def "junit test runtime adds the Micronaut JUnit runtime coordinates"() {
+        given:
+        settingsFile << "rootProject.name = 'hello-world'"
+        buildFile << """
+            plugins {
+                id "io.micronaut.minimal.application"
+                id("com.gradleup.shadow") version("$shadowVersion")
+            }
+
+            micronaut {
+                version "$micronautVersion"
+                runtime "netty"
+                testRuntime "junit"
+            }
+
+            $repositoriesBlock
+        """
+
+        expect:
+        containsDependency("org.junit.jupiter:junit-jupiter-api", "testCompileClasspath")
+        containsDependency("io.micronaut.test:micronaut-test-junit5", "testCompileClasspath")
+        containsDependency("org.junit.jupiter:junit-jupiter-engine", "testRuntimeClasspath")
+        containsDependency("org.junit.platform:junit-platform-launcher", "testRuntimeClasspath")
+    }
+
     @Unroll
     def "#runtime runtime adds #description for the #configuration" (String runtime,
                                                                      String configuration,
