@@ -1358,14 +1358,33 @@ On JDK 25 and later, the JVM starts an application faster with an https://openjd
 The JVM Docker images, built by `dockerBuild` and `optimizedDockerBuild`, can train this cache while they are built and start the application with it.
 The JDK AOT cache is a JDK feature, independent of <<Micronaut AOT Plugin,Micronaut AOT>>, and the two can be combined.
 
-To enable it:
+[[docker-jdk-aot-cache-default]]
+===== The default
+
+When `enabled` is not set, an image trains a cache in `LOAD` mode (see <<docker-jdk-aot-cache-modes,Training modes>>) when the plugin can do so without changing what the build asks for:
+
+- the application's Micronaut Core is 5.3.0 or later, which has the `LOAD` mode;
+- the `jdkVersion` of the `dockerfile` task is 25 or later;
+- the base image is the plugin's default one, which has `bash` and JDK 25: with another base image, set `enabled = true`;
+- the build strategy is the default one, no `ENTRYPOINT` is added to the `dockerfile` task, and the `dockerBuild` task sets no `platform`;
+- `trainingMode` and `trainingPaths` are not set;
+- the CRaC plugin is not applied.
+
+Otherwise the image has no cache, and the `dockerfile` task logs why at info level (`--info`).
+When the default trains a cache, a training run that fails gives an image without a cache and a `[jdk-aot-cache] WARNING` line in the image build output, instead of failing the build.
+The `ENTRYPOINT` then reads the cache option from `/home/app/jdk-aot-cache/cache.args`, which is empty when there is no cache.
+Like an explicit `enabled = true`, the default packages the resources of the image as a JAR (see <<docker-jdk-aot-cache-limitations,Limitations>>) and pins the G1 collector when the JVM arguments select none.
+
+With Micronaut Core 5.3.0, the `LOAD` mode made a Micronaut Data JDBC application ready about 30% sooner than without a cache.
+
+To opt out, or to train a cache where the default does not:
 
 [source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
 ----
 micronaut {
     docker {
         jdkAotCache {
-            enabled = true
+            enabled = false // or true
         }
     }
 }
@@ -1376,13 +1395,13 @@ micronaut {
 micronaut {
     docker {
         jdkAotCache {
-            enabled.set(true)
+            enabled.set(false) // or true
         }
     }
 }
 ----
 
-The image build then trains the cache, and fails if the training fails.
+With `enabled = true`, the image build trains the cache, and fails if the training fails.
 The `ENTRYPOINT` uses the cache; if the JVM cannot use it, the application starts without it.
 
 [[docker-jdk-aot-cache-modes]]
@@ -1435,8 +1454,8 @@ A status from 400 to 499 is logged as a warning with Micronaut Core 5.3.0 or lat
 |Option |Default |Description
 
 |`enabled`
-|`false`
-|Whether the JVM images train and use a JDK AOT cache.
+|not set
+|Whether the JVM images train and use a JDK AOT cache. When it is not set, see <<docker-jdk-aot-cache-default,The default>>.
 
 |`trainingMode`
 |`LOAD`, or `START` before Micronaut Core 5.3.0
@@ -1462,12 +1481,13 @@ A status from 400 to 499 is logged as a warning with Micronaut Core 5.3.0 or lat
 [[docker-jdk-aot-cache-limitations]]
 ===== Limitations
 
-- The cache applies to the Dockerfiles that the plugin generates, and not to a <<Customized docker files,custom `Dockerfile`>> or to CRaC images. The build fails for Lambda or Oracle Functions images, when an `ENTRYPOINT` instruction is added to the `dockerfile` task, and when the `jdkVersion` of the `dockerfile` task (by default, the target compatibility of the project) is below 25. The base image needs `bash`.
+- The cache applies to the Dockerfiles that the plugin generates, and not to a <<Customized docker files,custom `Dockerfile`>> or to CRaC images. With `enabled = true`, the build fails for Lambda or Oracle Functions images, when an `ENTRYPOINT` instruction is added to the `dockerfile` task, and when the `jdkVersion` of the `dockerfile` task (by default, the target compatibility of the project) is below 25. The base image needs `bash`.
 - With Micronaut Core older than 5.3.0, the training run waits for the application to answer HTTP requests on the first port that the image exposes, 8080 by default.
 - An image built for another CPU architecture trains under emulation, which is much slower: raise `trainingTimeout` if the training times out.
 - The training run and the container must use the same garbage collector, so the image uses G1 unless the JVM arguments of the `dockerfile` task select one, for example `args("-XX:+UseSerialGC")`.
 - The application loads its resources from JARs, so editing or mounting `/home/app/resources` in the image has no effect.
-- The cache is an extra image layer, larger in `START` mode, which changes whenever the application or its dependencies change.
+- The cache is an extra image layer, larger in `START` mode, which changes whenever the application or its dependencies change. Two training runs do not write the same bytes, so every image build that trains pushes a new cache layer.
+- The JVM does not use the cache, and logs `[error][aot]` or `[warning][aot]` lines at every start, when the container adds options that the training run did not have: a Java agent (`-javaagent`, often added by APM tools through `JAVA_TOOL_OPTIONS`), `-XX:StartFlightRecording`, `--add-modules`, `--add-opens`, a debugger, another collector such as ZGC, or a heap too large for compressed oops. These lines are the only sign that the cache is not used.
 
 === Micronaut Runtimes
 
