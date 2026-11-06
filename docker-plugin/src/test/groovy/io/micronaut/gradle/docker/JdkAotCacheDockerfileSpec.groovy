@@ -92,6 +92,37 @@ ENTRYPOINT ["java", "-XX:AOTCache=/home/app/application.aot", "-XX:+UseG1GC", "-
         classPath.drop(1).every { it.startsWith("libs/") && it.endsWith(".jar") }
     }
 
+    def "the Dockerfile of a JDK AOT cache waits for the rewritten class path, and stays up to date"() {
+        given:
+        withApplication("""
+            micronaut {
+                classPathTransform {
+                    stripLocalVariables = true
+                }
+                docker {
+                    jdkAotCache {
+                        enabled = true
+                        trainingMode = JdkAotCacheTrainingMode.START
+                    }
+                }
+            }
+        """)
+
+        when: "the Dockerfile is generated on its own"
+        def alone = build('dockerfile')
+
+        then: "it runs after the transform that names the copies"
+        alone.task(":transformClassPath").outcome == TaskOutcome.SUCCESS
+        alone.task(":dockerfile").outcome == TaskOutcome.SUCCESS
+
+        when: "it is generated with the layers, twice"
+        build('dockerfile', 'buildLayers')
+        def again = build('buildLayers', 'dockerfile')
+
+        then:
+        again.task(":dockerfile").outcome == TaskOutcome.UP_TO_DATE
+    }
+
     def "the training run and the entrypoint share the JVM arguments"() {
         given:
         withApplication("""

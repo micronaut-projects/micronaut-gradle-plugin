@@ -67,6 +67,43 @@ ENTRYPOINT ["java", "-XX:AOTCache=/home/app/application.aot", "-XX:+UseG1GC", "-
         classPath.every { it.startsWith("libs/") && it.endsWith(".jar") }
     }
 
+    @Issue("https://github.com/micronaut-projects/micronaut-gradle-plugin/issues/1393")
+    def "rewrites the class path of the JVM images"() {
+        withSample("aot/basic-app")
+        buildFile << """
+            micronaut.classPathTransform {
+                desugarLambdas = true
+                stripLocalVariables = true
+            }
+        """
+
+        when:
+        def result = build "buildLayers", "optimizedBuildLayers"
+
+        then:
+        result.task(":transformClassPath").outcome == TaskOutcome.SUCCESS
+        result.task(":transformOptimizedJitClassPath").outcome == TaskOutcome.SUCCESS
+
+        and: "the rewritten JARs keep their names"
+        ["main", "optimized"].each { image ->
+            def libs = file("build/docker/$image/layers/libs").listFiles()
+            def core = libs.find { it.name ==~ /micronaut-core-\d.*\.jar/ }
+            assert core != null
+            assert new JarFile(core).withCloseable { it.entries().toList().any { it.name.contains('$$Lambda$R') } }
+        }
+    }
+
+    def "does not rewrite the class path by default"() {
+        withSample("aot/basic-app")
+
+        when:
+        def result = build "buildLayers", "optimizedBuildLayers"
+
+        then:
+        result.task(":transformClassPath") == null
+        result.task(":transformOptimizedJitClassPath") == null
+    }
+
     @IgnoreIf({ os.windows })
     @IgnoreIf({ !AbstractGradleBuildSpec.dockerAvailable })
     def "generates an optimized docker image"() {

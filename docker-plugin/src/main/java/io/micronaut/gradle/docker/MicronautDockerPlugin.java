@@ -12,11 +12,14 @@ import io.micronaut.gradle.MicronautExtension;
 import io.micronaut.gradle.MicronautRuntime;
 import io.micronaut.gradle.PluginsHelper;
 import io.micronaut.gradle.docker.model.DefaultMicronautDockerImage;
+import io.micronaut.gradle.docker.model.Layer;
 import io.micronaut.gradle.docker.model.LayerKind;
 import io.micronaut.gradle.docker.model.MicronautDockerImage;
 import io.micronaut.gradle.docker.model.RuntimeKind;
 import io.micronaut.gradle.docker.tasks.BuildLayersTask;
 import io.micronaut.gradle.docker.tasks.PrepareDockerContext;
+import io.micronaut.gradle.internal.ClassPathTransformTask;
+import io.micronaut.gradle.internal.ClassPathTransforms;
 import org.graalvm.buildtools.gradle.dsl.NativeImageOptions;
 import org.gradle.api.Action;
 import org.gradle.api.GradleException;
@@ -47,6 +50,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Set;
 import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.function.Consumer;
@@ -66,6 +71,7 @@ public class MicronautDockerPlugin implements Plugin<Project> {
             MicronautExtension micronautExtension = extensions.getByType(MicronautExtension.class);
             var dockerExtension = micronautExtension.getExtensions().create("docker", DockerExtension.class);
             configureCopyLink(dockerExtension, project);
+            ClassPathTransforms.main(project);
             JdkAotCacheSupport.configureDefaults(dockerExtension.getJdkAotCache());
             NamedDomainObjectContainer<MicronautDockerImage> dockerImages = project.getObjects().domainObjectContainer(MicronautDockerImage.class, s -> project.getObjects().newInstance(DefaultMicronautDockerImage.class, s));
             micronautExtension.getExtensions().add("dockerImages", dockerImages);
@@ -162,7 +168,11 @@ public class MicronautDockerPlugin implements Plugin<Project> {
         TaskProvider<BuildLayersTask> buildLayersTask = tasks.register(adaptTaskName("buildLayers", imageName), BuildLayersTask.class, task -> {
             task.setGroup(BasePlugin.BUILD_GROUP);
             task.setDescription("Builds application layers for use in a Docker container (" + imageName + " image)");
-            task.getLayers().set(imageSpec.findLayers(RuntimeKind.JIT));
+            List<Layer> layers = imageSpec.findLayers(RuntimeKind.JIT);
+            List<Layer> packaged = packagedLayers(project, imageName, layers);
+            // The original layers unless a step is enabled, so that the Dockerfile tasks, which take the layers as
+            // an input value, see the same value whether or not this task ran before them in the build
+            task.getLayers().set(ClassPathTransforms.enabled(project).map(enabled -> Boolean.TRUE.equals(enabled) ? packaged : layers));
             task.getOutputDir().convention(project.getLayout().getBuildDirectory().dir("docker/" + imageName + "/layers"));
         });
 
@@ -191,6 +201,44 @@ public class MicronautDockerPlugin implements Plugin<Project> {
             buildStrategy.ifPresent(bs -> it.getBuildStrategy().set(buildStrategy.get()));
             it.setupTaskPostEvaluate();
         })));
+    }
+
+    /**
+     * The dependency layers of a JVM image, with the rewritten copies of their JARs when
+     * micronaut.classPathTransform enables a step. Native images keep the original layers.
+     */
+    private static List<Layer> packagedLayers(Project project, String imageName, List<Layer> layers) {
+        TaskProvider<ClassPathTransformTask> transform = classPathTransform(project, imageName);
+        if (transform == null) {
+            return layers;
+        }
+        Set<LayerKind> dependencyKinds = Set.of(LayerKind.LIBS, LayerKind.SNAPSHOT_LIBS, LayerKind.PROJECT_LIBS);
+        List<Layer> packaged = new ArrayList<>(layers.size());
+        for (Layer layer : layers) {
+            if (!dependencyKinds.contains(layer.getLayerKind().get())) {
+                packaged.add(layer);
+                continue;
+            }
+            Layer copy = project.getObjects().newInstance(Layer.class);
+            copy.getLayerKind().set(layer.getLayerKind());
+            copy.getRuntimeKind().set(layer.getRuntimeKind());
+            copy.getFiles().from(ClassPathTransforms.packaged(project, transform, layer.getFiles()));
+            packaged.add(copy);
+        }
+        return packaged;
+    }
+
+    /**
+     * @return the transform whose rewritten copies a JVM image packages, or null for an image without one
+     */
+    private static TaskProvider<ClassPathTransformTask> classPathTransform(Project project, String imageName) {
+        if ("main".equals(imageName)) {
+            return ClassPathTransforms.main(project);
+        }
+        if ("optimized".equals(imageName) && project.getTasks().getNames().contains(ClassPathTransforms.OPTIMIZED_JIT_TASK_NAME)) {
+            return project.getTasks().named(ClassPathTransforms.OPTIMIZED_JIT_TASK_NAME, ClassPathTransformTask.class);
+        }
+        return null;
     }
 
     private void withBuildStrategy(Project project, Consumer<? super Optional<DockerBuildStrategy>> action) {
@@ -224,7 +272,8 @@ public class MicronautDockerPlugin implements Plugin<Project> {
             SourceSet mainSourceSet = sourceSets
                 .getByName(SourceSet.MAIN_SOURCE_SET_NAME);
 
-            FileCollection dirs = mainSourceSet.getOutput().getClassesDirs();
+            // The rewritten copies of the classes directories when micronaut.classPathTransform enables a step
+            FileCollection dirs = ClassPathTransforms.packaged(project, ClassPathTransforms.main(project), mainSourceSet.getOutput().getClassesDirs());
 
             jar.from(dirs);
             jar.manifest(manifest -> {
@@ -281,6 +330,15 @@ public class MicronautDockerPlugin implements Plugin<Project> {
                 task.getDestFile().set(targetDockerFile);
                 task.setupDockerfileInstructions();
                 task.getLayers().convention(buildLayersTask.flatMap(BuildLayersTask::getLayers));
+                // The layers are an input value, which carries no task dependency: the names of the rewritten
+                // copies come from the transform. Running after the layers keeps that value the same in every build
+                // that runs both tasks
+                TaskProvider<ClassPathTransformTask> transform = classPathTransform(project, imageName);
+                if (transform != null) {
+                    Provider<Boolean> enabled = ClassPathTransforms.enabled(project);
+                    task.dependsOn(enabled.map(on -> Boolean.TRUE.equals(on) ? List.of(transform) : List.of()));
+                    task.mustRunAfter(enabled.map(on -> Boolean.TRUE.equals(on) ? List.of(buildLayersTask) : List.of()));
+                }
                 JdkAotCacheOptions taskJdkAotCache = task.getJdkAotCache();
                 taskJdkAotCache.getEnabled().convention(jdkAotCache.getEnabled());
                 taskJdkAotCache.getTrainingMode().convention(jdkAotCache.getTrainingMode());

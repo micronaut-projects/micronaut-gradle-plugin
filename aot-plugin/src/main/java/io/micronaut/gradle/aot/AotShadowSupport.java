@@ -18,6 +18,9 @@ package io.micronaut.gradle.aot;
 import com.github.jengelman.gradle.plugins.shadow.ShadowJavaPlugin;
 import com.github.jengelman.gradle.plugins.shadow.tasks.InheritManifest;
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar;
+import io.micronaut.gradle.internal.ClassPathTransformShadowSupport;
+import io.micronaut.gradle.internal.ClassPathTransformTask;
+import io.micronaut.gradle.internal.ClassPathTransforms;
 import org.gradle.api.Action;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
@@ -65,8 +68,11 @@ class AotShadowSupport {
                     // breaking support for providers
                     shadowManifest.getAttributes().put("Main-Class", javaApplication.getMainClass().get());
                 }
-                shadow.from(optimizedJar.map(jar -> archiveOperations.zipTree(jar.getArchiveFile().get())));
+                TaskProvider<ClassPathTransformTask> transform = MicronautAotPlugin.optimizedJitTransform(project);
+                // The rewritten copies of the optimized JAR and of the dependencies when micronaut.classPathTransform enables a step
+                shadow.from(archiveOperations.zipTree(ClassPathTransforms.packagedFile(project, transform, optimizedJar.flatMap(Jar::getArchiveFile))));
                 compatAddConfiguration(shadow, project.getConfigurations().findByName("runtimeClasspath"));
+                ClassPathTransformShadowSupport.configureShadowDependencies(project, shadow, transform);
                 shadow.getExcludes().addAll(tasks.named(ShadowJar.SHADOW_JAR_TASK_NAME, ShadowJar.class).get().getExcludes());
             });
             tasks.named("assemble").configure(assemble -> assemble.dependsOn(shadowProvider));
