@@ -1919,6 +1919,42 @@ The 2 tasks which are available for this are:
 - `optimizedDockerBuildNative` to build the optimized native Docker image
 - `optimizedDockerPushNative` to push the optimized native Docker image
 
+[[logback-precompile]]
+== Precompiling logback.xml
+
+The incubating `io.micronaut.logback` plugin compiles `logback.xml` into a Logback `Configurator` at build time, with https://micronaut-projects.github.io/micronaut-aot/latest/guide/[Micronaut AOT]'s Logback precompiler, so that the application does not parse XML at startup.
+It does not need the `io.micronaut.aot` plugin, and nothing forks.
+
+[source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
+----
+plugins {
+    ...
+    id "io.micronaut.application" version "{gradle-project-version}"
+    id "io.micronaut.logback" version "{gradle-project-version}"
+}
+----
+
+The `precompileLogback` task writes the generated classes, which go into `jar`, `shadowJar`, the JVM Docker image and the `main` native image.
+`run` and `test` keep configuring Logback from `logback.xml`.
+The task logs what it compiled, or why it compiled nothing, and writes the same lines to `build/generated/logback/report.txt`.
+
+The precompiler only generates a configurator when it can prove that it configures Logback as Joran would: a `logback.xml` with Logback appenders, pattern encoders and loggers, and Logback 1.5.37 or later in 1.5.
+Otherwise, for example when the file uses variables, includes or a custom appender, when the application already registers a `Configurator`, or when it targets a Java release below 25, it generates nothing and Logback reads `logback.xml` at startup as before.
+`logback.xml` stays in the artifacts: at startup, the generated configurator hands over to Joran when `logback.configurationFile` or `logback.debug` is set, when a `logback-test.xml` is visible, when the first `logback.xml` on the class path is not the file that was compiled, or when `-Dmicronaut.logback.precompiled=false` is set.
+
+When the `io.micronaut.aot` plugin replaces `logback.xml` itself (`replaceLogbackXml = true`), the optimized jars keep only its configurator.
+
+To turn precompilation off without removing the plugin:
+
+[source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
+----
+micronaut {
+    logback {
+        precompile = false
+    }
+}
+----
+
 [[test-resources]]
 == Automatic test resources provisioning
 

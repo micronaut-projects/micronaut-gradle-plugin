@@ -7,6 +7,7 @@ description = "Micronaut AOT Gradle plugin"
 
 micronautPlugins {
     register('aot', 'io.micronaut.gradle.aot.MicronautAotPlugin', 'Micronaut AOT Plugin')
+    register('logback', 'io.micronaut.gradle.logback.MicronautLogbackPlugin', 'Micronaut Logback Precompilation Plugin')
 }
 
 dependencies {
@@ -18,6 +19,7 @@ dependencies {
     implementation libs.micronaut.aot.core
     implementation libs.micronaut.aot.std
     implementation libs.micronaut.aot.cli
+    implementation libs.micronaut.aot.logback
 
     compileOnly libs.bundles.optionalPlugins
     compileOnly libs.shadowPlugin
