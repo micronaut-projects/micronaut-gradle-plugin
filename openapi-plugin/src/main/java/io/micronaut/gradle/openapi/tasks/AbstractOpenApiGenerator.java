@@ -34,6 +34,7 @@ import org.gradle.api.tasks.OutputDirectory;
 import org.gradle.api.tasks.PathSensitive;
 import org.gradle.api.tasks.PathSensitivity;
 import org.gradle.api.tasks.TaskAction;
+import org.gradle.work.DisableCachingByDefault;
 import org.gradle.workers.WorkerExecutor;
 
 import java.io.File;
@@ -43,6 +44,7 @@ import java.nio.file.Files;
 
 import javax.inject.Inject;
 
+@DisableCachingByDefault(because = "Concrete OpenAPI generators declare caching on their complete task types")
 public abstract class AbstractOpenApiGenerator<W extends AbstractOpenApiWorkAction<P>, P extends AbstractOpenApiWorkAction.OpenApiParameters> extends DefaultTask {
 
     @Classpath

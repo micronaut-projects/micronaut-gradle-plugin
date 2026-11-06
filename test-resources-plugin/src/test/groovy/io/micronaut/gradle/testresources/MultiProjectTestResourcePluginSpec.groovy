@@ -1,11 +1,34 @@
 package io.micronaut.gradle.testresources
 
 import io.micronaut.gradle.AbstractGradleBuildSpec
+import org.gradle.util.GradleVersion
 import org.gradle.testkit.runner.TaskOutcome
 import spock.lang.Requires
 
 @Requires({ !os.windows })
 class MultiProjectTestResourcePluginSpec extends AbstractGradleBuildSpec {
+
+    @Requires({ GradleVersion.current() >= GradleVersion.version("9.7") })
+    def "supports the configuration cache with isolated projects"() {
+        withSample("test-resources/isolated-multiproject")
+        buildFile.text = ""
+        settingsFile << """
+            dependencyResolutionManagement {
+                $repositoriesBlock
+            }
+        """
+
+        when:
+        // Use a separate Gradle daemon: embedded TestKit with JaCoCo cannot store the configuration cache.
+        def result = configureRunner('--isolated-projects', '--configuration-cache', ':app1:internalStartTestResourcesService', ':app2:help', '--dry-run')
+                .withDebug(false)
+                .build()
+
+        then:
+        def output = result.output.toLowerCase()
+        !output.contains('cannot access the tasks in the task graph that were created by other projects')
+        output.contains('configuration cache entry stored')
+    }
 
     def "can share a test resources service in a multiproject"() {
         withSample("test-resources/multiproject")

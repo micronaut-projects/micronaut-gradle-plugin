@@ -142,19 +142,33 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
         File portFile = new File(testResourcesDir, "test-resources-port.txt");
         Path stopAtEndFile = createStopFile(project);
         TaskContainer tasks = project.getTasks();
-        Provider<Boolean> isStandalone = config.getSharedServer().zip(providers.provider(() -> {
-            boolean singleTask = project.getGradle().getStartParameter().getTaskNames().size() == 1;
-            boolean onlyStartTask = project.getGradle().getTaskGraph()
-                    .getAllTasks()
-                    .stream()
-                    .anyMatch(task -> task.getProject().equals(project) && task.getName().equals(START_TEST_RESOURCES_SERVICE));
-            return singleTask && onlyStartTask;
-        }), (shared, singleTask) -> shared || singleTask);
         Provider<Directory> cdsDir = buildDirectory.dir("test-resources/cds");
-        TaskProvider<StartTestResourcesService> internalStart = createStartServiceTask(server, config, settingsDirectory, accessTokenProvider, tasks, portFile, stopAtEndFile, isStandalone, cdsDir);
-        tasks.register(START_TEST_RESOURCES_SERVICE, task -> {
-            task.dependsOn(internalStart);
-            task.setOnlyIf(t -> config.getEnabled().get());
+        TaskProvider<StartTestResourcesService> internalStart = createStartServiceTask(
+            START_TEST_RESOURCES_SERVICE_INTERNAL,
+            server,
+            config,
+            settingsDirectory,
+            accessTokenProvider,
+            tasks,
+            portFile,
+            stopAtEndFile,
+            config.getSharedServer(),
+            cdsDir
+        );
+        TaskProvider<StartTestResourcesService> standaloneStart = createStartServiceTask(
+            START_TEST_RESOURCES_SERVICE,
+            server,
+            config,
+            settingsDirectory,
+            accessTokenProvider,
+            tasks,
+            portFile,
+            stopAtEndFile,
+            providers.provider(() -> true),
+            cdsDir
+        );
+        internalStart.configure(task -> task.mustRunAfter(standaloneStart));
+        standaloneStart.configure(task -> {
             task.setGroup(MicronautTestResourcesPlugin.GROUP);
             task.setDescription("Starts the test resources server in standalone mode");
         });
@@ -239,7 +253,8 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
         }
     }
 
-    private TaskProvider<StartTestResourcesService> createStartServiceTask(Configuration server,
+    private TaskProvider<StartTestResourcesService> createStartServiceTask(String taskName,
+                                                                           Configuration server,
                                                                            TestResourcesConfiguration config,
                                                                            Provider<Directory> settingsDirectory,
                                                                            Provider<String> accessToken,
@@ -248,7 +263,7 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
                                                                            Path stopFile,
                                                                            Provider<Boolean> isStandalone,
                                                                            Provider<Directory> cdsDir) {
-        return tasks.register(START_TEST_RESOURCES_SERVICE_INTERNAL, StartTestResourcesService.class, task -> {
+        return tasks.register(taskName, StartTestResourcesService.class, task -> {
             task.setOnlyIf(t -> config.getEnabled().get());
             task.getPortFile().set(portFile);
             task.getSettingsDirectory().convention(settingsDirectory);

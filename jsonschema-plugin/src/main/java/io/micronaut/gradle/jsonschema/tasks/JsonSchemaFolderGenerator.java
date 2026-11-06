@@ -17,10 +17,15 @@ package io.micronaut.gradle.jsonschema.tasks;
 
 import org.gradle.api.file.DirectoryProperty;
 import org.gradle.api.tasks.InputDirectory;
+import org.gradle.api.tasks.PathSensitive;
+import org.gradle.api.tasks.PathSensitivity;
+import org.gradle.work.DisableCachingByDefault;
 
+@DisableCachingByDefault(because = "Generated schemas may resolve external references that are not task inputs")
 public abstract class JsonSchemaFolderGenerator extends AbstractJsonSchemaGenerator<JsonSchemaFolderWorkAction, JsonSchemaFolderWorkAction.FolderParameters> {
 
     @InputDirectory
+    @PathSensitive(PathSensitivity.ABSOLUTE)
     public abstract DirectoryProperty getInputDirectory();
 
     @Override
