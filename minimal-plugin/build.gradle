@@ -11,6 +11,7 @@ micronautPlugins {
     register('component', 'io.micronaut.gradle.MicronautComponentPlugin', 'Micronaut Component Plugin')
     register('minimal.library', 'io.micronaut.gradle.MicronautMinimalLibraryPlugin', 'Micronaut Minimal Library Plugin')
     register('minimal.application', 'io.micronaut.gradle.MicronautMinimalApplicationPlugin', 'Micronaut Minimal Application Plugin')
+    register('minimal.function', 'io.micronaut.gradle.MicronautMinimalFunctionPlugin', 'Micronaut Minimal Function Plugin')
 }
 
 dependencies {

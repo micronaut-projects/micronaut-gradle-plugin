@@ -7,6 +7,7 @@ description = "The main Micronaut Gradle plugin"
 micronautPlugins {
     register('library', 'io.micronaut.gradle.MicronautLibraryPlugin', 'Micronaut Library Plugin')
     register('application', 'io.micronaut.gradle.MicronautApplicationPlugin', 'Micronaut Application Plugin')
+    register('function', 'io.micronaut.gradle.MicronautFunctionPlugin', 'Micronaut Function Plugin')
 }
 
 dependencies {
