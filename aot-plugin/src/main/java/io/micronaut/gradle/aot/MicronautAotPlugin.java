@@ -235,6 +235,9 @@ public abstract class MicronautAotPlugin implements Plugin<Project> {
                 manifest.attributes(attrs);
             });
         });
+        if (runtime == OptimizerIO.TargetRuntime.JIT) {
+            MicronautDockerPlugin.storeRunnerJars(project, micronautExtension.getExtensions().getByType(DockerExtension.class), List.of(optimizedRunnerJar));
+        }
         MicronautDockerImage optimized = dockerImages.findByName("optimized");
         if (optimized != null) {
             // only consider the main app

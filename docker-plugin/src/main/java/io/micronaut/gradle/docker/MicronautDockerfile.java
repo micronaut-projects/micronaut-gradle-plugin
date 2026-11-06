@@ -254,6 +254,9 @@ public abstract class MicronautDockerfile extends Dockerfile implements DockerBu
             // The options of the task are not public, but a Groovy build script can still reach them
             throw new GradleException("The JDK AOT cache is enabled on the " + getName() + " task, but it must be enabled with micronaut.docker.jdkAotCache.enabled, because the image layers depend on it");
         }
+        if (!Boolean.TRUE.equals(docker.getResourcesJar().get())) {
+            throw new GradleException("The JDK AOT cache needs the resources of the image as a JAR, but micronaut.docker.resourcesJar is false");
+        }
         if (buildStrategy != DockerBuildStrategy.DEFAULT) {
             throw new GradleException("The JDK AOT cache only supports the " + DockerBuildStrategy.DEFAULT + " Docker build strategy, but the " + getName() + " task uses " + buildStrategy);
         }
