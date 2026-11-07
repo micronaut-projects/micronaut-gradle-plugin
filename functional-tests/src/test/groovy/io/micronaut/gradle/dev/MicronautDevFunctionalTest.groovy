@@ -164,7 +164,7 @@ class MicronautDevFunctionalTest extends AbstractEagerConfiguringFunctionalTest 
         siblingSources.size() == 2
         siblingSources.any { it.endsWith("lib" + File.separator + "src" + File.separator + "main" + File.separator + "java") }
         siblingSources.any { it.endsWith("common" + File.separator + "src" + File.separator + "main" + File.separator + "java") }
-        manifest."micronaut.dev.compile.sibling-output" == file("build/micronaut-dev/siblings").absolutePath
+        manifest."micronaut.dev.compile.sibling-output".endsWith("build" + File.separator + "micronaut-dev" + File.separator + "siblings")
 
         when: "each project compiles into its own output"
         buildFile.text = buildFile.text.replace('runtime "netty"', 'runtime "netty"\n                dev { compile = "build-tool" }')
