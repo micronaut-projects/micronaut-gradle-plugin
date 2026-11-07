@@ -171,8 +171,8 @@ class MicronautDevFunctionalTest extends AbstractEagerConfiguringFunctionalTest 
         buildManifest()
 
         then: "the launcher compiles nothing and needs no directory for it"
-        !manifest().containsKey("micronaut.dev.compile.sibling-sources")
-        !manifest().containsKey("micronaut.dev.compile.sibling-output")
+        !this.manifest().containsKey("micronaut.dev.compile.sibling-sources")
+        !this.manifest().containsKey("micronaut.dev.compile.sibling-output")
     }
 
     def "an edit of a project depended on compiles against what that project compiles against"() {
