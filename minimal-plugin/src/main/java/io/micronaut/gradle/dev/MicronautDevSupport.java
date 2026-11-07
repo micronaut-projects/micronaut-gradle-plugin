@@ -140,6 +140,7 @@ public final class MicronautDevSupport {
     private static final String GROOVY_COMPILER_ARTIFACT = "io.micronaut:micronaut-inject-groovy";
     private static final String MANIFEST_DIRECTORY = "micronaut-dev";
     private static final String TEST_MANIFEST_DIRECTORY = MANIFEST_DIRECTORY + "/test";
+    private static final String SIBLINGS_DIRECTORY = "siblings";
     private static final String TRIGGER_FILE_NAME = "reload";
     private static final String TRIGGER_TASK_NAME = "mnDevTrigger";
     private static final String GENERATIONS_DIRECTORY = "generations";
@@ -456,9 +457,11 @@ public final class MicronautDevSupport {
         task.getCompileClasspath().from(dependencyPaths(project, sources, SourceSet::getCompileClasspath));
         task.getJavaSources().from(editedDirectories(project, main.getJava().getSrcDirs()));
         task.getResourceSources().from(editedDirectories(project, main.getResources().getSrcDirs()));
-        // the sources of the projects depended on too: their outputs are reloadable, so an edit there compiles
-        // into this project's output, which the generation reads first
+        // the sources of the projects depended on too: their outputs are reloadable, so an edit there compiles into a
+        // directory of its own, which the generation reads first and the jar task does not
         task.getJavaSources().from(dependencySourceDirectories(project, sources, "java"));
+        task.getSiblingSources().from(dependencySourceDirectories(project, sources, "java"));
+        task.getSiblingOutput().set(project.getLayout().getBuildDirectory().dir(MANIFEST_DIRECTORY + "/" + SIBLINGS_DIRECTORY).map(dir -> dir.getAsFile().getAbsolutePath()));
         task.getResourceSources().from(dependencySourceDirectories(project, sources, "resources"));
         // the compilation is described, not run: the providers read the compile task without depending on it,
         // and mnDev or mnTest builds the classes before it runs
@@ -718,6 +721,7 @@ public final class MicronautDevSupport {
             org.gradle.api.file.SourceDirectorySet groovy = main.getExtensions().getByType(org.gradle.api.file.SourceDirectorySet.class);
             task.getGroovySources().from(editedDirectories(project, groovy.getSrcDirs()));
             task.getGroovySources().from(dependencySourceDirectories(project, developmentRuntimeClasspath, "groovy"));
+            task.getSiblingSources().from(dependencySourceDirectories(project, developmentRuntimeClasspath, "groovy"));
             TaskProvider<GroovyCompile> compileGroovy = project.getTasks().named(main.getCompileTaskName("groovy"), GroovyCompile.class);
             task.getGroovyOutput().set(project.provider(() -> compileGroovy.get().getDestinationDirectory().get().getAsFile().getAbsolutePath()));
             task.getGroovyOptions().set(project.provider(() -> groovycOptions(compileGroovy.get())));

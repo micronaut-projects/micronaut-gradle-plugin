@@ -158,6 +158,21 @@ class MicronautDevFunctionalTest extends AbstractEagerConfiguringFunctionalTest 
         !reloadable[0].contains("lib" + File.separator)
         reloadable.any { it.contains("lib" + File.separator + "build") }
         reloadable.any { it.contains("common" + File.separator + "build") }
+
+        and: "what the launcher compiles of them goes where the jar task does not read"
+        def siblingSources = manifest."micronaut.dev.compile.sibling-sources".split(File.pathSeparator).toList()
+        siblingSources.size() == 2
+        siblingSources.any { it.endsWith("lib" + File.separator + "src" + File.separator + "main" + File.separator + "java") }
+        siblingSources.any { it.endsWith("common" + File.separator + "src" + File.separator + "main" + File.separator + "java") }
+        manifest."micronaut.dev.compile.sibling-output".endsWith("build" + File.separator + "micronaut-dev" + File.separator + "siblings")
+
+        when: "each project compiles into its own output"
+        buildFile.text = buildFile.text.replace('runtime "netty"', 'runtime "netty"\n                dev { compile = "build-tool" }')
+        buildManifest()
+
+        then: "the launcher compiles nothing and needs no directory for it"
+        !this.manifest().containsKey("micronaut.dev.compile.sibling-sources")
+        !this.manifest().containsKey("micronaut.dev.compile.sibling-output")
     }
 
     def "an edit of a project depended on compiles against what that project compiles against"() {
