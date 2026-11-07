@@ -24,10 +24,12 @@ import org.gradle.process.JavaForkOptions;
 import java.io.Serial;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * What {@code mnDev} takes from the {@code run} task, and {@code mnTest} from the {@code test} task: the JVM arguments,
@@ -35,7 +37,7 @@ import java.util.Objects;
  * such as {@code MICRONAUT_ENVIRONMENTS}, and the heap sizes, as the build configured them. The launcher's JVM is the
  * application's, or the tests', so it runs as {@code run} or {@code test} would.
  *
- * <p>What the development task sets itself wins, and is not repeated. The JVM argument providers are not taken: the
+ * <p>What the development task sets itself wins, whether as a system property, a JVM argument or a heap size, and is not repeated. The JVM argument providers are not taken: the
  * plugins add them, to {@code run} for its own launch, and those development mode needs, such as the connection to
  * the test resources server, to the development tasks themselves. Nor are the program arguments, the working
  * directory and the debug options, which are the launcher's own.</p>
@@ -54,6 +56,8 @@ record InheritedForkOptions(List<String> jvmArgs,
 
     @Serial
     private static final long serialVersionUID = 1L;
+    private static final String MIN_HEAP = "-Xms";
+    private static final String MAX_HEAP = "-Xmx";
 
     /**
      * The options a development task takes from another, read once the build is configured: when the configuration
@@ -83,17 +87,34 @@ record InheritedForkOptions(List<String> jvmArgs,
      */
     static InheritedForkOptions of(JavaForkOptions source, JavaForkOptions target) {
         List<String> targetJvmArgs = target.getJvmArgs() == null ? List.of() : target.getJvmArgs();
+        // what the development task sets, as a system property or a JVM argument, whichever way
+        Set<String> targetProperties = new HashSet<>(target.getSystemProperties().keySet());
+        boolean targetMinHeap = target.getMinHeapSize() != null;
+        boolean targetMaxHeap = target.getMaxHeapSize() != null;
+        for (String argument : targetJvmArgs) {
+            String property = propertyName(argument);
+            if (property != null) {
+                targetProperties.add(property);
+            }
+            targetMinHeap |= argument.startsWith(MIN_HEAP);
+            targetMaxHeap |= argument.startsWith(MAX_HEAP);
+        }
         List<String> jvmArgs = new ArrayList<>();
         if (source.getJvmArgs() != null) {
             for (String argument : source.getJvmArgs()) {
-                if (!targetJvmArgs.contains(argument)) {
+                String property = propertyName(argument);
+                boolean set = targetJvmArgs.contains(argument)
+                    || (property != null && targetProperties.contains(property))
+                    || (targetMinHeap && argument.startsWith(MIN_HEAP))
+                    || (targetMaxHeap && argument.startsWith(MAX_HEAP));
+                if (!set) {
                     jvmArgs.add(argument);
                 }
             }
         }
         Map<String, String> systemProperties = new LinkedHashMap<>();
         source.getSystemProperties().forEach((key, value) -> {
-            if (!target.getSystemProperties().containsKey(key)) {
+            if (!targetProperties.contains(key)) {
                 systemProperties.put(key, value == null ? null : String.valueOf(value));
             }
         });
@@ -107,8 +128,20 @@ record InheritedForkOptions(List<String> jvmArgs,
             }
         });
         return new InheritedForkOptions(jvmArgs, systemProperties, environment,
-            target.getMinHeapSize() == null ? source.getMinHeapSize() : null,
-            target.getMaxHeapSize() == null ? source.getMaxHeapSize() : null);
+            targetMinHeap ? null : source.getMinHeapSize(),
+            targetMaxHeap ? null : source.getMaxHeapSize());
+    }
+
+    /**
+     * @param argument a JVM argument
+     * @return the name of the system property it sets, if it is {@code -Dname} or {@code -Dname=value}
+     */
+    private static String propertyName(String argument) {
+        if (!argument.startsWith("-D") || argument.length() == 2) {
+            return null;
+        }
+        int equals = argument.indexOf('=');
+        return equals < 0 ? argument.substring(2) : argument.substring(2, equals);
     }
 
     /**
