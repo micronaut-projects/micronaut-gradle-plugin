@@ -20,6 +20,7 @@ import io.micronaut.gradle.openapi.ResponseBodyMappingModel;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.file.DirectoryProperty;
+import org.gradle.api.file.FileSystemOperations;
 import org.gradle.api.file.RegularFileProperty;
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.MapProperty;
@@ -34,6 +35,11 @@ import org.gradle.api.tasks.PathSensitive;
 import org.gradle.api.tasks.PathSensitivity;
 import org.gradle.api.tasks.TaskAction;
 import org.gradle.workers.WorkerExecutor;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.file.Files;
 
 import javax.inject.Inject;
 
@@ -308,6 +314,9 @@ public abstract class AbstractOpenApiGenerator<W extends AbstractOpenApiWorkActi
     @Inject
     protected abstract WorkerExecutor getWorkerExecutor();
 
+    @Inject
+    protected abstract FileSystemOperations getFileSystemOperations();
+
     @Internal
     protected abstract Class<W> getWorkerAction();
 
@@ -315,6 +324,8 @@ public abstract class AbstractOpenApiGenerator<W extends AbstractOpenApiWorkActi
 
     @TaskAction
     public final void execute() {
+        recreateOutputDirectory();
+
         getWorkerExecutor().classLoaderIsolation(spec -> spec.getClasspath().from(getClasspath()))
             .submit(getWorkerAction(), params -> {
                 params.getLang().set(getLang());
@@ -393,5 +404,15 @@ public abstract class AbstractOpenApiGenerator<W extends AbstractOpenApiWorkActi
 
                 configureWorkerParameters(params);
             });
+    }
+
+    private void recreateOutputDirectory() {
+        File outputDirectory = getOutputDirectory().getAsFile().get();
+        getFileSystemOperations().delete(spec -> spec.delete(outputDirectory));
+        try {
+            Files.createDirectories(outputDirectory.toPath());
+        } catch (IOException e) {
+            throw new UncheckedIOException("Unable to recreate OpenAPI output directory: " + outputDirectory, e);
+        }
     }
 }

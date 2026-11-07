@@ -32,6 +32,10 @@ Use this file as durable project context for automation and review work in this 
 - Treat contributor-checklist items as handoff requirements. If a requirement is not applicable, state that explicitly in the PR description or handoff note.
 - For UI-visible changes, confirm whether screenshots or other visual evidence are required and include them in the PR description; if screenshots cannot be provided, explain why and describe the verification that was performed.
 
+## Branch Hygiene
+
+- If a long-lived work branch or managed checkout appears to be missing this root `AGENTS.md`, update the branch from the target branch before making guidance or implementation changes; do not recreate stale guidance from memory.
+
 ## Verification
 
 - Documentation-only guidance changes: run `git diff --check` and do a readability pass.
