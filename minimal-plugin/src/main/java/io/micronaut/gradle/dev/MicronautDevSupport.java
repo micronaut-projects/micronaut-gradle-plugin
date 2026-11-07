@@ -749,7 +749,9 @@ public final class MicronautDevSupport {
     }
 
     /**
-     * The javac options as the build passes them: the compiler arguments, the release, and the encoding.
+     * The javac options as the build passes them: the compiler arguments, the release, the encoding, and the JVM
+     * arguments of a forked compile, as javac's own {@code -J} options. Annotation processors read system properties
+     * given that way, so the embedded compiler has to know them to generate what the build generates.
      */
     static List<String> javacOptions(JavaCompile compile) {
         List<String> options = new ArrayList<>(compile.getOptions().getAllCompilerArgs());
@@ -769,6 +771,11 @@ public final class MicronautDevSupport {
         if (compile.getOptions().getEncoding() != null) {
             options.add("-encoding");
             options.add(compile.getOptions().getEncoding());
+        }
+        if (compile.getOptions().isFork()) {
+            for (String jvmArg : compile.getOptions().getForkOptions().getAllJvmArgs()) {
+                options.add("-J" + jvmArg);
+            }
         }
         return options;
     }
