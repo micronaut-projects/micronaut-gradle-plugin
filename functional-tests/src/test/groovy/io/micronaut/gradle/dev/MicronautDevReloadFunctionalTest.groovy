@@ -148,6 +148,87 @@ class MicronautDevReloadFunctionalTest extends AbstractFunctionalTest {
         portIsFree(port)
     }
 
+    def "mnDev runs the application with the JVM arguments, system properties, environment and environments of run"() {
+        given: "run sets the application's environment as a system property, as the Micronaut samples do"
+        int port = freePort()
+        writeProject(port)
+        buildFile << """
+            application {
+                applicationDefaultJvmArgs = ["-Dfrom.default.jvm.args=default"]
+            }
+            tasks.named("run", JavaExec) {
+                systemProperty("micronaut.environments", "h2")
+                systemProperty("from.run", "run")
+                systemProperty("both", "run")
+                environment("FROM_RUN", "run")
+                jvmArgs("-Dfrom.run.jvm.args=run")
+                maxHeapSize = "320m"
+            }
+            tasks.named("mnDev", JavaExec) {
+                // what mnDev sets itself wins
+                systemProperty("both", "mnDev")
+            }
+        """
+        writeSource("src/main/java/example/InheritedController.java", """
+            package example;
+            import io.micronaut.context.env.Environment;
+            import io.micronaut.http.MediaType;
+            import io.micronaut.http.annotation.Controller;
+            import io.micronaut.http.annotation.Get;
+            import io.micronaut.http.annotation.Produces;
+            import java.lang.management.ManagementFactory;
+            @Controller("/inherited")
+            public class InheritedController {
+                private final Environment environment;
+                InheritedController(Environment environment) {
+                    this.environment = environment;
+                }
+                @Get
+                @Produces(MediaType.TEXT_PLAIN)
+                public String index() {
+                    long xmx = ManagementFactory.getRuntimeMXBean().getInputArguments().stream().filter("-Xmx320m"::equals).count();
+                    return "h2=" + environment.getActiveNames().contains("h2")
+                        + " from.run=" + System.getProperty("from.run")
+                        + " both=" + System.getProperty("both")
+                        + " FROM_RUN=" + System.getenv("FROM_RUN")
+                        + " run.jvm.args=" + System.getProperty("from.run.jvm.args")
+                        + " default.jvm.args=" + System.getProperty("from.default.jvm.args")
+                        + " xmx=" + xmx;
+                }
+            }
+        """)
+
+        when:
+        CompletableFuture<Object> run = CompletableFuture.supplyAsync {
+            try {
+                configureRunner("mnDev").run()
+            } catch (UnexpectedBuildFailure failure) {
+                failure.buildResult
+            }
+        }
+        String body = awaitAny(run, port, "/inherited", STARTUP_TIMEOUT)
+        launcher = ProcessHandle.of(Long.parseLong(awaitAny(run, port, "/pid", RELOAD_TIMEOUT))).get()
+        List<String> arguments = launcher.info().arguments().map { it.toList() }.orElse([])
+
+        then: "each once, and mnDev's own value over run's"
+        body.startsWith("h2=true ")
+        body.contains(" from.run=run ")
+        body.contains(" both=mnDev ")
+        body.contains(" FROM_RUN=run ")
+        body.contains(" run.jvm.args=run ")
+        body.contains(" default.jvm.args=default ")
+        body.endsWith(" xmx=1")
+        arguments.count { it == "-Dfrom.default.jvm.args=default" } == 1
+        arguments.count { it == "--enable-native-access=ALL-UNNAMED" } == 1
+
+        when: "the launcher is stopped"
+        launcher.destroy()
+        run.get(60, TimeUnit.SECONDS)
+
+        then:
+        launcher.onExit().get(30, TimeUnit.SECONDS) != null
+    }
+
     def "mnDev reloads a Kotlin controller, compiled with KSP"() {
         given:
         int port = freePort()

@@ -153,6 +153,47 @@ class MicronautTestModeFunctionalTest extends AbstractEagerConfiguringFunctional
         file("build/reports/tests/mnTest/index.html").exists()
     }
 
+    def "mnTest runs the tests with the JVM arguments, system properties and environment of test"() {
+        given:
+        writeProject()
+        buildFile << """
+            tasks.named("test", Test) {
+                systemProperty("micronaut.environments", "h2")
+                systemProperty("both", "test")
+                environment("FROM_TEST", "test")
+                jvmArgs("-Dfrom.test.jvm.args=test")
+                maxHeapSize = "320m"
+            }
+            tasks.named("mnTest", JavaExec) {
+                // what mnTest sets itself wins
+                systemProperty("both", "mnTest")
+            }
+        """
+        writeSource("src/test/java/example/InheritedTest.java", """
+            package example;
+            import org.junit.jupiter.api.Test;
+            import java.lang.management.ManagementFactory;
+            import static org.junit.jupiter.api.Assertions.assertEquals;
+            class InheritedTest {
+                @Test
+                void runsAsTheTestTaskWould() {
+                    assertEquals("h2", System.getProperty("micronaut.environments"));
+                    assertEquals("mnTest", System.getProperty("both"));
+                    assertEquals("test", System.getenv("FROM_TEST"));
+                    assertEquals("test", System.getProperty("from.test.jvm.args"));
+                    assertEquals(1L, ManagementFactory.getRuntimeMXBean().getInputArguments().stream().filter("-Xmx320m"::equals).count());
+                }
+            }
+        """)
+
+        when:
+        def result = build("mnTest", "--once", "--tests", "example.InheritedTest")
+
+        then:
+        result.task(":mnTest").outcome == TaskOutcome.SUCCESS
+        !file("build/test-results/mnTest/TEST-example.InheritedTest.xml").text.contains("<failure")
+    }
+
     def "the manifest of test mode describes Kotlin tests with KSP"() {
         given:
         settingsFile << "rootProject.name = 'hello-kotlin'"
