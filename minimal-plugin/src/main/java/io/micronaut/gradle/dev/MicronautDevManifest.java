@@ -201,6 +201,28 @@ public abstract class MicronautDevManifest extends DefaultTask {
     public abstract ConfigurableFileCollection getResourceSources();
 
     /**
+     * The source directories of the projects depended on, among the sources of each language: what the launcher compiles
+     * of them goes to {@link #getSiblingOutput()}, since the jar packages the application's class output as it finds it.
+     *
+     * @return the directories
+     * @since 5.0.3
+     */
+    @InputFiles
+    @PathSensitive(PathSensitivity.ABSOLUTE)
+    public abstract ConfigurableFileCollection getSiblingSources();
+
+    /**
+     * The directory what the launcher compiles of the projects depended on goes under, as a path:
+     * {@code build/micronaut-dev/siblings}, shared by {@code mnDev} and {@code mnTest} as they share the class output.
+     *
+     * @return the absolute path of the directory
+     * @since 5.0.3
+     */
+    @Input
+    @Optional
+    public abstract Property<String> getSiblingOutput();
+
+    /**
      * @return the class output of the Java compilation, as a path: named in the manifest, not built by it
      */
     @Input
@@ -300,6 +322,12 @@ public abstract class MicronautDevManifest extends DefaultTask {
         putCompilation(entries, directory, "java", getJavaSources().getFiles(), getJavaOutput(), getJavaGeneratedSources(), getJavaOptions().get());
         putCompilation(entries, directory, "kotlin", getKotlinSources().getFiles(), getKotlinOutput(), null, getKotlinOptions().get());
         putCompilation(entries, directory, "groovy", getGroovySources().getFiles(), getGroovyOutput(), null, getGroovyOptions().get());
+        Set<File> siblingSources = existing(getSiblingSources().getFiles());
+        // in build-tool mode each project compiles into its own output
+        if (!siblingSources.isEmpty() && getSiblingOutput().isPresent() && !"build-tool".equals(getCompileMode().get())) {
+            entries.put(PREFIX + "compile.sibling-sources", join(siblingSources));
+            entries.put(PREFIX + "compile.sibling-output", getSiblingOutput().get());
+        }
         entries.put(PREFIX + "build-tool", "gradle");
         entries.put(PREFIX + "build-tool.trigger", getBuildToolTrigger().get());
         List<String> retain = getRetain().get();

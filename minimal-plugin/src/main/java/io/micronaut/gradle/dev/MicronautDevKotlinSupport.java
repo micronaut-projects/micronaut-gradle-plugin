@@ -156,6 +156,7 @@ final class MicronautDevKotlinSupport {
     private static void configureMainKotlin(Project project, MicronautDevExtension dev, MicronautDevManifest task, KotlinJvmProjectExtension kotlin, SourceSet main, Provider<List<String>> allOpen, String classpath) {
         task.getKotlinSources().from(MicronautDevSupport.editedDirectories(project, kotlin.getSourceSets().getByName(SourceSet.MAIN_SOURCE_SET_NAME).getKotlin().getSrcDirs()));
         task.getKotlinSources().from(MicronautDevSupport.dependencySourceDirectories(project, project.getConfigurations().getByName(classpath), "kotlin"));
+        task.getSiblingSources().from(MicronautDevSupport.dependencySourceDirectories(project, project.getConfigurations().getByName(classpath), "kotlin"));
         TaskProvider<KotlinJvmCompile> compileKotlin = project.getTasks().named(main.getCompileTaskName("kotlin"), KotlinJvmCompile.class);
         task.getKotlinOutput().set(project.provider(() -> compileKotlin.get().getDestinationDirectory().get().getAsFile().getAbsolutePath()));
         task.getKotlinOptions().set(project.provider(() -> kotlincOptions(compileKotlin.get())));

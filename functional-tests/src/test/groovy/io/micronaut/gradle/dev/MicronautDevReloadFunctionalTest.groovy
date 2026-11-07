@@ -298,6 +298,10 @@ class MicronautDevReloadFunctionalTest extends AbstractFunctionalTest {
         awaitBody(run, port, "/hello", "TWO", RELOAD_TIMEOUT)
         awaitAny(run, port, "/pid", RELOAD_TIMEOUT) == String.valueOf(pid)
 
+        and: "nothing of it lands in the application's output, which the jar task packages"
+        file("build/micronaut-dev/siblings/classes/lib/Greeter.class").exists()
+        !file("build/classes/java/main/lib").exists()
+
         when: "the launcher is stopped"
         launcher.destroy()
         run.get(60, TimeUnit.SECONDS)
