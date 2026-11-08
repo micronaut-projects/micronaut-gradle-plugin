@@ -18,6 +18,7 @@ package io.micronaut.gradle.dev;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
 import org.gradle.api.provider.Provider;
+import org.gradle.api.provider.ProviderFactory;
 import org.gradle.api.tasks.TaskContainer;
 import org.gradle.process.JavaForkOptions;
 
@@ -30,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.UnaryOperator;
 
 /**
  * What {@code mnDev} takes from the {@code run} task, and {@code mnTest} from the {@code test} task: the JVM arguments,
@@ -70,11 +72,12 @@ record InheritedForkOptions(List<String> jvmArgs,
      */
     static Provider<InheritedForkOptions> between(Project project, String from, String to) {
         TaskContainer tasks = project.getTasks();
+        ProviderFactory providers = project.getProviders();
         return project.provider(() -> {
             Task source = tasks.findByName(from);
             Task target = tasks.findByName(to);
             if (source instanceof JavaForkOptions sourceOptions && target instanceof JavaForkOptions targetOptions) {
-                return of(sourceOptions, targetOptions);
+                return of(sourceOptions, targetOptions, name -> providers.environmentVariable(name).getOrNull());
             }
             return null;
         });
@@ -83,9 +86,10 @@ record InheritedForkOptions(List<String> jvmArgs,
     /**
      * @param source the options taken from
      * @param target the options of the development task, which win
+     * @param buildEnvironment the variables of the build's environment, which both tasks start from
      * @return what the development task takes
      */
-    static InheritedForkOptions of(JavaForkOptions source, JavaForkOptions target) {
+    static InheritedForkOptions of(JavaForkOptions source, JavaForkOptions target, UnaryOperator<String> buildEnvironment) {
         List<String> targetJvmArgs = target.getJvmArgs() == null ? List.of() : target.getJvmArgs();
         // what the development task sets, as a system property or a JVM argument, whichever way
         Set<String> targetProperties = new HashSet<>(target.getSystemProperties().keySet());
@@ -118,18 +122,26 @@ record InheritedForkOptions(List<String> jvmArgs,
                 systemProperties.put(key, value == null ? null : String.valueOf(value));
             }
         });
-        // both start from the build's environment: what differs is what the build added or changed
+        // both start from the build's environment: what the source added or changed, unless the target changed it too;
+        // the build's value is read only where the two differ
         Map<String, String> environment = new LinkedHashMap<>();
         source.getEnvironment().forEach((key, value) -> {
             String text = value == null ? null : String.valueOf(value);
-            Object current = target.getEnvironment().get(key);
-            if (text != null && !Objects.equals(text, current == null ? null : String.valueOf(current))) {
-                environment.put(key, text);
+            String current = text(target.getEnvironment().get(key));
+            if (text != null && !text.equals(current)) {
+                String original = buildEnvironment.apply(key);
+                if (!text.equals(original) && Objects.equals(current, original)) {
+                    environment.put(key, text);
+                }
             }
         });
         return new InheritedForkOptions(jvmArgs, systemProperties, environment,
             targetMinHeap ? null : source.getMinHeapSize(),
             targetMaxHeap ? null : source.getMaxHeapSize());
+    }
+
+    private static String text(Object value) {
+        return value == null ? null : String.valueOf(value);
     }
 
     /**

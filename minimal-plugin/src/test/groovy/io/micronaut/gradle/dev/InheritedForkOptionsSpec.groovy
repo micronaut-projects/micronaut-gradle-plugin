@@ -21,7 +21,7 @@ class InheritedForkOptionsSpec extends Specification {
         run.maxHeapSize = "320m"
 
         when:
-        def inherited = InheritedForkOptions.of(run, dev)
+        def inherited = InheritedForkOptions.of(run, dev, System::getenv)
 
         then:
         inherited.jvmArgs() == ["-Dfrom.jvm.args=run", "-XX:+UseSerialGC"]
@@ -47,14 +47,16 @@ class InheritedForkOptionsSpec extends Specification {
         run.systemProperty("set.by.property", "run")
         run.systemProperty("set.by.argument", "run")
         run.environment("SHARED", "run")
+        run.environment("MODE", "run")
         dev.jvmArgs("--enable-native-access=ALL-UNNAMED", "-Dset.by.argument=mnDev", "-Xms256m")
         dev.systemProperty("raw", "mnDev")
         dev.systemProperty("set.by.property", "mnDev")
         dev.environment("SHARED", "run")
+        dev.environment("MODE", "mnDev")
         dev.maxHeapSize = "512m"
 
         when:
-        def inherited = InheritedForkOptions.of(run, dev)
+        def inherited = InheritedForkOptions.of(run, dev, System::getenv)
 
         then:
         inherited.jvmArgs() == ["-Dboth=run"]
