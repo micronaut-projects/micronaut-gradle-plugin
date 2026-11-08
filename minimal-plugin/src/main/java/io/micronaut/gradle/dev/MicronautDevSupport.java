@@ -31,8 +31,10 @@ import org.gradle.api.attributes.Attribute;
 import org.gradle.api.attributes.LibraryElements;
 import org.gradle.api.attributes.Usage;
 import org.gradle.api.file.FileCollection;
+import org.gradle.api.plugins.ApplicationPlugin;
 import org.gradle.api.plugins.BasePlugin;
 import org.gradle.api.plugins.JavaApplication;
+import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.provider.Property;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.JavaExec;
@@ -251,6 +253,8 @@ public final class MicronautDevSupport {
             task.setWorkingDir(project.getProjectDir());
             JavaApplication application = project.getExtensions().getByType(JavaApplication.class);
             task.jvmArgs(application.getApplicationDefaultJvmArgs());
+            // and as run does: with its JVM arguments, system properties and environment
+            task.inheritFrom(InheritedForkOptions.between(project, ApplicationPlugin.TASK_RUN_NAME, DEV_TASK_NAME));
         });
 
         TaskProvider<MicronautTestManifest> testManifest = configureTestMode(project, dev, compilers, sourceSets, manifestDirectory);
@@ -414,6 +418,8 @@ public final class MicronautDevSupport {
             task.setWorkingDir(project.getProjectDir());
             // as the test task runs them: an assert in a test or the code it tests fails it
             task.setEnableAssertions(true);
+            // and with its JVM arguments, system properties and environment
+            task.inheritFrom(InheritedForkOptions.between(project, JavaPlugin.TEST_TASK_NAME, TEST_TASK_NAME));
         });
         return manifest;
     }

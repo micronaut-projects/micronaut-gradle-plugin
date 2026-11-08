@@ -18,6 +18,7 @@ package io.micronaut.gradle.dev;
 import org.gradle.api.logging.Logger;
 import org.gradle.api.logging.Logging;
 import org.gradle.api.provider.MapProperty;
+import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.JavaExec;
 import org.gradle.api.tasks.TaskAction;
@@ -44,6 +45,9 @@ public abstract class MicronautDevTask extends JavaExec {
 
     private static final Logger LOGGER = Logging.getLogger(MicronautDevTask.class);
 
+    // what the task takes from run, or mnTest from test, read once the build is configured
+    private Provider<InheritedForkOptions> inherited;
+
     /**
      * Passes the overrides to the launcher, and allows it native access.
      */
@@ -61,9 +65,22 @@ public abstract class MicronautDevTask extends JavaExec {
     @Input
     public abstract MapProperty<String, String> getOverrides();
 
+    /**
+     * Has the task take the JVM arguments, system properties, environment variables and heap sizes of another.
+     *
+     * @param options the options, read when the task runs
+     */
+    void inheritFrom(Provider<InheritedForkOptions> options) {
+        this.inherited = options;
+    }
+
     @Override
     @TaskAction
     public void exec() {
+        InheritedForkOptions options = inherited == null ? null : inherited.getOrNull();
+        if (options != null) {
+            options.applyTo(this);
+        }
         boolean ignoreExitValue = isIgnoreExitValue();
         setIgnoreExitValue(true);
         ExecResult result;

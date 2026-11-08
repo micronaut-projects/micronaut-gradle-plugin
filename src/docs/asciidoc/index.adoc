@@ -678,6 +678,8 @@ The `mnDev` task runs `io.micronaut.dev.MicronautDevMain` with the `developmentR
 
 The launcher compiles the sources of the projects the application depends on too, into `build/micronaut-dev/siblings` of the application project, which the manifest names as `micronaut.dev.compile.sibling-output`: each generation reads it first, and the `jar` task does not, so nothing of those projects ends up in the application's jar. The launcher empties it when it starts, unless `mnTest` or another `mnDev` is using it.
 
+The application runs in the launcher's JVM, so `mnDev` runs it as `run` would: it takes the JVM arguments, the system properties, the environment variables the build adds or changes and the heap sizes of the `run` task, as the build configures them, so a `run` task that sets `micronaut.environments`, as a system property or as `MICRONAUT_ENVIRONMENTS`, sets it for `mnDev` too. What `mnDev` sets itself wins, and nothing is passed twice. The JVM argument providers of `run` are not taken, since plugins add them for `run`'s own launch and add those development mode needs, such as the connection to the test resources server, to `mnDev` itself; nor are the program arguments, the working directory or the debug options of `run`, which belong to the launcher.
+
 [source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
 ----
 micronaut {
@@ -787,6 +789,8 @@ $ ./gradlew mnTest
 ----
 
 The `mnTest` task runs `io.micronaut.dev.MicronautDevMain` with the `testRuntimeClasspath` plus the launcher, `micronaut-dev-test-report`, `micronaut-runtime-osx` on macOS, and `junit-platform-launcher`, at the version of the `junit-platform-engine` the tests resolve, on the `mnTestRuntime` configuration. The `mnTestManifest` task writes the manifest into `build/micronaut-dev/test/dev.properties`: everything `mnDevManifest` writes, plus the test sources, resources, classpaths and compiler options, with the outputs of the test and main source sets as the reloadable tier. A change runs the test classes that reference a changed class, directly or not, together with those that failed last; a change of resources or configuration runs every test. On a terminal, space runs the last tests again, `a` every test, `f` the failures, `w` turns watching on or off, and `q` exits; the task fails when the last run did.
+
+Likewise `mnTest` takes the JVM arguments, system properties, environment variables and heap sizes of the `test` task, so the tests run with the `micronaut.environments` or `micronaut.server.port` the build gives `test`.
 
 Results are written as JUnit XML into `build/test-results/mnTest`, and as an HTML report into `build/reports/tests/mnTest`, which test mode's LiveReload server also serves at `http://localhost:35730/tests/` and updates test by test. The port is set by `liveReloadPort`, apart from `mnDev`'s `liveReload.port`, 35729, so that the report is served while `mnDev` runs; the path is set by `reportPath`; the launcher adds the leading and trailing slashes, and rejects `/`, `..` and the LiveReload server's own paths.
 
