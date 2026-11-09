@@ -22,9 +22,11 @@ import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.ModuleVersionIdentifier;
 import org.gradle.api.artifacts.result.ResolvedComponentResult;
 import org.gradle.api.artifacts.result.ResolvedDependencyResult;
+import org.gradle.api.plugins.JavaPluginExtension;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.TaskProvider;
+import org.gradle.jvm.toolchain.JavaToolchainService;
 import com.google.devtools.ksp.gradle.KspExtension;
 import org.jetbrains.kotlin.allopen.gradle.AllOpenExtension;
 import org.jetbrains.kotlin.gradle.dsl.KotlinJvmProjectExtension;
@@ -140,7 +142,9 @@ final class MicronautDevKotlinSupport {
             task.getTestKotlinSources().from(MicronautDevSupport.editedDirectories(project, kotlin.getSourceSets().getByName(SourceSet.TEST_SOURCE_SET_NAME).getKotlin().getSrcDirs()));
             TaskProvider<KotlinJvmCompile> compileTestKotlin = project.getTasks().named(test.getCompileTaskName("kotlin"), KotlinJvmCompile.class);
             task.getTestKotlinOutput().set(project.provider(() -> compileTestKotlin.get().getDestinationDirectory().get().getAsFile().getAbsolutePath()));
-            task.getTestKotlinOptions().set(project.provider(() -> kotlincOptions(compileTestKotlin.get())));
+            // the JDK first: a -jdk-home of the build's own arguments, later, wins, as it does for kotlinc
+            task.getTestKotlinOptions().set(jdkHomeOptions(project));
+            task.getTestKotlinOptions().addAll(project.provider(() -> kotlincOptions(compileTestKotlin.get())));
             if (allOpen != null) {
                 task.getTestKotlinOptions().addAll(allOpen);
             }
@@ -159,7 +163,9 @@ final class MicronautDevKotlinSupport {
         task.getSiblingSources().from(MicronautDevSupport.dependencySourceDirectories(project, project.getConfigurations().getByName(classpath), "kotlin"));
         TaskProvider<KotlinJvmCompile> compileKotlin = project.getTasks().named(main.getCompileTaskName("kotlin"), KotlinJvmCompile.class);
         task.getKotlinOutput().set(project.provider(() -> compileKotlin.get().getDestinationDirectory().get().getAsFile().getAbsolutePath()));
-        task.getKotlinOptions().set(project.provider(() -> kotlincOptions(compileKotlin.get())));
+        // the JDK first: a -jdk-home of the build's own arguments, later, wins, as it does for kotlinc
+        task.getKotlinOptions().set(jdkHomeOptions(project));
+        task.getKotlinOptions().addAll(project.provider(() -> kotlincOptions(compileKotlin.get())));
         if (allOpen != null) {
             task.getKotlinOptions().addAll(allOpen);
         }
@@ -245,11 +251,17 @@ final class MicronautDevKotlinSupport {
     }
 
     /**
-     * The kotlinc options as the build passes them: the JVM target, Java parameter names, the free
+     * The kotlinc options as the build passes them: the module name, the JVM target, Java parameter names, the free
      * arguments, the compiler plugins of the compilation, and the all-open annotations.
      */
     static List<String> kotlincOptions(KotlinJvmCompile compile) {
         List<String> options = new ArrayList<>();
+        // internal members are mangled with the module name and visible only within the module: the classes the
+        // launcher compiles must be of the module Gradle compiled, or a caller of an internal member does not compile
+        if (compile.getCompilerOptions().getModuleName().isPresent()) {
+            options.add("-module-name");
+            options.add(compile.getCompilerOptions().getModuleName().get());
+        }
         if (compile.getCompilerOptions().getJvmTarget().isPresent()) {
             options.add("-jvm-target");
             options.add(compile.getCompilerOptions().getJvmTarget().get().getTarget());
@@ -262,6 +274,21 @@ final class MicronautDevKotlinSupport {
             options.add("-Xplugin=" + plugin.getAbsolutePath());
         }
         return options;
+    }
+
+    /**
+     * The JDK of the project's Java toolchain, the current JVM's when none is configured, as {@code -jdk-home}: the JDK
+     * Gradle's Kotlin compilation and KSP resolve the JDK's classes from, and the launcher's kotlinc and KSP with it.
+     * Without it the launcher resolves them from the JDK it runs on.
+     */
+    private static Provider<List<String>> jdkHomeOptions(Project project) {
+        JavaPluginExtension java = project.getExtensions().findByType(JavaPluginExtension.class);
+        JavaToolchainService toolchains = project.getExtensions().findByType(JavaToolchainService.class);
+        if (java == null || toolchains == null) {
+            return project.provider(List::of);
+        }
+        return toolchains.launcherFor(java.getToolchain())
+            .map(launcher -> List.of("-jdk-home", launcher.getMetadata().getInstallationPath().getAsFile().getAbsolutePath()));
     }
 
     /**

@@ -337,6 +337,9 @@ class MicronautDevFunctionalTest extends AbstractEagerConfiguringFunctionalTest 
             }
             $repositoriesBlock
             application { mainClass = "example.Application" }
+            tasks.named("compileKotlin") {
+                compilerOptions.moduleName.set("hello-module")
+            }
         """
         writeApplication("kotlin", "src/main/kotlin/example/Application.kt", """
             package example
@@ -358,6 +361,10 @@ class MicronautDevFunctionalTest extends AbstractEagerConfiguringFunctionalTest 
         def options = file("build/micronaut-dev/kotlin-options.argfile").readLines()
         options.contains("-java-parameters")
         options.any { it.startsWith("-Xplugin=") && it.contains("allopen") }
+        // the module name of the build's compilation, which internal members are mangled with, and the JDK it compiled against
+        options[options.indexOf("-module-name") + 1] == "hello-module"
+        options.indexOf("-jdk-home") == 0
+        new File(options[1], "bin").isDirectory()
         options.contains("plugin:org.jetbrains.kotlin.allopen:annotation=io.micronaut.aop.Around")
         options.containsAll(["-Amicronaut.processing.module=hello-kotlin", "-Amicronaut.processing.incremental=true"])
         file("build/micronaut-dev/processors.argfile").readLines().any { it.contains("micronaut-inject-kotlin") }
