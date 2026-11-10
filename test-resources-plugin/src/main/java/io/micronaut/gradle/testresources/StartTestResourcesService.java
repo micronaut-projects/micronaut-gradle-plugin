@@ -16,6 +16,7 @@
 package io.micronaut.gradle.testresources;
 
 import io.micronaut.testresources.buildtools.ServerFactory;
+import io.micronaut.testresources.buildtools.ServerSettings;
 import io.micronaut.testresources.buildtools.ServerUtils;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.GradleException;
@@ -261,16 +262,40 @@ public abstract class StartTestResourcesService extends DefaultTask {
                 Thread.sleep(duration.toMillis());
             }
         };
+        Path settingsDirectory = getSettingsDirectory().get().getAsFile().toPath();
+        Integer explicitPort = getExplicitPort().getOrNull();
+        Path portFile = getPortFile().map(f -> f.getAsFile().toPath()).getOrNull();
+        if (canReuseExistingServer(settingsDirectory, portFile)) {
+            return;
+        }
         ServerUtils.startOrConnectToExistingServer(
-            getExplicitPort().getOrNull(),
-            getPortFile().map(f -> f.getAsFile().toPath()).getOrNull(),
-            getSettingsDirectory().get().getAsFile().toPath(),
+            explicitPort,
+            portFile,
+            settingsDirectory,
             getAccessToken().getOrNull(),
             cdsDir,
             getClasspath().getFiles(),
             getClientTimeout().getOrNull(),
             getServerIdleTimeoutMinutes().getOrNull(),
             serverFactory);
+    }
+
+    private boolean canReuseExistingServer(Path settingsDirectory, Path portFile) {
+        var settings = ServerUtils.readServerSettings(settingsDirectory);
+        try {
+            Integer port = null;
+            if (settings.isPresent()) {
+                port = settings.get().getPort();
+            } else if (portFile != null && Files.exists(portFile)) {
+                List<String> lines = Files.readAllLines(portFile);
+                if (!lines.isEmpty()) {
+                    port = Integer.parseInt(lines.get(0).trim());
+                }
+            }
+            return port != null && ServerUtils.isServerStarted(port);
+        } catch (IOException | NumberFormatException ignored) {
+            return false;
+        }
     }
 
 }
