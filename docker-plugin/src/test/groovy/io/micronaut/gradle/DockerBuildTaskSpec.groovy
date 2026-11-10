@@ -133,9 +133,9 @@ class Application {
         testProjectDir.newFile("Dockerfile") << """FROM eclipse-temurin:25-jre
 WORKDIR /home/alternate
 COPY --link layers/libs /home/alternate/libs
-COPY --link layers/app/application.jar /home/alternate/application.jar
+COPY --link layers/app /home/alternate/
 EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "/home/alternate/application.jar"]
+ENTRYPOINT ["java", "-cp", "/home/alternate/resources:/home/alternate/classes:/home/alternate/libs/*", "example.Application"]
 """
         when:
         def result = build('dockerBuild', '-s')
@@ -244,7 +244,7 @@ COPY --link layers/libs /home/alternate/libs
 COPY --link layers/app /home/alternate/
 COPY --link layers/resources /home/alternate/resources
 EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "/home/alternate/application.jar"]
+ENTRYPOINT ["java", "-cp", "/home/alternate/resources:/home/alternate/classes:/home/alternate/libs/*", "example.Application"]
 """
     }
 
@@ -290,7 +290,7 @@ class Application {
 
         and:
         def dockerfile = new File(testProjectDir.root, 'build/docker/main/Dockerfile').text
-        dockerfile.contains('ENTRYPOINT ["java", "-Dtest.flag=from-application", "-Xmx256m", "-jar", "/home/app/application.jar"]')
+        dockerfile.contains('ENTRYPOINT ["java", "-Dtest.flag=from-application", "-Xmx256m", "-cp", "/home/app/resources:/home/app/classes:/home/app/libs/*", "example.Application"]')
     }
 
     @Issue("https://github.com/micronaut-projects/micronaut-gradle-plugin/issues/765")
@@ -339,7 +339,7 @@ class Application {
 
         and:
         def dockerfile = new File(testProjectDir.root, 'build/docker/main/Dockerfile').text
-        dockerfile.contains('ENTRYPOINT ["java", "-Xmx128m", "-jar", "/home/app/application.jar"]')
+        dockerfile.contains('ENTRYPOINT ["java", "-Xmx128m", "-cp", "/home/app/resources:/home/app/classes:/home/app/libs/*", "example.Application"]')
         !dockerfile.contains('-Dtest.flag=from-application')
         !dockerfile.contains('-Xmx256m')
     }
@@ -440,7 +440,7 @@ COPY layers/libs /home/app/libs
 COPY layers/app /home/app/
 COPY layers/resources /home/app/resources
 EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "/home/app/application.jar"]
+ENTRYPOINT ["java", "-cp", "/home/app/resources:/home/app/classes:/home/app/libs/*", "example.Application"]
 """
     }
 
