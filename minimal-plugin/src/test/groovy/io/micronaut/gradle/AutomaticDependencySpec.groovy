@@ -38,4 +38,31 @@ class AutomaticDependencySpec extends Specification {
         "io.micronaut.tracing"     | "io.micronaut.tracing:micronaut-tracing-annotation"
         "io.micronaut.validation"  | "io.micronaut.validation:micronaut-validation-processor"
     }
+
+    def "BOMs do not trigger processors in #scope (enforced: #enforced, library: #library)"() {
+        given:
+        def project = ProjectBuilder.builder().build()
+        project.extensions.add('micronautVersion', 'any')
+        project.pluginManager.apply(MicronautMinimalLibraryPlugin)
+        def boms = project.configurations.create('globalBoms')
+        project.configurations.getByName(scope).extendsFrom(boms)
+        def coordinates = 'io.micronaut.validation:micronaut-validation-bom:5.2.1'
+        def bom = enforced ? project.dependencies.enforcedPlatform(coordinates) : project.dependencies.platform(coordinates)
+        boms.dependencies.add(bom)
+        if (library) {
+            project.dependencies.add(scope, 'io.micronaut.validation:micronaut-validation')
+        }
+
+        when:
+        project.evaluate()
+
+        then:
+        def processors = project.configurations.annotationProcessor.incoming.dependencies
+        processors.any { it.group == 'io.micronaut.validation' && it.name == 'micronaut-validation-processor' } == library
+        boms.dependencies.contains(bom)
+
+        where:
+        [scope, enforced, library] << [['implementation', 'compileOnly'], [false, true], [false, true]].combinations()
+    }
+
 }

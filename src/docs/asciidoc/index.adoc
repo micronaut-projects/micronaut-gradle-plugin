@@ -2529,7 +2529,8 @@ NOTE: While using the `fromFile` extension, the file input can also be a directo
 [[sec:automatic-annotation-processors]]
 === Automatic annotationProcessor dependencies
 
-When the plugin detects you have a dependency with a group id corresponding to a known annotation processor for it, it adds the annotation processor automatically. The following annotation processors are currently supported by this feature.
+When the plugin detects a library dependency with a group id corresponding to a known annotation processor, it adds the annotation processor automatically.
+BOM dependencies declared with `platform(...)` or `enforcedPlatform(...)` provide version constraints and do not trigger annotation processors. The following annotation processors are currently supported by this feature.
 
 * `io.micronaut.data:micronaut-data-processor`
 * `io.micronaut.jaxrs:micronaut-jaxrs-processor`
