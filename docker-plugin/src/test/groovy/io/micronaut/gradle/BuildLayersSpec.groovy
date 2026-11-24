@@ -1,6 +1,5 @@
 package io.micronaut.gradle
 
-import groovy.io.FileType
 import org.gradle.testkit.runner.TaskOutcome
 
 import java.nio.file.Files
@@ -198,6 +197,8 @@ class BuildLayersSpec extends AbstractGradleBuildSpec {
         given:
         settingsFile << "rootProject.name = 'hello-world'"
         buildFile << """
+            import io.micronaut.gradle.docker.model.LayerKind
+
             plugins {
                 id "io.micronaut.minimal.application"
                 id "io.micronaut.docker"
@@ -215,15 +216,20 @@ class BuildLayersSpec extends AbstractGradleBuildSpec {
                 runtimeOnly("ch.qos.logback:logback-classic")
             }
             application { mainClass = "example.Application" }
+
+            tasks.named("buildLayers") {
+                doLast { task ->
+                    def libs = task.layers.get().find { it.layerKind.get() == LayerKind.LIBS }
+                    def sourceJar = libs.files.filter { it.name.startsWith("logback-classic-") && it.name.endsWith(".jar") }.singleFile
+                    def copiedJar = task.outputDir.file(LayerKind.LIBS.sourceDirName() + "/" + sourceJar.name).get().asFile
+                    file("logback-layer-paths.txt").text = [sourceJar.absolutePath, copiedJar.absolutePath].join(System.lineSeparator())
+                }
+            }
         """
 
         when:
-        def firstBuild = build('buildLayers')
-        def copiedJar = new File(testProjectDir.root, "build/docker/main/layers/libs").listFiles().find {
-            it.name.startsWith("logback-classic-") && it.name.endsWith(".jar")
-        }
-        assert copiedJar != null
-        def sourceJar = cachedDependency("ch.qos.logback", "logback-classic", copiedJar.name)
+        def firstBuild = build('buildLayers', '--no-build-cache')
+        def (sourceJar, copiedJar) = file("logback-layer-paths.txt").readLines().collect { new File(it) }
         def sourceMtime = Files.getLastModifiedTime(sourceJar.toPath()).toMillis()
         def firstCopiedMtime = Files.getLastModifiedTime(copiedJar.toPath()).toMillis()
 
@@ -237,29 +243,5 @@ class BuildLayersSpec extends AbstractGradleBuildSpec {
         firstCopiedMtime == sourceMtime
         secondCopiedMtime == sourceMtime
         secondCopiedMtime == firstCopiedMtime
-    }
-
-    private static File cachedDependency(String group, String module, String fileName) {
-        def cacheRoots = [
-            new File(System.getProperty("java.io.tmpdir"), ".gradle-test-kit").absolutePath,
-            System.getenv("GRADLE_USER_HOME"),
-            new File(System.getProperty("user.home"), ".gradle").absolutePath
-        ].findAll { it?.trim() }
-        for (def cacheRoot : cacheRoots) {
-            def cacheDir = new File(cacheRoot, "caches/modules-2/files-2.1/${group}/${module}")
-            if (!cacheDir.exists()) {
-                continue
-            }
-            File dependencyJar
-            cacheDir.eachFileRecurse(FileType.FILES) { file ->
-                if (file.name == fileName) {
-                    dependencyJar = file
-                }
-            }
-            if (dependencyJar != null) {
-                return dependencyJar
-            }
-        }
-        throw new IllegalStateException("Unable to locate ${fileName} for ${group}:${module} under ${cacheRoots}")
     }
 }
