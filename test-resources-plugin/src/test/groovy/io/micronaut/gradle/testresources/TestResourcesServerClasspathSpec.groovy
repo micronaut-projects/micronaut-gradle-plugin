@@ -1,12 +1,14 @@
 package io.micronaut.gradle.testresources
 
 import io.micronaut.gradle.AbstractGradleBuildSpec
+import io.micronaut.testresources.buildtools.VersionInfo
 import org.gradle.testkit.runner.TaskOutcome
 
 class TestResourcesServerClasspathSpec extends AbstractGradleBuildSpec {
 
     def "starts Test Resources using #serverArtifact"(boolean controlPanel, String serverArtifact) {
         given:
+        def testResourcesVersion = VersionInfo.getVersion()
         settingsFile << "rootProject.name = 'test-resources-server-classpath'\n"
         buildFile << """
             plugins {
@@ -16,21 +18,20 @@ class TestResourcesServerClasspathSpec extends AbstractGradleBuildSpec {
             $repositoriesBlock
 
             micronaut {
-                version = '5.2.8'
+                version = '$micronautVersion'
                 testResources {
-                    version = '4.3.1'
                     inferClasspath = false
                 }
             }
 
-            ${controlPanel ? "dependencies { testResourcesService 'io.micronaut.testresources:micronaut-test-resources-control-panel:4.3.1' }" : ''}
+            ${controlPanel ? "dependencies { testResourcesService 'io.micronaut.testresources:micronaut-test-resources-control-panel:$testResourcesVersion' }" : ''}
 
             tasks.named('internalStartTestResourcesService') {
                 doFirst { task ->
                     def servers = task.classpath.files*.name.findAll {
-                        it in ['micronaut-test-resources-server-4.3.1.jar', 'micronaut-test-resources-server-thin-4.3.1.jar']
+                        it.startsWith('micronaut-test-resources-server-')
                     }
-                    assert servers == ['${serverArtifact}-4.3.1.jar']
+                    assert servers == ['${serverArtifact}-${testResourcesVersion}.jar']
                 }
             }
         """
