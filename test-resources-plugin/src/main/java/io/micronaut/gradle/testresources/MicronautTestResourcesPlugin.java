@@ -29,6 +29,7 @@ import org.gradle.api.artifacts.result.ResolvedDependencyResult;
 import org.gradle.api.attributes.Usage;
 import org.gradle.api.file.Directory;
 import org.gradle.api.file.DirectoryProperty;
+import org.gradle.api.file.FileCollection;
 import org.gradle.api.internal.project.ProjectInternal;
 import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.plugins.JavaPluginExtension;
@@ -256,17 +257,7 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
             task.getExplicitPort().convention(config.getExplicitPort());
             task.getClientTimeout().convention(config.getClientTimeout());
             task.getServerIdleTimeoutMinutes().convention(config.getServerIdleTimeoutMinutes());
-            task.getClasspath().from(server.getIncoming().artifactView(view -> {
-                view.componentFilter(id -> {
-                    if (id instanceof ModuleComponentIdentifier mci) {
-                        return TestResourcesClasspath.isDependencyAllowedOnServerClasspath(new ModuleIdentifier(
-                            mci.getGroup(),
-                            mci.getModule()
-                        ));
-                    }
-                    return true;
-                });
-            }).getFiles());
+            task.getClasspath().from(serverClasspath(server));
             task.getForeground().convention(false);
             task.getStopFile().set(stopFile.toFile());
             task.getStandalone().set(isStandalone);
@@ -277,6 +268,27 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
             task.getDebugServer().convention(config.getDebugServer());
             task.getJavaLauncher().convention(config.getJavaLauncher());
             task.getJavaExecutable().convention(config.getJavaExecutable());
+        });
+    }
+
+    private static Provider<FileCollection> serverClasspath(Configuration server) {
+        var incoming = server.getIncoming();
+        var fatClasspath = incoming.artifactView(view -> view.componentFilter(id -> {
+            if (id instanceof ModuleComponentIdentifier module) {
+                return TestResourcesClasspath.isDependencyAllowedOnServerClasspath(
+                    new ModuleIdentifier(module.getGroup(), module.getModule()));
+            }
+            return true;
+        })).getFiles();
+        // Libraries bundled in the fat server are required on the thin server's runtime classpath.
+        var thinClasspath = incoming.artifactView(view -> view.componentFilter(id ->
+            !(id instanceof ModuleComponentIdentifier module
+                && module.getGroup().equals("io.micronaut.testresources")
+                && module.getModule().equals("micronaut-test-resources-server")))).getFiles();
+        return incoming.getResolutionResult().getRootComponent().map(root -> {
+            boolean thinServerResolved = collectResolvedModuleDependencies(root, new HashSet<>())
+                .anyMatch(dependency -> dependency.getModule().equals("io.micronaut.testresources:micronaut-test-resources-server-thin"));
+            return thinServerResolved ? thinClasspath : fatClasspath;
         });
     }
 
