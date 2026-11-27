@@ -152,7 +152,6 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
             tasks,
             portFile,
             stopAtEndFile,
-            config.getSharedServer(),
             cdsDir
         );
         TaskProvider<StartTestResourcesService> standaloneStart = createStartServiceTask(
@@ -164,11 +163,14 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
             tasks,
             portFile,
             stopAtEndFile,
-            providers.provider(() -> true),
             cdsDir
         );
-        internalStart.configure(task -> task.mustRunAfter(standaloneStart));
+        internalStart.configure(task -> {
+            task.getStandalone().set(config.getSharedServer());
+            task.mustRunAfter(standaloneStart);
+        });
         standaloneStart.configure(task -> {
+            task.getStandalone().set(true);
             task.setGroup(MicronautTestResourcesPlugin.GROUP);
             task.setDescription("Starts the test resources server in standalone mode");
         });
@@ -261,7 +263,6 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
                                                                            TaskContainer tasks,
                                                                            File portFile,
                                                                            Path stopFile,
-                                                                           Provider<Boolean> isStandalone,
                                                                            Provider<Directory> cdsDir) {
         return tasks.register(taskName, StartTestResourcesService.class, task -> {
             task.setOnlyIf(t -> config.getEnabled().get());
@@ -284,7 +285,6 @@ public class MicronautTestResourcesPlugin implements Plugin<Project> {
             }).getFiles());
             task.getForeground().convention(false);
             task.getStopFile().set(stopFile.toFile());
-            task.getStandalone().set(isStandalone);
             task.getClassDataSharingDir().convention(cdsDir);
             task.getUseClassDataSharing().convention(false);
             task.getSystemProperties().convention(config.getServerSystemProperties());
