@@ -17,6 +17,7 @@ package io.micronaut.gradle;
 
 import io.micronaut.gradle.graalvm.GraalUtil;
 import io.micronaut.gradle.internal.AutomaticDependency;
+import io.micronaut.gradle.internal.ContinuousRunSupport;
 import org.apache.tools.ant.taskdefs.condition.Os;
 import org.gradle.api.Action;
 import org.gradle.api.Plugin;
@@ -63,6 +64,8 @@ public class MicronautMinimalApplicationPlugin implements Plugin<Project> {
     public static final String CONFIGURATION_DEVELOPMENT_ONLY = "developmentOnly";
     // This flag is used for testing purposes only
     public static final String INTERNAL_CONTINUOUS_FLAG = "io.micronaut.internal.gradle.continuous";
+    // This flag is used for testing the non-blocking continuous run launcher
+    public static final String INTERNAL_CONTINUOUS_BACKGROUND_FLAG = "io.micronaut.internal.gradle.continuous.background";
 
     private static final Map<String, String> LOGGER_CONFIG_FILE_TO_DEPENDENCY = Map.of(
         "logback.xml", "ch.qos.logback:logback-classic",
@@ -84,6 +87,9 @@ public class MicronautMinimalApplicationPlugin implements Plugin<Project> {
 
     private void configureJavaExecTasks(Project project, Configuration developmentOnlyConfiguration) {
         final TaskContainer tasks = project.getTasks();
+        boolean continuousBuild = project.getGradle().getStartParameter().isContinuous();
+        boolean backgroundContinuousRun = continuousBuild || Boolean.getBoolean(INTERNAL_CONTINUOUS_BACKGROUND_FLAG);
+        boolean watchEnabled = backgroundContinuousRun || Boolean.getBoolean(INTERNAL_CONTINUOUS_FLAG);
         ConfigurationContainer configurations = project.getConfigurations();
         Configuration developmentRuntimeClasspath = configurations.create("developmentRuntimeClasspath", conf -> {
             conf.setCanBeResolved(true);
@@ -98,8 +104,6 @@ public class MicronautMinimalApplicationPlugin implements Plugin<Project> {
             if (javaExec.getName().equals("run")) {
                 javaExec.dependsOn(tasks.named(MicronautComponentPlugin.INSPECT_RUNTIME_CLASSPATH_TASK_NAME));
                 javaExec.getJvmArgumentProviders().add(new MicronautRunJvmArgumentsProvider(GraalUtil.isGraalJVM()));
-                // https://github.com/micronaut-projects/micronaut-gradle-plugin/issues/385
-                javaExec.getOutputs().upToDateWhen(t -> false);
                 FileCollection classpath = javaExec.getClasspath();
                 if (classpath instanceof ConfigurableFileCollection cp) {
                     Set<Object> from = cp.getFrom();
@@ -107,12 +111,18 @@ public class MicronautMinimalApplicationPlugin implements Plugin<Project> {
                     cp.from(sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME).getOutput());
                     cp.from(developmentRuntimeClasspath);
                 }
+                if (backgroundContinuousRun) {
+                    javaExec.getOutputs().file(project.file("build/micronaut/continuous-run.properties"));
+                } else {
+                    // https://github.com/micronaut-projects/micronaut-gradle-plugin/issues/385
+                    javaExec.getOutputs().upToDateWhen(t -> false);
+                }
             }
 
             // If -t (continuous mode) is enabled feed parameters to the JVM
             // that allows it to shut down on resources changes so a rebuild
             // can apply a restart to the application
-            if (project.getGradle().getStartParameter().isContinuous() || Boolean.getBoolean(INTERNAL_CONTINUOUS_FLAG)) {
+            if (watchEnabled) {
                 SourceSet sourceSet = sourceSets.findByName("main");
                 if (sourceSet != null) {
                     MicronautExtension micronautExtension = project.getExtensions().findByType(MicronautExtension.class);
@@ -121,28 +131,41 @@ public class MicronautMinimalApplicationPlugin implements Plugin<Project> {
                     sysProps.put("micronaut.io.watch.enabled", true);
                     FileCollection sourceDirectories = sourceSet.getAllSource().getSourceDirectories();
                     FileCollection additionalFilePathsToWatch = micronautExtension.getAdditionalFilesToWatch();
-                    //noinspection Convert2Lambda
-                    javaExec.doFirst(new Action<>() {
-                        @Override
-                        public void execute(Task workaroundEagerSystemProps) {
-                            Stream<File> fileSources = Stream.concat(
-                                    sourceDirectories
-                                            .getFiles().stream(),
-                                    additionalFilePathsToWatch.getFiles().stream()
-
-                            );
-                            String watchPaths = fileSources
-                                    .map(File::getPath)
-                                    .collect(Collectors.joining(","));
-                            javaExec.systemProperty("micronaut.io.watch.paths", watchPaths);
-                        }
-                    });
                     javaExec.systemProperties(
-                            sysProps
+                        sysProps
                     );
+                    if (backgroundContinuousRun && javaExec.getName().equals("run")) {
+                        File stateFile = project.file("build/micronaut/continuous-run.properties");
+                        javaExec.setActions(new ArrayList<>());
+                        javaExec.doLast(new Action<>() {
+                            @Override
+                            public void execute(Task task) {
+                                configureWatchPaths(javaExec, sourceDirectories, additionalFilePathsToWatch);
+                                ContinuousRunSupport.launch(javaExec, stateFile);
+                            }
+                        });
+                    } else {
+                        //noinspection Convert2Lambda
+                        javaExec.doFirst(new Action<>() {
+                            @Override
+                            public void execute(Task workaroundEagerSystemProps) {
+                                configureWatchPaths(javaExec, sourceDirectories, additionalFilePathsToWatch);
+                            }
+                        });
+                    }
                 }
             }
         });
+    }
+
+    private static void configureWatchPaths(JavaExec javaExec, FileCollection sourceDirectories, FileCollection additionalFilePathsToWatch) {
+        String watchPaths = Stream.concat(
+                sourceDirectories.getFiles().stream(),
+                additionalFilePathsToWatch.getFiles().stream()
+            )
+            .map(File::getPath)
+            .collect(Collectors.joining(","));
+        javaExec.systemProperty("micronaut.io.watch.paths", watchPaths);
     }
 
     private Configuration createDevelopmentOnlyConfiguration(Project project) {
