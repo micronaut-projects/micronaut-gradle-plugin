@@ -135,6 +135,19 @@ public abstract class MicronautDevManifest extends DefaultTask {
     public abstract Property<Boolean> getBindLoopback();
 
     /**
+     * The directory the launcher snapshots each generation of the reloadable tier into, written as
+     * {@code micronaut.dev.generations}: {@code build/micronaut-dev/generations} for development mode and
+     * {@code build/micronaut-dev/test/generations} for test mode, so that {@code mnDev} and {@code mnTest} of one
+     * project, run at once, keep their generations apart wherever the build directory is.
+     *
+     * @return the absolute path of the directory
+     * @since 5.0.3
+     */
+    @Input
+    @Optional
+    public abstract Property<String> getGenerations();
+
+    /**
      * @return the runtime classpath: the jars of the parent loader, never the project's own outputs
      */
     @Classpath
@@ -295,6 +308,9 @@ public abstract class MicronautDevManifest extends DefaultTask {
         }
         entries.put(PREFIX + "livereload.port", String.valueOf(getLiveReloadPort().get()));
         entries.put(PREFIX + "livereload.inject-script", String.valueOf(getLiveReloadInjectScript().get()));
+        if (getGenerations().isPresent()) {
+            entries.put(PREFIX + "generations", getGenerations().get());
+        }
         if (getBindLoopback().isPresent()) {
             entries.put(BIND_LOOPBACK, String.valueOf(getBindLoopback().get()));
         }

@@ -45,6 +45,7 @@ import org.gradle.api.tasks.Nested;
  *             selection = "affected" // affected or all
  *             initialRun = true
  *             reportPath = "/tests/" // where LiveReload serves the live report
+ *             liveReloadPort = 35730 // mnTest's LiveReload server, apart from mnDev's
  *         }
  *     }
  * }
@@ -189,7 +190,8 @@ public abstract class MicronautDevExtension {
         public abstract Property<Boolean> getEnabled();
 
         /**
-         * The port the server listens on. Defaults to 35729.
+         * The port the server of development mode listens on. Defaults to 35729; test mode has its own,
+         * {@code test.liveReloadPort}.
          *
          * @return the port
          */
@@ -261,5 +263,14 @@ public abstract class MicronautDevExtension {
          * @return the path
          */
         public abstract Property<String> getReportPath();
+
+        /**
+         * The port the LiveReload server of test mode listens on, which serves the live report. Defaults to 35730,
+         * apart from {@code liveReload.port}, the port of {@code mnDev}, so that both run at once.
+         *
+         * @return the port
+         * @since 5.0.3
+         */
+        public abstract Property<Integer> getLiveReloadPort();
     }
 }
