@@ -5,6 +5,30 @@ import spock.lang.Issue
 
 class MicronautApplicationPluginSpec extends AbstractGradleBuildSpec {
 
+    def "test eclipse apt tasks are not added by default"() {
+        given:
+        settingsFile << "rootProject.name = 'hello-world'"
+        buildFile << """
+            plugins {
+                id "io.micronaut.application"
+            }
+
+            micronaut {
+                version "$micronautVersion"
+                runtime "netty"
+            }
+
+            $repositoriesBlock
+            application { mainClass = "example.Application" }
+        """
+
+        when:
+        def result = build('tasks', '--all')
+
+        then:
+        !result.output.contains('eclipseJdtApt')
+    }
+
     def "test junit 5 test runtime"() {
         given:
         settingsFile << "rootProject.name = 'hello-world'"
