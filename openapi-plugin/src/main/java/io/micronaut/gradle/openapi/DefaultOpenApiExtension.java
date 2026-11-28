@@ -18,6 +18,7 @@ package io.micronaut.gradle.openapi;
 import io.micronaut.gradle.PluginsHelper;
 import io.micronaut.gradle.openapi.tasks.AbstractOpenApiGenerator;
 import io.micronaut.gradle.openapi.tasks.OpenApiClientGenerator;
+import io.micronaut.gradle.openapi.tasks.OpenApiGenericGenerator;
 import io.micronaut.gradle.openapi.tasks.OpenApiServerGenerator;
 import org.gradle.api.Action;
 import org.gradle.api.GradleException;
@@ -35,6 +36,7 @@ import javax.inject.Inject;
 import java.io.File;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 
@@ -66,6 +68,12 @@ public abstract class DefaultOpenApiExtension implements OpenApiExtension {
     public void client(File file, Action<? super OpenApiClientSpec> spec) {
         var regularFileProperty = project.getObjects().fileProperty();
         client("client", regularFileProperty.fileValue(file), spec);
+    }
+
+    @Override
+    public void generic(File file, Action<? super OpenApiGenericSpec> spec) {
+        var regularFileProperty = project.getObjects().fileProperty();
+        generic("generic", regularFileProperty.fileValue(file), spec);
     }
 
     @Override
@@ -278,6 +286,37 @@ public abstract class DefaultOpenApiExtension implements OpenApiExtension {
         task.getUserParameterMode().convention(openApiSpec.getUserParameterMode());
     }
 
+    @Override
+    public void generic(String name, Provider<RegularFile> definition, Action<? super OpenApiGenericSpec> spec) {
+        if (names.add(name)) {
+            var genericSpec = project.getObjects().newInstance(OpenApiGenericSpec.class);
+            configureCommonExtensionDefaults(genericSpec);
+            genericSpec.getGeneratorProperties().convention(Map.of());
+            genericSpec.getOutputKinds().convention(List.of(CodegenConstants.APIS, CodegenConstants.MODELS, CodegenConstants.SUPPORTING_FILES));
+
+            spec.execute(genericSpec);
+            var generic = project.getTasks().register(generateGenericTaskName(name), OpenApiGenericGenerator.class, task -> {
+                configureCommonProperties(name, task, genericSpec, definition);
+                task.setDescription("Generates sources with a custom Micronaut OpenAPI generator");
+                task.getGeneratorClassName().convention(genericSpec.getGeneratorClassName());
+                task.getGeneratorProperties().convention(genericSpec.getGeneratorProperties());
+                task.getOutputKinds().convention(genericSpec.getOutputKinds());
+            });
+            withJavaSourceSets(sourceSets -> {
+                var javaMain = sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME).getJava();
+                javaMain.srcDir(generic.flatMap(DefaultOpenApiExtension::mainSrcDir));
+                project.getPluginManager().withPlugin("org.jetbrains.kotlin.jvm", unused -> {
+                    var ext = sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME).getExtensions().getByName("kotlin");
+                    if (ext instanceof SourceDirectorySet kotlinMain) {
+                        kotlinMain.srcDir(generic.flatMap(d -> DefaultOpenApiExtension.mainSrcDir(d, "kotlin")));
+                    }
+                });
+            });
+        } else {
+            throwDuplicateEntryFor(name);
+        }
+    }
+
     private void withJavaSourceSets(Consumer<? super SourceSetContainer> consumer) {
         project.getPlugins().withId("java", unused -> consumer.accept(PluginsHelper.findSourceSets(project)));
     }
@@ -353,6 +392,11 @@ public abstract class DefaultOpenApiExtension implements OpenApiExtension {
         client(name, project.getObjects().fileProperty().fileValue(definition), spec);
     }
 
+    @Override
+    public void generic(String name, File definition, Action<? super OpenApiGenericSpec> spec) {
+        generic(name, project.getObjects().fileProperty().fileValue(definition), spec);
+    }
+
     private static Provider<Directory> mainSrcDir(AbstractOpenApiGenerator<?, ?> t, String language) {
         return t.getOutputDirectory().dir("src/main/" + language);
     }
@@ -390,6 +434,10 @@ public abstract class DefaultOpenApiExtension implements OpenApiExtension {
 
     private static String generateApisTaskName(String name) {
         return "generate" + capitalize(name) + "OpenApiApis";
+    }
+
+    private static String generateGenericTaskName(String name) {
+        return "generate" + capitalize(name) + "OpenApi";
     }
 
     private static void configureServerTask(OpenApiServerSpec serverSpec, OpenApiServerGenerator task) {
