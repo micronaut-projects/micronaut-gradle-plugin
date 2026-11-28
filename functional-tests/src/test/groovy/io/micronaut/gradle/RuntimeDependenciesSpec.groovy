@@ -64,4 +64,39 @@ class RuntimeDependenciesSpec extends AbstractEagerConfiguringFunctionalTest {
 
         description =  String.join(",", coordinates)
     }
+
+    @Unroll
+    def "minimal function plugin keeps #runtime runtime dependencies for the #configuration" (String runtime,
+                                                                                              String configuration,
+                                                                                              List<String> coordinates) {
+        given:
+        settingsFile << "rootProject.name = 'hello-world'"
+        buildFile << """
+            plugins {
+                id "io.micronaut.minimal.function"
+                id("com.gradleup.shadow") version("$shadowVersion")
+            }
+
+            micronaut {
+                version "$micronautVersion"
+                runtime "$runtime"
+            }
+
+            $repositoriesBlock
+        """
+
+        expect:
+        for (String coordinate : coordinates) {
+            assert containsDependency(coordinate, configuration)
+        }
+
+        where:
+        runtime            | configuration      || coordinates
+        'google_function'  | 'compileClasspath' || ['io.micronaut.gcp:micronaut-gcp-function-http']
+        'google_function'  | 'developmentOnly'  || ['com.google.cloud.functions:functions-framework-api', 'io.micronaut.gcp:micronaut-gcp-function-http-test']
+        'azure_function'   | 'compileClasspath' || ['io.micronaut.azure:micronaut-azure-function-http', 'com.microsoft.azure.functions:azure-functions-java-library']
+        'oracle_function'  | 'runtimeOnly'      || ['com.fnproject.fn:runtime']
+        'lambda_java'      | 'compileClasspath' || ['io.micronaut.aws:micronaut-function-aws-api-proxy']
+        'lambda_provided'  | 'compileClasspath' || ['io.micronaut.aws:micronaut-function-aws-api-proxy', 'io.micronaut.aws:micronaut-function-aws-custom-runtime']
+    }
 }
