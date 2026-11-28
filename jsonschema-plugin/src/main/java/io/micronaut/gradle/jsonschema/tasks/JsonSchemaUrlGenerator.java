@@ -17,7 +17,9 @@ package io.micronaut.gradle.jsonschema.tasks;
 
 import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.Input;
+import org.gradle.work.DisableCachingByDefault;
 
+@DisableCachingByDefault(because = "The remote schema contents are not a task input")
 public abstract class JsonSchemaUrlGenerator extends AbstractJsonSchemaGenerator<JsonSchemaUrlWorkAction, JsonSchemaUrlWorkAction.UrlParameters> {
 
     @Input

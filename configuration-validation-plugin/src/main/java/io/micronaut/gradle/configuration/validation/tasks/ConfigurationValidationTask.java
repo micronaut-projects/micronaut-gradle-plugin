@@ -23,7 +23,10 @@ import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.InputFile;
 import org.gradle.api.tasks.Internal;
+import org.gradle.api.tasks.PathSensitive;
+import org.gradle.api.tasks.PathSensitivity;
 import org.gradle.api.tasks.TaskAction;
+import org.gradle.work.DisableCachingByDefault;
 
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -35,6 +38,7 @@ import java.util.Properties;
  *
  * @since 5.0.0
  */
+@DisableCachingByDefault(because = "This verification task has no outputs")
 public abstract class ConfigurationValidationTask extends DefaultTask {
 
     public static final String FORMAT_BOTH = "both";
@@ -53,6 +57,7 @@ public abstract class ConfigurationValidationTask extends DefaultTask {
      * @return marker file
      */
     @InputFile
+    @PathSensitive(PathSensitivity.ABSOLUTE)
     public abstract RegularFileProperty getResultFile();
 
     /**

@@ -844,7 +844,7 @@ COPY --link layers/app /home/app/
 COPY --link layers/resources /home/app/resources
 RUN mkdir /home/app/config-dirs
 COPY --link config-dirs /home/app/config-dirs
-RUN native-image -cp '/home/app/libs/*.jar:/home/app/resources:/home/app/application.jar' --no-fallback -o application -H:ConfigurationFileDirectories=/home/app/config-dirs/generateResourcesConfigFile,/home/app/config-dirs/org.slf4j/slf4j-api/1.7.36,/home/app/config-dirs/jakarta.inject/jakarta.inject-api/2.0.0,/home/app/config-dirs/jakarta.annotation/jakarta.annotation-api/2.1.0,/home/app/config-dirs/org.jspecify/jspecify/1.0.0 ${SHARED_ARENA_SUPPORT} example.Application
+RUN native-image -cp '/home/app/libs/*.jar:/home/app/resources:/home/app/application.jar' --no-fallback -o application -H:ConfigurationFileDirectories=/home/app/config-dirs/generateResourcesConfigFile,/home/app/config-dirs/io.micronaut/micronaut-inject/5.0.0,/home/app/config-dirs/org.slf4j/slf4j-api/2.0.1,/home/app/config-dirs/jakarta.inject/jakarta.inject-api/2.0.0,/home/app/config-dirs/jakarta.annotation/jakarta.annotation-api/2.1.0,/home/app/config-dirs/io.micronaut/micronaut-core/5.0.0,/home/app/config-dirs/org.jspecify/jspecify/1.0.0 ${SHARED_ARENA_SUPPORT} example.Application
 ${defaultDockerFrom}
 EXPOSE 8080
 COPY --link --from=graalvm /home/app/application /app/application

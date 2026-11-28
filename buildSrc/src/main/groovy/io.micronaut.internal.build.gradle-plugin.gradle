@@ -103,8 +103,8 @@ def publishPluginToProjectRepo = tasks.register("publishPluginToProjectRepo") {
     dependsOn(localPublicationsTasks)
 }
 
-localPublicationsTasks.each { taskName ->
-    tasks.named(taskName) {
+tasks.withType(PublishToMavenRepository).configureEach {
+    if (name in localPublicationsTasks) {
         mustRunAfter(cleanRepository)
     }
 }

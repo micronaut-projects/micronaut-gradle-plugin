@@ -42,6 +42,7 @@ import org.gradle.internal.jvm.Jvm;
 import org.gradle.jvm.toolchain.JavaLanguageVersion;
 import org.gradle.jvm.toolchain.JavaLauncher;
 import org.gradle.jvm.toolchain.JavaToolchainService;
+import org.gradle.work.DisableCachingByDefault;
 
 import javax.inject.Inject;
 import java.io.IOException;
@@ -61,6 +62,7 @@ import static io.micronaut.gradle.docker.MicronautDockerfile.applyStandardTransf
  * @author gkrocher
  * @since 1.0.0
  */
+@DisableCachingByDefault(because = "Dockerfile generation is inexpensive")
 public abstract class NativeImageDockerfile extends Dockerfile implements DockerBuildOptions {
 
     public static final String AMAZON_LINUX_BASE_IMAGE = "public.ecr.aws/amazonlinux/amazonlinux:" + DefaultVersions.AMAZONLINUX;
