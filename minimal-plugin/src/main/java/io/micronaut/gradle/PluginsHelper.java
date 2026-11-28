@@ -22,10 +22,12 @@ import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.Dependency;
 import org.gradle.api.artifacts.DependencySet;
+import org.gradle.api.artifacts.ModuleDependency;
 import org.gradle.api.artifacts.VersionCatalog;
 import org.gradle.api.artifacts.VersionCatalogsExtension;
 import org.gradle.api.artifacts.VersionConstraint;
 import org.gradle.api.artifacts.dsl.DependencyHandler;
+import org.gradle.api.attributes.Category;
 import org.gradle.api.plugins.JavaPluginExtension;
 import org.gradle.api.provider.Property;
 import org.gradle.api.provider.Provider;
@@ -211,7 +213,9 @@ public abstract class PluginsHelper {
                 final DependencySet allDependencies = project.getConfigurations().getByName(config)
                         .getAllDependencies();
                 for (var entry : GROUP_TO_PROCESSOR_MAP.entrySet()) {
-                    boolean hasDep = !allDependencies.matching(dependency -> Objects.equals(dependency.getGroup(), entry.getKey())).isEmpty();
+                    boolean hasDep = !allDependencies.matching(dependency ->
+                            Objects.equals(dependency.getGroup(), entry.getKey()) && !isPlatform(dependency)
+                    ).isEmpty();
                     if (hasDep) {
                         for (String configuration : configurations) {
                             AutomaticDependency automaticDependency = entry.getValue();
@@ -221,6 +225,16 @@ public abstract class PluginsHelper {
                 }
             });
         });
+    }
+
+    private static boolean isPlatform(Dependency dependency) {
+        if (dependency instanceof ModuleDependency moduleDependency) {
+            Category category = moduleDependency.getAttributes().getAttribute(Category.CATEGORY_ATTRIBUTE);
+            // A BOM supplies versions, not a library that needs annotation processing.
+            return category != null && (Category.REGULAR_PLATFORM.equals(category.getName())
+                    || Category.ENFORCED_PLATFORM.equals(category.getName()));
+        }
+        return false;
     }
 
     public static MicronautRuntime resolveRuntime(Project p) {
