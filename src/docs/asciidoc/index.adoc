@@ -1262,14 +1262,14 @@ You can work around this issue by configuring the duplicates strategy on the tas
 
 [source, groovy, subs="verbatim,attributes", role="multi-language-sample"]
 ----
-tasks.withType<io.micronaut.gradle.docker.tasks.BuildLayersTask> {
+tasks.withType(io.micronaut.gradle.docker.tasks.BuildLayersTask).configureEach {
     duplicatesStrategy = DuplicatesStrategy.INCLUDE
 }
 ----
 
 [source, kotlin, subs="verbatim,attributes", role="multi-language-sample"]
 ----
-tasks.withType(io.micronaut.gradle.docker.tasks.BuildLayersTask) {
+tasks.withType<io.micronaut.gradle.docker.tasks.BuildLayersTask>().configureEach {
     duplicatesStrategy.set(DuplicatesStrategy.INCLUDE)
 }
 ----
