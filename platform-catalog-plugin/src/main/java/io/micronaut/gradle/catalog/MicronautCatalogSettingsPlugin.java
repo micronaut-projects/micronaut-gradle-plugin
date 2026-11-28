@@ -31,7 +31,9 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.List;
+import java.util.Properties;
 
 public abstract class MicronautCatalogSettingsPlugin implements Plugin<Settings> {
     private static final Logger LOGGER = Logging.getLogger(MicronautCatalogSettingsPlugin.class);
@@ -62,7 +64,7 @@ public abstract class MicronautCatalogSettingsPlugin implements Plugin<Settings>
                             drm.versionCatalogs(vcs -> {
                                 vcs.create("mn", catalog -> catalog.from("io.micronaut.platform:micronaut-platform:" + micronautVersion));
                                 vcs.configureEach(catalog -> {
-                                    var catalogOverrideFile = new File(settings.getSettingsDir(), "gradle/" + catalog.getName() + "-" + OVERRIDE_VERSIONS_TOML_FILE);
+                                    var catalogOverrideFile = resolveCatalogInputFile(settings, "gradle/" + catalog.getName() + "-" + OVERRIDE_VERSIONS_TOML_FILE);
                                     if (catalogOverrideFile.exists()) {
                                         var parser = new LenientVersionCatalogParser();
                                         try (var in = new FileInputStream(catalogOverrideFile)) {
@@ -117,6 +119,7 @@ public abstract class MicronautCatalogSettingsPlugin implements Plugin<Settings>
 
     private Provider<String> createMicronautVersionProvider(Settings settings, ProviderFactory providers) {
         return providers.gradleProperty("micronautVersion")
+                .orElse(providers.provider(() -> readMicronautVersionFromGradleProperties(resolveCatalogInputFile(settings, "gradle.properties"))))
                 .orElse(readFromVersionCatalog(settings))
                 .orElse(providers.provider(() -> {
                     throw new IllegalStateException("Micronaut version must either be declared in `gradle.properties`, in `gradle/libs.versions.toml`");
@@ -125,7 +128,10 @@ public abstract class MicronautCatalogSettingsPlugin implements Plugin<Settings>
 
     private Provider<String> readFromVersionCatalog(Settings settings) {
         ProviderFactory providers = settings.getProviders();
-        var catalogFile = new File(settings.getSettingsDir(), "gradle/libs.versions.toml");
+        var catalogFile = resolveCatalogInputFile(settings, "gradle/libs.versions.toml");
+        if (!catalogFile.exists()) {
+            return providers.provider(() -> null);
+        }
         return providers.fileContents(getDefaultGradleVersionCatalogFile().fileValue(catalogFile))
                 .getAsBytes()
                 .map(libsFile -> {
@@ -140,8 +146,34 @@ public abstract class MicronautCatalogSettingsPlugin implements Plugin<Settings>
                         }
                         return null;
                     } catch (IOException e) {
-                        return null;
+                        throw new UncheckedIOException("Failed to read Micronaut version catalog from " + catalogFile, e);
                     }
                 });
+    }
+
+    private static String readMicronautVersionFromGradleProperties(File gradlePropertiesFile) {
+        if (!gradlePropertiesFile.exists()) {
+            return null;
+        }
+        var properties = new Properties();
+        try (var in = new FileInputStream(gradlePropertiesFile)) {
+            properties.load(in);
+            return properties.getProperty("micronautVersion");
+        } catch (IOException e) {
+            throw new UncheckedIOException("Failed to read Micronaut version from " + gradlePropertiesFile, e);
+        }
+    }
+
+    private static File resolveCatalogInputFile(Settings settings, String relativePath) {
+        var settingsDir = settings.getSettingsDir();
+        var localFile = new File(settingsDir, relativePath);
+        if (localFile.exists() || !isBuildSrcSettings(settingsDir)) {
+            return localFile;
+        }
+        return new File(settingsDir.getParentFile(), relativePath);
+    }
+
+    private static boolean isBuildSrcSettings(File settingsDir) {
+        return "buildSrc".equals(settingsDir.getName()) && settingsDir.getParentFile() != null;
     }
 }
