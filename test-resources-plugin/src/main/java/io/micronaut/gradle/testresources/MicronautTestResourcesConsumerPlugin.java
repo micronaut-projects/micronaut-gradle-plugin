@@ -29,6 +29,7 @@ import org.gradle.api.attributes.Usage;
 import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.file.DirectoryProperty;
 import org.gradle.api.file.FileSystemOperations;
+import org.gradle.api.plugins.ApplicationPlugin;
 import org.gradle.api.plugins.PluginManager;
 import org.gradle.api.tasks.InputFiles;
 import org.gradle.api.tasks.JavaExec;
@@ -89,7 +90,7 @@ public class MicronautTestResourcesConsumerPlugin implements Plugin<Project> {
         project.getTasks().withType(Test.class).configureEach(t ->
                 t.getJvmArgumentProviders().add(jvmArgumentsConfiguration)
         );
-        project.getPlugins().withId("java-application", unused ->
+        project.getPlugins().withType(ApplicationPlugin.class, unused ->
                 project.getTasks().named("run", JavaExec.class, t ->
                         t.getJvmArgumentProviders().add(jvmArgumentsConfiguration)
                 )
