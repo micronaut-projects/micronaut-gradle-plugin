@@ -62,6 +62,11 @@ public abstract class MicronautDevManifest extends DefaultTask {
     static final String PREFIX = "micronaut.dev.";
 
     /**
+     * The manifest entry, and the Gradle property, of whether the application listens on {@code localhost} by default.
+     */
+    static final String BIND_LOOPBACK = PREFIX + "bind-loopback";
+
+    /**
      * @return the application's main class
      */
     @Input
@@ -115,6 +120,19 @@ public abstract class MicronautDevManifest extends DefaultTask {
      */
     @Input
     public abstract Property<Boolean> getLiveReloadInjectScript();
+
+    /**
+     * Whether the launcher binds the application's HTTP server to {@code localhost} by default, written as
+     * {@code micronaut.dev.bind-loopback}: the launcher applies it as the property source of the lowest precedence, so
+     * that a {@code micronaut.server.host} of the application wins. Absent for test mode, whose tests start their own
+     * servers.
+     *
+     * @return the flag
+     * @since 5.0.3
+     */
+    @Input
+    @Optional
+    public abstract Property<Boolean> getBindLoopback();
 
     /**
      * @return the runtime classpath: the jars of the parent loader, never the project's own outputs
@@ -277,6 +295,9 @@ public abstract class MicronautDevManifest extends DefaultTask {
         }
         entries.put(PREFIX + "livereload.port", String.valueOf(getLiveReloadPort().get()));
         entries.put(PREFIX + "livereload.inject-script", String.valueOf(getLiveReloadInjectScript().get()));
+        if (getBindLoopback().isPresent()) {
+            entries.put(BIND_LOOPBACK, String.valueOf(getBindLoopback().get()));
+        }
         putEntries(entries, directory);
         Properties properties = new Properties();
         properties.putAll(entries);

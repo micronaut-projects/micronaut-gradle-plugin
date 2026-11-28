@@ -32,10 +32,14 @@ import org.gradle.api.tasks.Nested;
  *         strategy = "auto"          // restart, reload or auto
  *         compile = "embedded"       // embedded or build-tool
  *         incremental = true
+ *         bindLoopback = true        // or -Pmicronaut.dev.bind-loopback=false
  *         retain("javax.sql.DataSource")
  *         liveReload {
  *             enabled = true
  *             port = 35729
+ *         }
+ *         controlPanel {
+ *             enabled = true         // or -Pmicronaut.dev.control-panel=false
  *         }
  *         test {
  *             selection = "affected" // affected or all
@@ -71,6 +75,17 @@ public abstract class MicronautDevExtension {
      * @return the flag
      */
     public abstract Property<Boolean> getIncremental();
+
+    /**
+     * Whether the application listens on {@code localhost} alone by default, so that a development server is not
+     * reachable from other machines. Defaults to true; set it to false to reach the application from a phone or a
+     * container. A {@code micronaut.server.host} the application sets in its configuration, as an environment variable
+     * or as a system property wins either way. The Gradle property {@code micronaut.dev.bind-loopback} overrides it.
+     *
+     * @return the flag
+     * @since 5.0.3
+     */
+    public abstract Property<Boolean> getBindLoopback();
 
     /**
      * The types whose singletons are kept across a restart.
@@ -123,6 +138,25 @@ public abstract class MicronautDevExtension {
     }
 
     /**
+     * Micronaut Control Panel.
+     *
+     * @return the Control Panel settings
+     * @since 5.0.3
+     */
+    @Nested
+    public abstract ControlPanel getControlPanel();
+
+    /**
+     * Configures Micronaut Control Panel.
+     *
+     * @param action the configuration
+     * @since 5.0.3
+     */
+    public void controlPanel(Action<? super ControlPanel> action) {
+        action.execute(getControlPanel());
+    }
+
+    /**
      * Test mode.
      *
      * @return the test mode settings
@@ -168,6 +202,25 @@ public abstract class MicronautDevExtension {
          * @return the flag
          */
         public abstract Property<Boolean> getInjectScript();
+    }
+
+    /**
+     * Micronaut Control Panel in development mode: {@code micronaut-control-panel-ui},
+     * {@code micronaut-control-panel-management} and {@code micronaut-control-panel-testing}, plus the panels of the
+     * modules the application uses, such as {@code micronaut-control-panel-kafka} for {@code micronaut-kafka}, at the
+     * versions of the Micronaut platform, on the development runtime classpath of {@code mnDev} alone.
+     *
+     * @since 5.0.3
+     */
+    public abstract static class ControlPanel {
+
+        /**
+         * Whether Micronaut Control Panel is added to the development runtime classpath of {@code mnDev}. Defaults to
+         * true; the Gradle property {@code micronaut.dev.control-panel} overrides it.
+         *
+         * @return the flag
+         */
+        public abstract Property<Boolean> getEnabled();
     }
 
     /**
