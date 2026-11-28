@@ -28,6 +28,7 @@ import org.gradle.api.provider.Provider;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.BooleanSupplier;
 
 /**
  * Represents a dependency which is automatically
@@ -45,10 +46,19 @@ public record AutomaticDependency(
 ) {
 
     public void applyTo(Project p) {
+        applyTo(p, () -> true);
+    }
+
+    public void applyTo(Project p, BooleanSupplier condition) {
         p.getPlugins().withType(MicronautComponentPlugin.class, unused -> {
             p.afterEvaluate(unusedProject -> VersionCatalogLookupCache.get().clear());
             p.getConfigurations().getByName(configuration).getDependencies().addAllLater(
-                p.getProviders().provider(() -> resolve(p).map(List::of).orElseGet(List::of))
+                p.getProviders().provider(() -> {
+                    if (!condition.getAsBoolean()) {
+                        return List.<Dependency>of();
+                    }
+                    return resolve(p).<List<Dependency>>map(List::of).orElseGet(List::of);
+                })
             );
         });
     }
